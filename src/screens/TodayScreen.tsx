@@ -21,6 +21,7 @@ import { toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, type Skill } from '../lib/types';
 import { useToast } from '../state/toast';
 import { useAI } from '../state/ai';
+import { errorText } from '../lib/bridge';
 
 const TILE_COLORS: Record<Skill, string> = {
   reading: '#17245c',
@@ -82,7 +83,7 @@ export function TodayScreen() {
       setDateOpen(false);
       notify(dateDraft ? 'Exam date saved.' : 'Exam date removed.', 'ok');
     } catch (error) {
-      notify(error instanceof Error ? error.message : 'Could not save the date.', 'error');
+      notify(errorText(error), 'error');
     } finally {
       setSaving(false);
     }

@@ -21,7 +21,7 @@ export function CoachScreen() {
   const navigate = useNavigate();
   const { backend } = useAuth();
   const { profile } = useAppData();
-  const { ready, selection, complete } = useAI();
+  const { ready, selection, complete, connections } = useAI();
   const { notify } = useToast();
   const [messages, setMessages] = useState<TutorRow[] | null>(null);
   const [draft, setDraft] = useState('');
@@ -94,7 +94,7 @@ export function CoachScreen() {
             <h1>Coach</h1>
             {ready && selection && (
               <span className="chip chip--ai">
-                <Sparkles aria-hidden="true" /> {selection.model}
+                <Sparkles aria-hidden="true" /> {connections.find((item) => item.provider === selection.provider)?.label ?? 'Coach'}
               </span>
             )}
           </div>
@@ -109,7 +109,7 @@ export function CoachScreen() {
       {!ready && (
         <Notice tone="info">
           <span>
-            Connect an AI key to chat with your coach. Your key stays encrypted on this device.{' '}
+            Add your AI key to start chatting with your coach.{' '}
             <button className="btn--text" style={{ fontWeight: 650 }} onClick={() => navigate('/settings')}>
               Open settings
             </button>

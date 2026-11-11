@@ -24,7 +24,7 @@ const STEPS = ['Name', 'Target', 'Time', 'Level', 'AI'];
 
 export function SetupScreen() {
   const navigate = useNavigate();
-  const { backend } = useAuth();
+  const { backend, mode } = useAuth();
   const { profile, patchProfile, ready, loadError } = useAppData();
   const { notify } = useToast();
   const [step, setStep] = useState(0);
@@ -64,7 +64,7 @@ export function SetupScreen() {
     setError(null);
     if (step === 0) {
       if (!shownName.trim()) return setError('Add the name you want danna to use.');
-      if (!/^[a-z0-9_]{3,20}$/.test(shownUsername)) {
+      if (mode === 'supabase' && !/^[a-z0-9_]{3,20}$/.test(shownUsername)) {
         return setError('Usernames use 3 to 20 lowercase letters, numbers or underscores.');
       }
     }
@@ -143,12 +143,15 @@ export function SetupScreen() {
                 <p className="eyebrow">Learning setup</p>
                 <h1 style={{ marginTop: 6 }}>What should danna call you?</h1>
                 <p className="muted" style={{ marginTop: 8 }}>
-                  Your username is how friends find you. You can change these later in your profile.
+                  {mode === 'supabase'
+                    ? 'Your username is how friends find you. You can change these later in your profile.'
+                    : 'This is how danna greets you. You can change it later in your profile.'}
                 </p>
               </div>
               <Field label="Name">
                 <input className="input" value={shownName} onChange={(event) => setDisplayName(event.target.value)} maxLength={40} />
               </Field>
+              {mode === 'supabase' && (
               <Field label="Username" hint="3 to 20 characters: lowercase letters, numbers and underscores.">
                 <input
                   className="input"
@@ -157,6 +160,7 @@ export function SetupScreen() {
                   maxLength={20}
                 />
               </Field>
+              )}
             </>
           )}
 
@@ -255,8 +259,7 @@ export function SetupScreen() {
                 <p className="eyebrow">Optional</p>
                 <h1 style={{ marginTop: 6 }}>Add an AI key for a personal coach</h1>
                 <p className="muted" style={{ marginTop: 8 }}>
-                  OpenAI, Anthropic, Google Gemini or OpenRouter. danna detects the provider, lists the latest models and lets
-                  you pick one. Without a key, everything still works and you rate writing and speaking yourself.
+                  Works with OpenAI, Anthropic, Google Gemini or OpenRouter. You can skip this and everything still works.
                 </p>
               </div>
               <div className="card" style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
@@ -264,11 +267,10 @@ export function SetupScreen() {
                   <Sparkles />
                 </span>
                 <div style={{ flex: 1 }}>
-                  <h3>Connect later in Settings</h3>
-                  <p className="small muted">Paste a key any time. It is stored encrypted on this device.</p>
+                  <h3>Add it later in Settings</h3>
+                  <p className="small muted">Paste a key whenever you like. It stays on this device.</p>
                 </div>
               </div>
-              <Notice tone="info">Your key never leaves this device except to call the provider you chose.</Notice>
             </>
           )}
         </motion.div>

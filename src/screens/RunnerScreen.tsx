@@ -314,7 +314,7 @@ export function RunnerScreen() {
       });
     } catch (error) {
       setSaveError(errorText(error));
-      notify('Your progress could not be saved. Check your connection and try again.', 'error');
+      notify('We could not save your progress. Please try again.', 'error');
     } finally {
       setSaving(false);
     }

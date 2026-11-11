@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { getSupabase, requireSupabase } from '../lib/supabase';
 import { backendFor, readStoredMode, storeMode } from '../lib/session';
 import type { BackendMode, DataBackend } from '../lib/data/backend';
+import { copyProgress } from '../lib/migrate';
 
 type Status = 'loading' | 'out' | 'in';
 
@@ -13,20 +14,12 @@ interface AuthApi {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ confirmEmail: boolean }>;
   useOffline: () => void;
+  /** Leaves the online account for this device. keepCopy copies progress first. */
+  moveToDevice: (keepCopy: boolean) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthApi | null>(null);
-
-export function friendlyAuthError(message: string): string {
-  if (/invalid login credentials/i.test(message)) return 'The email or password is not right.';
-  if (/email not confirmed/i.test(message)) return 'Confirm your email first. Check your inbox for the link.';
-  if (/already registered|already been registered/i.test(message)) {
-    return 'An account with this email already exists. Sign in instead.';
-  }
-  if (/password/i.test(message) && /characters|least/i.test(message)) return 'Use a password with at least 8 characters.';
-  return message;
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Status>('loading');
@@ -67,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const subscription = sb?.auth.onAuthStateChange((event, session) => {
       if (!active) return;
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' && readStoredMode() === 'supabase') {
         storeMode(null);
         leave();
       } else if (event === 'SIGNED_IN' && session && readStoredMode() === 'supabase') {
@@ -85,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (address: string, password: string) => {
       const sb = requireSupabase();
       const { data, error } = await sb.auth.signInWithPassword({ email: address.trim(), password });
-      if (error) throw new Error(friendlyAuthError(error.message));
+      if (error) throw error;
       storeMode('supabase');
       enter('supabase', data.user?.email ?? address.trim());
     },
@@ -100,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: { data: { username, display_name: username } },
       });
-      if (error) throw new Error(friendlyAuthError(error.message));
+      if (error) throw error;
       if (!data.session) return { confirmEmail: true };
       storeMode('supabase');
       enter('supabase', data.user?.email ?? address.trim());
@@ -114,16 +107,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enter('local', null);
   }, [enter]);
 
+  const moveToDevice = useCallback(
+    async (keepCopy: boolean) => {
+      if (keepCopy && mode === 'supabase' && backend) {
+        await copyProgress(backend, backendFor('local'));
+      }
+      // Set the mode first so the session change below is not read as a sign-out.
+      storeMode('local');
+      const sb = getSupabase();
+      if (sb) await sb.auth.signOut().catch(() => undefined);
+      enter('local', null);
+    },
+    [backend, mode, enter],
+  );
+
   const signOut = useCallback(async () => {
     const sb = getSupabase();
-    if (sb && readStoredMode() === 'supabase') await sb.auth.signOut();
+    if (sb && readStoredMode() === 'supabase') await sb.auth.signOut().catch(() => undefined);
     storeMode(null);
     leave();
   }, [leave]);
 
   const api = useMemo<AuthApi>(
-    () => ({ status, mode, backend, email, signIn, signUp, useOffline, signOut }),
-    [status, mode, backend, email, signIn, signUp, useOffline, signOut],
+    () => ({ status, mode, backend, email, signIn, signUp, useOffline, moveToDevice, signOut }),
+    [status, mode, backend, email, signIn, signUp, useOffline, moveToDevice, signOut],
   );
 
   return <AuthContext.Provider value={api}>{children}</AuthContext.Provider>;

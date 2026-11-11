@@ -479,3 +479,17 @@ select
   0,
   true
 where not exists (select 1 from public.announcements where version = '0.1.0');
+
+insert into public.announcements (kind, title, body, version, accent, priority, published)
+select
+  'release_note',
+  'danna 0.2.0',
+  '- Keep everything on this device, or sign in to sync across devices' || E'\n' ||
+  '- A new window bar and a tray icon, so practice stays one click away' || E'\n' ||
+  '- A short welcome to choose how you want to learn' || E'\n' ||
+  '- Friendlier messages and a new logo',
+  '0.2.0',
+  'blue',
+  0,
+  true
+where not exists (select 1 from public.announcements where version = '0.2.0');

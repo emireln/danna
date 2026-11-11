@@ -1,45 +1,44 @@
-// danna desktop shell: window management, locked-down IPC and AI key handling.
-const { app, BrowserWindow, ipcMain, shell, safeStorage, session, protocol, net } = require('electron');
+// danna desktop shell: custom window frame, tray, offline data, AI keys and secure IPC.
+const { app, BrowserWindow, ipcMain, shell, safeStorage, session, protocol, net, Tray, Menu, nativeImage } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const keystore = require('./keystore.cjs');
 const ai = require('./ai.cjs');
+const localdb = require('./localdb.cjs');
+const settings = require('./settings.cjs');
+const { userError } = require('./errors.cjs');
 
-// Set by `npm run dev`; production builds always load the bundled files.
+// Set by `npm run dev`; packaged builds always serve the bundled interface.
 const DEV_URL = !app.isPackaged && process.env.DANNA_DEV_URL ? process.env.DANNA_DEV_URL : null;
-const ICON_PATH = path.join(__dirname, '..', 'build', 'icon.ico');
 const DIST = path.join(__dirname, '..', 'dist');
-// The bundle is served from a privileged app:// origin. Module scripts load
-// reliably there, unlike from file:// pages.
 const APP_ORIGIN = 'app://danna';
+const ICON = path.join(__dirname, 'assets', 'icon.png');
+const TRAY_ICON = path.join(__dirname, 'assets', 'tray.png');
+
 let mainWindow = null;
+let tray = null;
+let quitting = false;
+let trayHintShown = false;
 
-protocol.registerSchemesAsPrivileged([
-  { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } },
-]);
-
-function serveApp(request) {
-  const { pathname } = new URL(request.url);
-  const relative = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
-  const file = path.normalize(path.join(DIST, relative));
-  if (!file.startsWith(DIST)) return new Response('Not found', { status: 404 });
-  return net.fetch(pathToFileURL(file).toString());
-}
+// Must run before the app is ready. The interface is served from this origin.
+protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
-    if (!mainWindow) return;
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
+  app.on('second-instance', () => showWindow());
+  app.on('before-quit', () => {
+    quitting = true;
+  });
+  app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit();
   });
 
   app.whenReady().then(() => {
+    app.setAppUserModelId('app.danna.desktop');
     protocol.handle('app', serveApp);
-    // Only the microphone, and only for danna's own pages (speaking practice).
-    // Camera, location, notifications and everything else stay denied.
+    // Only the microphone (speaking practice), and only for danna's own pages.
     session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
       const url = webContents ? webContents.getURL() : '';
       callback(permission === 'media' && isAppUrl(url));
@@ -48,15 +47,17 @@ if (!app.requestSingleInstanceLock()) {
       return permission === 'media' && isAppUrl(requestingOrigin || (webContents ? webContents.getURL() : ''));
     });
     registerIpc();
+    createTray();
     createWindow();
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
-    });
   });
+}
 
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
-  });
+function serveApp(request) {
+  const { pathname } = new URL(request.url);
+  const relative = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
+  const file = path.normalize(path.join(DIST, relative));
+  if (!file.startsWith(DIST)) return new Response('Not found', { status: 404 });
+  return net.fetch(pathToFileURL(file).toString());
 }
 
 function isAppUrl(url) {
@@ -67,6 +68,10 @@ function openExternal(url) {
   if (/^https:\/\//i.test(url)) shell.openExternal(url);
 }
 
+function send(channel, payload) {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -74,13 +79,13 @@ function createWindow() {
     minWidth: 1000,
     minHeight: 680,
     show: false,
+    // No system title bar: the interface draws its own, with window controls.
+    frame: false,
+    thickFrame: true,
     title: 'danna',
     backgroundColor: '#ffffff',
     autoHideMenuBar: true,
-    icon: fs.existsSync(ICON_PATH) ? ICON_PATH : undefined,
-    // Frameless look with native window controls drawn over the top bar on Windows.
-    titleBarStyle: 'hidden',
-    titleBarOverlay: process.platform === 'win32' ? { color: '#ffffff', symbolColor: '#0e1a33', height: 56 } : undefined,
+    icon: fs.existsSync(ICON) ? ICON : undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
@@ -92,6 +97,20 @@ function createWindow() {
 
   const { webContents } = mainWindow;
   mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.on('maximize', () => send('window:state', { maximized: true }));
+  mainWindow.on('unmaximize', () => send('window:state', { maximized: false }));
+  mainWindow.on('close', (event) => {
+    if (quitting || !settings.get().closeToTray) return;
+    event.preventDefault();
+    mainWindow.hide();
+    if (!trayHintShown && tray && typeof tray.displayBalloon === 'function') {
+      trayHintShown = true;
+      tray.displayBalloon({ title: 'danna', content: 'danna is still running. Click the tray icon to open it again.' });
+    }
+  });
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
   webContents.setWindowOpenHandler(({ url }) => {
     openExternal(url);
     return { action: 'deny' };
@@ -102,12 +121,58 @@ function createWindow() {
       openExternal(url);
     }
   });
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
 
-  const loading = mainWindow.loadURL(DEV_URL ?? `${APP_ORIGIN}/index.html`);
-  loading.catch((error) => console.error('danna failed to load its interface:', error));
+  mainWindow.loadURL(DEV_URL ?? `${APP_ORIGIN}/index.html`).catch((error) => {
+    console.error('danna could not load its interface:', error);
+  });
+}
+
+function showWindow() {
+  if (!mainWindow) {
+    createWindow();
+    return;
+  }
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+function createTray() {
+  if (tray || !fs.existsSync(TRAY_ICON)) return;
+  tray = new Tray(nativeImage.createFromPath(TRAY_ICON));
+  tray.setToolTip('danna');
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: 'Open danna', click: () => showWindow() },
+      {
+        label: 'Continue learning',
+        click: () => {
+          showWindow();
+          send('app:navigate', '/');
+        },
+      },
+      {
+        label: 'Quick review',
+        click: () => {
+          showWindow();
+          send('app:navigate', '/review');
+        },
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit danna',
+        click: () => {
+          quitting = true;
+          app.quit();
+        },
+      },
+    ]),
+  );
+  tray.on('click', () => {
+    if (mainWindow && mainWindow.isVisible() && mainWindow.isFocused()) mainWindow.hide();
+    else showWindow();
+  });
+  tray.on('double-click', () => showWindow());
 }
 
 function assertTrustedSender(event) {
@@ -123,7 +188,7 @@ function handle(channel, handler) {
 }
 
 function assertProvider(provider) {
-  if (!ai.PROVIDERS[provider]) throw new Error('Unknown AI provider.');
+  if (!ai.PROVIDERS[provider]) throw userError('That AI provider is not supported.');
   return provider;
 }
 
@@ -148,20 +213,17 @@ function registerIpc() {
 
   handle('keys:state', () => keysState());
 
-  // Validates the key against the provider before anything is stored.
+  // A key is only saved after the provider accepts it.
   handle('keys:add', async ({ key }) => {
     const clean = typeof key === 'string' ? key.trim() : '';
-    if (!clean || clean.length > 300 || /\s/.test(clean)) {
-      throw new Error('Paste the full API key. It should contain no spaces.');
-    }
+    if (!clean) throw userError('Paste your AI key to connect it.');
+    if (clean.length > 300 || /\s/.test(clean)) throw userError('Paste the whole key. It should not contain spaces.');
     const provider = ai.detectProvider(clean);
     if (!provider) {
-      throw new Error('This key format is not recognised. Supported: OpenAI (sk-), Anthropic (sk-ant-), Google Gemini (AIza…) and OpenRouter (sk-or-v1-).');
+      throw userError('We do not recognise this key yet. Try an OpenAI, Anthropic, Gemini or OpenRouter key.');
     }
     const models = await ai.listModels(provider, clean);
-    if (models.length === 0) {
-      throw new Error(`${ai.PROVIDERS[provider].label} accepted the key but returned no chat models.`);
-    }
+    if (models.length === 0) throw userError(`${ai.PROVIDERS[provider].label} did not return any chat models for this key.`);
     keystore.saveKey(provider, clean);
     const current = keystore.getSelection();
     if (!current || !keystore.hasKey(current.provider)) {
@@ -178,23 +240,23 @@ function registerIpc() {
   handle('ai:models', async ({ provider }) => {
     assertProvider(provider);
     const key = keystore.getKey(provider);
-    if (!key) throw new Error('No key is saved for this provider.');
+    if (!key) throw userError('Connect this provider first.');
     return ai.listModels(provider, key);
   });
 
   handle('ai:select', ({ provider, model }) => {
     assertProvider(provider);
-    if (!keystore.hasKey(provider)) throw new Error('Connect this provider first.');
-    if (typeof model !== 'string' || !model || model.length > 200) throw new Error('Choose a valid model.');
+    if (!keystore.hasKey(provider)) throw userError('Connect this provider first.');
+    if (typeof model !== 'string' || !model || model.length > 200) throw userError('Choose a model from the list.');
     keystore.setSelection({ provider, model });
     return keystore.getSelection();
   });
 
   handle('ai:complete', async ({ system, messages, json, maxTokens }) => {
     const selection = keystore.getSelection();
-    if (!selection) throw new Error('Connect an AI key in Settings to use this feature.');
+    if (!selection) throw userError('Add an AI key in Settings to use this feature.');
     const key = keystore.getKey(selection.provider);
-    if (!key) throw new Error('The selected provider has no saved key. Reconnect it in Settings.');
+    if (!key) throw userError('Your AI key is missing. Add it again in Settings.');
     const text = await ai.complete(selection.provider, key, selection.model, {
       system: typeof system === 'string' ? system : '',
       messages,
@@ -205,17 +267,34 @@ function registerIpc() {
   });
 
   handle('ai:transcribe', async ({ audio, mime }) => {
-    if (!keystore.hasKey('openai')) {
-      throw new Error('Add an OpenAI key in Settings to transcribe speaking answers.');
-    }
-    if (!(audio instanceof ArrayBuffer) || audio.byteLength === 0) throw new Error('No audio was recorded.');
-    if (audio.byteLength > 24 * 1024 * 1024) throw new Error('That recording is too long to transcribe. Try a shorter answer.');
+    if (!keystore.hasKey('openai')) throw userError('Add an OpenAI key in Settings to transcribe speaking answers.');
+    if (!(audio instanceof ArrayBuffer) || audio.byteLength === 0) throw userError('No recording was found. Try again.');
+    if (audio.byteLength > 24 * 1024 * 1024) throw userError('That recording is too long. Try a shorter answer.');
     const text = await ai.transcribe(keystore.getKey('openai'), Buffer.from(audio), typeof mime === 'string' ? mime : 'audio/webm');
     return { text };
   });
 
+  // Offline data: only the actions listed in localdb.cjs are reachable.
+  handle('local:call', ({ method, args }) => localdb.call(String(method), args));
+
+  handle('settings:get', () => settings.get());
+  handle('settings:set', (patch) => settings.set(patch));
+
+  handle('window:minimize', () => {
+    if (mainWindow) mainWindow.minimize();
+  });
+  handle('window:toggle-maximize', () => {
+    if (!mainWindow) return;
+    if (mainWindow.isMaximized()) mainWindow.unmaximize();
+    else mainWindow.maximize();
+  });
+  handle('window:close', () => {
+    if (mainWindow) mainWindow.close();
+  });
+  handle('window:state', () => ({ maximized: Boolean(mainWindow && mainWindow.isMaximized()) }));
+
   handle('shell:open', ({ url }) => {
-    if (typeof url !== 'string' || !/^https:\/\/\S+$/i.test(url)) throw new Error('Only https links can be opened.');
+    if (typeof url !== 'string' || !/^https:\/\/\S+$/i.test(url)) throw userError('That link cannot be opened.');
     return shell.openExternal(url);
   });
 }

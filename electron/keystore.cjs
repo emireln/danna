@@ -2,6 +2,7 @@
 // Keys are encrypted with the operating-system keychain (Windows DPAPI through
 // Electron safeStorage) and are only decrypted inside the main process.
 const { app, safeStorage } = require('electron');
+const { userError } = require('./errors.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -35,7 +36,7 @@ function maskKey(key) {
 
 function assertEncryption() {
   if (!safeStorage.isEncryptionAvailable()) {
-    throw new Error('Secure storage is unavailable on this device, so danna will not save API keys.');
+    throw userError("We could not save your key on this device.");
   }
 }
 

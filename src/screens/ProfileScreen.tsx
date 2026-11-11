@@ -66,7 +66,7 @@ export function ProfileScreen() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1>{name}</h1>
           <p className="muted small" style={{ marginTop: 4 }}>
-            @{profile.username} · {mode === 'local' ? 'Offline profile on this device' : email}
+            {mode === 'local' ? 'Kept on this device' : `@${profile.username} · ${email ?? ''}`}
           </p>
           <div style={{ marginTop: 12, maxWidth: 380 }}>
             <div className="row row--between small" style={{ marginBottom: 6, fontWeight: 600 }}>
@@ -163,8 +163,8 @@ export function ProfileScreen() {
           <h3>Account</h3>
           <p className="small muted">
             {mode === 'local'
-              ? 'Your data stays on this device. Create an account to sync and connect with friends.'
-              : 'Your progress syncs to your account.'}
+              ? 'Your progress stays on this device.'
+              : 'Your progress is saved to your account.'}
           </p>
         </div>
         <button
@@ -174,7 +174,7 @@ export function ProfileScreen() {
             navigate('/auth', { replace: true });
           }}
         >
-          {mode === 'local' ? 'Leave offline mode' : 'Sign out'}
+          {mode === 'local' ? 'Switch mode' : 'Sign out'}
         </button>
       </section>
 

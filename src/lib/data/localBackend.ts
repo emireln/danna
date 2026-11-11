@@ -1,22 +1,11 @@
-// Offline backend: everything stays in this device's local storage. Accounts,
-// friends and sharing need the Supabase backend, so those calls explain that.
-import type {
-  AnnouncementRow,
-  AttemptRow,
-  FriendRow,
-  LessonProgressRow,
-  PersonRow,
-  ProfileRow,
-  ReviewRow,
-  ShareRow,
-  Skill,
-  TestRow,
-  TutorRow,
-} from '../types';
+// Offline data in the browser preview only (the desktop app uses the SQLite file).
+// Same behaviour, kept in this browser's storage.
+import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
+import type { AttemptRow, FriendRow, LessonProgressRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorRow } from '../types';
 import type { DataBackend, NewAttempt, NewTest, ProfilePatch, SharePayload } from './backend';
 
 const STORE_KEY = 'danna.local.v1';
-const SOCIAL_MESSAGE = 'Friends and sharing need an online account. Sign in with Supabase to connect with people.';
+const ONLINE_ONLY = 'This is available with an online account.';
 
 interface LocalStore {
   profile: ProfileRow | null;
@@ -51,7 +40,7 @@ function write(store: LocalStore): void {
   try {
     window.localStorage.setItem(STORE_KEY, JSON.stringify(store));
   } catch {
-    throw new Error('This device is out of local storage space. Free some space and try again.');
+    throw new Error('Not enough space on this device. Free some space and try again.');
   }
 }
 
@@ -76,40 +65,6 @@ function defaultProfile(): ProfileRow {
   };
 }
 
-const SEED_ANNOUNCEMENTS: AnnouncementRow[] = [
-  {
-    id: 'seed-banner',
-    kind: 'banner',
-    title: 'Plan your TOEFL score one lesson at a time',
-    body: 'Take the diagnostic, follow the roadmap and check your progress every day.',
-    version: null,
-    image_url: null,
-    cta_label: 'Start the diagnostic',
-    cta_url: '/play/diagnostic',
-    accent: 'blue',
-    priority: 10,
-    created_at: '2026-11-01T09:00:00Z',
-  },
-  {
-    id: 'seed-release-010',
-    kind: 'release_note',
-    title: 'danna 0.1.0',
-    body: [
-      '- Roadmap with six units, lesson checkpoints and stars',
-      '- Diagnostic test with an estimated TOEFL score and skill report',
-      '- Self Study by section, mini mock tests and quick practice',
-      '- Connect OpenAI, Anthropic, Gemini or OpenRouter to generate new tests and get feedback',
-    ].join('\n'),
-    version: '0.1.0',
-    image_url: null,
-    cta_label: null,
-    cta_url: null,
-    accent: 'blue',
-    priority: 0,
-    created_at: '2026-11-10T09:00:00Z',
-  },
-];
-
 export function createLocalBackend(): DataBackend {
   const withStore = <T>(fn: (store: LocalStore) => T): T => {
     const store = read();
@@ -132,7 +87,7 @@ export function createLocalBackend(): DataBackend {
       return withStore((store) => {
         const current = store.profile ?? defaultProfile();
         if (patch.username !== undefined && !/^[a-z0-9_]{3,20}$/.test(patch.username)) {
-          throw new Error('Usernames use 3–20 lowercase letters, numbers or underscores.');
+          throw new Error('Usernames use 3 to 20 lowercase letters, numbers or underscores.');
         }
         store.profile = { ...current, ...patch };
         return { ...store.profile };
@@ -140,7 +95,12 @@ export function createLocalBackend(): DataBackend {
     },
 
     async listAttempts(limit = 60) {
-      return withStore((store) => store.attempts.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, limit));
+      return withStore((store) =>
+        store.attempts
+          .slice()
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))
+          .slice(0, limit),
+      );
     },
 
     async getAttempt(id: string) {
@@ -149,7 +109,14 @@ export function createLocalBackend(): DataBackend {
 
     async insertAttempt(row: NewAttempt) {
       return withStore((store) => {
-        const attempt: AttemptRow = { ...row, id: newId(), user_id: store.profile?.id ?? 'local', created_at: nowIso() };
+        const existing = row.id ? store.attempts.find((attempt) => attempt.id === row.id) : undefined;
+        if (existing) return existing;
+        const attempt: AttemptRow = {
+          ...row,
+          id: row.id ?? newId(),
+          user_id: store.profile?.id ?? 'local',
+          created_at: row.created_at ?? nowIso(),
+        };
         store.attempts = [attempt, ...store.attempts].slice(0, 300);
         return attempt;
       });
@@ -196,7 +163,14 @@ export function createLocalBackend(): DataBackend {
 
     async insertTest(row: NewTest) {
       return withStore((store) => {
-        const test: TestRow = { ...row, id: newId(), owner_id: store.profile?.id ?? 'local', created_at: nowIso() };
+        const existing = row.id ? store.tests.find((test) => test.id === row.id) : undefined;
+        if (existing) return existing;
+        const test: TestRow = {
+          ...row,
+          id: row.id ?? newId(),
+          owner_id: store.profile?.id ?? 'local',
+          created_at: row.created_at ?? nowIso(),
+        };
         store.tests = [test, ...store.tests];
         return test;
       });
@@ -211,11 +185,11 @@ export function createLocalBackend(): DataBackend {
     },
 
     async requestFriend() {
-      throw new Error(SOCIAL_MESSAGE);
+      throw new Error(ONLINE_ONLY);
     },
 
     async answerFriend() {
-      throw new Error(SOCIAL_MESSAGE);
+      throw new Error(ONLINE_ONLY);
     },
 
     async listShares(): Promise<ShareRow[]> {
@@ -223,13 +197,13 @@ export function createLocalBackend(): DataBackend {
     },
 
     async sendShare(_payload: SharePayload) {
-      throw new Error(SOCIAL_MESSAGE);
+      throw new Error(ONLINE_ONLY);
     },
 
     async markSharesSeen() {},
 
     async listAnnouncements() {
-      return SEED_ANNOUNCEMENTS.slice();
+      return LOCAL_ANNOUNCEMENTS.slice();
     },
 
     async listTutor(limit = 40) {

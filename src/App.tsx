@@ -1,12 +1,16 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { AppShell } from './components/Shell';
+import { TitleBar } from './components/TitleBar';
 import { Notice } from './components/ui';
+import { bridge } from './lib/bridge';
+import { hasWelcomed } from './lib/session';
 import { AuthProvider, useAuth } from './state/auth';
 import { AIProvider } from './state/ai';
 import { AppDataProvider, useAppData } from './state/appData';
 import { ToastProvider } from './state/toast';
 import { Splash } from './screens/Splash';
+import { WelcomeScreen } from './screens/WelcomeScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { SetupScreen } from './screens/SetupScreen';
 import { TodayScreen } from './screens/TodayScreen';
@@ -25,20 +29,37 @@ function RequireSignedIn({ children }: { children: ReactNode }) {
   const { status } = useAuth();
   const location = useLocation();
   if (status === 'loading') return <Splash />;
-  if (status === 'out') return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
+  if (status === 'out') {
+    return <Navigate to={hasWelcomed() ? '/auth' : '/welcome'} replace state={{ from: location.pathname }} />;
+  }
   return <>{children}</>;
 }
 
-function ProfileProblem({ message }: { message: string }) {
+function RequireSetup({ children }: { children: ReactNode }) {
+  const { ready, profile } = useAppData();
+  if (!ready) return <Splash />;
+  if (!profile) return <ProfileProblem />;
+  if (!profile.onboarding_done) return <Navigate to="/setup" replace />;
+  return <>{children}</>;
+}
+
+// Friends and sharing exist only with an online account.
+function OnlineOnly({ children }: { children: ReactNode }) {
+  const { mode } = useAuth();
+  return mode === 'supabase' ? <>{children}</> : <Navigate to="/" replace />;
+}
+
+function ProfileProblem() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, mode } = useAuth();
+  const { refresh, loadError } = useAppData();
   return (
     <div className="auth">
       <div className="auth__card">
-        <Notice tone="error">{message}</Notice>
-        <p className="small muted">
-          If this is a new Supabase project, run supabase/schema.sql in the SQL editor, then sign in again.
-        </p>
+        <Notice tone="error">{loadError ?? 'We could not load your profile.'}</Notice>
+        <button className="btn btn--primary btn--block" onClick={() => void refresh()}>
+          Try again
+        </button>
         <button
           className="btn btn--ghost btn--block"
           onClick={async () => {
@@ -46,24 +67,24 @@ function ProfileProblem({ message }: { message: string }) {
             navigate('/auth', { replace: true });
           }}
         >
-          Back to sign in
+          {mode === 'supabase' ? 'Back to sign in' : 'Back'}
         </button>
       </div>
     </div>
   );
 }
 
-function RequireSetup({ children }: { children: ReactNode }) {
-  const { ready, profile, loadError } = useAppData();
-  if (!ready) return <Splash />;
-  if (!profile) return <ProfileProblem message={loadError ?? 'Your profile could not be loaded.'} />;
-  if (!profile.onboarding_done) return <Navigate to="/setup" replace />;
-  return <>{children}</>;
+// The tray menu can open a page; the interface follows.
+function NavigationBridge() {
+  const navigate = useNavigate();
+  useEffect(() => (bridge ? bridge.onNavigate((path) => navigate(path)) : undefined), [navigate]);
+  return null;
 }
 
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/welcome" element={<WelcomeScreen />} />
       <Route path="/auth" element={<AuthScreen />} />
       <Route
         path="/setup"
@@ -119,7 +140,14 @@ function AppRoutes() {
         <Route path="review" element={<ReviewScreen />} />
         <Route path="coach" element={<CoachScreen />} />
         <Route path="report/:id" element={<ReportScreen />} />
-        <Route path="friends" element={<FriendsScreen />} />
+        <Route
+          path="friends"
+          element={
+            <OnlineOnly>
+              <FriendsScreen />
+            </OnlineOnly>
+          }
+        />
         <Route path="profile" element={<ProfileScreen />} />
         <Route path="settings" element={<SettingsScreen />} />
         <Route path="whats-new" element={<WhatsNewScreen />} />
@@ -129,13 +157,25 @@ function AppRoutes() {
   );
 }
 
+function Frame() {
+  return (
+    <div className="frame">
+      <TitleBar />
+      <div className="frame__body">
+        <NavigationBridge />
+        <AppRoutes />
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <ToastProvider>
       <AuthProvider>
         <AIProvider>
           <AppDataProvider>
-            <AppRoutes />
+            <Frame />
           </AppDataProvider>
         </AIProvider>
       </AuthProvider>

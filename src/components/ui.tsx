@@ -2,14 +2,25 @@ import { useEffect, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
 
+// The danna mark: a speech bubble with rising bars (learning that grows). Same geometry as public/favicon.svg.
 export function BrandMark({ size = 26 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="9" fill="#2f6bff" />
-      <circle cx="13" cy="18" r="6.2" fill="none" stroke="#ffffff" strokeWidth="3.2" />
-      <rect x="18.4" y="7.5" width="3.2" height="17.5" rx="1.6" fill="#ffffff" />
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <rect width="64" height="64" rx="16" fill="#0f1b33" />
+      <path
+        d="M22 12H42A12 12 0 0 1 54 24V32A12 12 0 0 1 42 44H30L19 52L20 44H22A12 12 0 0 1 10 32V24A12 12 0 0 1 22 12Z"
+        fill="#2f6bff"
+      />
+      <rect x="14.75" y="31" width="6" height="7" rx="3" fill="#ffffff" />
+      <rect x="24.25" y="26" width="6" height="12" rx="3" fill="#ffffff" />
+      <rect x="33.75" y="21" width="6" height="17" rx="3" fill="#ffffff" />
+      <rect x="43.25" y="16" width="6" height="22" rx="3" fill="#13b5a4" />
     </svg>
   );
+}
+
+export function Wordmark({ className = '' }: { className?: string }) {
+  return <span className={`wordmark ${className}`}>danna</span>;
 }
 
 export function initials(name: string): string {

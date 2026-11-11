@@ -2,6 +2,8 @@
 // OpenRouter is made here, in the Electron main process, so API keys never
 // reach the renderer.
 
+const { userError, MARK } = require('./errors.cjs');
+
 const TIMEOUT_MS = 60_000;
 const COMPLETION_TIMEOUT_MS = 180_000;
 
@@ -62,13 +64,17 @@ async function request(url, { method = 'GET', headers = {}, body, timeoutMs = TI
 
 function asProviderError(provider, error) {
   const label = PROVIDERS[provider].label;
+  if (error && String(error.message || '').includes(MARK)) return error;
   if (error && (error.status === 401 || error.status === 403)) {
-    return new Error(`${label} rejected this key. Check that it is active and can use chat models.`);
+    return userError(`${label} did not accept this key. Check that it is still active.`);
   }
   if (error && error.status === 429) {
-    return new Error(`${label} rate limit reached. Wait a moment and try again.`);
+    return userError(`${label} is busy right now. Please try again in a moment.`);
   }
-  return new Error(`${label}: ${error && error.message ? error.message : 'unknown error'}`);
+  if (error && /Network error/.test(String(error.message))) {
+    return userError(`We could not reach ${label}. Check your internet connection.`);
+  }
+  return userError(`${label} could not finish that. Please try again.`);
 }
 
 const byNewest = (a, b) => b.createdAt - a.createdAt || a.label.localeCompare(b.label);
@@ -156,7 +162,7 @@ function normalizeMessages(messages) {
   }
   // Anthropic and Gemini expect the conversation to open with a user turn.
   while (out.length && out[0].role !== 'user') out.shift();
-  if (!out.length) throw new Error('There is nothing to send to the model yet.');
+  if (!out.length) throw userError('Write a message first.');
   return out;
 }
 
@@ -237,7 +243,7 @@ async function complete(provider, key, model, { system = '', messages = [], json
   try {
     const text = await COMPLETERS[provider](key, model, String(system || '').slice(0, 24000), cleanMessages, Boolean(json), limit);
     if (!String(text || '').trim()) {
-      throw new Error('The model returned an empty response. Try again, or pick another model in Settings.');
+      throw userError('The assistant did not reply this time. Please try again.');
     }
     return String(text);
   } catch (error) {

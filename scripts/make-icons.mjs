@@ -1,17 +1,30 @@
-// Generates the Windows app icon from the danna mark (same geometry as public/favicon.svg).
-// Writes build/icon.png and build/icon.ico. Run with: npm run icons
+// Draws the danna mark (a speech bubble with rising bars) as PNG and ICO files,
+// plus the SVG favicon. Run with: npm run icons
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = join(root, 'build');
-mkdirSync(outDir, { recursive: true });
 
-const SIZE = 256;
-const SAMPLES = 4; // supersampling per axis for smooth edges
+const NAVY = [15, 27, 51];
 const BLUE = [47, 107, 255];
+const WHITE = [255, 255, 255];
+const TEAL = [19, 181, 164];
+
+// The mark lives on a 64 x 64 grid. Keep these numbers in sync with BrandMark in src/components/ui.tsx.
+const BUBBLE = { left: 10, top: 12, width: 44, height: 32, radius: 12 };
+const TAIL = [
+  [30, 44],
+  [19, 52],
+  [20, 44],
+];
+const BARS = [
+  { left: 14.75, top: 31, width: 6, height: 7, color: WHITE },
+  { left: 24.25, top: 26, width: 6, height: 12, color: WHITE },
+  { left: 33.75, top: 21, width: 6, height: 17, color: WHITE },
+  { left: 43.25, top: 16, width: 6, height: 22, color: TEAL },
+];
 
 function inRoundedRect(x, y, left, top, width, height, radius) {
   if (x < left || x > left + width || y < top || y > top + height) return false;
@@ -20,44 +33,61 @@ function inRoundedRect(x, y, left, top, width, height, radius) {
   return (x - cx) ** 2 + (y - cy) ** 2 <= radius ** 2;
 }
 
-// The mark lives on a 32 x 32 grid: a blue rounded square with a white "d".
-function sample(x, y) {
-  if (!inRoundedRect(x, y, 0, 0, 32, 32, 9)) return null;
-  const distance = Math.hypot(x - 13, y - 18);
-  const ring = Math.abs(distance - 6.2) <= 1.6;
-  const stem = inRoundedRect(x, y, 18.4, 7.5, 3.2, 17.5, 1.6);
-  return ring || stem ? [255, 255, 255] : BLUE;
+function inTriangle(px, py, a, b, c) {
+  const sign = (p1, p2, p3) => (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);
+  const p = [px, py];
+  const d1 = sign(p, a, b);
+  const d2 = sign(p, b, c);
+  const d3 = sign(p, c, a);
+  const hasNegative = d1 < 0 || d2 < 0 || d3 < 0;
+  const hasPositive = d1 > 0 || d2 > 0 || d3 > 0;
+  return !(hasNegative && hasPositive);
 }
 
-const pixels = Buffer.alloc(SIZE * SIZE * 4);
-for (let py = 0; py < SIZE; py += 1) {
-  for (let px = 0; px < SIZE; px += 1) {
-    let r = 0;
-    let g = 0;
-    let b = 0;
-    let hits = 0;
-    for (let sy = 0; sy < SAMPLES; sy += 1) {
-      for (let sx = 0; sx < SAMPLES; sx += 1) {
-        const x = ((px + (sx + 0.5) / SAMPLES) / SIZE) * 32;
-        const y = ((py + (sy + 0.5) / SAMPLES) / SIZE) * 32;
-        const color = sample(x, y);
-        if (color) {
-          r += color[0];
-          g += color[1];
-          b += color[2];
-          hits += 1;
+function colorAt(x, y) {
+  if (!inRoundedRect(x, y, 0, 0, 64, 64, 16)) return null;
+  let color = NAVY;
+  if (inRoundedRect(x, y, BUBBLE.left, BUBBLE.top, BUBBLE.width, BUBBLE.height, BUBBLE.radius) || inTriangle(x, y, TAIL[0], TAIL[1], TAIL[2])) {
+    color = BLUE;
+  }
+  for (const bar of BARS) {
+    if (inRoundedRect(x, y, bar.left, bar.top, bar.width, bar.height, 3)) color = bar.color;
+  }
+  return color;
+}
+
+function rasterize(size) {
+  const samples = 4;
+  const pixels = Buffer.alloc(size * size * 4);
+  for (let py = 0; py < size; py += 1) {
+    for (let px = 0; px < size; px += 1) {
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      let hits = 0;
+      for (let sy = 0; sy < samples; sy += 1) {
+        for (let sx = 0; sx < samples; sx += 1) {
+          const x = ((px + (sx + 0.5) / samples) / size) * 64;
+          const y = ((py + (sy + 0.5) / samples) / size) * 64;
+          const color = colorAt(x, y);
+          if (color) {
+            r += color[0];
+            g += color[1];
+            b += color[2];
+            hits += 1;
+          }
         }
       }
-    }
-    const total = SAMPLES * SAMPLES;
-    const offset = (py * SIZE + px) * 4;
-    if (hits > 0) {
-      pixels[offset] = Math.round(r / hits);
-      pixels[offset + 1] = Math.round(g / hits);
-      pixels[offset + 2] = Math.round(b / hits);
-      pixels[offset + 3] = Math.round((hits / total) * 255);
+      const offset = (py * size + px) * 4;
+      if (hits > 0) {
+        pixels[offset] = Math.round(r / hits);
+        pixels[offset + 1] = Math.round(g / hits);
+        pixels[offset + 2] = Math.round(b / hits);
+        pixels[offset + 3] = Math.round((hits / (samples * samples)) * 255);
+      }
     }
   }
+  return pixels;
 }
 
 const CRC_TABLE = (() => {
@@ -85,16 +115,17 @@ function chunk(type, data) {
   return Buffer.concat([length, typeAndData, crc]);
 }
 
-function encodePng(width, height, rgba) {
+function encodePng(size, rgba) {
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(width, 0);
-  header.writeUInt32BE(height, 4);
-  header[8] = 8; // bit depth
-  header[9] = 6; // RGBA
-  const rows = Buffer.alloc((width * 4 + 1) * height);
-  for (let y = 0; y < height; y += 1) {
-    rows[y * (width * 4 + 1)] = 0; // filter: none
-    rgba.copy(rows, y * (width * 4 + 1) + 1, y * width * 4, (y + 1) * width * 4);
+  header.writeUInt32BE(size, 0);
+  header.writeUInt32BE(size, 4);
+  header[8] = 8;
+  header[9] = 6;
+  const stride = size * 4 + 1;
+  const rows = Buffer.alloc(stride * size);
+  for (let y = 0; y < size; y += 1) {
+    rows[y * stride] = 0;
+    rgba.copy(rows, y * stride + 1, y * size * 4, (y + 1) * size * 4);
   }
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
@@ -104,22 +135,47 @@ function encodePng(width, height, rgba) {
   ]);
 }
 
-const png = encodePng(SIZE, SIZE, pixels);
-writeFileSync(join(outDir, 'icon.png'), png);
+function encodeIco(png) {
+  const header = Buffer.alloc(22);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(1, 4);
+  header[6] = 0;
+  header[7] = 0;
+  header[8] = 0;
+  header[9] = 0;
+  header.writeUInt16LE(1, 10);
+  header.writeUInt16LE(32, 12);
+  header.writeUInt32LE(png.length, 14);
+  header.writeUInt32LE(22, 18);
+  return Buffer.concat([header, png]);
+}
 
-// A single-image ICO that stores the 256 px PNG directly (supported by Windows Vista and later).
-const ico = Buffer.alloc(22);
-ico.writeUInt16LE(0, 0); // reserved
-ico.writeUInt16LE(1, 2); // type: icon
-ico.writeUInt16LE(1, 4); // image count
-ico[6] = 0; // width 256 is stored as 0
-ico[7] = 0; // height 256 is stored as 0
-ico[8] = 0; // colour count
-ico[9] = 0; // reserved
-ico.writeUInt16LE(1, 10); // colour planes
-ico.writeUInt16LE(32, 12); // bits per pixel
-ico.writeUInt32LE(png.length, 14); // image size
-ico.writeUInt32LE(22, 18); // image offset
-writeFileSync(join(outDir, 'icon.ico'), Buffer.concat([ico, png]));
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="16" fill="#0f1b33"/>
+  <path d="M22 12H42A12 12 0 0 1 54 24V32A12 12 0 0 1 42 44H30L19 52L20 44H22A12 12 0 0 1 10 32V24A12 12 0 0 1 22 12Z" fill="#2f6bff"/>
+  <rect x="14.75" y="31" width="6" height="7" rx="3" fill="#ffffff"/>
+  <rect x="24.25" y="26" width="6" height="12" rx="3" fill="#ffffff"/>
+  <rect x="33.75" y="21" width="6" height="17" rx="3" fill="#ffffff"/>
+  <rect x="43.25" y="16" width="6" height="22" rx="3" fill="#13b5a4"/>
+</svg>
+`;
 
-console.log('Wrote build/icon.png and build/icon.ico');
+const outputs = [
+  ['build', 'icon.png', 512],
+  ['electron/assets', 'icon.png', 256],
+  ['electron/assets', 'tray.png', 32],
+];
+
+for (const [folder, name, size] of outputs) {
+  const target = join(root, folder);
+  mkdirSync(target, { recursive: true });
+  writeFileSync(join(target, name), encodePng(size, rasterize(size)));
+}
+
+mkdirSync(join(root, 'build'), { recursive: true });
+writeFileSync(join(root, 'build', 'icon.ico'), encodeIco(encodePng(256, rasterize(256))));
+mkdirSync(join(root, 'public'), { recursive: true });
+writeFileSync(join(root, 'public', 'favicon.svg'), svg);
+
+console.log('Wrote build/icon.png, build/icon.ico, electron/assets/icon.png, electron/assets/tray.png, public/favicon.svg');

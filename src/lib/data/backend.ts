@@ -1,5 +1,5 @@
-// The data contract shared by the Supabase backend (accounts, friends, sharing)
-// and the offline backend (this device only). Screens depend only on this file.
+// The data contract shared by the online backend and the offline backend
+// (this device only). Screens depend only on this file.
 import type {
   AnnouncementRow,
   AttemptKind,
@@ -19,6 +19,8 @@ import type {
 export type BackendMode = 'supabase' | 'local';
 
 export interface NewAttempt {
+  id?: string;
+  created_at?: string;
   kind: AttemptKind;
   ref_id: string;
   title: string;
@@ -30,6 +32,8 @@ export interface NewAttempt {
 }
 
 export interface NewTest {
+  id?: string;
+  created_at?: string;
   title: string;
   description: string;
   kind: TestRow['kind'];

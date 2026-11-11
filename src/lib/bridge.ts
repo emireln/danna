@@ -1,5 +1,5 @@
-// Typed access to the Electron preload bridge. In a plain browser (for example
-// `npm run web`) `bridge` is null and AI features show a clear message instead.
+// Typed access to the desktop bridge. In a plain browser `bridge` is null, and the
+// features that need the desktop app say so in friendly words.
 import type { AIConnection, AIModel, AISelection, ChatMessage, Provider } from './types';
 
 export interface AppInfo {
@@ -27,6 +27,14 @@ export interface CompletionResult {
   model: string;
 }
 
+export interface WindowState {
+  maximized: boolean;
+}
+
+export interface AppSettings {
+  closeToTray: boolean;
+}
+
 export interface DannaBridge {
   info: () => Promise<AppInfo>;
   keys: {
@@ -40,6 +48,21 @@ export interface DannaBridge {
     complete: (request: CompletionRequest) => Promise<CompletionResult>;
     transcribe: (audio: ArrayBuffer, mime: string) => Promise<{ text: string }>;
   };
+  local: {
+    call: <T = unknown>(method: string, args?: unknown[]) => Promise<T>;
+  };
+  settings: {
+    get: () => Promise<AppSettings>;
+    set: (patch: Partial<AppSettings>) => Promise<AppSettings>;
+  };
+  window: {
+    minimize: () => Promise<void>;
+    toggleMaximize: () => Promise<void>;
+    close: () => Promise<void>;
+    state: () => Promise<WindowState>;
+    onState: (callback: (state: WindowState) => void) => () => void;
+  };
+  onNavigate: (callback: (path: string) => void) => () => void;
   openExternal: (url: string) => Promise<void>;
 }
 
@@ -51,13 +74,28 @@ declare global {
 
 export const bridge: DannaBridge | null = typeof window !== 'undefined' && window.danna ? window.danna : null;
 
-/** Removes Electron's IPC prefixes so people see the plain message. */
+// Errors from the desktop side that are safe to show carry this marker.
+const USER_MARK = '@@user@@';
+const FALLBACK = 'Something went wrong. Please try again.';
+
+const PATTERNS: Array<[RegExp, string]> = [
+  [/invalid login credentials/i, 'That email and password do not match. Please try again.'],
+  [/email not confirmed/i, 'Please confirm your email first. Check your inbox for the link.'],
+  [/already registered|already been registered|user already exists/i, 'That email already has an account. Try signing in instead.'],
+  [/at least 8 characters|password should be/i, 'Use a password with at least 8 characters.'],
+  [/rate limit|too many requests|\b429\b/i, 'Too many attempts. Please wait a moment and try again.'],
+  [/failed to fetch|network ?error|network request failed|timed? ?out|enotfound|econn|offline/i, 'We could not connect. Check your internet connection and try again.'],
+  [/duplicate key|already taken|23505/i, 'That name is already taken. Try another one.'],
+  [/jwt|session (has )?expired|not authenticated|refresh token/i, 'Your session has ended. Please sign in again.'],
+];
+
+/** Turns any error into a short message a person can act on. Never shows internal details. */
 export function errorText(error: unknown): string {
-  const raw =
-    error instanceof Error
-      ? error.message
-      : typeof error === 'string'
-        ? error
-        : 'Something went wrong. Please try again.';
-  return raw.replace(/^Error invoking remote method '[^']+': /, '').replace(/^Error: /, '');
+  const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  const marked = raw.indexOf(USER_MARK);
+  if (marked !== -1) return raw.slice(marked + USER_MARK.length).trim() || FALLBACK;
+  for (const [pattern, text] of PATTERNS) {
+    if (pattern.test(raw)) return text;
+  }
+  return FALLBACK;
 }

@@ -259,9 +259,11 @@ export function ReportScreen() {
         </section>
 
         <div className="row" style={{ flexWrap: 'wrap', paddingBottom: 12 }}>
-          <button className="btn btn--primary" onClick={() => setSharing(true)} disabled={backend?.mode !== 'supabase'}>
-            <Share2 /> {backend?.mode === 'supabase' ? 'Share with a friend' : 'Sharing needs an account'}
-          </button>
+          {backend?.mode === 'supabase' && (
+            <button className="btn btn--primary" onClick={() => setSharing(true)}>
+              <Share2 /> Share with a friend
+            </button>
+          )}
           <button
             className="btn btn--ghost"
             onClick={() => {

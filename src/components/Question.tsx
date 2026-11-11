@@ -330,7 +330,7 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
       setPhase('recording');
       timer.current = window.setInterval(() => setLeft((value) => value - 1), 1000);
     } catch {
-      notify('Microphone access is blocked. Allow it for danna in Windows settings, or rate yourself.', 'error');
+      notify('The microphone is not available right now. You can rate your answer yourself.', 'error');
     }
   };
 
