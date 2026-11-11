@@ -26,7 +26,8 @@ function securityPolicy(options: { dev: boolean; supabaseUrl: string }): Plugin 
     "font-src 'self' data:",
     `connect-src ${connect.join(' ')}`,
     "media-src 'self' blob:",
-    "worker-src 'none'",
+    // The PDF viewer runs its reader in a worker that is part of the app bundle.
+    "worker-src 'self' blob:",
     "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'none'",

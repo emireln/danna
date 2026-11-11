@@ -22,6 +22,7 @@ import { RunnerScreen } from './screens/RunnerScreen';
 import { ReportScreen } from './screens/ReportScreen';
 import { FriendsScreen } from './screens/FriendsScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { LibraryScreen } from './screens/LibraryScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WhatsNewScreen } from './screens/WhatsNewScreen';
 
@@ -149,6 +150,7 @@ function AppRoutes() {
           }
         />
         <Route path="profile" element={<ProfileScreen />} />
+        <Route path="library" element={<LibraryScreen />} />
         <Route path="settings" element={<SettingsScreen />} />
         <Route path="whats-new" element={<WhatsNewScreen />} />
       </Route>

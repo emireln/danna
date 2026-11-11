@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Pencil, Settings2 } from 'lucide-react';
+import { BookOpen, Camera, Pencil, Settings2 } from 'lucide-react';
 import { Avatar, Empty, Field, ProgressBar, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { PictureError, prepareAvatar } from '../lib/avatar';
@@ -21,6 +21,7 @@ export function ProfileScreen() {
   const [nameDraft, setNameDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const [pictureBusy, setPictureBusy] = useState(false);
+  const [libraryCounts, setLibraryCounts] = useState<{ files: number; links: number } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,6 +34,21 @@ export function ProfileScreen() {
       })
       .catch(() => {
         if (active) setAttempts([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [backend]);
+
+  useEffect(() => {
+    if (!backend) return undefined;
+    let active = true;
+    Promise.all([backend.listLibraryFiles(), backend.listLibraryLinks()])
+      .then(([files, links]) => {
+        if (active) setLibraryCounts({ files: files.length, links: links.length });
+      })
+      .catch(() => {
+        if (active) setLibraryCounts({ files: 0, links: 0 });
       });
     return () => {
       active = false;
@@ -163,6 +179,23 @@ export function ProfileScreen() {
         </div>
         <button className="btn btn--ghost btn--sm" onClick={() => navigate('/setup')}>
           Edit setup
+        </button>
+      </section>
+
+      <section className="card" style={{ marginTop: 22, display: 'flex', gap: 16, alignItems: 'center' }}>
+        <span className="icon-tile icon-tile--sm">
+          <BookOpen />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3>My library</h3>
+          <p className="small muted">
+            {libraryCounts && libraryCounts.files + libraryCounts.links > 0
+              ? `${libraryCounts.files} files · ${libraryCounts.links} links`
+              : 'Keep your PDF, TXT and Markdown files, and learning links, in one place.'}
+          </p>
+        </div>
+        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/library')}>
+          Open library
         </button>
       </section>
 

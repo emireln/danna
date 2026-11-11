@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, Bell, LogOut, Settings, User, Users } from 'lucide-react';
+import { ArrowLeftRight, Bell, BookOpen, LogOut, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
 import { bridge, type WindowState } from '../lib/bridge';
 import { useAuth } from '../state/auth';
@@ -107,6 +107,9 @@ export function TitleBar() {
                   </div>
                   <button className="menu__item" role="menuitem" onClick={() => go('/profile')}>
                     <User /> Profile
+                  </button>
+                  <button className="menu__item" role="menuitem" onClick={() => go('/library')}>
+                    <BookOpen /> My library
                   </button>
                   <button className="menu__item" role="menuitem" onClick={() => go('/settings')}>
                     <Settings /> Settings
