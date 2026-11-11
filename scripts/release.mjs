@@ -17,7 +17,8 @@ const gh = (args) => execFileSync('gh', args, { cwd: root, encoding: 'utf8', std
 if (git(['status', '--porcelain']) !== '') {
   throw new Error('Commit or stash your changes first: the release must match a pushed commit.');
 }
-git(['fetch', 'origin', 'main']);
+// Tags are fetched too: the notes start from the previous release tag, which a fresh clone may not have yet.
+git(['fetch', '--tags', 'origin', 'main']);
 const head = git(['rev-parse', 'HEAD']);
 if (head !== git(['rev-parse', 'origin/main'])) {
   throw new Error('Push the commit to origin/main first (git push origin main).');
