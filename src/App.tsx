@@ -44,12 +44,6 @@ function RequireSetup({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-// Friends and sharing exist only with an online account.
-function OnlineOnly({ children }: { children: ReactNode }) {
-  const { mode } = useAuth();
-  return mode === 'supabase' ? <>{children}</> : <Navigate to="/" replace />;
-}
-
 function ProfileProblem() {
   const navigate = useNavigate();
   const { signOut, mode } = useAuth();
@@ -141,14 +135,7 @@ function AppRoutes() {
         <Route path="review" element={<ReviewScreen />} />
         <Route path="coach" element={<CoachScreen />} />
         <Route path="report/:id" element={<ReportScreen />} />
-        <Route
-          path="friends"
-          element={
-            <OnlineOnly>
-              <FriendsScreen />
-            </OnlineOnly>
-          }
-        />
+        <Route path="friends" element={<FriendsScreen />} />
         <Route path="profile" element={<ProfileScreen />} />
         <Route path="library" element={<LibraryScreen />} />
         <Route path="settings" element={<SettingsScreen />} />

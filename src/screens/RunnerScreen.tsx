@@ -4,11 +4,12 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Check, Star, X } from 'lucide-react';
 import { QuestionView, type ItemState } from '../components/Question';
 import { CountUp } from '../components/charts';
-import { Notice, ProgressBar, Spinner, formatClock } from '../components/ui';
+import { ConfirmSheet, Notice, ProgressBar, Spinner, formatClock } from '../components/ui';
 import { bundledTest, diagnosticTest } from '../content';
 import { errorText } from '../lib/bridge';
 import { gradeChoice, gradeCloze, gradeReorder, shuffleWords } from '../lib/grading';
 import { nextStreak, localDate } from '../lib/progress';
+import { plural } from '../lib/text';
 import { isReviewable, newReviewItem, scheduleReview } from '../lib/srs';
 import { overallPercent, skillPercents, starsFor, toeflEstimate, XP, type SkillMap } from '../lib/scoring';
 import { useAuth } from '../state/auth';
@@ -125,6 +126,7 @@ export function RunnerScreen() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const startedAt = useRef(Date.now());
 
   useEffect(() => {
@@ -151,7 +153,7 @@ export function RunnerScreen() {
         return {
           id: 'review',
           title: 'Daily review',
-          subtitle: `${rows.length} questions due`,
+          subtitle: `${plural(rows.length, 'question')} due`,
           kind: 'review',
           skill: 'mixed',
           minutes: Math.max(2, rows.length),
@@ -168,7 +170,7 @@ export function RunnerScreen() {
         return {
           id: row.id,
           title: row.title,
-          subtitle: row.description || `${row.level} · ${row.content.questions.length} questions`,
+          subtitle: row.description || `${row.level} · ${plural(row.content.questions.length, 'question')}`,
           kind: 'practice',
           skill: row.skill,
           minutes: row.minutes,
@@ -365,7 +367,10 @@ export function RunnerScreen() {
 
   const exit = () => {
     const answered = Object.keys(results).length;
-    if (!summary && answered > 0 && !window.confirm('Leave this session? Answers you have not finished will not be saved.')) return;
+    if (!summary && answered > 0) {
+      setConfirmLeave(true);
+      return;
+    }
     navigate(exitPath(test?.kind, isReview));
   };
 
@@ -395,7 +400,8 @@ export function RunnerScreen() {
   if (!test) {
     return (
       <div className="auth" role="status">
-        <span className="spinner spinner--dark" aria-label="Loading session" />
+        <Spinner dark />
+        <span className="sr-only">Loading session</span>
       </div>
     );
   }
@@ -452,7 +458,7 @@ export function RunnerScreen() {
               exit={{ opacity: 0, x: -22 }}
               transition={{ duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
             >
-              <span className="small muted" style={{ fontWeight: 600 }}>
+              <span className="small muted runner__count">
                 Question {index + 1} of {total} · {SKILL_LABEL[question.skill]}
               </span>
               <QuestionView
@@ -473,7 +479,7 @@ export function RunnerScreen() {
       <div className="runner__foot">
         <div className="runner__foot-status" aria-live="polite">
           {saveError ? (
-            <span style={{ color: 'var(--red)' }}>{saveError}</span>
+            <span className="text-red">{saveError}</span>
           ) : feedbackText ? (
             <span style={{ color: correctNow !== null && correctNow >= 1 ? 'var(--green)' : correctNow && correctNow > 0 ? '#b7791f' : checked ? 'var(--red)' : 'var(--ink-2)' }}>
               {feedbackText}
@@ -488,6 +494,16 @@ export function RunnerScreen() {
           {!saving && (label === 'Check' ? <Check /> : <ArrowRight />)}
         </button>
       </div>
+      {confirmLeave && (
+        <ConfirmSheet
+          title="Leave this session?"
+          confirmLabel="Leave"
+          onConfirm={() => navigate(exitPath(test?.kind, isReview))}
+          onClose={() => setConfirmLeave(false)}
+        >
+          Answers you have not finished will not be saved.
+        </ConfirmSheet>
+      )}
     </div>
   );
 }
@@ -496,7 +512,7 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
   const navigate = useNavigate();
   const isLesson = summary.kind === 'lesson' || summary.kind === 'checkpoint';
   const isDiagnostic = summary.kind === 'diagnostic';
-  const headline = isDiagnostic ? 'Your estimate is ready' : isLesson ? (summary.stars ? 'Lesson complete' : 'Keep practising') : 'Session complete';
+  const headline = isDiagnostic ? 'Your estimate is ready' : isLesson ? (summary.stars ? 'Lesson complete' : 'Keep practicing') : 'Session complete';
   const score = isDiagnostic && summary.predicted !== null ? summary.predicted : summary.pct;
   const suffix = isDiagnostic && summary.predicted !== null ? ' / 120' : '%';
 
@@ -523,7 +539,6 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
                   initial={{ scale: 0, rotate: -30 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: 0.25 + value * 0.15, type: 'spring', stiffness: 260, damping: 14 }}
-                  style={{ display: 'inline-flex' }}
                   className={value <= summary.stars ? '' : 'is-off'}
                 >
                   <Star fill={value <= summary.stars ? 'currentColor' : 'none'} />
@@ -537,9 +552,9 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
           {Object.keys(summary.skills).length > 0 && (
             <div className="skill-summary">
               {SKILLS.filter((skill) => summary.skills[skill] !== undefined).map((skill) => (
-                <div key={skill} className="plan__row" style={{ fontSize: 14 }}>
-                  <span style={{ width: 92 }}>{SKILL_LABEL[skill]}</span>
-                  <div className="progress" style={{ flex: 1 }}>
+                <div key={skill} className="plan__row">
+                  <span className="skill-summary__name">{SKILL_LABEL[skill]}</span>
+                  <div className="progress skill-summary__bar">
                     <motion.div
                       className="progress__bar"
                       initial={{ width: 0 }}
@@ -552,7 +567,7 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
               ))}
             </div>
           )}
-          <div className="row" style={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div className="row row--wrap row--center">
             {isDiagnostic && summary.attemptId && (
               <button className="btn btn--primary" onClick={() => navigate(`/report/${summary.attemptId}`)}>
                 See my report <ArrowRight />

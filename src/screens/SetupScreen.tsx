@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
-import { Field, Notice, Spinner } from '../components/ui';
+import { Field, FeatureCard, Notice, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { placementRows } from '../lib/roadmap';
 import { useAuth } from '../state/auth';
@@ -22,6 +22,17 @@ const LEVEL_TEXT: Record<Level, string> = {
 
 const STEPS = ['Name', 'Target', 'Time', 'Level', 'AI'];
 
+/** The heading block every step uses: a short eyebrow, the question, and one line of help. */
+function StepHead({ eyebrow, title, text }: { eyebrow: string; title: string; text?: string }) {
+  return (
+    <div className="step-head">
+      <p className="eyebrow">{eyebrow}</p>
+      <h1 className="page-title">{title}</h1>
+      {text && <p className="muted">{text}</p>}
+    </div>
+  );
+}
+
 export function SetupScreen() {
   const navigate = useNavigate();
   const { backend, mode } = useAuth();
@@ -40,8 +51,9 @@ export function SetupScreen() {
 
   if (!ready) {
     return (
-      <div className="auth">
-        <span className="spinner spinner--dark" aria-label="Loading" />
+      <div className="auth" role="status">
+        <Spinner dark />
+        <span className="sr-only">Loading</span>
       </div>
     );
   }
@@ -134,54 +146,45 @@ export function SetupScreen() {
           animate="center"
           exit="exit"
           transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
-          className="stack"
-          style={{ gap: 22 }}
+          className="stack stack--loose"
         >
           {step === 0 && (
             <>
-              <div>
-                <p className="eyebrow">Learning setup</p>
-                <h1 style={{ marginTop: 6 }}>What should danna call you?</h1>
-                <p className="muted" style={{ marginTop: 8 }}>
-                  {mode === 'supabase'
+              <StepHead
+                eyebrow="Learning setup"
+                title="What should danna call you?"
+                text={
+                  mode === 'supabase'
                     ? 'Your username is how friends find you. You can change these later in your profile.'
-                    : 'This is how danna greets you. You can change it later in your profile.'}
-                </p>
-              </div>
+                    : 'This is how danna greets you. You can change it later in your profile.'
+                }
+              />
               <Field label="Name">
                 <input className="input" value={shownName} onChange={(event) => setDisplayName(event.target.value)} maxLength={40} />
               </Field>
               {mode === 'supabase' && (
-              <Field label="Username" hint="3 to 20 characters: lowercase letters, numbers and underscores.">
-                <input
-                  className="input"
-                  value={shownUsername}
-                  onChange={(event) => setUsername(event.target.value.toLowerCase())}
-                  maxLength={20}
-                />
-              </Field>
+                <Field label="Username" hint="3 to 20 characters: lowercase letters, numbers and underscores.">
+                  <input
+                    className="input"
+                    value={shownUsername}
+                    onChange={(event) => setUsername(event.target.value.toLowerCase())}
+                    maxLength={20}
+                  />
+                </Field>
               )}
             </>
           )}
 
           {step === 1 && (
             <>
-              <div>
-                <p className="eyebrow">Your target</p>
-                <h1 style={{ marginTop: 6 }}>Which TOEFL score are you aiming for?</h1>
-                <p className="muted" style={{ marginTop: 8 }}>
-                  We use it to set your radar goal and the daily plan.
-                </p>
-              </div>
+              <StepHead
+                eyebrow="Your target"
+                title="Which TOEFL score are you aiming for?"
+                text="We use it to set your goal on the skill chart and your daily plan."
+              />
               <div className="choice-grid choice-grid--four" role="radiogroup" aria-label="Target score">
                 {TARGETS.map((score) => (
-                  <button
-                    key={score}
-                    role="radio"
-                    aria-checked={shownTarget === score}
-                    className="choice"
-                    onClick={() => setTarget(score)}
-                  >
+                  <button key={score} role="radio" aria-checked={shownTarget === score} className="choice" onClick={() => setTarget(score)}>
                     <span className="choice__title">{score}+</span>
                     <span className="choice__text">out of 120</span>
                   </button>
@@ -201,22 +204,14 @@ export function SetupScreen() {
 
           {step === 2 && (
             <>
-              <div>
-                <p className="eyebrow">Daily time</p>
-                <h1 style={{ marginTop: 6 }}>How much time can you give each day?</h1>
-                <p className="muted" style={{ marginTop: 8 }}>
-                  A steady 15 minutes beats a long session once a week.
-                </p>
-              </div>
+              <StepHead
+                eyebrow="Daily time"
+                title="How much time can you give each day?"
+                text="A steady 15 minutes beats a long session once a week."
+              />
               <div className="choice-grid" role="radiogroup" aria-label="Minutes per day">
                 {MINUTES.map((minutes) => (
-                  <button
-                    key={minutes}
-                    role="radio"
-                    aria-checked={shownDaily === minutes}
-                    className="choice"
-                    onClick={() => setDaily(minutes)}
-                  >
+                  <button key={minutes} role="radio" aria-checked={shownDaily === minutes} className="choice" onClick={() => setDaily(minutes)}>
                     <span className="choice__title">{minutes} minutes</span>
                     <span className="choice__text">
                       {minutes <= 10 ? 'A quick warm-up' : minutes <= 15 ? 'Recommended' : minutes <= 25 ? 'Steady progress' : 'Deep practice'}
@@ -229,22 +224,14 @@ export function SetupScreen() {
 
           {step === 3 && (
             <>
-              <div>
-                <p className="eyebrow">Current level</p>
-                <h1 style={{ marginTop: 6 }}>Where do you feel most comfortable?</h1>
-                <p className="muted" style={{ marginTop: 8 }}>
-                  Be honest. The diagnostic test will confirm it.
-                </p>
-              </div>
+              <StepHead
+                eyebrow="Current level"
+                title="Where do you feel most comfortable?"
+                text="Be honest. The diagnostic test will confirm it."
+              />
               <div className="choice-grid" role="radiogroup" aria-label="Current level">
                 {LEVELS.map((item) => (
-                  <button
-                    key={item}
-                    role="radio"
-                    aria-checked={shownLevel === item}
-                    className="choice"
-                    onClick={() => setLevel(item)}
-                  >
+                  <button key={item} role="radio" aria-checked={shownLevel === item} className="choice" onClick={() => setLevel(item)}>
                     <span className="choice__title">{item}</span>
                     <span className="choice__text">{LEVEL_TEXT[item]}</span>
                   </button>
@@ -255,22 +242,16 @@ export function SetupScreen() {
 
           {step === 4 && (
             <>
-              <div>
-                <p className="eyebrow">Optional</p>
-                <h1 style={{ marginTop: 6 }}>Add an AI key for a personal coach</h1>
-                <p className="muted" style={{ marginTop: 8 }}>
-                  Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works.
-                </p>
-              </div>
-              <div className="card" style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <span className="icon-tile">
-                  <Sparkles />
-                </span>
-                <div style={{ flex: 1 }}>
-                  <h3>Add it later in Settings</h3>
-                  <p className="small muted">Paste a key whenever you like. It stays on this device.</p>
-                </div>
-              </div>
+              <StepHead
+                eyebrow="Optional"
+                title="Add an AI key for a personal coach"
+                text="Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works."
+              />
+              <FeatureCard
+                icon={<Sparkles />}
+                title="Add it later in Settings"
+                meta="Paste a key whenever you like. It stays on this device."
+              />
             </>
           )}
         </motion.div>

@@ -1,0 +1,548 @@
+/* The shared look of every screen: page headers, sections, feature cards, badges, tabs, the chat
+   input and the spacing scale. Loaded last, so it sets these parts in one place. */
+@layer system {
+  :root {
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 32px;
+  }
+
+  /* ---------- Page header: eyebrow, title, and actions on the right. Same place on every page. ---------- */
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-5);
+    margin-bottom: var(--space-5);
+  }
+
+  .page-header__main {
+    display: grid;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  .page-header__aside {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex: none;
+  }
+
+  .page-title {
+    font-size: 28px;
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  /* ---------- Sections inside a page ---------- */
+  .section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: var(--space-7) 0 var(--space-3);
+  }
+
+  .section-title:first-child {
+    margin-top: 0;
+  }
+
+  .section-title h2 {
+    font-size: 20px;
+  }
+
+  .section-title__aside {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: none;
+  }
+
+  /* ---------- Back link on sub-pages ---------- */
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    font-size: 14px;
+    font-weight: 650;
+    color: var(--primary);
+  }
+
+  .back-link svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .back-link:hover {
+    color: var(--primary-700);
+  }
+
+  /* ---------- Badges: status labels, always the same size and case ---------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .badge--neutral {
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+  }
+
+  .badge--done {
+    color: var(--green);
+    background: var(--green-50);
+  }
+
+  .badge--beta {
+    color: #fff;
+    background: var(--primary);
+  }
+
+  /* ---------- Feature cards: one card for a setup, a test, a library, a score ---------- */
+  .feature-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: 100%;
+    padding: var(--space-5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+    box-shadow: var(--shadow-sm);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  }
+
+  .feature-card--muted {
+    background: var(--surface-2);
+    box-shadow: none;
+  }
+
+  .feature-card--link {
+    cursor: pointer;
+  }
+
+  .feature-card--link:hover {
+    border-color: var(--primary-100);
+    box-shadow: var(--shadow);
+  }
+
+  .feature-card--link:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .feature-card__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    color: var(--primary);
+    background: var(--primary-50);
+  }
+
+  .feature-card__icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .feature-card--muted .feature-card__icon {
+    color: var(--ink-2);
+    background: var(--canvas);
+  }
+
+  .feature-card__body {
+    display: grid;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .feature-card__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 16px;
+    font-weight: 650;
+    color: var(--ink);
+  }
+
+  .feature-card__meta {
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+
+  .feature-card__arrow {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    color: var(--muted);
+  }
+
+  /* ---------- Tabs: counts are neutral; red is only for things waiting for you ---------- */
+  .segmented__count {
+    color: var(--ink-2);
+    background: #e7ebf3;
+  }
+
+  .segmented__count--alert {
+    color: #fff;
+    background: var(--red);
+  }
+
+  /* ---------- Chat input: the coach, and the coach in My library ---------- */
+  .chat-input {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .chat-input:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-50);
+  }
+
+  .chat-input textarea,
+  .chat-input input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-2) var(--space-2);
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    resize: none;
+  }
+
+  .chat-input textarea::placeholder,
+  .chat-input input::placeholder {
+    color: var(--muted);
+  }
+
+  /* ---------- Input with its action on the same row ---------- */
+  .input-action {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .input-action > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ---------- Spacing utilities for the few places a margin is needed ---------- */
+  .mt-3 { margin-top: var(--space-3); }
+  .mt-4 { margin-top: var(--space-4); }
+  .mt-5 { margin-top: var(--space-5); }
+  .mt-6 { margin-top: var(--space-6); }
+  .mt-7 { margin-top: var(--space-7); }
+  .mb-2 { margin-bottom: var(--space-2); }
+  .mb-3 { margin-bottom: var(--space-3); }
+  .mb-4 { margin-bottom: var(--space-4); }
+
+  /* ---------- Section cards on self study: the artwork sits behind the text ---------- */
+  .section-card__art {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.95;
+    transition: transform 0.6s var(--ease);
+  }
+
+  .section-card:hover .section-card__art {
+    transform: scale(1.03);
+  }
+
+  /* ---------- Lesson stars: filled ones are amber, empty ones stay quiet ---------- */
+  .set-row__stars {
+    display: inline-flex;
+    gap: 2px;
+    flex: none;
+    color: var(--line-2);
+  }
+
+  .set-row__stars .is-on {
+    color: var(--amber);
+  }
+
+  /* ---------- Hero: the eyebrow and title read on the blue panel ---------- */
+  .hero .eyebrow {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .hero__title {
+    margin-top: var(--space-1);
+  }
+
+  /* ---------- Rows that show something but do not open ---------- */
+  .set-row--static,
+  .set-row--static:hover {
+    cursor: default;
+    transform: none;
+    border-color: var(--line);
+  }
+
+  .set-row__when {
+    flex: none;
+    font-size: 13px;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+
+  /* ---------- Roadmap: the text beside a unit badge, and the line under a node label ---------- */
+  .unit__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .node__meta {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  /* ---------- Rows: the title and its detail each take their own line ---------- */
+  .set-row__title,
+  .set-row__meta {
+    display: block;
+  }
+
+  /* ---------- Section cards: the kicker, title and stats each take their own line ---------- */
+  .section-card__kicker,
+  .section-card__title,
+  .section-card__stats {
+    display: block;
+  }
+
+  /* ---------- A small label above a group in a list (not a form label) ---------- */
+  .group-label {
+    font-size: 13px;
+    font-weight: 650;
+    color: var(--muted);
+  }
+
+  /* ---------- Search field: the icon sits inside the left edge of the input ---------- */
+  .search-field {
+    position: relative;
+    display: block;
+  }
+
+  .search-field > svg {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  .search-field .input {
+    padding-left: 42px;
+  }
+
+  /* ---------- Quiet text buttons, such as Remove or Remove picture ---------- */
+  .btn--text-muted {
+    color: var(--muted);
+  }
+
+  .btn--text-muted:hover {
+    color: var(--red);
+  }
+
+  /* ---------- People rows: rank, the signed-in person, and streak ---------- */
+  .person--me {
+    border-color: var(--primary-100);
+    background: var(--primary-50);
+  }
+
+  .person__rank {
+    flex: none;
+    width: 22px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .person__streak {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .person__streak svg {
+    width: 14px;
+    height: 14px;
+    color: #e6822c;
+  }
+
+  /* ---------- Profile head and level ---------- */
+  .profile-head__picture {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .profile-head__main {
+    display: grid;
+    gap: var(--space-1);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .profile-head__level {
+    max-width: 380px;
+    margin-top: var(--space-3);
+  }
+
+  .level-row {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* ---------- Settings and forms ---------- */
+  .row--wrap {
+    flex-wrap: wrap;
+  }
+
+  .connection__name {
+    font-weight: 650;
+  }
+
+  .model__label {
+    flex: 1;
+    min-width: 0;
+    font-weight: 620;
+  }
+
+  /* ---------- Layout helpers used by the first-run flow and the report ---------- */
+  .mt-2 { margin-top: var(--space-2); }
+  .pb-3 { padding-bottom: var(--space-3); }
+  .text-center { text-align: center; }
+  .self-start { align-self: flex-start; }
+  .stack--loose { gap: var(--space-6); }
+  .stack--center { align-items: center; }
+
+  /* ---------- Wizard steps: the same heading block on every step ---------- */
+  .step-head {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  /* ---------- Tabs across the full width of a card ---------- */
+  .segmented--block {
+    display: flex;
+    width: 100%;
+  }
+
+  .segmented--block .segmented__btn {
+    flex: 1;
+  }
+
+  /* ---------- A line with a word in the middle, such as "or" ---------- */
+  .divider-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .divider {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* ---------- Report: the hero text and the advice paragraph ---------- */
+  .report-hero .eyebrow {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .report-hero__title {
+    margin-top: var(--space-1);
+  }
+
+  .advice__body {
+    font-size: 15.5px;
+    line-height: 1.75;
+    color: var(--ink-2);
+  }
+
+  /* ---------- Share sheet: the item that is picked ---------- */
+  .set-row--picked {
+    border-color: var(--primary);
+    background: var(--primary-50);
+  }
+
+  /* ---------- Session runner: the question count, errors, stars and the skill summary ---------- */
+  .runner__count {
+    font-weight: 600;
+  }
+
+  .text-red {
+    color: var(--red);
+  }
+
+  .stars > span {
+    display: inline-flex;
+  }
+
+  .skill-summary .plan__row {
+    font-size: 14px;
+  }
+
+  .skill-summary__name {
+    flex: none;
+    width: 92px;
+  }
+
+  .skill-summary__bar {
+    flex: 1;
+  }
+
+  .row--center {
+    justify-content: center;
+  }
+
+  /* ---------- What's new: the text of a release note ---------- */
+  .release__text {
+    color: var(--ink-2);
+  }
+}

@@ -1,18 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowRight,
-  CalendarDays,
-  GraduationCap,
-  Info,
-  Languages,
-  Map as MapIcon,
-  RotateCw,
-  ScanSearch,
-} from 'lucide-react';
+import { CalendarDays, GraduationCap, Languages, Map as MapIcon, RotateCw, ScanSearch } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
-import { Sheet, Spinner } from '../components/ui';
+import { Badge, FeatureCard, Notice, PageHeader, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { nodeStates, progressMap as indexProgress } from '../lib/roadmap';
@@ -22,6 +13,7 @@ import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, t
 import { useToast } from '../state/toast';
 import { useAI } from '../state/ai';
 import { errorText } from '../lib/bridge';
+import { MINI_MOCK_ID } from '../content';
 
 const TILE_COLORS: Record<Skill, string> = {
   reading: '#17245c',
@@ -46,6 +38,7 @@ export function TodayScreen() {
   const [dateOpen, setDateOpen] = useState(false);
   const [dateDraft, setDateDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!backend) return undefined;
@@ -57,7 +50,12 @@ export function TodayScreen() {
         setReviews(items);
         setDiagnostic(attempts.find((attempt) => attempt.kind === 'diagnostic') ?? null);
       })
-      .catch((error: unknown) => console.error('Could not load your progress', error));
+      .catch((error: unknown) => {
+        console.error('Could not load your progress', error);
+        if (!active) return;
+        setProgress([]);
+        setLoadError(errorText(error));
+      });
     return () => {
       active = false;
     };
@@ -104,101 +102,71 @@ export function TodayScreen() {
 
   return (
     <div className="page">
-      <div className="page__head" style={{ marginBottom: 14 }}>
-        <div className="today__title">
-          <h1>Today&apos;s Learning</h1>
-          <span className="beta">beta</span>
-          <button className="btn btn--icon" aria-label="How today's plan works" title="Your plan updates after every session.">
-            <Info />
+      <PageHeader
+        eyebrow="Your plan"
+        title="Today's learning"
+        aside={
+          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/roadmap')}>
+            <MapIcon /> Roadmap
           </button>
-        </div>
-        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/roadmap')}>
-          <MapIcon /> Roadmap
-        </button>
-      </div>
-
-      <label className="sr-only" htmlFor="focus-select">
-        Focus
-      </label>
-      <select
-        id="focus-select"
-        className="select-line"
-        value={focus}
-        onChange={(event) => setFocus(event.target.value as 'all' | Skill)}
+        }
       >
-        <option value="all">Recommended for you</option>
-        <option value="reading">Reading focus</option>
-        <option value="listening">Listening focus</option>
-        <option value="speaking">Speaking focus</option>
-        <option value="writing">Writing focus</option>
-        <option value="language">Language focus</option>
-      </select>
+        <p className="small muted">Your plan updates after every session.</p>
+      </PageHeader>
 
-      <div className="stack" style={{ marginTop: 18, gap: 18 }}>
+      <div className="stack">
+        {loadError && <Notice tone="error">{loadError}</Notice>}
         {banners.length > 0 && <BannerCarousel items={banners} />}
+
+        <SectionTitle
+          title="Your next step"
+          aside={
+            <>
+              <label className="sr-only" htmlFor="focus-select">
+                Focus
+              </label>
+              <select id="focus-select" className="select-line" value={focus} onChange={(event) => setFocus(event.target.value as 'all' | Skill)}>
+                <option value="all">Recommended for you</option>
+                <option value="reading">Reading focus</option>
+                <option value="listening">Listening focus</option>
+                <option value="speaking">Speaking focus</option>
+                <option value="writing">Writing focus</option>
+                <option value="language">Language focus</option>
+              </select>
+            </>
+          }
+        />
 
         {progress === null ? (
           <div className="grid-2">
-            <div className="skeleton" style={{ height: 110 }} />
-            <div className="skeleton" style={{ height: 110 }} />
+            <Skeleton height={96} />
+            <Skeleton height={96} />
           </div>
         ) : (
           <div className="grid-2">
-            <button
-              className="card card--done card--hover"
+            <FeatureCard
+              muted
+              icon={<GraduationCap />}
+              title="Learning setup"
+              badge={<Badge tone="done">Done</Badge>}
+              meta={`Target ${profile?.target_score ?? 100} · ${profile?.level ?? 'B1'} · ${profile?.daily_minutes ?? 15} min a day`}
               onClick={() => navigate('/setup')}
-              aria-label="Learning setup, done. Edit"
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="setup-card">
-                <span className="icon-tile icon-tile--done">
-                  <GraduationCap />
-                </span>
-                <div className="setup-card__body">
-                  <div className="setup-card__title">
-                    <h3>Learning Setup</h3>
-                    <span className="tag">Done</span>
-                  </div>
-                  <p className="setup-card__sub">
-                    Target {profile?.target_score ?? 100} · {profile?.level ?? 'B1'} · {profile?.daily_minutes ?? 15} min a day
-                  </p>
-                </div>
-              </div>
-            </button>
-
+            />
             {diagnostic ? (
-              <button className="card card--hover" onClick={() => navigate(`/report/${diagnostic.id}`)}>
-                <div className="setup-card">
-                  <span className="icon-tile">
-                    <ScanSearch />
-                  </span>
-                  <div className="setup-card__body">
-                    <div className="setup-card__title">
-                      <h3>Score report</h3>
-                    </div>
-                    <p className="setup-card__sub">
-                      Estimated TOEFL {diagnostic.predicted ?? '—'} of 120
-                      {diagnostic.predicted ? `, range ${toeflRange(diagnostic.predicted).join('–')}` : ''}
-                    </p>
-                  </div>
-                  <ArrowRight className="muted" aria-hidden="true" />
-                </div>
-              </button>
+              <FeatureCard
+                icon={<ScanSearch />}
+                title="Score report"
+                meta={`Estimated TOEFL ${diagnostic.predicted ?? '—'} of 120${diagnostic.predicted ? `, range ${toeflRange(diagnostic.predicted).join('–')}` : ''}`}
+                onClick={() => navigate(`/report/${diagnostic.id}`)}
+              />
             ) : (
-              <button className="card card--hover" onClick={() => navigate('/play/diagnostic')}>
-                <span className="tag tag--blue" style={{ position: 'absolute', top: 14, right: 14 }}>
-                  Beta
-                </span>
-                <div className="setup-card">
-                  <span className="icon-tile">
-                    <ScanSearch />
-                  </span>
-                  <div className="setup-card__body">
-                    <h3>Diagnostic Test</h3>
-                    <p className="setup-card__sub">Estimate your TOEFL score across five skills in about 15 minutes.</p>
-                  </div>
-                </div>
-              </button>
+              <FeatureCard
+                icon={<ScanSearch />}
+                title="Diagnostic test"
+                badge={<Badge tone="beta">Beta</Badge>}
+                meta="Estimate your TOEFL score across five skills in about 15 minutes."
+                onClick={() => navigate('/play/diagnostic')}
+              />
             )}
           </div>
         )}
@@ -211,10 +179,10 @@ export function TodayScreen() {
             transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
             aria-label="Continue learning"
           >
-            <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            <p className="eyebrow">
               Unit {focusNode.item.unit.number} · {focusNode.item.unit.title}
             </p>
-            <h2 className="hero__title" style={{ marginTop: 6 }}>
+            <h2 className="hero__title">
               {focusNode.item.checkpoint ? `Check your ${focusNode.item.unit.title.toLowerCase()}` : focusNode.item.lesson.title}
             </h2>
             <p className="hero__text">{focusNode.item.lesson.blurb}</p>
@@ -235,14 +203,14 @@ export function TodayScreen() {
               </span>
             </div>
             <button className="btn btn--white btn--block hero__cta" onClick={() => navigate(`/play/lesson/${focusNode.item.lesson.id}`)}>
-              Continue Learning
+              Continue learning
             </button>
           </motion.section>
         ) : (
           <section className="hero" aria-label="Roadmap complete">
             <h2 className="hero__title">Roadmap complete</h2>
             <p className="hero__text">Every unit is finished. Take the mini mock test to see where you stand now.</p>
-            <button className="btn btn--white btn--block hero__cta" onClick={() => navigate('/play/test/bundle-mini-mock')}>
+            <button className="btn btn--white btn--block hero__cta" onClick={() => navigate(`/play/test/${MINI_MOCK_ID}`)}>
               Start mini mock test
             </button>
           </section>
@@ -265,22 +233,33 @@ export function TodayScreen() {
 
         <div className="strip">
           <CalendarDays aria-hidden="true" />
-          <span>Days Until Exam</span>
+          <span>Days until exam</span>
           {daysLeft === null ? (
-            <button className="btn btn--text strip__value" style={{ fontSize: 14 }} onClick={() => { setDateDraft(''); setDateOpen(true); }}>
+            <button
+              className="btn btn--text strip__value"
+              onClick={() => {
+                setDateDraft('');
+                setDateOpen(true);
+              }}
+            >
               Set exam date
             </button>
           ) : (
-            <button className="btn btn--text strip__value" onClick={() => { setDateDraft(profile?.exam_date ?? ''); setDateOpen(true); }} aria-label="Change exam date">
+            <button
+              className="btn btn--text strip__value"
+              onClick={() => {
+                setDateDraft(profile?.exam_date ?? '');
+                setDateOpen(true);
+              }}
+              aria-label="Change exam date"
+            >
               {daysLeft >= 0 ? `D-${daysLeft}` : 'Exam passed'}
             </button>
           )}
         </div>
 
         {!aiReady && (
-          <p className="small muted">
-            Connect an AI key in Settings to unlock generated practice sets and coach feedback.
-          </p>
+          <Notice tone="info">Connect an AI key in Settings to unlock generated practice sets and coach feedback.</Notice>
         )}
       </div>
 
@@ -306,7 +285,6 @@ export function TodayScreen() {
           </label>
         </Sheet>
       )}
-
     </div>
   );
 }

@@ -49,7 +49,7 @@ export function FileViewer({ file, onClose }: { file: LibraryFileRow; onClose: (
     if (loaded.status !== 'pdf' || !pages.current) return undefined;
     let cancelled = false;
     drawPdf(loaded.bytes, pages.current, () => cancelled).catch(() => {
-      if (!cancelled) setLoaded({ status: 'error', message: 'This PDF could not be shown. The tutor can still read its text.' });
+      if (!cancelled) setLoaded({ status: 'error', message: 'This PDF could not be shown. The coach can still read its text.' });
     });
     return () => {
       cancelled = true;

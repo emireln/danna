@@ -1,8 +1,8 @@
-// The tutor for My library: it answers questions from the files the learner chose, and says
+// The coach for My library: it answers questions from the files the learner chose, and says
 // which file each answer comes from.
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { Notice, Spinner } from './ui';
 import { bridge, errorText } from '../lib/bridge';
 import { tutorExcerpts } from '../lib/library';
@@ -10,7 +10,7 @@ import type { LibraryFileRow } from '../lib/types';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 
-const SYSTEM = `You are a patient English tutor for a learner preparing for the TOEFL. Answer only from the excerpts from the learner's files that come with the question. If the excerpts do not contain the answer, say so briefly and say what they do cover. Keep answers short and clear. Quote short phrases from the excerpts in quotation marks, and name the file each one comes from in square brackets, like [Unit 3.pdf].`;
+const SYSTEM = `You are a patient English coach for a learner preparing for the TOEFL. Answer only from the excerpts from the learner's files that come with the question. If the excerpts do not contain the answer, say so briefly and say what they do cover. Keep answers short and clear. Quote short phrases from the excerpts in quotation marks, and name the file each one comes from in square brackets, like [Unit 3.pdf].`;
 
 interface Turn {
   role: 'user' | 'assistant';
@@ -18,7 +18,7 @@ interface Turn {
   files?: string[];
 }
 
-export function Tutor({ files, selected, onToggle }: { files: LibraryFileRow[]; selected: string[]; onToggle: (id: string) => void }) {
+export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFileRow[]; selected: string[]; onToggle: (id: string) => void }) {
   const { backend } = useAuth();
   const ai = useAI();
   const navigate = useNavigate();
@@ -41,9 +41,7 @@ export function Tutor({ files, selected, onToggle }: { files: LibraryFileRow[]; 
     }
     setBusy(true);
     try {
-      const sources = await Promise.all(
-        chosen.map(async (file) => ({ name: file.name, text: await backend.getLibraryText(file.id) })),
-      );
+      const sources = await Promise.all(chosen.map(async (file) => ({ name: file.name, text: await backend.getLibraryText(file.id) })));
       const excerpts = tutorExcerpts(text, sources.filter((source) => source.text.trim()));
       if (!excerpts) {
         setNotice('These files have no readable text yet. A scanned PDF needs its text first.');
@@ -66,19 +64,19 @@ export function Tutor({ files, selected, onToggle }: { files: LibraryFileRow[]; 
   }
 
   return (
-    <section className="stack" style={{ gap: 16 }}>
-      {!bridge && <Notice tone="info">The tutor runs in the danna desktop app, where your AI key is kept.</Notice>}
+    <section className="stack">
+      {!bridge && <Notice tone="info">The coach runs in the danna desktop app, where your AI key is kept.</Notice>}
       {bridge && !ai.ready && (
         <Notice tone="info">
-          <span>Add an AI key to use the tutor. </span>
-          <button className="btn--text" style={{ fontWeight: 650 }} onClick={() => navigate('/settings')}>
+          Add an AI key to use the coach.{' '}
+          <button className="btn btn--text" onClick={() => navigate('/settings')}>
             Open settings
           </button>
         </Notice>
       )}
 
-      <div className="card stack--tight" style={{ gap: 10 }}>
-        <span className="field__label">Files the tutor reads</span>
+      <div className="card stack--tight">
+        <span className="field__label">Files the coach reads</span>
         {files.length === 0 ? (
           <span className="small muted">Add a file in the Files tab first.</span>
         ) : (
@@ -92,7 +90,7 @@ export function Tutor({ files, selected, onToggle }: { files: LibraryFileRow[]; 
         )}
       </div>
 
-      <div className="tutor-thread">
+      <div className="tutor-thread" aria-live="polite">
         {thread.length === 0 && (
           <span className="small muted">Ask a question about the files you chose. Answers come only from those files.</span>
         )}
@@ -103,7 +101,7 @@ export function Tutor({ files, selected, onToggle }: { files: LibraryFileRow[]; 
           </div>
         ))}
         {busy && (
-          <div className="tutor-reply">
+          <div className="tutor-reply" aria-label="Coach is typing">
             <Spinner dark />
           </div>
         )}
@@ -111,17 +109,17 @@ export function Tutor({ files, selected, onToggle }: { files: LibraryFileRow[]; 
 
       {notice && <Notice tone="error">{notice}</Notice>}
 
-      <form className="tutor-input" onSubmit={ask}>
+      <form className="chat-input" onSubmit={ask}>
         <input
-          className="input"
           value={question}
           maxLength={500}
           placeholder="Ask about the chosen files"
+          aria-label="Question for the coach"
           disabled={busy || !canAsk}
           onChange={(event) => setQuestion(event.target.value)}
         />
-        <button className="btn btn--primary" type="submit" disabled={busy || !canAsk || !question.trim()}>
-          {busy ? <Spinner /> : <Send />} Ask
+        <button className="btn btn--primary btn--icon" type="submit" disabled={busy || !canAsk || !question.trim()} aria-label="Send question">
+          <ArrowUp />
         </button>
       </form>
     </section>

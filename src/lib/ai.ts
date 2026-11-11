@@ -188,7 +188,7 @@ export function writingRequest(options: { task: string; rubric: string[]; minWor
   const words = options.response.trim() ? options.response.trim().split(/\s+/).length : 0;
   const system = [
     'You are an experienced TOEFL writing rater.',
-    'Score the response from 0 to 5 (decimals allowed) using the TOEFL criteria: task fulfilment, development, organisation and language use.',
+    'Score the response from 0 to 5 (decimals allowed) using the TOEFL criteria: task fulfilment, development, organization and language use.',
     'Reply with one JSON object only: {"score": number, "strengths": [up to 3 short strings], "improvements": [up to 3 short strings], "revision": "one improved sentence taken from the response"}.',
     'Be specific and honest. Quote the learner\'s own words when you point out an error. Keep the total feedback under 120 words.',
   ].join('\n');
@@ -225,7 +225,7 @@ export function parseFeedback(raw: unknown): Feedback {
 
 export function coachSystem(profile: { level: Level; target_score: number }): string {
   return [
-    'You are the danna coach: a patient English and TOEFL tutor.',
+    'You are the danna coach: a patient English and TOEFL coach.',
     `The learner is at ${LEVEL_GUIDE[profile.level]} and wants a TOEFL iBT score of ${profile.target_score}.`,
     'Answer in short paragraphs. When you correct a mistake, show the corrected sentence and explain the rule in one sentence.',
     'When asked for practice, give three to five short items and put the answers at the end. Use plain text: no tables and no emoji.',

@@ -1623,25 +1623,9 @@
       box-shadow 0.3s var(--ease);
   }
 
-  .section-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.95;
-    transition: transform 0.6s var(--ease);
-  }
-
   .section-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lift);
-  }
-
-  .section-card:hover::before {
-    transform: scale(1.03);
   }
 
   .section-card__kicker {

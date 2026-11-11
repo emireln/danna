@@ -78,7 +78,7 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
       <Field label="Topic (optional)" hint="For example: climate policy, university housing, job interviews.">
         <input className="input" value={topic} maxLength={120} onChange={(event) => setTopic(event.target.value)} placeholder="Leave empty for everyday academic life" />
       </Field>
-      <div className="grid-2" style={{ gap: 12 }}>
+      <div className="grid-2">
         <Field label="Section">
           <select className="input" value={skill} onChange={(event) => setSkill(event.target.value as Skill | 'mixed')}>
             <option value="mixed">Mixed</option>
@@ -100,7 +100,7 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
         </Field>
       </div>
       <Field label="Questions">
-        <div className="segmented" role="radiogroup" aria-label="Number of questions" style={{ alignSelf: 'flex-start' }}>
+        <div className="segmented self-start" role="radiogroup" aria-label="Number of questions">
           {[5, 8, 10].map((value) => (
             <button key={value} role="radio" aria-checked={count === value} className={`segmented__btn ${count === value ? 'is-active' : ''}`} onClick={() => setCount(value)}>
               {value}
@@ -108,7 +108,7 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
           ))}
         </div>
       </Field>
-      <Notice tone="info">The set is saved to your account. Feedback runs on the model you selected in Settings.</Notice>
+      <Notice tone="info">The set is saved with your practice sets. The model you chose in Settings writes it.</Notice>
       {error && <Notice tone="error">{error}</Notice>}
     </Sheet>
   );

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Download, Share2, Smile, Sparkles, Target } from 'lucide-react';
 import { Donut, Gauge, Radar } from '../components/charts';
 import { ShareSheet } from '../components/ShareSheet';
-import { Empty, ProgressBar, Skeleton } from '../components/ui';
+import { Empty, ProgressBar, SectionTitle, Skeleton } from '../components/ui';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useAI } from '../state/ai';
@@ -13,7 +13,7 @@ import { formatLongDate } from '../lib/progress';
 import { SKILLS, SKILL_LABEL, type AttemptRow, type FriendRow, type Skill } from '../lib/types';
 
 const TIPS: Record<Skill, string> = {
-  reading: 'Summarise each paragraph in one sentence before you answer. Then check every option against that summary.',
+  reading: 'Summarize each paragraph in one sentence before you answer. Then check every option against that summary.',
   listening: 'Replay each clip once with the transcript hidden. Then write the main idea in five words.',
   speaking: 'Use three parts: your position, one reason and one example. Record it and listen back for pauses.',
   writing: 'Write a thesis you could argue against. Give each body paragraph one reason and one example.',
@@ -125,7 +125,13 @@ export function ReportScreen() {
     };
   }, [backend, id]);
 
-  if (attempt === undefined) return <div className="page"><Skeleton height={420} /></div>;
+  if (attempt === undefined) {
+    return (
+      <div className="page">
+        <Skeleton height={420} />
+      </div>
+    );
+  }
   if (attempt === null) {
     return (
       <div className="page">
@@ -138,7 +144,7 @@ export function ReportScreen() {
 
   const percent = attempt.score_pct;
   const isEstimate = attempt.kind === 'diagnostic' || attempt.kind === 'mock';
-  const estimate = isEstimate ? attempt.predicted ?? toeflEstimate(percent) : null;
+  const estimate = isEstimate ? (attempt.predicted ?? toeflEstimate(percent)) : null;
   const [low, high] = estimate !== null ? toeflRange(estimate) : [percent, percent];
   const skills = attempt.skills;
   const advice = adviceFor(skills, percent, estimate);
@@ -150,19 +156,15 @@ export function ReportScreen() {
   return (
     <div className="report">
       <section className="report-hero">
-        <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.78)' }}>
-          {formatLongDate(attempt.created_at)}
-        </p>
-        <h1 className="report-hero__title" style={{ marginTop: 4 }}>
-          {isEstimate ? 'Score report' : attempt.title}
-        </h1>
+        <p className="eyebrow">{formatLongDate(attempt.created_at)}</p>
+        <h1 className="report-hero__title">{isEstimate ? 'Score report' : attempt.title}</h1>
         {isEstimate && (
           <>
             <p className="report-hero__sub">TOEFL predicted score</p>
             <span className="report-hero__pill">Overall score</span>
           </>
         )}
-        <div style={{ marginTop: 10 }}>
+        <div className="mt-3">
           <Gauge
             value={estimate ?? percent}
             max={estimate !== null ? 120 : 100}
@@ -171,127 +173,122 @@ export function ReportScreen() {
         </div>
       </section>
 
-      <div className="page page--wide">
-      <div className="stack" style={{ gap: 28, marginTop: 26 }}>
-        <section className="advice">
-          <div className="advice__head">
-            <span className="chip chip--ai">
-              <Sparkles aria-hidden="true" /> {aiReady && selection ? 'Coach' : 'Your advice'}
-            </span>
-          </div>
-          <h2 className="advice__title">{advice.title}</h2>
-          <p style={{ color: 'var(--ink-2)', fontSize: 15.5, lineHeight: 1.75 }}>{advice.body}</p>
-          {!aiReady && (
-            <p className="small muted">Connect an AI key in Settings for a longer, personal explanation from your coach.</p>
-          )}
-        </section>
-
-        <section className="stack--tight" style={{ alignItems: 'center' }}>
-          <p className="eyebrow">Your skill profile</p>
-          <h2 style={{ textAlign: 'center' }}>Your performance across five skills</h2>
-          <Radar axes={axes} goal={goal} />
-          <div className="legend">
-            <span>
-              <i style={{ background: '#2f6bff' }} /> You
-            </span>
-            {goal !== undefined && (
-              <span>
-                <i style={{ background: '#a4adbf' }} /> Your goal ({profile?.target_score})
+      <div className="page">
+        <div className="stack stack--loose mt-6">
+          <section className="advice">
+            <div className="advice__head">
+              <span className="chip chip--ai">
+                <Sparkles aria-hidden="true" /> {aiReady && selection ? 'Coach' : 'Your advice'}
               </span>
+            </div>
+            <h2 className="advice__title">{advice.title}</h2>
+            <p className="advice__body">{advice.body}</p>
+            {!aiReady && <p className="small muted">Connect an AI key in Settings for a longer, personal explanation from your coach.</p>}
+          </section>
+
+          <section>
+            <SectionTitle title="Your skill profile" />
+            <div className="stack stack--center">
+              <Radar axes={axes} goal={goal} />
+              <div className="legend">
+                <span>
+                  <i style={{ background: '#2f6bff' }} /> You
+                </span>
+                {goal !== undefined && (
+                  <span>
+                    <i style={{ background: '#a4adbf' }} /> Your goal ({profile?.target_score})
+                  </span>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle title="Skills to improve your score" />
+            <div className="grid-2">
+              {cardOrder.map((skill) => {
+                const score = skills[skill] ?? 0;
+                const tone = toneFor(score);
+                return (
+                  <div key={skill} className="skill-card">
+                    <div className="skill-card__head">
+                      <span className="icon-tile icon-tile--sm">
+                        <Smile />
+                      </span>
+                      <span className="skill-card__name">{SKILL_LABEL[skill]}</span>
+                      <span className={`tone tone--${tone}`}>{TONE_LABEL[tone]}</span>
+                    </div>
+                    <ProgressBar value={score} max={100} label={`${SKILL_LABEL[skill]} score`} />
+                    <div className="skill-card__score">
+                      Score: <b>{score}</b>/100
+                    </div>
+                    <div className="skill-card__tip">
+                      <Target aria-hidden="true" />
+                      <span>{TIPS[skill]}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section>
+            <SectionTitle title="Today's learning plan" />
+            <div className="plan">
+              <Donut slices={plan.map((slice, index) => ({ label: slice.label, percent: slice.percent, color: PLAN_COLORS[index] }))} />
+              <div className="stack">
+                <p className="muted">
+                  Boost your skills in {profile?.daily_minutes ?? 15} minutes a day with questions picked for your weakest areas.
+                </p>
+                <div className="plan__legend">
+                  {plan.map((slice, index) => (
+                    <div key={slice.key} className="plan__row">
+                      <i style={{ background: PLAN_COLORS[index] }} />
+                      <span>{slice.label}</span>
+                      <span>{slice.percent}%</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  className="btn btn--primary self-start"
+                  onClick={() => navigate(plan[0].key === 'other' ? '/study' : `/study/${plan[0].key}`)}
+                >
+                  Start today&apos;s plan <ArrowRight />
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <div className="row row--wrap pb-3">
+            {backend?.mode === 'supabase' && (
+              <button className="btn btn--primary" onClick={() => setSharing(true)}>
+                <Share2 /> Share with a friend
+              </button>
+            )}
+            <button
+              className="btn btn--ghost"
+              onClick={() => {
+                try {
+                  saveImage(attempt, estimate);
+                  notify('Image saved to your Downloads folder.', 'ok');
+                } catch {
+                  notify('The image could not be created on this device.', 'error');
+                }
+              }}
+            >
+              <Download /> Save as image
+            </button>
+            {attempt.kind === 'diagnostic' && (
+              <button className="btn btn--ghost" onClick={() => navigate('/play/diagnostic')}>
+                Retake diagnostic
+              </button>
             )}
           </div>
-        </section>
-
-        <section className="stack--tight">
-          <p className="eyebrow">Skills to improve your score</p>
-          <div className="grid-2">
-            {cardOrder.map((skill) => {
-              const score = skills[skill] ?? 0;
-              const tone = toneFor(score);
-              return (
-                <div key={skill} className="skill-card">
-                  <div className="skill-card__head">
-                    <span className="icon-tile icon-tile--sm">
-                      <Smile />
-                    </span>
-                    <span className="skill-card__name">{SKILL_LABEL[skill]}</span>
-                    <span className={`tone tone--${tone}`}>{TONE_LABEL[tone]}</span>
-                  </div>
-                  <ProgressBar value={score} max={100} label={`${SKILL_LABEL[skill]} score`} />
-                  <div className="skill-card__score">
-                    Score: <b>{score}</b>/100
-                  </div>
-                  <div className="skill-card__tip">
-                    <Target aria-hidden="true" />
-                    <span>{TIPS[skill]}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="stack--tight">
-          <p className="eyebrow">Strengthen your skills every day</p>
-          <h2>Today&apos;s learning plan</h2>
-          <div className="plan">
-            <Donut slices={plan.map((slice, index) => ({ label: slice.label, percent: slice.percent, color: PLAN_COLORS[index] }))} />
-            <div className="stack" style={{ gap: 14 }}>
-              <p className="muted">Boost your skills in {profile?.daily_minutes ?? 15} minutes a day with questions picked for your weakest areas.</p>
-              <div className="plan__legend">
-                {plan.map((slice, index) => (
-                  <div key={slice.key} className="plan__row">
-                    <i style={{ background: PLAN_COLORS[index] }} />
-                    <span>{slice.label}</span>
-                    <span>{slice.percent}%</span>
-                  </div>
-                ))}
-              </div>
-              <button
-                className="btn btn--primary"
-                onClick={() => navigate(plan[0].key === 'other' ? '/study' : `/study/${plan[0].key}`)}
-                style={{ alignSelf: 'flex-start' }}
-              >
-                Start today&apos;s plan <ArrowRight />
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <div className="row" style={{ flexWrap: 'wrap', paddingBottom: 12 }}>
-          {backend?.mode === 'supabase' && (
-            <button className="btn btn--primary" onClick={() => setSharing(true)}>
-              <Share2 /> Share with a friend
-            </button>
-          )}
-          <button
-            className="btn btn--ghost"
-            onClick={() => {
-              try {
-                saveImage(attempt, estimate);
-                notify('Image saved to your Downloads folder.', 'ok');
-              } catch {
-                notify('The image could not be created on this device.', 'error');
-              }
-            }}
-          >
-            <Download /> Save as image
-          </button>
-          {attempt.kind === 'diagnostic' && (
-            <button className="btn btn--ghost" onClick={() => navigate('/play/diagnostic')}>
-              Retake diagnostic
-            </button>
-          )}
         </div>
-      </div>
       </div>
 
       {sharing && (
-        <ShareSheet
-          friends={friends}
-          preferredItem={{ kind: 'result', id: attempt.id }}
-          onClose={() => setSharing(false)}
-        />
+        <ShareSheet friends={friends} preferredItem={{ kind: 'result', id: attempt.id }} onClose={() => setSharing(false)} />
       )}
     </div>
   );

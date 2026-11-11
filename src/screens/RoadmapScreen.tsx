@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Check, Headphones, Languages, Lock, Mic, PenLine, Star, Trophy } from 'lucide-react';
 import { UNITS, type UnitDef } from '../content';
+import { Notice, PageHeader, ProgressBar, Skeleton } from '../components/ui';
+import { errorText } from '../lib/bridge';
+import { nodeStates, progressMap, type NodeInfo } from '../lib/roadmap';
+import { plural } from '../lib/text';
+import type { LessonProgressRow, Skill } from '../lib/types';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
-import { nodeStates, progressMap, type NodeInfo } from '../lib/roadmap';
-import { ProgressBar, Skeleton } from '../components/ui';
-import type { LessonProgressRow, Skill } from '../lib/types';
 
 const WIDTH = 320;
 const ROW = 116;
@@ -26,6 +28,7 @@ export function RoadmapScreen() {
   const { backend } = useAuth();
   const { profile } = useAppData();
   const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!backend) return undefined;
@@ -35,7 +38,12 @@ export function RoadmapScreen() {
       .then((rows) => {
         if (active) setProgress(rows);
       })
-      .catch((error: unknown) => console.error('Could not load the roadmap', error));
+      .catch((error: unknown) => {
+        console.error('Could not load the roadmap', error);
+        if (!active) return;
+        setProgress([]);
+        setLoadError(errorText(error));
+      });
     return () => {
       active = false;
     };
@@ -46,18 +54,17 @@ export function RoadmapScreen() {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <p className="eyebrow">Your path</p>
-          <h1 style={{ marginTop: 4 }}>Roadmap</h1>
+      <PageHeader eyebrow="Your path" title="Roadmap" aside={<span className="chip">Level {profile?.level ?? 'B1'}</span>}>
+        <div className="mt-3">
+          <ProgressBar value={done} max={Math.max(1, nodes.length)} label="Roadmap progress" />
         </div>
-        <span className="chip">
-          {done} of {nodes.length} lessons · {profile?.level ?? 'B1'}
-        </span>
-      </div>
-      <ProgressBar value={done} max={Math.max(1, nodes.length)} label="Roadmap progress" />
+        <p className="small muted mt-3">
+          {done} of {plural(nodes.length, 'step')} done
+        </p>
+      </PageHeader>
 
-      <div className="stack" style={{ marginTop: 22, gap: 18 }}>
+      {loadError && <Notice tone="error">{loadError}</Notice>}
+      <div className="stack">
         {progress === null && <Skeleton height={300} />}
         {progress !== null &&
           UNITS.map((unit) => (
@@ -87,7 +94,7 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
         <span className="unit__badge" aria-hidden="true">
           {unit.number}
         </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="unit__text">
           <div className="row row--between">
             <h2 className="unit__title">{unit.title}</h2>
             <span className="chip">
@@ -144,8 +151,8 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
               {state === 'current' && <span className="node__bubble">START</span>}
               <span className={`node__label node__label--${side}`}>
                 {item.checkpoint ? 'Unit check' : item.lesson.title}
-                <span className="muted small" style={{ display: 'block', fontWeight: 500 }}>
-                  {item.checkpoint ? `${item.lesson.questions.length} questions` : `${item.lesson.minutes} min`}
+                <span className="node__meta">
+                  {item.checkpoint ? plural(item.lesson.questions.length, 'question') : `${item.lesson.minutes} min`}
                 </span>
               </span>
               {state === 'done' && (

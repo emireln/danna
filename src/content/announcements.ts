@@ -21,7 +21,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     title: 'danna 0.3.0',
     body: [
       '- My library: keep PDF, TXT and Markdown files, and read them in the app',
-      '- Ask the tutor about the files you choose',
+      '- Ask the coach about the files you choose',
       '- Save learning links, with the platform logo and a category',
       '- DeepSeek joins OpenAI, Anthropic, Gemini and OpenRouter',
       '- A new installer look',

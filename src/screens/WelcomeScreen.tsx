@@ -50,7 +50,7 @@ export function WelcomeScreen() {
                 <BrandMark size={56} />
                 <Wordmark className="wordmark--xl" />
               </div>
-              <h1 className="welcome__title">Practise TOEFL, one small step at a time.</h1>
+              <h1 className="welcome__title">Practice TOEFL, one small step at a time.</h1>
               <div className="welcome__points">
                 {POINTS.map((point) => {
                   const Icon = point.icon;
@@ -82,7 +82,7 @@ export function WelcomeScreen() {
             >
               <div>
                 <p className="eyebrow">Your progress</p>
-                <h1 className="welcome__title" style={{ marginTop: 6 }}>
+                <h1 className="welcome__title mt-2">
                   How would you like to use danna?
                 </h1>
               </div>

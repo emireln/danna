@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Field, Sheet, Spinner, Empty } from './ui';
 import { errorText } from '../lib/bridge';
 import { formatDate } from '../lib/progress';
+import { plural } from '../lib/text';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
 import type { AttemptRow, FriendRow, TestRow } from '../lib/types';
@@ -90,7 +91,7 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
         <>
           <div className="field">
             <span className="field__label">Send to</span>
-            <div className="row" style={{ flexWrap: 'wrap' }}>
+            <div className="row row--wrap">
               {friends.map((friend) => (
                 <button
                   key={friend.id}
@@ -117,16 +118,13 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
                   return (
                     <button
                       key={attempt.id}
-                      className="set-row"
+                      className={`set-row${pressed(candidate) ? ' set-row--picked' : ''}`}
                       aria-pressed={pressed(candidate)}
                       onClick={() => setItem(candidate)}
-                      style={pressed(candidate) ? { borderColor: 'var(--primary)', background: 'var(--primary-50)' } : undefined}
                     >
                       <span className="set-row__body">
-                        <span className="set-row__title" style={{ display: 'block', fontSize: 14.5 }}>
-                          {attempt.title}
-                        </span>
-                        <span className="set-row__meta" style={{ display: 'block' }}>
+                        <span className="set-row__title">{attempt.title}</span>
+                        <span className="set-row__meta">
                           {attempt.predicted ? `Estimate ${attempt.predicted} / 120` : `${attempt.score_pct}%`} · {formatDate(attempt.created_at)}
                         </span>
                       </span>
@@ -138,18 +136,13 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
                   return (
                     <button
                       key={test.id}
-                      className="set-row"
+                      className={`set-row${pressed(candidate) ? ' set-row--picked' : ''}`}
                       aria-pressed={pressed(candidate)}
                       onClick={() => setItem(candidate)}
-                      style={pressed(candidate) ? { borderColor: 'var(--primary)', background: 'var(--primary-50)' } : undefined}
                     >
                       <span className="set-row__body">
-                        <span className="set-row__title" style={{ display: 'block', fontSize: 14.5 }}>
-                          {test.title}
-                        </span>
-                        <span className="set-row__meta" style={{ display: 'block' }}>
-                          Practice set · {test.content.questions.length} questions
-                        </span>
+                        <span className="set-row__title">{test.title}</span>
+                        <span className="set-row__meta">Practice set · {plural(test.content.questions.length, 'question')}</span>
                       </span>
                     </button>
                   );

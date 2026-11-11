@@ -1,17 +1,20 @@
 import { useEffect } from 'react';
 import { BannerCarousel } from '../components/Banner';
-import { Empty } from '../components/ui';
+import { Empty, PageHeader } from '../components/ui';
 import { formatLongDate } from '../lib/progress';
 import { useAppData } from '../state/appData';
 
 function ReleaseBody({ body }: { body: string }) {
-  const lines = body.split('\n').map((line) => line.trim()).filter(Boolean);
+  const lines = body
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
   const bullets = lines.filter((line) => line.startsWith('- ')).map((line) => line.slice(2));
   const paragraphs = lines.filter((line) => !line.startsWith('- '));
   return (
     <>
       {paragraphs.map((paragraph) => (
-        <p key={paragraph} style={{ color: 'var(--ink-2)' }}>
+        <p key={paragraph} className="release__text">
           {paragraph}
         </p>
       ))}
@@ -35,15 +38,10 @@ export function WhatsNewScreen() {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <p className="eyebrow">Updates</p>
-          <h1 style={{ marginTop: 4 }}>What&apos;s new</h1>
-        </div>
-      </div>
+      <PageHeader eyebrow="Updates" title="What's new" />
 
       {banners.length > 0 && (
-        <div style={{ marginBottom: 26 }}>
+        <div className="mb-4">
           <BannerCarousel items={banners} />
         </div>
       )}
@@ -60,7 +58,7 @@ export function WhatsNewScreen() {
               </div>
               <div>
                 <h2>{release.title}</h2>
-                <div style={{ marginTop: 8 }}>
+                <div className="mt-2">
                   <ReleaseBody body={release.body} />
                 </div>
               </div>

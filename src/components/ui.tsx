@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { ArrowLeft, ChevronRight, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logoUrl from '../assets/logo.webp';
 
 // The danna logo. The WebP file is generated from brand/logo.png by `npm run icons`.
@@ -124,6 +125,42 @@ export function Sheet({
   );
 }
 
+/** A short confirmation before something is removed or cleared. The confirm button is red, the cancel button is quiet. */
+export function ConfirmSheet({
+  title,
+  children,
+  confirmLabel,
+  onConfirm,
+  onClose,
+  busy = false,
+}: {
+  title: string;
+  children: ReactNode;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onClose: () => void;
+  busy?: boolean;
+}) {
+  return (
+    <Sheet
+      title={title}
+      onClose={onClose}
+      footer={
+        <>
+          <button className="btn btn--ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          <button className="btn btn--danger" onClick={onConfirm} disabled={busy}>
+            {busy ? <Spinner /> : null} {confirmLabel}
+          </button>
+        </>
+      }
+    >
+      <p className="muted">{children}</p>
+    </Sheet>
+  );
+}
+
 export function Notice({ tone = 'warn', children }: { tone?: 'warn' | 'info' | 'error'; children: ReactNode }) {
   const toneClass = tone === 'info' ? 'notice--info' : tone === 'error' ? 'notice--error' : '';
   return (
@@ -178,6 +215,145 @@ export function Field({
       {hint && <span className="field__hint">{hint}</span>}
     </label>
   );
+}
+
+/** The header of a top-level page: a short eyebrow, the title, and actions on the right. */
+export function PageHeader({
+  eyebrow,
+  title,
+  aside,
+  children,
+}: {
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  aside?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <header className="page-header">
+      <div className="page-header__main">
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        <h1 className="page-title">{title}</h1>
+        {children}
+      </div>
+      {aside && <div className="page-header__aside">{aside}</div>}
+    </header>
+  );
+}
+
+/** A section of a page: an h2 title, with an optional action on the right. */
+export function SectionTitle({ title, aside, id }: { title: ReactNode; aside?: ReactNode; id?: string }) {
+  return (
+    <div className="section-title">
+      <h2 id={id}>{title}</h2>
+      {aside && <div className="section-title__aside">{aside}</div>}
+    </div>
+  );
+}
+
+/** The link back to where the person came from, used on sub-pages. */
+export function BackLink({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <Link to={to} className="back-link">
+      <ArrowLeft aria-hidden="true" />
+      {children}
+    </Link>
+  );
+}
+
+export type BadgeTone = 'neutral' | 'done' | 'beta';
+
+export function Badge({ tone = 'neutral', children }: { tone?: BadgeTone; children: ReactNode }) {
+  return <span className={`badge badge--${tone}`}>{children}</span>;
+}
+
+export interface TabItem<T extends string> {
+  value: T;
+  label: string;
+  /** Shown beside the label when above zero. */
+  count?: number;
+  /** Red count: something here is waiting for the person (a request, an unread item). */
+  alert?: boolean;
+}
+
+/** The one tab control used across the app: a segmented control. */
+export function Tabs<T extends string>({
+  label,
+  items,
+  value,
+  onChange,
+  block = false,
+}: {
+  label: string;
+  items: TabItem<T>[];
+  value: T;
+  onChange: (value: T) => void;
+  /** Stretch the tabs across the full width, for a card or a narrow column. */
+  block?: boolean;
+}) {
+  return (
+    <div className={`segmented${block ? ' segmented--block' : ''}`} role="tablist" aria-label={label}>
+      {items.map((item) => (
+        <button
+          key={item.value}
+          type="button"
+          role="tab"
+          aria-selected={value === item.value}
+          className="segmented__btn"
+          onClick={() => onChange(item.value)}
+        >
+          {item.label}
+          {item.count !== undefined && item.count > 0 && (
+            <span className={`segmented__count${item.alert ? ' segmented__count--alert' : ''}`}>{item.count}</span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A card for one thing: an icon, a title with an optional badge, a line of detail, and an arrow when it opens. */
+export function FeatureCard({
+  icon,
+  title,
+  badge,
+  meta,
+  action,
+  muted = false,
+  onClick,
+}: {
+  icon: ReactNode;
+  title: ReactNode;
+  badge?: ReactNode;
+  meta?: ReactNode;
+  action?: ReactNode;
+  muted?: boolean;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
+      <span className="feature-card__icon" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="feature-card__body">
+        <span className="feature-card__title">
+          {title}
+          {badge}
+        </span>
+        {meta && <span className="feature-card__meta">{meta}</span>}
+      </span>
+      {action ?? (onClick ? <ChevronRight className="feature-card__arrow" aria-hidden="true" /> : null)}
+    </>
+  );
+  const className = `feature-card${muted ? ' feature-card--muted' : ''}`;
+  if (onClick) {
+    return (
+      <button type="button" className={`${className} feature-card--link`} onClick={onClick}>
+        {content}
+      </button>
+    );
+  }
+  return <div className={className}>{content}</div>;
 }
 
 export function formatClock(totalSeconds: number): string {

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Camera, Pencil, Settings2 } from 'lucide-react';
-import { Avatar, Empty, Field, ProgressBar, Sheet, Skeleton, Spinner } from '../components/ui';
+import { Avatar, Empty, Field, FeatureCard, ProgressBar, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { PictureError, prepareAvatar } from '../lib/avatar';
 import { daysUntil, formatDate, levelInfo, timeAgo } from '../lib/progress';
+import { plural } from '../lib/text';
 import { toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow } from '../lib/types';
 import { useAuth } from '../state/auth';
@@ -55,13 +56,20 @@ export function ProfileScreen() {
     };
   }, [backend]);
 
-  if (!profile) return <div className="page"><Skeleton height={300} /></div>;
+  if (!profile) {
+    return (
+      <div className="page">
+        <Skeleton height={300} />
+      </div>
+    );
+  }
 
   const name = profile.display_name || profile.username;
   const level = levelInfo(profile.xp);
   const diagnostics = (attempts ?? []).filter((attempt) => attempt.kind === 'diagnostic');
   const best = diagnostics.reduce((max, attempt) => Math.max(max, attempt.predicted ?? 0), 0);
   const daysLeft = daysUntil(profile.exam_date);
+  const libraryTotal = (libraryCounts?.files ?? 0) + (libraryCounts?.links ?? 0);
 
   const saveName = async () => {
     const next = nameDraft.trim();
@@ -106,28 +114,33 @@ export function ProfileScreen() {
     }
   };
 
+  const signOutNow = async () => {
+    await signOut();
+    navigate('/auth', { replace: true });
+  };
+
   return (
     <div className="page">
       <div className="profile-head">
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+        <div className="profile-head__picture">
           <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
           <button className="btn btn--ghost btn--sm" onClick={() => fileInput.current?.click()} disabled={pictureBusy}>
             {pictureBusy ? <Spinner dark /> : <Camera />} {pictureUrl ? 'Change picture' : 'Add picture'}
           </button>
           {pictureUrl && (
-            <button className="btn--text small" style={{ color: 'var(--muted)' }} onClick={removePicture} disabled={pictureBusy}>
+            <button className="btn btn--text btn--text-muted small" onClick={removePicture} disabled={pictureBusy}>
               Remove picture
             </button>
           )}
           <input ref={fileInput} type="file" accept="image/*" hidden onChange={choosePicture} />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h1>{name}</h1>
-          <p className="muted small" style={{ marginTop: 4 }}>
-            {mode === 'local' ? 'Kept on this device' : `@${profile.username} · ${email ?? ''}`}
-          </p>
-          <div style={{ marginTop: 12, maxWidth: 380 }}>
-            <div className="row row--between small" style={{ marginBottom: 6, fontWeight: 600 }}>
+
+        <div className="profile-head__main">
+          <p className="eyebrow">Your profile</p>
+          <h1 className="page-title">{name}</h1>
+          <p className="small muted">{mode === 'local' ? 'Kept on this device' : `@${profile.username} · ${email ?? ''}`}</p>
+          <div className="profile-head__level">
+            <div className="row row--between level-row">
               <span>Level {level.level}</span>
               <span className="muted">
                 {level.into} / {level.span} XP
@@ -136,6 +149,7 @@ export function ProfileScreen() {
             <ProgressBar value={level.percent} label="Level progress" />
           </div>
         </div>
+
         <button
           className="btn btn--ghost btn--sm"
           onClick={() => {
@@ -147,7 +161,7 @@ export function ProfileScreen() {
         </button>
       </div>
 
-      <div className="grid-4" style={{ marginTop: 24 }}>
+      <div className="grid-4 mt-6">
         <div className="stat">
           <span className="stat__value">{profile.streak}</span>
           <span className="stat__label">Day streak</span>
@@ -166,92 +180,82 @@ export function ProfileScreen() {
         </div>
       </div>
 
-      <section className="card" style={{ marginTop: 22, display: 'flex', gap: 16, alignItems: 'center' }}>
-        <span className="icon-tile icon-tile--sm">
-          <Settings2 />
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h3>Learning setup</h3>
-          <p className="small muted">
-            Target {profile.target_score} · level {profile.level} · {profile.daily_minutes} min a day
-            {daysLeft !== null && daysLeft >= 0 ? ` · exam in ${daysLeft} days` : ''}
-          </p>
-        </div>
-        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/setup')}>
-          Edit setup
-        </button>
-      </section>
+      <div className="stack mt-6">
+        <FeatureCard
+          icon={<Settings2 />}
+          title="Learning setup"
+          meta={`Target ${profile.target_score} · level ${profile.level} · ${profile.daily_minutes} min a day${
+            daysLeft !== null && daysLeft >= 0 ? ` · exam in ${plural(daysLeft, 'day')}` : ''
+          }`}
+          action={
+            <button className="btn btn--ghost btn--sm" onClick={() => navigate('/setup')}>
+              Edit setup
+            </button>
+          }
+        />
+        <FeatureCard
+          icon={<BookOpen />}
+          title="My library"
+          meta={
+            libraryTotal > 0
+              ? `${plural(libraryCounts?.files ?? 0, 'file')} · ${plural(libraryCounts?.links ?? 0, 'link')}`
+              : 'Keep your PDF, TXT and Markdown files, and learning links, in one place.'
+          }
+          action={
+            <button className="btn btn--ghost btn--sm" onClick={() => navigate('/library')}>
+              Open library
+            </button>
+          }
+        />
+      </div>
 
-      <section className="card" style={{ marginTop: 22, display: 'flex', gap: 16, alignItems: 'center' }}>
-        <span className="icon-tile icon-tile--sm">
-          <BookOpen />
-        </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h3>My library</h3>
-          <p className="small muted">
-            {libraryCounts && libraryCounts.files + libraryCounts.links > 0
-              ? `${libraryCounts.files} files · ${libraryCounts.links} links`
-              : 'Keep your PDF, TXT and Markdown files, and learning links, in one place.'}
-          </p>
-        </div>
-        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/library')}>
-          Open library
-        </button>
-      </section>
-
-      <section style={{ marginTop: 28 }}>
-        <h2 style={{ marginBottom: 12 }}>Recent activity</h2>
-        {attempts === null ? (
-          <Skeleton height={140} />
-        ) : attempts.length === 0 ? (
-          <Empty title="No sessions yet">Your results will appear here after your first lesson or test.</Empty>
-        ) : (
-          <div className="set-list">
-            {attempts.slice(0, 8).map((attempt) => (
-              <button
-                key={attempt.id}
-                className="set-row"
-                onClick={() => (attempt.kind === 'diagnostic' || attempt.kind === 'mock' ? navigate(`/report/${attempt.id}`) : undefined)}
-                style={attempt.kind === 'diagnostic' || attempt.kind === 'mock' ? undefined : { cursor: 'default' }}
-              >
+      <SectionTitle title="Recent activity" />
+      {attempts === null ? (
+        <Skeleton height={140} />
+      ) : attempts.length === 0 ? (
+        <Empty title="No sessions yet">Your results will appear here after your first lesson or test.</Empty>
+      ) : (
+        <div className="set-list">
+          {attempts.slice(0, 8).map((attempt) => {
+            const openable = attempt.kind === 'diagnostic' || attempt.kind === 'mock';
+            const skillScores = Object.entries(attempt.skills)
+              .map(([skill, score]) => `${SKILL_LABEL[skill as keyof typeof SKILL_LABEL]} ${score}`)
+              .slice(0, 3);
+            const detail = [formatDate(attempt.created_at), timeAgo(attempt.created_at), ...skillScores].join(' · ');
+            const content = (
+              <>
                 <span className="set-row__body">
-                  <span className="set-row__title" style={{ display: 'block', fontSize: 15 }}>
-                    {attempt.title}
-                  </span>
-                  <span className="set-row__meta" style={{ display: 'block' }}>
-                    {formatDate(attempt.created_at)} · {timeAgo(attempt.created_at)} ·{' '}
-                    {Object.entries(attempt.skills)
-                      .map(([skill, score]) => `${SKILL_LABEL[skill as keyof typeof SKILL_LABEL]} ${score}`)
-                      .slice(0, 3)
-                      .join(' · ')}
-                  </span>
+                  <span className="set-row__title">{attempt.title}</span>
+                  <span className="set-row__meta">{detail}</span>
                 </span>
                 <span className="chip">{attempt.predicted ? `${attempt.predicted} / 120` : `${attempt.score_pct}%`}</span>
+              </>
+            );
+            return openable ? (
+              <button key={attempt.id} className="set-row" onClick={() => navigate(`/report/${attempt.id}`)}>
+                {content}
               </button>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section style={{ marginTop: 28 }} className="row row--between">
-        <div>
-          <h3>Account</h3>
-          <p className="small muted">
-            {mode === 'local'
-              ? 'Your progress stays on this device.'
-              : 'Your progress is saved to your account.'}
-          </p>
+            ) : (
+              <div key={attempt.id} className="set-row set-row--static">
+                {content}
+              </div>
+            );
+          })}
         </div>
-        <button
-          className="btn btn--danger btn--sm"
-          onClick={async () => {
-            await signOut();
-            navigate('/auth', { replace: true });
-          }}
-        >
+      )}
+
+      <SectionTitle title="Account" />
+      <div className="settings-row">
+        <div className="settings-row__body">
+          <div className="settings-row__title">{mode === 'local' ? 'On this device' : (email ?? 'Signed in')}</div>
+          <div className="settings-row__text">
+            {mode === 'local' ? 'Your progress stays on this device.' : 'Your progress is saved to your account.'}
+          </div>
+        </div>
+        <button className="btn btn--ghost btn--sm" onClick={signOutNow}>
           {mode === 'local' ? 'Switch mode' : 'Sign out'}
         </button>
-      </section>
+      </div>
 
       {editing && (
         <Sheet
@@ -263,7 +267,7 @@ export function ProfileScreen() {
                 Cancel
               </button>
               <button className="btn btn--primary" onClick={saveName} disabled={saving || !nameDraft.trim()}>
-                {saving ? <Spinner /> : null} Save
+                {saving ? <Spinner /> : null} Save name
               </button>
             </>
           }

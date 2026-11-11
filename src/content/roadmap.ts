@@ -49,7 +49,7 @@ const campusTalk =
   "Student: Hi, I wanted to ask about the library hours during exam week. Librarian: We stay open until midnight from Monday to Thursday, and until 10 on Friday. Student: What about the weekend? Librarian: On Saturday we close at six, and on Sunday we open at noon. Remember that the study rooms need to be booked online one day ahead.";
 
 const coralLecture =
-  'Professor: Today we will look at coral reefs. Reefs cover less than one percent of the ocean floor, but they support around a quarter of marine species. The main threat is warming water, which causes coral to lose the algae that provide its colour and food. Scientists call this bleaching. If temperatures return to normal quickly, corals can recover.';
+  'Professor: Today we will look at coral reefs. Reefs cover less than one percent of the ocean floor, but they support around a quarter of marine species. The main threat is warming water, which causes coral to lose the algae that provide its color and food. Scientists call this bleaching. If temperatures return to normal quickly, corals can recover.';
 
 const prototypeCall =
   'Manager: The client wants the prototype by Friday, but our designers still need two days for testing. Assistant: Then we could ask for an extension to Monday, or we could reduce the number of features. Manager: The client will not accept fewer features. Assistant: I will check if the testing can run in parallel with development.';
@@ -295,7 +295,7 @@ export const UNITS: UnitDef[] = [
         passages: [],
         questions: [
           choice('u5-l2-a', 'listening', 'What is the main topic of the lecture?', ['Ocean temperatures', 'Coral reefs and their threats', 'Fishing rules', 'Marine art'], 1, 'The professor starts with coral reefs and discusses the threat to them.', { listen: coralLecture }),
-          choice('u5-l2-b', 'listening', 'According to the professor, what happens during bleaching?', ['Coral grows faster', 'Coral loses the algae that give it colour and food', 'Reefs move to deeper water', 'Fish disappear from the ocean'], 1, 'The lecture explains that coral loses the algae that provide colour and food.', { listen: coralLecture }),
+          choice('u5-l2-b', 'listening', 'According to the professor, what happens during bleaching?', ['Coral grows faster', 'Coral loses the algae that give it color and food', 'Reefs move to deeper water', 'Fish disappear from the ocean'], 1, 'The lecture explains that coral loses the algae that provide color and food.', { listen: coralLecture }),
           choice('u5-l2-c', 'listening', 'What does the professor say about recovery?', ['It is impossible.', 'It can happen if temperatures return to normal quickly.', 'It takes exactly one year.', 'It only happens in cold water.'], 1, 'Corals can recover if temperatures return to normal quickly.', { listen: coralLecture }),
         ],
       },
@@ -319,7 +319,7 @@ export const UNITS: UnitDef[] = [
     id: 'u6',
     number: 6,
     title: 'Speaking and writing',
-    blurb: 'Take a clear position, support it, and organise it for TOEFL tasks.',
+    blurb: 'Take a clear position, support it, and organize it for TOEFL tasks.',
     level: 'C1',
     accent: 'amber',
     lessons: [
@@ -340,7 +340,7 @@ export const UNITS: UnitDef[] = [
         id: 'u6-l2',
         unitId: 'u6',
         title: 'Thesis and structure',
-        blurb: 'Write a thesis that can be argued, then organise the body.',
+        blurb: 'Write a thesis that can be argued, then organize the body.',
         skill: 'writing',
         minutes: 5,
         passages: [],

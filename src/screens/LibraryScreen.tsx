@@ -1,18 +1,19 @@
 // My library: learning files (PDF, TXT, Markdown), learning links with their platform logos, and
-// the tutor that answers from the files you choose. Works on this device and in your account.
+// the coach that answers from the files you choose. Works on this device and in your account.
 import { useCallback, useEffect, useState, type DragEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ExternalLink, Eye, MessageSquare, Plus, Trash2 } from 'lucide-react';
 import { openLink } from '../components/Banner';
 import { FileViewer } from '../components/FileViewer';
+import { LibraryCoach } from '../components/LibraryCoach';
 import { PlatformLogo } from '../components/PlatformLogo';
-import { Tutor } from '../components/Tutor';
-import { Empty, Notice, Skeleton, Spinner } from '../components/ui';
+import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Skeleton, Spinner, Tabs } from '../components/ui';
 import { bridge, errorText } from '../lib/bridge';
 import { KIND_LABEL, KIND_MIME, LIBRARY_MAX_BYTES, LIBRARY_TEXT_LIMIT, kindForFile } from '../lib/library';
 import { readPdf } from '../lib/pdf';
 import { formatDate } from '../lib/progress';
 import { normalizeLinkUrl, platformForUrl } from '../lib/platforms';
+import { plural } from '../lib/text';
 import type { LibraryFileRow, LibraryLinkRow } from '../lib/types';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
@@ -45,6 +46,8 @@ export function LibraryScreen() {
   const [links, setLinks] = useState<LibraryLinkRow[] | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [viewing, setViewing] = useState<LibraryFileRow | null>(null);
+  const [fileToRemove, setFileToRemove] = useState<LibraryFileRow | null>(null);
+  const [linkToRemove, setLinkToRemove] = useState<LibraryLinkRow | null>(null);
   const [adding, setAdding] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [url, setUrl] = useState('');
@@ -64,6 +67,9 @@ export function LibraryScreen() {
       setFiles(nextFiles);
       setLinks(nextLinks);
     } catch (error) {
+      // Show the empty library with the reason, instead of a skeleton that never ends.
+      setFiles((current) => current ?? []);
+      setLinks((current) => current ?? []);
       notify(errorText(error), 'error');
     }
   }, [backend, notify]);
@@ -116,13 +122,15 @@ export function LibraryScreen() {
   }
 
   async function removeFile(file: LibraryFileRow) {
-    if (!backend || !window.confirm(`Remove ${file.name} from your library? It cannot be undone.`)) return;
+    if (!backend) return;
     try {
       await backend.deleteLibraryFile(file.id);
       setSelected((ids) => ids.filter((id) => id !== file.id));
       await load();
     } catch (error) {
       notify(errorText(error), 'error');
+    } finally {
+      setFileToRemove(null);
     }
   }
 
@@ -167,12 +175,14 @@ export function LibraryScreen() {
   }
 
   async function removeLink(link: LibraryLinkRow) {
-    if (!backend || !window.confirm('Remove this link from your library?')) return;
+    if (!backend) return;
     try {
       await backend.deleteLibraryLink(link.id);
       await load();
     } catch (error) {
       notify(errorText(error), 'error');
+    } finally {
+      setLinkToRemove(null);
     }
   }
 
@@ -194,30 +204,21 @@ export function LibraryScreen() {
 
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <p className="eyebrow">Private to you</p>
-          <h1 style={{ marginTop: 4 }}>My library</h1>
-        </div>
-      </div>
+      <PageHeader eyebrow="Private to you" title="My library" />
 
-      <div className="segmented" role="tablist" aria-label="My library" style={{ marginTop: 16 }}>
-        {(
-          [
-            ['files', 'Files', files?.length ?? 0],
-            ['links', 'Links', links?.length ?? 0],
-            ['ask', 'Ask the tutor', 0],
-          ] as const
-        ).map(([value, label, count]) => (
-          <button key={value} role="tab" aria-selected={tab === value} className="segmented__btn" onClick={() => setTab(value)}>
-            {label}
-            {count > 0 && <span className="segmented__count">{count}</span>}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        label="My library"
+        value={tab}
+        onChange={setTab}
+        items={[
+          { value: 'files', label: 'Files', count: files?.length ?? 0 },
+          { value: 'links', label: 'Links', count: links?.length ?? 0 },
+          { value: 'ask', label: 'Ask the coach' },
+        ]}
+      />
 
       {tab === 'files' && (
-        <div className="stack" style={{ marginTop: 18, gap: 18 }}>
+        <div className="stack mt-4">
           {!filesAvailable && <Notice tone="info">Files are kept in the desktop app or in an online account. Links work everywhere.</Notice>}
 
           <label
@@ -241,14 +242,14 @@ export function LibraryScreen() {
               }}
             />
             <span className="icon-tile icon-tile--sm">{adding > 0 ? <Spinner dark /> : <Plus />}</span>
-            <strong>{adding > 0 ? `Adding ${adding} file${adding > 1 ? 's' : ''}…` : 'Drop PDF, TXT or Markdown files here'}</strong>
+            <strong>{adding > 0 ? `Adding ${plural(adding, 'file')}…` : 'Drop PDF, TXT or Markdown files here'}</strong>
             <span className="small muted">or choose files · up to 20 MB each · only you can see them</span>
           </label>
 
           {files === null ? (
             <Skeleton height={120} />
           ) : files.length === 0 ? (
-            <Empty title="Nothing here yet">Add a PDF, a text or a Markdown file. Then read it, or ask the tutor about it.</Empty>
+            <Empty title="Nothing here yet">Add a PDF, a text or a Markdown file. Then read it, or ask the coach about it.</Empty>
           ) : (
             <div className="set-list">
               {files.map((file) => (
@@ -257,8 +258,9 @@ export function LibraryScreen() {
                   <div className="person__body">
                     <div className="person__name">{file.name}</div>
                     <div className="person__meta">
-                      {formatSize(file.size_bytes)}
-                      {file.pages ? ` · ${file.pages} ${file.pages === 1 ? 'page' : 'pages'}` : ''} · {formatDate(file.created_at)}
+                      {[formatSize(file.size_bytes), file.pages ? plural(file.pages, 'page') : null, formatDate(file.created_at)]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </div>
                   </div>
                   <div className="person__actions">
@@ -268,7 +270,7 @@ export function LibraryScreen() {
                     <button className="btn btn--ghost btn--sm" onClick={() => askAbout(file)}>
                       <MessageSquare /> Ask
                     </button>
-                    <button className="btn btn--icon" onClick={() => void removeFile(file)} aria-label={`Remove ${file.name}`}>
+                    <button className="btn btn--icon" onClick={() => setFileToRemove(file)} aria-label={`Remove ${file.name}`}>
                       <Trash2 />
                     </button>
                   </div>
@@ -280,7 +282,7 @@ export function LibraryScreen() {
       )}
 
       {tab === 'links' && (
-        <div className="stack" style={{ marginTop: 18, gap: 18 }}>
+        <div className="stack mt-4">
           <form className="card library-add" onSubmit={addLink}>
             <label className="field">
               <span className="field__label">Link</span>
@@ -357,8 +359,8 @@ export function LibraryScreen() {
             <Empty title="No links yet">Paste a link above. The platform and its logo are detected from the address.</Empty>
           ) : (
             [...groups.entries()].map(([name, items]) => (
-              <section key={name} className="stack--tight">
-                <h2 style={{ fontSize: 16 }}>{name}</h2>
+              <section key={name}>
+                <SectionTitle title={name} />
                 <div className="set-list">
                   {items.map((link) => {
                     const platform = platformForUrl(link.url);
@@ -387,7 +389,7 @@ export function LibraryScreen() {
                           <button className="btn btn--ghost btn--sm" onClick={() => openLink(link.url, navigate)}>
                             <ExternalLink /> Open
                           </button>
-                          <button className="btn btn--icon" onClick={() => void removeLink(link)} aria-label="Remove link">
+                          <button className="btn btn--icon" onClick={() => setLinkToRemove(link)} aria-label={`Remove ${link.title || hostOf(link.url)}`}>
                             <Trash2 />
                           </button>
                         </div>
@@ -402,12 +404,34 @@ export function LibraryScreen() {
       )}
 
       {tab === 'ask' && (
-        <div style={{ marginTop: 18 }}>
-          <Tutor files={files ?? []} selected={selected} onToggle={toggleSelected} />
+        <div className="mt-4">
+          <LibraryCoach files={files ?? []} selected={selected} onToggle={toggleSelected} />
         </div>
       )}
 
       {viewing && <FileViewer file={viewing} onClose={() => setViewing(null)} />}
+
+      {fileToRemove && (
+        <ConfirmSheet
+          title="Remove this file?"
+          confirmLabel="Remove file"
+          onConfirm={() => void removeFile(fileToRemove)}
+          onClose={() => setFileToRemove(null)}
+        >
+          {fileToRemove.name} is removed from your library. This cannot be undone.
+        </ConfirmSheet>
+      )}
+
+      {linkToRemove && (
+        <ConfirmSheet
+          title="Remove this link?"
+          confirmLabel="Remove link"
+          onConfirm={() => void removeLink(linkToRemove)}
+          onClose={() => setLinkToRemove(null)}
+        >
+          The link is removed from your library.
+        </ConfirmSheet>
+      )}
     </div>
   );
 }

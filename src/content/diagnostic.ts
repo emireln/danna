@@ -97,7 +97,7 @@ export function diagnosticTest(): TestDef {
         'diag-write',
         'Should cities invest more in public transport or in new roads? Write at least 120 words, giving reasons and examples.',
         120,
-        ['Clear position', 'Reasons and examples', 'Organisation and linking words', 'Grammar and vocabulary'],
+        ['Clear position', 'Reasons and examples', 'Organization and linking words', 'Grammar and vocabulary'],
       ),
     ],
   };

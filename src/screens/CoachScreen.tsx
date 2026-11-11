@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUp, Sparkles, Trash2 } from 'lucide-react';
-import { Notice, Skeleton } from '../components/ui';
+import { ConfirmSheet, Notice, PageHeader, Skeleton } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { chatHistory, coachSystem } from '../lib/ai';
 import { useAI } from '../state/ai';
@@ -26,6 +26,7 @@ export function CoachScreen() {
   const [messages, setMessages] = useState<TutorRow[] | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -73,6 +74,7 @@ export function CoachScreen() {
     try {
       await backend.clearTutor();
       setMessages([]);
+      setConfirmClear(false);
     } catch (error) {
       notify(errorText(error), 'error');
     }
@@ -85,44 +87,44 @@ export function CoachScreen() {
     }
   };
 
+  const providerLabel = selection ? connections.find((item) => item.provider === selection.provider)?.label : undefined;
+
   return (
     <div className="page">
-      <div className="page__head">
-        <div>
-          <p className="eyebrow">Your coach</p>
-          <div className="row" style={{ marginTop: 4 }}>
-            <h1>Coach</h1>
-            {ready && selection && (
+      <PageHeader
+        eyebrow="Ask anything"
+        title="Coach"
+        aside={
+          <>
+            {ready && providerLabel && (
               <span className="chip chip--ai">
-                <Sparkles aria-hidden="true" /> {connections.find((item) => item.provider === selection.provider)?.label ?? 'Coach'}
+                <Sparkles aria-hidden="true" /> {providerLabel}
               </span>
             )}
-          </div>
-        </div>
-        {(messages?.length ?? 0) > 0 && (
-          <button className="btn btn--ghost btn--sm" onClick={clear} disabled={sending}>
-            <Trash2 /> Clear
-          </button>
-        )}
-      </div>
+            {(messages?.length ?? 0) > 0 && (
+              <button className="btn btn--ghost btn--sm" onClick={() => setConfirmClear(true)} disabled={sending}>
+                <Trash2 /> Clear
+              </button>
+            )}
+          </>
+        }
+      />
 
       {!ready && (
         <Notice tone="info">
-          <span>
-            Add your AI key to start chatting with your coach.{' '}
-            <button className="btn--text" style={{ fontWeight: 650 }} onClick={() => navigate('/settings')}>
-              Open settings
-            </button>
-          </span>
+          Add your AI key to start chatting with your coach.{' '}
+          <button className="btn btn--text" onClick={() => navigate('/settings')}>
+            Open settings
+          </button>
         </Notice>
       )}
 
       {messages === null ? (
         <Skeleton height={260} />
       ) : (
-        <div className="chat" style={{ marginTop: 16 }} aria-live="polite">
+        <div className="chat mt-4" aria-live="polite">
           {messages.length === 0 && ready && (
-            <div className="stack" style={{ gap: 14 }}>
+            <div className="stack">
               <p className="muted">Ask anything about English or TOEFL. Try one of these to start.</p>
               <div className="suggest">
                 {SUGGESTIONS.map((suggestion) => (
@@ -147,11 +149,11 @@ export function CoachScreen() {
         </div>
       )}
 
-      <div className="composer" style={{ marginTop: 18 }}>
+      <div className="chat-input mt-4">
         <textarea
           rows={1}
           value={draft}
-          placeholder={ready ? 'Ask your coach…' : 'Connect an AI key to start chatting'}
+          placeholder="Ask your coach…"
           disabled={!ready || sending}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onKey}
@@ -159,7 +161,6 @@ export function CoachScreen() {
         />
         <button
           className="btn btn--primary btn--icon"
-          style={{ color: '#fff', background: 'var(--primary)' }}
           onClick={() => send(draft)}
           disabled={!ready || sending || !draft.trim()}
           aria-label="Send message"
@@ -167,6 +168,17 @@ export function CoachScreen() {
           <ArrowUp />
         </button>
       </div>
+
+      {confirmClear && (
+        <ConfirmSheet
+          title="Clear this conversation?"
+          confirmLabel="Clear chat"
+          onConfirm={clear}
+          onClose={() => setConfirmClear(false)}
+        >
+          The messages are deleted. This cannot be undone.
+        </ConfirmSheet>
+      )}
     </div>
   );
 }

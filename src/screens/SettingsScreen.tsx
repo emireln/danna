@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Cloud, Eye, EyeOff, KeyRound, Laptop, Trash2 } from 'lucide-react';
-import { Empty, Field, Notice, Sheet, Spinner } from '../components/ui';
+import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
-import { backendFor, onlineAvailable } from '../lib/session';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
+import { backendFor, onlineAvailable } from '../lib/session';
+import { plural } from '../lib/text';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -46,6 +47,7 @@ export function SettingsScreen() {
   const [modelsFor, setModelsFor] = useState<Provider | null>(null);
   const [models, setModels] = useState<AIModel[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [keyToRemove, setKeyToRemove] = useState<Provider | null>(null);
   const [switchOpen, setSwitchOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [deviceHasProgress, setDeviceHasProgress] = useState(false);
@@ -65,6 +67,7 @@ export function SettingsScreen() {
       active = false;
     };
   }, [mode]);
+
   const candidates = candidatesFor(keyDraft.trim());
   const detected = candidates.length > 0;
   const detectedLabel = candidates.length === 1 ? PROVIDER_LABEL[candidates[0]] : 'OpenAI or DeepSeek';
@@ -123,9 +126,8 @@ export function SettingsScreen() {
     }
   };
 
-  const remove = async (provider: Provider) => {
+  const removeKey = async (provider: Provider) => {
     if (!bridge) return;
-    if (!window.confirm(`Remove your ${PROVIDER_LABEL[provider]} key from this device?`)) return;
     try {
       await bridge.keys.remove(provider);
       await ai.refresh();
@@ -136,6 +138,8 @@ export function SettingsScreen() {
       notify(`${PROVIDER_LABEL[provider]} key removed.`, 'ok');
     } catch (caught) {
       notify(errorText(caught), 'error');
+    } finally {
+      setKeyToRemove(null);
     }
   };
 
@@ -158,7 +162,7 @@ export function SettingsScreen() {
       setDeviceHasProgress(false);
       notify('Your progress from this device is now in your account.', 'ok');
       if (report.failed > 0) {
-        notify(`${report.failed} ${report.failed === 1 ? 'item' : 'items'} could not be copied. Try again later.`, 'error');
+        notify(`${plural(report.failed, 'item')} could not be copied. Try again later.`, 'error');
       }
     } catch (caught) {
       notify(errorText(caught), 'error');
@@ -183,127 +187,119 @@ export function SettingsScreen() {
 
   return (
     <div className="page">
-      <h1 style={{ marginBottom: 22 }}>Settings</h1>
+      <PageHeader eyebrow="Preferences" title="Settings" />
 
-      <section className="stack" style={{ gap: 14 }}>
-        <div className="section-head">
-          <p className="eyebrow">How you use danna</p>
-        </div>
-        <div className="mode-grid" role="radiogroup" aria-label="How you use danna">
-          <button
-            role="radio"
-            aria-checked={mode === 'local'}
-            className="mode-card"
-            onClick={() => {
-              if (mode === 'supabase') setSwitchOpen(true);
-            }}
-          >
-            <span className="mode-card__icon">
-              <Laptop aria-hidden="true" />
-            </span>
-            <span className="mode-card__title">On this device</span>
-            <span className="mode-card__text">Everything stays on this device.</span>
-            <span className="mode-card__tick">{mode === 'local' && <span aria-hidden="true">✓</span>}</span>
-          </button>
-          <button
-            role="radio"
-            aria-checked={mode === 'supabase'}
-            className="mode-card"
-            disabled={!online}
-            onClick={() => {
-              if (mode === 'local') navigate('/auth', { state: { next: '/settings', switchingFrom: 'local' } });
-            }}
-          >
-            <span className="mode-card__icon">
-              <Cloud aria-hidden="true" />
-            </span>
-            <span className="mode-card__title">Online account</span>
-            <span className="mode-card__text">
-              {online ? 'Sync across your devices and connect with friends.' : 'Not available yet.'}
-            </span>
-            <span className="mode-card__tick">{mode === 'supabase' && <span aria-hidden="true">✓</span>}</span>
-          </button>
-        </div>
-      </section>
+      <SectionTitle title="How you use danna" />
+      <div className="mode-grid" role="radiogroup" aria-label="How you use danna">
+        <button
+          role="radio"
+          aria-checked={mode === 'local'}
+          className="mode-card"
+          onClick={() => {
+            if (mode === 'supabase') setSwitchOpen(true);
+          }}
+        >
+          <span className="mode-card__icon">
+            <Laptop aria-hidden="true" />
+          </span>
+          <span className="mode-card__title">On this device</span>
+          <span className="mode-card__text">Everything stays on this device.</span>
+          <span className="mode-card__tick">{mode === 'local' && <span aria-hidden="true">✓</span>}</span>
+        </button>
+        <button
+          role="radio"
+          aria-checked={mode === 'supabase'}
+          className="mode-card"
+          disabled={!online}
+          onClick={() => {
+            if (mode === 'local') navigate('/auth', { state: { next: '/settings', switchingFrom: 'local' } });
+          }}
+        >
+          <span className="mode-card__icon">
+            <Cloud aria-hidden="true" />
+          </span>
+          <span className="mode-card__title">Online account</span>
+          <span className="mode-card__text">{online ? 'Sync across your devices and connect with friends.' : 'Not available yet.'}</span>
+          <span className="mode-card__tick">{mode === 'supabase' && <span aria-hidden="true">✓</span>}</span>
+        </button>
+      </div>
 
-      <section className="stack" style={{ marginTop: 34, gap: 14 }}>
-        <div className="section-head">
-          <p className="eyebrow">AI assistant</p>
-          <h2>Bring your own key</h2>
-          <p className="muted small" style={{ maxWidth: 640 }}>
-            Add a key from OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. It unlocks generated sets and coach feedback.
-            The key stays on this device.
-          </p>
-        </div>
+      <SectionTitle title="AI assistant" />
+      <div className="stack">
+        <p className="small muted">
+          Bring your own key from OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. It unlocks generated sets and coach
+          feedback. The key stays on this device.
+        </p>
 
         {!ai.desktop && <Notice tone="info">Keys can be added in the danna desktop app.</Notice>}
 
         {ai.desktop && (
-          <div className="card stack--tight" style={{ gap: 12 }}>
-            <Field label="Your key">
-              <span className="input-wrap">
-                <input
-                  className="input"
-                  type={showKey ? 'text' : 'password'}
-                  value={keyDraft}
-                  onChange={(event) => setKeyDraft(event.target.value)}
-                  placeholder="Paste your key here"
-                  autoComplete="off"
-                  spellCheck={false}
-                  disabled={busy}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && detected && !busy) void connect();
-                  }}
-                />
-                <button
-                  type="button"
-                  className="btn btn--icon"
-                  onClick={() => setShowKey((value) => !value)}
-                  aria-label={showKey ? 'Hide key' : 'Show key'}
-                >
-                  {showKey ? <EyeOff /> : <Eye />}
-                </button>
-              </span>
-            </Field>
-            <div className="row" style={{ flexWrap: 'wrap' }}>
-              {keyDraft.trim() && (
-                <span className={`chip ${detected ? 'chip--blue' : ''}`}>
-                  {detected ? `Looks like ${detectedLabel}` : 'We do not recognise this key yet'}
+          <div className="card stack">
+            <div className="stack--tight">
+              <label className="field__label" htmlFor="ai-key">
+                Your key
+              </label>
+              <div className="input-action">
+                <span className="input-wrap">
+                  <input
+                    id="ai-key"
+                    className="input"
+                    type={showKey ? 'text' : 'password'}
+                    value={keyDraft}
+                    onChange={(event) => setKeyDraft(event.target.value)}
+                    placeholder="Paste your key here"
+                    autoComplete="off"
+                    spellCheck={false}
+                    disabled={busy}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' && detected && !busy) void connect();
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn--icon"
+                    onClick={() => setShowKey((value) => !value)}
+                    aria-label={showKey ? 'Hide key' : 'Show key'}
+                  >
+                    {showKey ? <EyeOff /> : <Eye />}
+                  </button>
                 </span>
-              )}
-              <button className="btn btn--primary" onClick={connect} disabled={!detected || busy}>
-                {busy ? <Spinner /> : <KeyRound />} Connect
-              </button>
+                <button className="btn btn--primary" onClick={connect} disabled={!detected || busy}>
+                  {busy ? <Spinner /> : <KeyRound />} Connect
+                </button>
+              </div>
             </div>
+            {keyDraft.trim() && (
+              <div className="row row--wrap">
+                <span className={`chip ${detected ? 'chip--blue' : ''}`}>
+                  {detected ? `Looks like ${detectedLabel}` : 'We do not recognize this key yet'}
+                </span>
+              </div>
+            )}
             {error && <Notice tone="error">{error}</Notice>}
           </div>
         )}
 
-        {ai.desktop && ai.connections.length === 0 && (
-          <Empty title="No key connected yet">Paste a key above to unlock the assistant.</Empty>
-        )}
+        {ai.desktop && ai.connections.length === 0 && <Empty title="No key connected yet">Paste a key above to unlock the assistant.</Empty>}
 
         {ai.connections.length > 0 && (
           <div className="set-list">
             {ai.connections.map((connection) => {
               const active = ai.selection?.provider === connection.provider;
+              const loadingThis = loadingModels && modelsFor === connection.provider;
               return (
                 <div key={connection.provider} className="connection">
                   <div className="connection__body">
-                    <div className="row" style={{ gap: 8 }}>
-                      <span style={{ fontWeight: 650 }}>{connection.label}</span>
+                    <div className="row row--wrap">
+                      <span className="connection__name">{connection.label}</span>
                       {active && <span className="latest">In use</span>}
                     </div>
                     <div className="small muted">Ends in {connection.masked.slice(-4)}</div>
                   </div>
-                  <button
-                    className="btn btn--ghost btn--sm"
-                    onClick={() => showModels(connection.provider)}
-                    disabled={loadingModels && modelsFor === connection.provider}
-                  >
-                    {loadingModels && modelsFor === connection.provider ? <Spinner dark /> : null} Models
+                  <button className="btn btn--ghost btn--sm" onClick={() => showModels(connection.provider)} disabled={loadingThis}>
+                    {loadingThis ? <Spinner dark /> : null} Models
                   </button>
-                  <button className="btn btn--icon" onClick={() => remove(connection.provider)} aria-label={`Remove ${connection.label} key`}>
+                  <button className="btn btn--icon" onClick={() => setKeyToRemove(connection.provider)} aria-label={`Remove ${connection.label} key`}>
                     <Trash2 />
                   </button>
                 </div>
@@ -321,7 +317,7 @@ export function SettingsScreen() {
                 return (
                   <button key={model.id} role="radio" aria-checked={selected} className="model" onClick={() => choose(modelsFor, model.id)}>
                     <span className="model__radio" aria-hidden="true" />
-                    <span style={{ minWidth: 0, flex: 1, fontWeight: 620 }}>{model.label}</span>
+                    <span className="model__label">{model.label}</span>
                     {model.latest && <span className="latest">Newest</span>}
                   </button>
                 );
@@ -329,13 +325,11 @@ export function SettingsScreen() {
             </div>
           </div>
         )}
-      </section>
+      </div>
 
       {bridge && settings && (
-        <section className="stack" style={{ marginTop: 34, gap: 14 }}>
-          <div className="section-head">
-            <p className="eyebrow">Window</p>
-          </div>
+        <>
+          <SectionTitle title="Window" />
           <div className="settings-row">
             <div className="settings-row__body">
               <div className="settings-row__title">Keep danna in the tray</div>
@@ -351,19 +345,17 @@ export function SettingsScreen() {
               <span className="switch__thumb" />
             </button>
           </div>
-        </section>
+        </>
       )}
 
       {mode === 'supabase' && (
-        <section className="stack" style={{ marginTop: 34, gap: 14 }}>
-          <div className="section-head">
-            <p className="eyebrow">Account</p>
-          </div>
+        <>
+          <SectionTitle title="Account" />
           {deviceHasProgress && (
             <div className="settings-row">
               <div className="settings-row__body">
                 <div className="settings-row__title">Progress saved on this device</div>
-                <div className="settings-row__text">Lessons, scores, sets and your picture can be added to your account.</div>
+                <div className="settings-row__text">Lessons, scores, sets, your picture and library can be added to your account.</div>
               </div>
               <button className="btn btn--ghost btn--sm" onClick={() => setAddOpen(true)}>
                 Add to my account
@@ -385,23 +377,30 @@ export function SettingsScreen() {
               Sign out
             </button>
           </div>
-        </section>
+        </>
       )}
 
-      <section className="stack" style={{ marginTop: 34, gap: 14 }}>
-        <div className="section-head">
-          <p className="eyebrow">About</p>
+      <SectionTitle title="About" />
+      <div className="settings-row">
+        <div className="settings-row__body">
+          <div className="settings-row__title">danna {version}</div>
+          <div className="settings-row__text">Scores are practice estimates, not official results.</div>
         </div>
-        <div className="settings-row">
-          <div className="settings-row__body">
-            <div className="settings-row__title">danna {version}</div>
-            <div className="settings-row__text">Scores are practice estimates, not official results.</div>
-          </div>
-          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/whats-new')}>
-            What&apos;s new
-          </button>
-        </div>
-      </section>
+        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/whats-new')}>
+          What&apos;s new
+        </button>
+      </div>
+
+      {keyToRemove && (
+        <ConfirmSheet
+          title="Remove this key?"
+          confirmLabel="Remove key"
+          onConfirm={() => void removeKey(keyToRemove)}
+          onClose={() => setKeyToRemove(null)}
+        >
+          Your {PROVIDER_LABEL[keyToRemove]} key is removed from this device. You can add it again at any time.
+        </ConfirmSheet>
+      )}
 
       {addOpen && (
         <Sheet
@@ -419,7 +418,8 @@ export function SettingsScreen() {
           }
         >
           <p className="muted">
-            Lessons, scores, practice sets, coach messages, library files and your picture are copied. What is already in your account stays as it is.
+            Lessons, scores, practice sets, coach messages, library files and your picture are copied. What is already in your account
+            stays as it is.
           </p>
         </Sheet>
       )}

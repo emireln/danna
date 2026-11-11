@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { BrandMark, Field, Notice, Sheet, Spinner, Wordmark } from '../components/ui';
+import { BrandMark, Field, Notice, Sheet, Spinner, Tabs, Wordmark } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { backendFor, onlineAvailable } from '../lib/session';
@@ -101,7 +101,7 @@ export function AuthScreen() {
           <Wordmark className="wordmark--xl" />
           <div>
             <h1>{mode === 'signin' ? 'Welcome back' : 'Create your account'}</h1>
-            <p className="muted" style={{ marginTop: 6 }}>
+            <p className="muted mt-2">
               Your progress syncs across your devices.
             </p>
           </div>
@@ -122,14 +122,16 @@ export function AuthScreen() {
           </>
         ) : (
           <>
-            <div className="segmented" role="tablist" aria-label="Account" style={{ alignSelf: 'stretch' }}>
-              <button role="tab" aria-selected={mode === 'signin'} className="segmented__btn" style={{ flex: 1 }} onClick={() => setMode('signin')}>
-                Sign in
-              </button>
-              <button role="tab" aria-selected={mode === 'signup'} className="segmented__btn" style={{ flex: 1 }} onClick={() => setMode('signup')}>
-                Create account
-              </button>
-            </div>
+            <Tabs
+              block
+              label="Account"
+              value={mode}
+              onChange={setMode}
+              items={[
+                { value: 'signin', label: 'Sign in' },
+                { value: 'signup', label: 'Create account' },
+              ]}
+            />
 
             <form className="stack" onSubmit={submit} noValidate>
               <Field label="Email">
@@ -186,10 +188,10 @@ export function AuthScreen() {
               </button>
             </form>
 
-            <div className="row" style={{ gap: 12 }}>
-              <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+            <div className="divider-row">
+              <span className="divider" />
               <span className="small muted">or</span>
-              <span style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+              <span className="divider" />
             </div>
 
             <button
