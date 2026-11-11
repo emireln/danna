@@ -1,0 +1,104 @@
+// The data contract shared by the Supabase backend (accounts, friends, sharing)
+// and the offline backend (this device only). Screens depend only on this file.
+import type {
+  AnnouncementRow,
+  AttemptKind,
+  AttemptRow,
+  FriendRow,
+  LessonProgressRow,
+  PersonRow,
+  ProfileRow,
+  ReviewRow,
+  ShareRow,
+  Skill,
+  TestContent,
+  TestRow,
+  TutorRow,
+} from '../types';
+
+export type BackendMode = 'supabase' | 'local';
+
+export interface NewAttempt {
+  kind: AttemptKind;
+  ref_id: string;
+  title: string;
+  score_pct: number;
+  predicted: number | null;
+  skills: AttemptRow['skills'];
+  answers: AttemptRow['answers'];
+  duration_s: number;
+}
+
+export interface NewTest {
+  title: string;
+  description: string;
+  kind: TestRow['kind'];
+  skill: TestRow['skill'];
+  level: TestRow['level'];
+  minutes: number;
+  content: TestContent;
+}
+
+export type ProfilePatch = Partial<
+  Pick<
+    ProfileRow,
+    | 'username'
+    | 'display_name'
+    | 'avatar_color'
+    | 'target_score'
+    | 'exam_date'
+    | 'daily_minutes'
+    | 'level'
+    | 'xp'
+    | 'streak'
+    | 'last_active'
+    | 'onboarding_done'
+  >
+>;
+
+export interface SharePayload {
+  recipientId: string;
+  kind: 'result' | 'test';
+  attemptId?: string;
+  testId?: string;
+  note: string;
+}
+
+export interface DataBackend {
+  readonly mode: BackendMode;
+  getProfile(): Promise<ProfileRow | null>;
+  updateProfile(patch: ProfilePatch): Promise<ProfileRow>;
+
+  listAttempts(limit?: number): Promise<AttemptRow[]>;
+  getAttempt(id: string): Promise<AttemptRow | null>;
+  insertAttempt(row: NewAttempt): Promise<AttemptRow>;
+
+  getSkillScores(): Promise<Partial<Record<Skill, number>>>;
+  setSkillScores(scores: Partial<Record<Skill, number>>): Promise<void>;
+
+  listLessonProgress(): Promise<LessonProgressRow[]>;
+  upsertLessonProgress(row: LessonProgressRow): Promise<void>;
+
+  listReviewItems(): Promise<ReviewRow[]>;
+  upsertReviewItems(rows: ReviewRow[]): Promise<void>;
+
+  listMyTests(): Promise<TestRow[]>;
+  getTest(id: string): Promise<TestRow | null>;
+  insertTest(row: NewTest): Promise<TestRow>;
+
+  listFriends(): Promise<FriendRow[]>;
+  searchPeople(query: string): Promise<PersonRow[]>;
+  requestFriend(userId: string): Promise<void>;
+  /** accept = true accepts a request; false removes a request or friendship. */
+  answerFriend(friendshipId: string, accept: boolean): Promise<void>;
+
+  listShares(): Promise<ShareRow[]>;
+  sendShare(payload: SharePayload): Promise<void>;
+  markSharesSeen(): Promise<void>;
+
+  listAnnouncements(): Promise<AnnouncementRow[]>;
+
+  listTutor(limit?: number): Promise<TutorRow[]>;
+  addTutor(role: TutorRow['role'], content: string): Promise<TutorRow>;
+  clearTutor(): Promise<void>;
+}
