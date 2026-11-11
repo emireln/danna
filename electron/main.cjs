@@ -237,11 +237,29 @@ function registerIpc() {
     const clean = typeof key === 'string' ? key.trim() : '';
     if (!clean) throw userError('Paste your AI key to connect it.');
     if (clean.length > 300 || /\s/.test(clean)) throw userError('Paste the whole key. It should not contain spaces.');
-    const provider = ai.detectProvider(clean);
-    if (!provider) {
-      throw userError('We do not recognise this key yet. Try an OpenAI, Anthropic, Gemini or OpenRouter key.');
+    const candidates = ai.detectCandidates(clean);
+    if (candidates.length === 0) {
+      throw userError('We do not recognise this key yet. Try an OpenAI, Anthropic, Gemini, OpenRouter or DeepSeek key.');
     }
-    const models = await ai.listModels(provider, clean);
+    // A key that could belong to two providers is checked with each; the one that accepts it is used.
+    let provider = null;
+    let models = [];
+    let lastError = null;
+    for (const candidate of candidates) {
+      try {
+        models = await ai.listModels(candidate, clean);
+        if (models.length > 0) {
+          provider = candidate;
+          break;
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    if (!provider) {
+      if (candidates.length === 1 && lastError) throw lastError;
+      throw userError('This key was not accepted. Check that it is complete and still active.');
+    }
     if (models.length === 0) throw userError(`${ai.PROVIDERS[provider].label} did not return any chat models for this key.`);
     keystore.saveKey(provider, clean);
     const current = keystore.getSelection();

@@ -12,18 +12,26 @@ const PROVIDERS = Object.freeze({
   anthropic: { label: 'Anthropic', hint: 'sk-ant-…' },
   gemini: { label: 'Google Gemini', hint: 'AIza…' },
   openrouter: { label: 'OpenRouter', hint: 'sk-or-v1-…' },
+  deepseek: { label: 'DeepSeek', hint: 'sk-…' },
 });
 
 // Model ids that cannot hold a chat conversation.
 const NON_CHAT = /(embed|whisper|tts|dall-e|image|audio|realtime|transcri|moderation|search|davinci|babbage|computer-use|instruct|codex|sora|guard)/i;
 
-function detectProvider(rawKey) {
+// Keys that start with "sk-" can belong to OpenAI or DeepSeek. Their formats do not tell them
+// apart, so the app asks each provider whether it accepts the key.
+function detectCandidates(rawKey) {
   const key = String(rawKey || '').trim();
-  if (key.startsWith('sk-ant-')) return 'anthropic';
-  if (key.startsWith('sk-or-')) return 'openrouter';
-  if (/^AIza[\w-]{30,}$/.test(key)) return 'gemini';
-  if (key.startsWith('sk-')) return 'openai';
-  return null;
+  if (key.startsWith('sk-ant-')) return ['anthropic'];
+  if (key.startsWith('sk-or-')) return ['openrouter'];
+  if (/^AIza[\w-]{30,}$/.test(key)) return ['gemini'];
+  if (key.startsWith('sk-proj-') || key.startsWith('sk-svcacct-') || key.startsWith('sk-admin-')) return ['openai'];
+  if (key.startsWith('sk-')) return ['openai', 'deepseek'];
+  return [];
+}
+
+function detectProvider(rawKey) {
+  return detectCandidates(rawKey)[0] || null;
 }
 
 class ProviderError extends Error {
@@ -136,7 +144,44 @@ async function listOpenRouter(key) {
     .sort(byNewest);
 }
 
-const LISTERS = { openai: listOpenAI, anthropic: listAnthropic, gemini: listGemini, openrouter: listOpenRouter };
+// DeepSeek's model list has no release dates. Its release notes name deepseek-flash (V4.1 Flash)
+// as the newest model, followed by the V4 and V3.2 names. Other names are ranked by version number.
+const DEEPSEEK_VERSIONS = {
+  'deepseek-flash': [4, 1],
+  'deepseek-v4-pro': [4, 0],
+  'deepseek-v4-flash': [4, 0],
+  'deepseek-chat': [3, 2],
+  'deepseek-reasoner': [3, 2],
+};
+
+function deepseekRank(id) {
+  const name = String(id);
+  const version = DEEPSEEK_VERSIONS[name.toLowerCase()] || (name.match(/v(\d+)(?:\.(\d+))?/i) || []).slice(1).map((part) => Number(part || 0));
+  const [major = 0, minor = 0] = version;
+  const tier = /pro/i.test(name) ? 3 : /flash/i.test(name) ? 2 : 1;
+  return (major * 1000 + minor * 100) * 10 + tier;
+}
+
+function deepseekLabel(id) {
+  const words = String(id)
+    .replace(/^deepseek-/i, '')
+    .split('-')
+    .filter(Boolean)
+    .map((word) => (/^v\d/i.test(word) ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1)));
+  return `DeepSeek ${words.join(' ')}`;
+}
+
+async function listDeepSeek(key) {
+  const data = await request('https://api.deepseek.com/models', {
+    headers: { Authorization: `Bearer ${key}` },
+  });
+  return (data.data || [])
+    .filter((model) => /^deepseek-/i.test(model.id) && !NON_CHAT.test(model.id))
+    .map((model) => ({ id: model.id, label: deepseekLabel(model.id), createdAt: 0 }))
+    .sort((a, b) => deepseekRank(b.id) - deepseekRank(a.id));
+}
+
+const LISTERS = { openai: listOpenAI, anthropic: listAnthropic, gemini: listGemini, openrouter: listOpenRouter, deepseek: listDeepSeek };
 
 // Returns the live model list for a key, newest first. The first entry is
 // flagged `latest`, which is the default the app selects.
@@ -234,6 +279,21 @@ const COMPLETERS = {
     });
     return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
   },
+  async deepseek(key, model, system, messages, json, maxTokens) {
+    const body = {
+      model,
+      messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages],
+      max_tokens: maxTokens,
+    };
+    if (json) body.response_format = { type: 'json_object' };
+    const data = await request('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body,
+      timeoutMs: COMPLETION_TIMEOUT_MS,
+    });
+    return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+  },
 };
 
 async function complete(provider, key, model, { system = '', messages = [], json = false, maxTokens = 2048 } = {}) {
@@ -279,4 +339,4 @@ async function transcribe(key, audio, mime) {
   throw asProviderError('openai', lastError || new Error('Transcription failed.'));
 }
 
-module.exports = { PROVIDERS, detectProvider, listModels, complete, transcribe };
+module.exports = { PROVIDERS, detectProvider, detectCandidates, deepseekRank, listModels, complete, transcribe };

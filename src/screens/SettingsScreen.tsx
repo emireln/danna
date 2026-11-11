@@ -16,15 +16,17 @@ const PROVIDER_LABEL: Record<Provider, string> = {
   anthropic: 'Anthropic',
   gemini: 'Google Gemini',
   openrouter: 'OpenRouter',
+  deepseek: 'DeepSeek',
 };
 
-/** Shows the provider name while typing. The desktop app makes the real decision. */
-function detectClient(key: string): Provider | null {
-  if (key.startsWith('sk-ant-')) return 'anthropic';
-  if (key.startsWith('sk-or-')) return 'openrouter';
-  if (/^AIza[\w-]{30,}$/.test(key)) return 'gemini';
-  if (key.startsWith('sk-')) return 'openai';
-  return null;
+/** The providers a key could belong to, shown while typing. The desktop app makes the real decision. */
+function candidatesFor(key: string): Provider[] {
+  if (key.startsWith('sk-ant-')) return ['anthropic'];
+  if (key.startsWith('sk-or-')) return ['openrouter'];
+  if (/^AIza[\w-]{30,}$/.test(key)) return ['gemini'];
+  if (key.startsWith('sk-proj-') || key.startsWith('sk-svcacct-') || key.startsWith('sk-admin-')) return ['openai'];
+  if (key.startsWith('sk-')) return ['openai', 'deepseek'];
+  return [];
 }
 
 export function SettingsScreen() {
@@ -63,7 +65,9 @@ export function SettingsScreen() {
       active = false;
     };
   }, [mode]);
-  const detected = detectClient(keyDraft.trim());
+  const candidates = candidatesFor(keyDraft.trim());
+  const detected = candidates.length > 0;
+  const detectedLabel = candidates.length === 1 ? PROVIDER_LABEL[candidates[0]] : 'OpenAI or DeepSeek';
 
   useEffect(() => {
     bridge
@@ -224,7 +228,7 @@ export function SettingsScreen() {
           <p className="eyebrow">AI assistant</p>
           <h2>Bring your own key</h2>
           <p className="muted small" style={{ maxWidth: 640 }}>
-            Add a key from OpenAI, Anthropic, Google Gemini or OpenRouter. It unlocks generated sets and coach feedback.
+            Add a key from OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. It unlocks generated sets and coach feedback.
             The key stays on this device.
           </p>
         </div>
@@ -261,7 +265,7 @@ export function SettingsScreen() {
             <div className="row" style={{ flexWrap: 'wrap' }}>
               {keyDraft.trim() && (
                 <span className={`chip ${detected ? 'chip--blue' : ''}`}>
-                  {detected ? `Looks like ${PROVIDER_LABEL[detected]}` : 'We do not recognise this key yet'}
+                  {detected ? `Looks like ${detectedLabel}` : 'We do not recognise this key yet'}
                 </span>
               )}
               <button className="btn btn--primary" onClick={connect} disabled={!detected || busy}>

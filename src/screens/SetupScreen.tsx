@@ -259,7 +259,7 @@ export function SetupScreen() {
                 <p className="eyebrow">Optional</p>
                 <h1 style={{ marginTop: 6 }}>Add an AI key for a personal coach</h1>
                 <p className="muted" style={{ marginTop: 8 }}>
-                  Works with OpenAI, Anthropic, Google Gemini or OpenRouter. You can skip this and everything still works.
+                  Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works.
                 </p>
               </div>
               <div className="card" style={{ display: 'flex', gap: 14, alignItems: 'center' }}>

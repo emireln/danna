@@ -227,7 +227,7 @@ export interface ChatMessage {
 }
 
 // AI connections (renderer view; keys themselves never reach the renderer).
-export type Provider = 'openai' | 'anthropic' | 'gemini' | 'openrouter';
+export type Provider = 'openai' | 'anthropic' | 'gemini' | 'openrouter' | 'deepseek';
 
 export interface AIModel {
   id: string;

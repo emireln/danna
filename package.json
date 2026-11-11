@@ -1,7 +1,7 @@
 {
   "name": "danna",
   "productName": "danna",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "danna: a focused English and TOEFL practice desktop app with AI tutoring, roadmaps and friends.",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
     "dev": "concurrently -k -n web,app -c blue,green \"vite --port 5173 --strictPort\" \"wait-on tcp:5173 && cross-env DANNA_DEV_URL=http://localhost:5173 electron .\"",
     "web": "vite --port 5173 --strictPort",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/migrate.test.mjs supabase/tests/policies.test.mjs",
+    "test": "node --test \"tests/*.test.mjs\" \"supabase/tests/*.test.mjs\"",
     "test:sync": "node --test tests/migrate.test.mjs",
     "test:db": "node --test supabase/tests/policies.test.mjs",
     "build": "tsc --noEmit && vite build",
