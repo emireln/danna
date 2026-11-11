@@ -2,8 +2,8 @@
 // the bridge. Friends and sharing are not part of offline use.
 import type { DannaBridge } from '../bridge';
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
-import type { AttemptRow, LessonProgressRow, ProfileRow, ReviewRow, Skill, TestRow, TutorRow } from '../types';
-import type { DataBackend, NewAttempt, NewTest, ProfilePatch } from './backend';
+import type { AttemptRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorRow } from '../types';
+import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch } from './backend';
 
 const ONLINE_ONLY = 'This is available with an online account.';
 
@@ -42,6 +42,33 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
     listMyTests: () => call<TestRow[]>('listMyTests'),
     getTest: (id: string) => call<TestRow | null>('getTest', [id]),
     insertTest: (row: NewTest) => call<TestRow>('insertTest', [row]),
+
+    listLibraryFiles: () => call<LibraryFileRow[]>('listLibraryFiles'),
+    getLibraryBlob: async (id: string) => {
+      const bytes = await call<Uint8Array | null>('getLibraryFileData', [id]);
+      return bytes ? new Blob([Uint8Array.from(bytes)]) : null;
+    },
+    getLibraryText: (id: string) => call<string>('getLibraryText', [id]),
+    addLibraryFile: async (input: NewLibraryFile) => {
+      const data = await input.blob.arrayBuffer();
+      return call<LibraryFileRow>('insertLibraryFile', [
+        {
+          id: input.id,
+          created_at: input.created_at,
+          name: input.name,
+          kind: input.kind,
+          mime_type: input.mime_type,
+          pages: input.pages,
+          extracted_text: input.extracted_text,
+          data,
+        },
+      ]);
+    },
+    deleteLibraryFile: (id: string) => call<void>('deleteLibraryFile', [id]),
+    listLibraryLinks: () => call<LibraryLinkRow[]>('listLibraryLinks'),
+    addLibraryLink: (input: NewLibraryLink) => call<LibraryLinkRow>('insertLibraryLink', [input]),
+    updateLibraryLink: (id: string, patch: LibraryLinkPatch) => call<LibraryLinkRow>('updateLibraryLink', [id, patch]),
+    deleteLibraryLink: (id: string) => call<void>('deleteLibraryLink', [id]),
 
     listFriends: async () => [],
     searchPeople: async () => [],

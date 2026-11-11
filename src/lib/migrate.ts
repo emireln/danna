@@ -4,16 +4,29 @@
 import type { DataBackend } from './data/backend';
 import type { LessonProgressRow, ReviewRow, Skill } from './types';
 
+export interface CopyReport {
+  /** Library items that could not be copied, for example a file whose bytes are missing. */
+  failed: number;
+}
+
 /** True when this side has anything worth copying. */
 export async function hasLocalProgress(local: DataBackend): Promise<boolean> {
-  const [profile, attempts, lessons, tests] = await Promise.all([
+  const [profile, attempts, lessons, tests, files, links] = await Promise.all([
     local.getProfile(),
     local.listAttempts(1),
     local.listLessonProgress(),
     local.listMyTests(),
+    local.listLibraryFiles(),
+    local.listLibraryLinks(),
   ]);
   return Boolean(
-    profile?.onboarding_done || profile?.avatar_updated_at || attempts.length > 0 || lessons.length > 0 || tests.length > 0,
+    profile?.onboarding_done ||
+      profile?.avatar_updated_at ||
+      attempts.length > 0 ||
+      lessons.length > 0 ||
+      tests.length > 0 ||
+      files.length > 0 ||
+      links.length > 0,
   );
 }
 
@@ -29,7 +42,7 @@ function earlier(a: string | null, b: string | null): string | null {
   return a < b ? a : b;
 }
 
-export async function copyProgress(from: DataBackend, to: DataBackend): Promise<void> {
+export async function copyProgress(from: DataBackend, to: DataBackend): Promise<CopyReport> {
   const source = await from.getProfile();
   const target = await to.getProfile();
 
@@ -38,7 +51,8 @@ export async function copyProgress(from: DataBackend, to: DataBackend): Promise<
     const setup = target && (target.onboarding_done || !source.onboarding_done) ? target : source;
     // A name the account owner chose stays. A name that is only the username (the sign-up default) does not count.
     const chosenName = target && target.display_name && target.display_name !== target.username ? target.display_name : '';
-    const name = chosenName || (source.display_name && source.display_name !== 'Learner' ? source.display_name : target?.display_name || 'Learner');
+    const name =
+      chosenName || (source.display_name && source.display_name !== 'Learner' ? source.display_name : target?.display_name || 'Learner');
     await to.updateProfile({
       display_name: name,
       avatar_color: setup.avatar_color,
@@ -138,4 +152,47 @@ export async function copyProgress(from: DataBackend, to: DataBackend): Promise<
     if (ownMessages.has(message.id)) continue;
     await to.addTutor(message.role, message.content, { id: message.id, created_at: message.created_at });
   }
+
+  // My library: links and files the receiving side does not have yet are copied with the same ids.
+  // One item that cannot be copied is counted, and the rest still go across.
+  let failed = 0;
+  const ownLinks = new Set((await to.listLibraryLinks()).map((link) => link.id));
+  for (const link of await from.listLibraryLinks()) {
+    if (ownLinks.has(link.id)) continue;
+    try {
+      await to.addLibraryLink({
+        id: link.id,
+        created_at: link.created_at,
+        url: link.url,
+        title: link.title,
+        platform: link.platform,
+        category: link.category,
+        note: link.note,
+      });
+    } catch {
+      failed += 1;
+    }
+  }
+  const ownFiles = new Set((await to.listLibraryFiles()).map((file) => file.id));
+  for (const file of await from.listLibraryFiles()) {
+    if (ownFiles.has(file.id)) continue;
+    try {
+      const blob = await from.getLibraryBlob(file.id);
+      if (!blob) throw new Error('The file has no content to copy.');
+      await to.addLibraryFile({
+        id: file.id,
+        created_at: file.created_at,
+        name: file.name,
+        kind: file.kind,
+        mime_type: file.mime_type,
+        blob,
+        extracted_text: await from.getLibraryText(file.id),
+        pages: file.pages,
+      });
+    } catch {
+      failed += 1;
+    }
+  }
+
+  return { failed };
 }

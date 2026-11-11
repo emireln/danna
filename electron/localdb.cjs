@@ -102,6 +102,28 @@ CREATE TABLE IF NOT EXISTS avatar (
   data BLOB NOT NULL,
   updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS library_files (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  mime_type TEXT NOT NULL,
+  size_bytes INTEGER NOT NULL,
+  data BLOB NOT NULL,
+  extracted_text TEXT NOT NULL DEFAULT '',
+  pages INTEGER,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS library_links (
+  id TEXT PRIMARY KEY,
+  url TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT '',
+  platform TEXT NOT NULL DEFAULT 'other',
+  category TEXT NOT NULL DEFAULT 'General',
+  note TEXT NOT NULL DEFAULT '',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `;
 
 let connection = null;
@@ -415,6 +437,103 @@ function clearAvatar() {
   return getProfile();
 }
 
+// My library: learning files (PDF, TXT, Markdown) keep their bytes and extracted text; links keep their details.
+const LIBRARY_KINDS = ['pdf', 'txt', 'md'];
+const LIBRARY_FILE_MAX_BYTES = 20 * 1024 * 1024;
+const LIBRARY_TEXT_MAX = 400000;
+const LIBRARY_FILE_FIELDS = 'id, name, kind, mime_type, size_bytes, pages, created_at, updated_at';
+const LIBRARY_LINK_FIELDS = 'id, url, title, platform, category, note, created_at, updated_at';
+
+function listLibraryFiles() {
+  return db().prepare(`SELECT ${LIBRARY_FILE_FIELDS} FROM library_files ORDER BY created_at DESC`).all();
+}
+
+function getLibraryFileData(id) {
+  const row = db().prepare('SELECT data FROM library_files WHERE id = ?').get(String(id));
+  return row ? new Uint8Array(row.data) : null;
+}
+
+function getLibraryText(id) {
+  const row = db().prepare('SELECT extracted_text AS text FROM library_files WHERE id = ?').get(String(id));
+  return row ? row.text : '';
+}
+
+function insertLibraryFile(input = {}) {
+  if (!LIBRARY_KINDS.includes(input.kind)) throw userError('Only PDF, TXT and Markdown files can be kept in the library.');
+  const bytes = toBuffer(input.data);
+  if (!bytes || bytes.length === 0 || bytes.length > LIBRARY_FILE_MAX_BYTES) {
+    throw userError('That file is too large. Choose one under 20 MB.');
+  }
+  const id = typeof input.id === 'string' && input.id ? input.id : randomUUID();
+  const createdAt = typeof input.created_at === 'string' && input.created_at ? input.created_at : now();
+  const pages = input.pages === null || input.pages === undefined ? null : clamp(input.pages, 0, 5000, 0);
+  db()
+    .prepare(
+      'INSERT OR IGNORE INTO library_files (id, name, kind, mime_type, size_bytes, data, extracted_text, pages, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    )
+    .run(
+      id,
+      String(input.name || 'File').slice(0, 200),
+      input.kind,
+      String(input.mime_type || 'application/octet-stream').slice(0, 100),
+      bytes.length,
+      bytes,
+      String(input.extracted_text || '').slice(0, LIBRARY_TEXT_MAX),
+      pages,
+      createdAt,
+      now(),
+    );
+  return db().prepare(`SELECT ${LIBRARY_FILE_FIELDS} FROM library_files WHERE id = ?`).get(id);
+}
+
+function deleteLibraryFile(id) {
+  db().prepare('DELETE FROM library_files WHERE id = ?').run(String(id));
+  return true;
+}
+
+function listLibraryLinks() {
+  return db().prepare(`SELECT ${LIBRARY_LINK_FIELDS} FROM library_links ORDER BY created_at DESC`).all();
+}
+
+function cleanLibraryLink(input = {}) {
+  const url = String(input.url || '');
+  if (!/^https:\/\/[^\s]+$/.test(url) || url.length > 2000) throw userError('Paste a web link that starts with https://.');
+  return {
+    url,
+    title: String(input.title ?? '').slice(0, 200),
+    platform: String(input.platform || 'other').slice(0, 40),
+    category: String(input.category || 'General').slice(0, 40),
+    note: String(input.note ?? '').slice(0, 500),
+  };
+}
+
+function insertLibraryLink(input = {}) {
+  const link = cleanLibraryLink(input);
+  const id = typeof input.id === 'string' && input.id ? input.id : randomUUID();
+  const createdAt = typeof input.created_at === 'string' && input.created_at ? input.created_at : now();
+  db()
+    .prepare(
+      'INSERT OR IGNORE INTO library_links (id, url, title, platform, category, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    )
+    .run(id, link.url, link.title, link.platform, link.category, link.note, createdAt, now());
+  return db().prepare(`SELECT ${LIBRARY_LINK_FIELDS} FROM library_links WHERE id = ?`).get(id);
+}
+
+function updateLibraryLink(id, patch = {}) {
+  const current = db().prepare(`SELECT ${LIBRARY_LINK_FIELDS} FROM library_links WHERE id = ?`).get(String(id));
+  if (!current) throw userError('That link is no longer in your library.');
+  const title = patch.title === undefined ? current.title : String(patch.title ?? '').slice(0, 200);
+  const category = patch.category === undefined ? current.category : String(patch.category || 'General').slice(0, 40);
+  const note = patch.note === undefined ? current.note : String(patch.note ?? '').slice(0, 500);
+  db().prepare('UPDATE library_links SET title = ?, category = ?, note = ?, updated_at = ? WHERE id = ?').run(title, category, note, now(), current.id);
+  return db().prepare(`SELECT ${LIBRARY_LINK_FIELDS} FROM library_links WHERE id = ?`).get(current.id);
+}
+
+function deleteLibraryLink(id) {
+  db().prepare('DELETE FROM library_links WHERE id = ?').run(String(id));
+  return true;
+}
+
 // Only these actions can be called from the interface.
 const METHODS = {
   getProfile,
@@ -437,6 +556,15 @@ const METHODS = {
   getAvatar,
   setAvatar,
   clearAvatar,
+  listLibraryFiles,
+  getLibraryFileData,
+  getLibraryText,
+  insertLibraryFile,
+  deleteLibraryFile,
+  listLibraryLinks,
+  insertLibraryLink,
+  updateLibraryLink,
+  deleteLibraryLink,
 };
 
 function call(method, args) {

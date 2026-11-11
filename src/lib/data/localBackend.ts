@@ -1,8 +1,8 @@
 // Offline data in the browser preview only (the desktop app uses the SQLite file).
 // Same behaviour, kept in this browser's storage.
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
-import type { AttemptRow, FriendRow, LessonProgressRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorRow } from '../types';
-import type { DataBackend, NewAttempt, NewTest, ProfilePatch, SharePayload } from './backend';
+import type { AttemptRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorRow } from '../types';
+import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 
 const STORE_KEY = 'danna.local.v1';
 const ONLINE_ONLY = 'This is available with an online account.';
@@ -17,6 +17,7 @@ interface LocalStore {
   tutor: TutorRow[];
   /** The profile picture as a WebP data URL, or null. */
   avatar?: { dataUrl: string } | null;
+  libraryLinks?: LibraryLinkRow[];
 }
 
 const emptyStore = (): LocalStore => ({
@@ -238,6 +239,69 @@ export function createLocalBackend(): DataBackend {
 
     async listAnnouncements() {
       return LOCAL_ANNOUNCEMENTS.slice();
+    },
+
+    // The browser preview keeps links only. Files live in the desktop app or in an online account.
+    async listLibraryFiles() {
+      return [];
+    },
+
+    async getLibraryBlob() {
+      return null;
+    },
+
+    async getLibraryText() {
+      return '';
+    },
+
+    async addLibraryFile() {
+      throw new Error('Files are kept in the desktop app or in your online account.');
+    },
+
+    async deleteLibraryFile() {},
+
+    async listLibraryLinks() {
+      return withStore((store) => (store.libraryLinks ?? []).slice());
+    },
+
+    async addLibraryLink(input: NewLibraryLink) {
+      return withStore((store) => {
+        const links = store.libraryLinks ?? [];
+        const existing = input.id ? links.find((link) => link.id === input.id) : undefined;
+        if (existing) return existing;
+        const link: LibraryLinkRow = {
+          id: input.id ?? newId(),
+          url: input.url,
+          title: input.title,
+          platform: input.platform,
+          category: input.category,
+          note: input.note,
+          created_at: input.created_at ?? nowIso(),
+          updated_at: nowIso(),
+        };
+        store.libraryLinks = [link, ...links];
+        return link;
+      });
+    },
+
+    async updateLibraryLink(id: string, patch: LibraryLinkPatch) {
+      return withStore((store) => {
+        const link = (store.libraryLinks ?? []).find((item) => item.id === id);
+        if (!link) throw new Error('That link is no longer in your library.');
+        Object.assign(link, {
+          title: patch.title ?? link.title,
+          category: patch.category ?? link.category,
+          note: patch.note ?? link.note,
+          updated_at: nowIso(),
+        });
+        return { ...link };
+      });
+    },
+
+    async deleteLibraryLink(id: string) {
+      withStore((store) => {
+        store.libraryLinks = (store.libraryLinks ?? []).filter((link) => link.id !== id);
+      });
     },
 
     async listTutor(limit = 40) {

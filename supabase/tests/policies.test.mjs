@@ -471,3 +471,40 @@ test('an existing version 1 database upgrades in place, keeps its data, and can 
   assert.equal(again, 1);
   await upgrade.close();
 });
+
+test('my library is private: only its owner can read or change it', async () => {
+  await as(db, ALICE, "insert into public.library_links (user_id, url, title, platform, category) values ($1, 'https://youtu.be/abc', 'Listening', 'youtube', 'Listening')", [ALICE]);
+  await as(db, ALICE, "insert into public.library_files (user_id, name, kind, mime_type, size_bytes, storage_path, extracted_text) values ($1, 'Unit.md', 'md', 'text/markdown', 10, $2, 'Hello')", [ALICE, `${ALICE}/doc.md`]);
+
+  assert.equal((await as(db, BOB, 'select id from public.library_links')).rows.length, 0);
+  assert.equal((await as(db, BOB, 'select id from public.library_files')).rows.length, 0);
+  const changed = await as(db, BOB, "update public.library_files set name = 'x' where user_id = $1", [ALICE]);
+  assert.equal(changed.affectedRows, 0);
+  const anonymous = await refused(as(db, null, 'select id from public.library_files'));
+  assert.equal(anonymous.code, PERMISSION_DENIED);
+});
+
+test('a library row belongs to the caller, uses https, and points into the owner folder', async () => {
+  const otherOwner = await refused(as(db, BOB, "insert into public.library_links (user_id, url) values ($1, 'https://example.org/a')", [ALICE]));
+  assert.equal(otherOwner.code, PERMISSION_DENIED);
+
+  const plainHttp = await refused(as(db, BOB, "insert into public.library_links (user_id, url) values ($1, 'http://example.org/a')", [BOB]));
+  assert.equal(plainHttp.code, CHECK_FAILED);
+
+  const wrongFolder = await refused(
+    as(db, BOB, "insert into public.library_files (user_id, name, kind, mime_type, size_bytes, storage_path) values ($1, 'x.md', 'md', 'text/markdown', 1, $2)", [BOB, `${ALICE}/x.md`]),
+  );
+  assert.equal(wrongFolder.code, CHECK_FAILED);
+});
+
+test('library bucket: private, 20 MB limit, three file types, and each person writes only to their own folder', async () => {
+  const bucket = (await db.query("select public, file_size_limit, allowed_mime_types from storage.buckets where id = 'library'")).rows[0];
+  assert.equal(bucket.public, false);
+  assert.equal(bucket.file_size_limit, 20971520);
+  assert.deepEqual([...bucket.allowed_mime_types].sort(), ['application/pdf', 'text/markdown', 'text/plain']);
+
+  await as(db, ALICE, "insert into storage.objects (bucket_id, name, owner) values ('library', $1, $2)", [`${ALICE}/doc.md`, ALICE]);
+  const intrude = await refused(as(db, BOB, "insert into storage.objects (bucket_id, name, owner) values ('library', $1, $2)", [`${ALICE}/other.md`, BOB]));
+  assert.equal(intrude.code, PERMISSION_DENIED);
+  assert.equal((await as(db, BOB, "select name from storage.objects where bucket_id = 'library'")).rows.length, 0);
+});

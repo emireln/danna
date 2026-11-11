@@ -11,8 +11,16 @@ import type {
   Skill,
   TestRow,
   TutorRow,
+  LibraryFileRow,
+  LibraryKind,
+  LibraryLinkRow,
 } from '../types';
-import type { DataBackend, NewAttempt, NewTest, ProfilePatch, SharePayload } from './backend';
+import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
+import { KIND_MIME } from '../library';
+
+const LIBRARY_BUCKET = 'library';
+const FILE_COLUMNS = 'id,name,kind,mime_type,size_bytes,pages,created_at,updated_at';
+const LINK_COLUMNS = 'id,url,title,platform,category,note,created_at,updated_at';
 
 type Result<T> = { data: T; error: { message: string; code?: string } | null };
 
@@ -241,6 +249,106 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
           .order('priority', { ascending: false })
           .order('created_at', { ascending: false }),
       ) as AnnouncementRow[];
+    },
+
+    async listLibraryFiles() {
+      const id = await me();
+      return unwrap(
+        await sb.from('library_files').select(FILE_COLUMNS).eq('user_id', id).order('created_at', { ascending: false }),
+      ) as LibraryFileRow[];
+    },
+
+    async getLibraryBlob(fileId: string) {
+      const row = unwrap(await sb.from('library_files').select('storage_path').eq('id', fileId).maybeSingle()) as {
+        storage_path: string;
+      } | null;
+      if (!row) return null;
+      const { data, error } = await sb.storage.from(LIBRARY_BUCKET).download(row.storage_path);
+      return error || !data ? null : data;
+    },
+
+    async getLibraryText(fileId: string) {
+      const row = unwrap(await sb.from('library_files').select('extracted_text').eq('id', fileId).maybeSingle()) as {
+        extracted_text: string;
+      } | null;
+      return row ? row.extracted_text : '';
+    },
+
+    async addLibraryFile(input: NewLibraryFile) {
+      const userId = await me();
+      const id = input.id ?? crypto.randomUUID();
+      const kind: LibraryKind = input.kind;
+      // The file goes in the owner's folder first; the row points at it and is checked against that folder.
+      const path = `${userId}/${id}.${kind}`;
+      const { error: uploadError } = await sb.storage
+        .from(LIBRARY_BUCKET)
+        .upload(path, input.blob, { upsert: true, contentType: KIND_MIME[kind] });
+      if (uploadError) throw new Error(uploadError.message);
+
+      const result = await sb
+        .from('library_files')
+        .insert({
+          id,
+          user_id: userId,
+          name: input.name.slice(0, 200),
+          kind,
+          mime_type: KIND_MIME[kind],
+          size_bytes: input.blob.size,
+          storage_path: path,
+          extracted_text: input.extracted_text.slice(0, 400000),
+          pages: input.pages,
+          ...(input.created_at ? { created_at: input.created_at } : {}),
+        })
+        .select(FILE_COLUMNS)
+        .single();
+      if (result.error) {
+        await sb.storage.from(LIBRARY_BUCKET).remove([path]);
+        throw new Error(result.error.message);
+      }
+      return result.data as LibraryFileRow;
+    },
+
+    async deleteLibraryFile(fileId: string) {
+      const row = unwrap(await sb.from('library_files').select('storage_path').eq('id', fileId).maybeSingle()) as {
+        storage_path: string;
+      } | null;
+      unwrap(await sb.from('library_files').delete().eq('id', fileId));
+      if (row) await sb.storage.from(LIBRARY_BUCKET).remove([row.storage_path]);
+    },
+
+    async listLibraryLinks() {
+      const id = await me();
+      return unwrap(
+        await sb.from('library_links').select(LINK_COLUMNS).eq('user_id', id).order('created_at', { ascending: false }),
+      ) as LibraryLinkRow[];
+    },
+
+    async addLibraryLink(input: NewLibraryLink) {
+      const userId = await me();
+      return unwrap(
+        await sb
+          .from('library_links')
+          .insert({
+            id: input.id ?? crypto.randomUUID(),
+            user_id: userId,
+            url: input.url,
+            title: input.title,
+            platform: input.platform,
+            category: input.category,
+            note: input.note,
+            ...(input.created_at ? { created_at: input.created_at } : {}),
+          })
+          .select(LINK_COLUMNS)
+          .single(),
+      ) as LibraryLinkRow;
+    },
+
+    async updateLibraryLink(linkId: string, patch: LibraryLinkPatch) {
+      return unwrap(await sb.from('library_links').update(patch).eq('id', linkId).select(LINK_COLUMNS).single()) as LibraryLinkRow;
+    },
+
+    async deleteLibraryLink(linkId: string) {
+      unwrap(await sb.from('library_links').delete().eq('id', linkId));
     },
 
     async listTutor(limit = 40) {

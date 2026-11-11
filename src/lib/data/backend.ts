@@ -14,6 +14,9 @@ import type {
   TestContent,
   TestRow,
   TutorRow,
+  LibraryFileRow,
+  LibraryKind,
+  LibraryLinkRow,
 } from '../types';
 
 export type BackendMode = 'supabase' | 'local';
@@ -68,6 +71,35 @@ export interface SharePayload {
   note: string;
 }
 
+export interface NewLibraryFile {
+  id?: string;
+  created_at?: string;
+  name: string;
+  kind: LibraryKind;
+  mime_type: string;
+  /** The file's bytes. */
+  blob: Blob;
+  /** The text read from the file. The tutor uses it. */
+  extracted_text: string;
+  pages: number | null;
+}
+
+export interface NewLibraryLink {
+  id?: string;
+  created_at?: string;
+  url: string;
+  title: string;
+  platform: string;
+  category: string;
+  note: string;
+}
+
+export interface LibraryLinkPatch {
+  title?: string;
+  category?: string;
+  note?: string;
+}
+
 export interface DataBackend {
   readonly mode: BackendMode;
   getProfile(): Promise<ProfileRow | null>;
@@ -108,6 +140,19 @@ export interface DataBackend {
   markSharesSeen(): Promise<void>;
 
   listAnnouncements(): Promise<AnnouncementRow[]>;
+
+  listLibraryFiles(): Promise<LibraryFileRow[]>;
+  /** The file's bytes for viewing, or null when they are not available. */
+  getLibraryBlob(id: string): Promise<Blob | null>;
+  /** The text read from the file. The tutor uses it. */
+  getLibraryText(id: string): Promise<string>;
+  addLibraryFile(input: NewLibraryFile): Promise<LibraryFileRow>;
+  deleteLibraryFile(id: string): Promise<void>;
+
+  listLibraryLinks(): Promise<LibraryLinkRow[]>;
+  addLibraryLink(input: NewLibraryLink): Promise<LibraryLinkRow>;
+  updateLibraryLink(id: string, patch: LibraryLinkPatch): Promise<LibraryLinkRow>;
+  deleteLibraryLink(id: string): Promise<void>;
 
   listTutor(limit?: number): Promise<TutorRow[]>;
   /** record keeps an existing id and time, used when progress is copied between devices and accounts. */

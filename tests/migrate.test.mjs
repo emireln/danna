@@ -39,6 +39,8 @@ function memory(seed = {}) {
     tests: seed.tests ?? [],
     tutor: seed.tutor ?? [],
     picture: seed.picture ?? null,
+    libraryFiles: seed.libraryFiles ?? [],
+    libraryLinks: seed.libraryLinks ?? [],
   };
   return {
     store,
@@ -106,6 +108,52 @@ function memory(seed = {}) {
       const row = { id: record?.id ?? `m${store.tutor.length + 1}`, role, content, created_at: record?.created_at ?? NOW };
       store.tutor.push(row);
       return row;
+    },
+    async listLibraryFiles() {
+      return store.libraryFiles.map(({ blob, text, ...row }) => ({ ...row }));
+    },
+    async getLibraryBlob(id) {
+      return store.libraryFiles.find((file) => file.id === id)?.blob ?? null;
+    },
+    async getLibraryText(id) {
+      return store.libraryFiles.find((file) => file.id === id)?.text ?? '';
+    },
+    async addLibraryFile(input) {
+      if (!store.libraryFiles.some((file) => file.id === input.id)) {
+        store.libraryFiles.push({
+          id: input.id,
+          name: input.name,
+          kind: input.kind,
+          mime_type: input.mime_type,
+          size_bytes: input.blob.size,
+          pages: input.pages,
+          created_at: input.created_at ?? NOW,
+          updated_at: NOW,
+          blob: input.blob,
+          text: input.extracted_text,
+        });
+      }
+      return { id: input.id, name: input.name, kind: input.kind };
+    },
+    async deleteLibraryFile(id) {
+      store.libraryFiles = store.libraryFiles.filter((file) => file.id !== id);
+    },
+    async listLibraryLinks() {
+      return store.libraryLinks.map((link) => ({ ...link }));
+    },
+    async addLibraryLink(input) {
+      if (!store.libraryLinks.some((link) => link.id === input.id)) {
+        store.libraryLinks.push({ ...input, created_at: input.created_at ?? NOW, updated_at: NOW });
+      }
+      return { ...input };
+    },
+    async updateLibraryLink(id, patch) {
+      const link = store.libraryLinks.find((item) => item.id === id);
+      Object.assign(link, patch);
+      return { ...link };
+    },
+    async deleteLibraryLink(id) {
+      store.libraryLinks = store.libraryLinks.filter((link) => link.id !== id);
     },
   };
 }
@@ -204,10 +252,37 @@ test('an account that already has data keeps its own setup, name, picture and hi
   assert.equal(account.store.reviews[0].reps, 5, 'the review item learned further wins');
 });
 
-test('a device with nothing to copy is recognised, and a picture alone counts as progress', async () => {
+test('a device with nothing to copy is recognised; a picture or library item alone counts as progress', async () => {
   assert.equal(await hasLocalProgress(memory()), false);
   assert.equal(await hasLocalProgress(deviceWithProgress()), true);
 
   const pictureOnly = memory({ profile: { avatar_updated_at: NOW }, picture: new Blob(['x'], { type: 'image/webp' }) });
   assert.equal(await hasLocalProgress(pictureOnly), true);
+
+  const linkOnly = memory({
+    libraryLinks: [{ id: 'l0', url: 'https://youtu.be/a', title: '', platform: 'youtube', category: 'General', note: '', created_at: NOW, updated_at: NOW }],
+  });
+  assert.equal(await hasLocalProgress(linkOnly), true);
+});
+
+test('library links and files are copied once; a file without content is counted, not fatal', async () => {
+  const device = memory({
+    libraryLinks: [
+      { id: 'l1', url: 'https://youtu.be/abc', title: 'Listening practice', platform: 'youtube', category: 'Listening', note: '', created_at: NOW, updated_at: NOW },
+    ],
+    libraryFiles: [
+      { id: 'f1', name: 'Grammar.md', kind: 'md', mime_type: 'text/markdown', size_bytes: 9, pages: null, created_at: NOW, updated_at: NOW, blob: new Blob(['# Grammar']), text: '# Grammar' },
+      { id: 'f2', name: 'Broken.pdf', kind: 'pdf', mime_type: 'application/pdf', size_bytes: 9, pages: 1, created_at: NOW, updated_at: NOW, blob: null, text: '' },
+    ],
+  });
+  const account = memory({ profile: { id: 'p9' } });
+
+  const first = await copyProgress(device, account);
+  await copyProgress(device, account);
+
+  assert.equal(account.store.libraryLinks.length, 1);
+  assert.equal(account.store.libraryLinks[0].category, 'Listening');
+  assert.equal(account.store.libraryFiles.length, 1, 'the file with content is copied, once');
+  assert.equal(account.store.libraryFiles[0].text, '# Grammar', 'with the text the tutor reads');
+  assert.equal(first.failed, 1, 'the broken file is counted');
 });

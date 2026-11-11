@@ -248,3 +248,28 @@ export interface AISelection {
   provider: Provider;
   model: string;
 }
+
+// My library
+export type LibraryKind = 'pdf' | 'txt' | 'md';
+
+export interface LibraryFileRow {
+  id: string;
+  name: string;
+  kind: LibraryKind;
+  mime_type: string;
+  size_bytes: number;
+  pages: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LibraryLinkRow {
+  id: string;
+  url: string;
+  title: string;
+  platform: string;
+  category: string;
+  note: string;
+  created_at: string;
+  updated_at: string;
+}
