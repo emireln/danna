@@ -151,12 +151,15 @@ export function SettingsScreen() {
   const bringProgress = async () => {
     setAdding(true);
     try {
-      await copyProgress(backendFor('local'), backendFor('supabase'));
+      const report = await copyProgress(backendFor('local'), backendFor('supabase'));
       await refresh();
       await refreshSocial();
       setAddOpen(false);
       setDeviceHasProgress(false);
       notify('Your progress from this device is now in your account.', 'ok');
+      if (report.failed > 0) {
+        notify(`${report.failed} ${report.failed === 1 ? 'item' : 'items'} could not be copied. Try again later.`, 'error');
+      }
     } catch (caught) {
       notify(errorText(caught), 'error');
     } finally {
@@ -416,7 +419,7 @@ export function SettingsScreen() {
           }
         >
           <p className="muted">
-            Lessons, scores, practice sets, coach messages and your picture are copied. What is already in your account stays as it is.
+            Lessons, scores, practice sets, coach messages, library files and your picture are copied. What is already in your account stays as it is.
           </p>
         </Sheet>
       )}

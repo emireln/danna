@@ -17,9 +17,10 @@ Your profile picture works in both modes. Pictures are converted to a small WebP
 - **Diagnostic and score report**: an estimated TOEFL score out of 120, a five-skill radar, skill cards with tips, and a study plan.
 - **Review**: spaced repetition for every missed question.
 - **Coach**: an AI tutor chat.
+- **My library** (from your profile): keep PDF, TXT and Markdown files and read them in the app. Save learning links from YouTube, Coursera, Khan Academy and other platforms, with the platform's logo, and sort them into categories. Ask the tutor questions about the files you choose; it answers only from them and names the file.
 - **Friends** (online only): search by username from three letters, requests, a ranking, shared results and sets, and an inbox.
 - **What's new**: release notes and banners.
-- **AI, bring your own key**: OpenAI, Anthropic, Gemini or OpenRouter. The newest model is selected by default, and you can choose another in Settings.
+- **AI, bring your own key**: OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is selected by default, and you can choose another in Settings. DeepSeek's live model list is read from its API, and the newest version is chosen.
 
 ## Run it
 
@@ -30,7 +31,7 @@ npm run dev
 
 The project settings for the online account are bundled in `.env.development` and `.env.production`. They hold only public values: the project URL and the publishable key. To use another Supabase project, copy `.env.example` to `.env.local` and fill it in.
 
-`npm run web` starts the interface in a browser for quick design checks. The desktop-only features (tray, window bar, AI keys, offline database, encrypted sign-in) run in the desktop app.
+`npm run web` starts the interface in a browser for quick design checks. The desktop-only features (tray, window bar, AI keys, offline database, encrypted sign-in, library files) run in the desktop app.
 
 ## Tests
 
@@ -38,18 +39,25 @@ The project settings for the online account are bundled in `.env.development` an
 npm test
 ```
 
-- `tests/migrate.test.mjs` checks how progress is copied between a device and an account: nothing is lost, running the copy twice adds nothing, and the higher numbers win.
-- `supabase/tests/policies.test.mjs` runs the real schema on PostgreSQL (PGlite, in-process) and checks what each person can and cannot do: row-level security on every table, friend requests, sharing, private pictures, limits, quotas, and an upgrade from the first schema version.
+- `tests/migrate.test.mjs` checks how progress and library items are copied between a device and an account: nothing is lost, running the copy twice adds nothing, and the higher numbers win.
+- `tests/library.test.mjs` checks the library helpers: the file kinds it keeps, and the passages the tutor reads for a question.
+- `tests/platforms.test.mjs` checks how links are matched to platforms and how pasted links are checked.
+- `tests/ai-providers.test.mjs` checks key detection, DeepSeek's model ranking, and the model and chat requests (without the network).
+- `supabase/tests/policies.test.mjs` runs the real schema on PostgreSQL (PGlite, in-process) and checks what each person can and cannot do: row-level security on every table, friend requests, sharing, private pictures and library files, limits, quotas, and an upgrade from the first schema version.
 
-## Logo and icons
+## Logos, icons and the installer banner
 
-`brand/logo.png` is the master logo. After changing it, run:
+`brand/logo.png` is the master logo. After changing it, or after adding a platform logo, run:
 
 ```bash
-npm run icons
+npm run art
 ```
 
-This writes the files the app uses. In the interface, the logo and the icon are WebP (`src/assets/logo.webp`, `src/assets/icon.webp`, `public/favicon.webp`). The installer, the window and the tray need PNG or ICO, so those are generated as well: `build/icon.ico`, `build/icon.png`, and `electron/assets/`. The app icon is the logo on a white rounded square.
+This writes everything the app and the installer use:
+
+- `npm run icons`: the app logo and icon. In the interface they are WebP (`src/assets/logo.webp`, `src/assets/icon.webp`, `public/favicon.webp`). The installer, the window and the tray need PNG or ICO, so those are generated too: `build/icon.ico`, `build/icon.png`, and `electron/assets/`. The app icon is the logo on a white rounded square.
+- `npm run logos`: the platform logos for learning links (`src/assets/platforms/`). Most come from the open Simple Icons set. A platform without one shows its initial until its official logo is added to `brand/platforms/` (see the README there).
+- `npm run installer-art`: the installer's side banner (`build/installerSidebar.bmp`, 164 x 314), with the letters of danna stacked on `#2f6bff`.
 
 ## Build the Windows installer
 
@@ -57,13 +65,14 @@ This writes the files the app uses. In the interface, the logo and the icon are 
 npm run dist
 ```
 
-The installer is written to `release/danna-setup-0.2.0-x64.exe`. Delete the `release` folder first if an earlier build is there.
+The installer is written to `release/danna-setup-<version>-x64.exe`. Delete the `release` folder first if an earlier build is there.
 
 ## Online accounts (Supabase)
 
-1. In the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket and the release notes.
-2. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
-3. Never add a service-role or secret key to the app. Only the publishable key is bundled.
+1. For a new project: in the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket, the library and the release notes.
+2. For a project that already runs the earlier version: paste the whole of `supabase/migrations/0002_library.sql` into the **SQL Editor** and run it. It adds My library (its tables, the private `library` bucket and its rules) and the 0.3.0 release note. It is safe to run again.
+3. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
+4. Never add a service-role or secret key to the app. Only the publishable key is bundled.
 
 ## Release notes and banners (online accounts)
 
@@ -76,10 +85,10 @@ People on this device see the release notes and banner bundled in `src/content/a
 
 ## Where data lives
 
-- **On this device**: `danna.db` (SQLite, including the profile picture) and `danna-settings.json` in the app's data folder. Nothing is sent anywhere.
+- **On this device**: `danna.db` (SQLite: progress, the profile picture, library files and links) and `danna-settings.json` in the app's data folder. Nothing is sent anywhere.
 - **Sign-in session**: `danna-session.bin`, encrypted by Windows and readable only by this app for this Windows user.
-- **Online**: your account, stored in Supabase with row-level security, so only you can read your own rows. Shared results and sets are visible to the friend they were shared with, and only while you are still friends. Your picture is private: only you and your friends can download it.
-- **AI keys**: encrypted by Windows and used only by the app's main process. They are never saved to the online account.
+- **Online**: your account, stored in Supabase with row-level security, so only you can read your own rows. Shared results and sets are visible to the friend they were shared with, and only while you are still friends. Your picture is private: only you and your friends can download it. Your library files are private to you, not even friends can open them.
+- **AI keys**: encrypted by Windows and used only by the app's main process. They are never saved to the online account. The tutor sends only the excerpts of the files you chose to the AI provider you connected.
 
 ## Security
 
@@ -87,35 +96,37 @@ People on this device see the release notes and banner bundled in `src/content/a
 - The page can contact only the project's own address. Images, scripts and frames are restricted by a content security policy.
 - The packaged app turns off Electron features that allow running as Node, loading code from outside the app package, and debugging through command-line switches.
 - Friend requests cannot be forged or accepted on someone else's behalf. XP never goes down online.
-- Limits on text, data and rows per person keep one account from filling the database.
+- Limits on text, data and rows per person keep one account from filling the database (library: 300 files of up to 20 MB, 2000 links).
 - The XP and streak are calculated on the device. The database keeps them from going down, but cannot check how they were earned.
 
 ## Project structure
 
 ```
-brand/         Master logo
+brand/         Master logo, and platform logos (brand/platforms)
 electron/      Desktop shell: window, tray, offline database, sign-in session, AI key store, provider adapters
+scripts/       Logo, icon, platform and installer art generators; version bump and release
 src/           Interface (React and TypeScript)
-  assets/      Logo and icon (WebP)
-  components/  Title bar, shared UI, charts, question renderer
+  assets/      Logo, icon and platform logos (WebP)
+  components/  Title bar, shared UI, file viewer, tutor, platform logos, charts, question renderer
   content/     Bundled lessons, passages, the diagnostic, the mini mock and release notes
-  lib/         Scoring, grading, review scheduling, AI prompts, data backends, progress copying, pictures
+  lib/         Scoring, grading, review scheduling, AI prompts, data backends, progress copying,
+               library, platforms and PDF support
   screens/     One file per screen
   state/       Auth, AI, app data and toast providers
-supabase/      Online database schema (schema.sql) and its tests
-tests/         Progress copy tests
-scripts/       Logo and icon generator
+supabase/      Online database schema (schema.sql), the migration for existing projects, and the database tests
+tests/         Tests for copying, the library, platforms and AI providers
 ```
 
 ## Limits in this version
 
 - TOEFL scores are estimates for practice, not official ETS scores.
 - Speaking answers are transcribed with an OpenAI key. Without one, you rate your own answer.
+- The tutor needs an AI key. A scanned PDF has no text to read until it is converted with OCR.
+- Platform logos come from the open Simple Icons set. Some platforms (for example Alura, BBC Learning English, Cambridge and ETS) have no open logo: they show their initial until their official logo is added to `brand/platforms/`.
 - Automatic updates and Google sign-in are not included yet.
-- The online schema is covered by the tests above, but it must be run once on the Supabase project (see Online accounts).
 
 ## Versions and releases
 
 Every commit bumps the patch number automatically (a pre-commit hook in `.husky/`). To start a new feature release, run `npm run bump -- minor` and commit it: a version changed by hand in a commit is kept as it is.
 
-To publish the current version to GitHub with its Windows installer: run `npm run dist` to build it, push the commit, then run `npm run release`. The release is named after the version (tag `v<version>`), and the commit messages since the previous release become its notes.
+To publish the current version to GitHub with its Windows installer: push the commit, run `npm run dist` to build the installer, then run `npm run release`. The release is named after the version (tag `v<version>`), and the commit messages since the previous release become its notes.

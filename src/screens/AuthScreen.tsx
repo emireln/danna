@@ -221,7 +221,7 @@ export function AuthScreen() {
             </>
           }
         >
-          <p className="muted">Lessons, scores and review items from this device can be added to your account.</p>
+          <p className="muted">Lessons, scores, library files and review items from this device can be added to your account.</p>
         </Sheet>
       )}
     </div>
