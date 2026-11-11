@@ -73,6 +73,13 @@ export interface DataBackend {
   getProfile(): Promise<ProfileRow | null>;
   updateProfile(patch: ProfilePatch): Promise<ProfileRow>;
 
+  /** The person's own picture as WebP, or null. Its version is profile.avatar_updated_at. */
+  getAvatar(): Promise<Blob | null>;
+  /** Saves a WebP picture, or removes it with null. Returns the updated profile. */
+  setAvatar(picture: Blob | null): Promise<ProfileRow>;
+  /** A friend's picture by its storage path. Online accounts only. */
+  fetchAvatar(path: string): Promise<Blob | null>;
+
   listAttempts(limit?: number): Promise<AttemptRow[]>;
   getAttempt(id: string): Promise<AttemptRow | null>;
   insertAttempt(row: NewAttempt): Promise<AttemptRow>;
@@ -103,6 +110,7 @@ export interface DataBackend {
   listAnnouncements(): Promise<AnnouncementRow[]>;
 
   listTutor(limit?: number): Promise<TutorRow[]>;
-  addTutor(role: TutorRow['role'], content: string): Promise<TutorRow>;
+  /** record keeps an existing id and time, used when progress is copied between devices and accounts. */
+  addTutor(role: TutorRow['role'], content: string, record?: { id?: string; created_at?: string }): Promise<TutorRow>;
   clearTutor(): Promise<void>;
 }

@@ -1,22 +1,11 @@
 import { useEffect, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import logoUrl from '../assets/logo.webp';
 
-// The danna mark: a speech bubble with rising bars (learning that grows). Same geometry as public/favicon.svg.
+// The danna logo. The WebP file is generated from brand/logo.png by `npm run icons`.
 export function BrandMark({ size = 26 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <rect width="64" height="64" rx="16" fill="#0f1b33" />
-      <path
-        d="M22 12H42A12 12 0 0 1 54 24V32A12 12 0 0 1 42 44H30L19 52L20 44H22A12 12 0 0 1 10 32V24A12 12 0 0 1 22 12Z"
-        fill="#2f6bff"
-      />
-      <rect x="14.75" y="31" width="6" height="7" rx="3" fill="#ffffff" />
-      <rect x="24.25" y="26" width="6" height="12" rx="3" fill="#ffffff" />
-      <rect x="33.75" y="21" width="6" height="17" rx="3" fill="#ffffff" />
-      <rect x="43.25" y="16" width="6" height="22" rx="3" fill="#13b5a4" />
-    </svg>
-  );
+  return <img className="brand-mark" src={logoUrl} width={size} height={size} alt="" draggable={false} decoding="async" />;
 }
 
 export function Wordmark({ className = '' }: { className?: string }) {
@@ -28,11 +17,26 @@ export function initials(name: string): string {
   return parts.map((part) => part[0]?.toUpperCase() ?? '').join('') || '?';
 }
 
-export function Avatar({ name, color, size = 'md' }: { name: string; color?: string; size?: 'sm' | 'md' | 'lg' }) {
+export function Avatar({
+  name,
+  color,
+  size = 'md',
+  src,
+}: {
+  name: string;
+  color?: string;
+  size?: 'sm' | 'md' | 'lg';
+  /** A picture URL. When there is one, it replaces the initials. */
+  src?: string | null;
+}) {
   const sizeClass = size === 'lg' ? 'avatar--lg' : size === 'sm' ? 'avatar--sm' : '';
   return (
-    <span className={`avatar ${sizeClass}`} style={color ? { background: color } : undefined} aria-hidden="true">
-      {initials(name)}
+    <span className={`avatar ${sizeClass}`} style={color && !src ? { background: color } : undefined} aria-hidden="true">
+      {src ? (
+        <img src={src} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit', display: 'block' }} />
+      ) : (
+        initials(name)
+      )}
     </span>
   );
 }

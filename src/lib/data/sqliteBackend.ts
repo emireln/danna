@@ -16,6 +16,16 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
     getProfile: () => call<ProfileRow>('getProfile'),
     updateProfile: (patch: ProfilePatch) => call<ProfileRow>('updateProfile', [patch]),
 
+    getAvatar: async () => {
+      const bytes = await call<Uint8Array | null>('getAvatar');
+      return bytes ? new Blob([Uint8Array.from(bytes)], { type: 'image/webp' }) : null;
+    },
+    setAvatar: async (picture: Blob | null) => {
+      if (!picture) return call<ProfileRow>('clearAvatar');
+      return call<ProfileRow>('setAvatar', [await picture.arrayBuffer()]);
+    },
+    fetchAvatar: async () => null,
+
     listAttempts: (limit = 60) => call<AttemptRow[]>('listAttempts', [limit]),
     getAttempt: (id: string) => call<AttemptRow | null>('getAttempt', [id]),
     insertAttempt: (row: NewAttempt) => call<AttemptRow>('insertAttempt', [row]),
@@ -50,7 +60,7 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
     listAnnouncements: async () => LOCAL_ANNOUNCEMENTS.slice(),
 
     listTutor: (limit = 40) => call<TutorRow[]>('listTutor', [limit]),
-    addTutor: (role, content) => call<TutorRow>('addTutor', [role, content]),
+    addTutor: (role, content, record) => call<TutorRow>('addTutor', [role, content, record?.id, record?.created_at]),
     clearTutor: () => call<void>('clearTutor'),
   };
 }

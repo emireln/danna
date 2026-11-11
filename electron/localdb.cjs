@@ -7,6 +7,13 @@ const path = require('node:path');
 const { userError } = require('./errors.cjs');
 
 const SKILLS = ['reading', 'listening', 'speaking', 'writing', 'language'];
+const TEST_SKILLS = [...SKILLS, 'mixed'];
+const LEVELS = ['A2', 'B1', 'B2', 'C1'];
+const ATTEMPT_KINDS = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice', 'review'];
+// Same limits as the online database, so a copy from this device never fails on a value.
+const AVATAR_MAX_BYTES = 300 * 1024;
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 const PROFILE_FIELDS = new Set([
   'username',
   'display_name',
@@ -90,6 +97,11 @@ CREATE TABLE IF NOT EXISTS tutor_messages (
   content TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS avatar (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  data BLOB NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `;
 
 let connection = null;
@@ -101,6 +113,11 @@ function db() {
   connection = new DatabaseSync(path.join(folder, 'danna.db'));
   connection.exec('PRAGMA journal_mode = WAL;');
   connection.exec(SCHEMA);
+  // Databases from version 0.2.0 do not have the picture timestamp yet.
+  const profileColumns = connection.prepare('PRAGMA table_info(profile)').all().map((column) => column.name);
+  if (!profileColumns.includes('avatar_updated_at')) {
+    connection.exec('ALTER TABLE profile ADD COLUMN avatar_updated_at TEXT');
+  }
   return connection;
 }
 
@@ -125,8 +142,45 @@ function optionalText(value) {
 
 // Profile -------------------------------------------------------------------
 
+// Keeps a value inside the limits the online database enforces, so copying never fails on it.
+function cleanProfileValue(key, value, current) {
+  switch (key) {
+    case 'username':
+      if (!/^[a-z0-9_]{3,20}$/.test(String(value))) {
+        throw userError('Usernames use 3 to 20 lowercase letters, numbers or underscores.');
+      }
+      return String(value);
+    case 'display_name':
+      return String(value ?? '').slice(0, 40);
+    case 'avatar_color':
+      return HEX_COLOR.test(String(value)) ? String(value) : current.avatar_color;
+    case 'target_score':
+      return clamp(value, 60, 120, current.target_score);
+    case 'daily_minutes':
+      return clamp(value, 5, 180, current.daily_minutes);
+    case 'level':
+      return LEVELS.includes(value) ? value : current.level;
+    case 'xp':
+      return Math.max(current.xp, clamp(value, 0, 10000000, current.xp));
+    case 'streak':
+      return clamp(value, 0, 36500, current.streak);
+    case 'exam_date':
+    case 'last_active':
+      return DATE_PATTERN.test(String(value ?? '')) ? String(value) : null;
+    case 'onboarding_done':
+      return value ? 1 : 0;
+    default:
+      return value ?? null;
+  }
+}
+
 function toProfile(row) {
-  return { ...row, onboarding_done: Boolean(row.onboarding_done) };
+  return {
+    ...row,
+    onboarding_done: Boolean(row.onboarding_done),
+    avatar_path: null,
+    avatar_updated_at: row.avatar_updated_at ?? null,
+  };
 }
 
 function getProfile() {
@@ -145,14 +199,7 @@ function updateProfile(patch = {}) {
   const current = getProfile();
   const entries = Object.entries(patch || {}).filter(([key]) => PROFILE_FIELDS.has(key));
   if (entries.length > 0) {
-    const values = entries.map(([key, value]) => {
-      if (key === 'username' && !/^[a-z0-9_]{3,20}$/.test(String(value))) {
-        throw userError('Usernames use 3 to 20 lowercase letters, numbers or underscores.');
-      }
-      if (key === 'onboarding_done') return value ? 1 : 0;
-      if (key === 'exam_date' || key === 'last_active') return optionalText(value);
-      return value ?? null;
-    });
+    const values = entries.map(([key, value]) => cleanProfileValue(key, value, current));
     const assignments = entries.map(([key]) => `${key} = ?`).join(', ');
     db().prepare(`UPDATE profile SET ${assignments} WHERE id = ?`).run(...values, current.id);
   }
@@ -185,9 +232,9 @@ function insertAttempt(input = {}) {
     )
     .run(
       id,
-      String(input.kind || 'practice'),
-      String(input.ref_id ?? ''),
-      String(input.title ?? 'Practice'),
+      ATTEMPT_KINDS.includes(input.kind) ? input.kind : 'practice',
+      String(input.ref_id ?? '').slice(0, 120),
+      String(input.title ?? 'Practice').slice(0, 200),
       clamp(input.score_pct, 0, 100, 0),
       input.predicted === null || input.predicted === undefined ? null : clamp(input.predicted, 0, 120, 0),
       JSON.stringify(input.skills ?? {}),
@@ -291,11 +338,11 @@ function insertTest(input = {}) {
     )
     .run(
       id,
-      String(input.title ?? 'Practice set'),
-      String(input.description ?? ''),
-      String(input.kind || 'ai'),
-      String(input.skill || 'mixed'),
-      String(input.level || 'B1'),
+      String(input.title ?? 'Practice set').slice(0, 120),
+      String(input.description ?? '').slice(0, 300),
+      input.kind === 'custom' ? 'custom' : 'ai',
+      TEST_SKILLS.includes(input.skill) ? input.skill : 'mixed',
+      LEVELS.includes(input.level) ? input.level : 'B1',
       clamp(input.minutes, 1, 240, 10),
       JSON.stringify(input.content ?? { passages: [], questions: [] }),
       typeof input.created_at === 'string' ? input.created_at : now(),
@@ -312,24 +359,60 @@ function listTutor(limit = 40) {
     .reverse();
 }
 
-function addTutor(role, content) {
+function addTutor(role, content, id, createdAt) {
   const row = {
-    id: randomUUID(),
+    id: typeof id === 'string' && id ? id : randomUUID(),
     role: role === 'assistant' ? 'assistant' : 'user',
     content: String(content ?? '').slice(0, 8000),
-    created_at: now(),
+    created_at: typeof createdAt === 'string' && createdAt ? createdAt : now(),
   };
-  db().prepare('INSERT INTO tutor_messages (id, role, content, created_at) VALUES (?, ?, ?, ?)').run(
-    row.id,
-    row.role,
-    row.content,
-    row.created_at,
-  );
+  db()
+    .prepare('INSERT OR IGNORE INTO tutor_messages (id, role, content, created_at) VALUES (?, ?, ?, ?)')
+    .run(row.id, row.role, row.content, row.created_at);
   return row;
 }
 
 function clearTutor() {
   db().prepare('DELETE FROM tutor_messages').run();
+}
+
+// Profile picture: one WebP file of at most 300 KB, kept in the database file.
+function toBuffer(input) {
+  if (input instanceof ArrayBuffer) return Buffer.from(input);
+  if (ArrayBuffer.isView(input)) return Buffer.from(input.buffer, input.byteOffset, input.byteLength);
+  return null;
+}
+
+function isWebp(bytes) {
+  return bytes.length > 12 && bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP';
+}
+
+function getAvatar() {
+  const row = db().prepare('SELECT data FROM avatar WHERE id = 1').get();
+  return row ? new Uint8Array(row.data) : null;
+}
+
+function setAvatar(input) {
+  getProfile();
+  const bytes = toBuffer(input);
+  if (!bytes || bytes.length === 0 || bytes.length > AVATAR_MAX_BYTES) {
+    throw userError('That picture is too large. Choose a smaller one.');
+  }
+  if (!isWebp(bytes)) throw userError('That picture could not be saved. Try another one.');
+  const stamp = now();
+  db()
+    .prepare(
+      'INSERT INTO avatar (id, data, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at',
+    )
+    .run(bytes, stamp);
+  db().prepare('UPDATE profile SET avatar_updated_at = ?').run(stamp);
+  return getProfile();
+}
+
+function clearAvatar() {
+  db().prepare('DELETE FROM avatar').run();
+  db().prepare('UPDATE profile SET avatar_updated_at = NULL').run();
+  return getProfile();
 }
 
 // Only these actions can be called from the interface.
@@ -351,6 +434,9 @@ const METHODS = {
   listTutor,
   addTutor,
   clearTutor,
+  getAvatar,
+  setAvatar,
+  clearAvatar,
 };
 
 function call(method, args) {

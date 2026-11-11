@@ -34,7 +34,7 @@ export function TitleBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { status, mode, email, signOut } = useAuth();
-  const { profile, incomingRequests, unseenShares, hasNewRelease } = useAppData();
+  const { profile, incomingRequests, unseenShares, hasNewRelease, pictureUrl } = useAppData();
   const windows = useWindowControls();
   const [menuOpen, setMenuOpen] = useState(false);
   const anchor = useRef<HTMLDivElement>(null);
@@ -89,7 +89,7 @@ export function TitleBar() {
               aria-expanded={menuOpen}
               aria-label="Account menu"
             >
-              <Avatar name={name} color={profile?.avatar_color} size="sm" />
+              <Avatar name={name} color={profile?.avatar_color} size="sm" src={pictureUrl} />
             </button>
             <AnimatePresence>
               {menuOpen && (

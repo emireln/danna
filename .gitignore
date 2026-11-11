@@ -6,10 +6,12 @@ dist/
 release/
 *.tsbuildinfo
 
-# environment files may hold keys; only the example is committed
+# environment files may hold keys; only public settings and the example are committed
 .env
 .env.*
 !.env.example
+!.env.development
+!.env.production
 
 # logs and OS / editor files
 *.log

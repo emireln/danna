@@ -4,6 +4,7 @@ import type { AnnouncementRow, ProfileRow } from '../lib/types';
 import type { ProfilePatch } from '../lib/data/backend';
 import type { SkillMap } from '../lib/scoring';
 import { errorText } from '../lib/bridge';
+import { usePictureUrl } from '../lib/avatarCache';
 
 interface AppDataApi {
   ready: boolean;
@@ -21,6 +22,10 @@ interface AppDataApi {
   reloadSkills: () => Promise<void>;
   refreshSocial: () => Promise<void>;
   patchProfile: (patch: ProfilePatch) => Promise<ProfileRow>;
+  /** The signed-in person's picture as an object URL, or null. */
+  pictureUrl: string | null;
+  /** Saves a WebP picture, or removes it with null. */
+  changePicture: (picture: Blob | null) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataApi | null>(null);
@@ -104,6 +109,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     [backend],
   );
 
+  // The picture is keyed by its version, so it reloads only when it has changed.
+  const pictureVersion = profile?.avatar_updated_at ?? null;
+  const pictureUrl = usePictureUrl(
+    profile && pictureVersion ? `own:${backend?.mode ?? 'none'}:${profile.id}:${pictureVersion}` : null,
+    () => (backend ? backend.getAvatar() : Promise.resolve(null)),
+  );
+
+  const changePicture = useCallback(
+    async (picture: Blob | null) => {
+      if (!backend) throw new Error('You are not signed in.');
+      setProfile(await backend.setAvatar(picture));
+    },
+    [backend],
+  );
+
   const banners = useMemo(() => announcements.filter((item) => item.kind === 'banner'), [announcements]);
   const releases = useMemo(() => announcements.filter((item) => item.kind === 'release_note'), [announcements]);
   const latestRelease = releases[0] ?? null;
@@ -136,6 +156,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       reloadSkills,
       refreshSocial,
       patchProfile,
+      pictureUrl,
+      changePicture,
     }),
     [
       ready,
@@ -153,6 +175,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       reloadSkills,
       refreshSocial,
       patchProfile,
+      pictureUrl,
+      changePicture,
     ],
   );
 

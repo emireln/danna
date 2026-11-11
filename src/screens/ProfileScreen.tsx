@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Pencil, Settings2 } from 'lucide-react';
+import { Camera, Pencil, Settings2 } from 'lucide-react';
 import { Avatar, Empty, Field, ProgressBar, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { PictureError, prepareAvatar } from '../lib/avatar';
 import { daysUntil, formatDate, levelInfo, timeAgo } from '../lib/progress';
 import { toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow } from '../lib/types';
@@ -13,12 +14,14 @@ import { useToast } from '../state/toast';
 export function ProfileScreen() {
   const navigate = useNavigate();
   const { backend, mode, email, signOut } = useAuth();
-  const { profile, patchProfile } = useAppData();
+  const { profile, patchProfile, pictureUrl, changePicture } = useAppData();
   const { notify } = useToast();
   const [attempts, setAttempts] = useState<AttemptRow[] | null>(null);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [pictureBusy, setPictureBusy] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!backend) return undefined;
@@ -59,10 +62,49 @@ export function ProfileScreen() {
     }
   };
 
+  // Picture changes work offline too: they are saved on this device, or sent to the account when online.
+  const choosePicture = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setPictureBusy(true);
+    try {
+      await changePicture(await prepareAvatar(file));
+      notify('Picture updated.', 'ok');
+    } catch (error) {
+      notify(error instanceof PictureError ? error.message : errorText(error), 'error');
+    } finally {
+      setPictureBusy(false);
+    }
+  };
+
+  const removePicture = async () => {
+    setPictureBusy(true);
+    try {
+      await changePicture(null);
+      notify('Picture removed.', 'ok');
+    } catch (error) {
+      notify(errorText(error), 'error');
+    } finally {
+      setPictureBusy(false);
+    }
+  };
+
   return (
     <div className="page">
       <div className="profile-head">
-        <Avatar name={name} color={profile.avatar_color} size="lg" />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+          <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
+          <button className="btn btn--ghost btn--sm" onClick={() => fileInput.current?.click()} disabled={pictureBusy}>
+            {pictureBusy ? <Spinner dark /> : <Camera />} {pictureUrl ? 'Change picture' : 'Add picture'}
+          </button>
+          {pictureUrl && (
+            <button className="btn--text small" style={{ color: 'var(--muted)' }} onClick={removePicture} disabled={pictureBusy}>
+              Remove picture
+            </button>
+          )}
+          <input ref={fileInput} type="file" accept="image/*" hidden onChange={choosePicture} />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1>{name}</h1>
           <p className="muted small" style={{ marginTop: 4 }}>

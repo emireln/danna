@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Cloud, Eye, EyeOff, KeyRound, Laptop, Trash2 } from 'lucide-react';
 import { Empty, Field, Notice, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
-import { onlineAvailable } from '../lib/session';
+import { backendFor, onlineAvailable } from '../lib/session';
+import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -30,7 +31,7 @@ export function SettingsScreen() {
   const navigate = useNavigate();
   const { mode, email, signOut, moveToDevice } = useAuth();
   const ai = useAI();
-  const { refresh } = useAppData();
+  const { refresh, refreshSocial } = useAppData();
   const { notify } = useToast();
   const online = onlineAvailable();
 
@@ -45,6 +46,23 @@ export function SettingsScreen() {
   const [loadingModels, setLoadingModels] = useState(false);
   const [switchOpen, setSwitchOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [deviceHasProgress, setDeviceHasProgress] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  // Offline progress that can still be added to the account.
+  useEffect(() => {
+    if (mode !== 'supabase') return undefined;
+    let active = true;
+    hasLocalProgress(backendFor('local'))
+      .then((value) => {
+        if (active) setDeviceHasProgress(value);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [mode]);
   const detected = detectClient(keyDraft.trim());
 
   useEffect(() => {
@@ -123,6 +141,22 @@ export function SettingsScreen() {
       setSettings(await bridge.settings.set({ closeToTray: !settings.closeToTray }));
     } catch (caught) {
       notify(errorText(caught), 'error');
+    }
+  };
+
+  const bringProgress = async () => {
+    setAdding(true);
+    try {
+      await copyProgress(backendFor('local'), backendFor('supabase'));
+      await refresh();
+      await refreshSocial();
+      setAddOpen(false);
+      setDeviceHasProgress(false);
+      notify('Your progress from this device is now in your account.', 'ok');
+    } catch (caught) {
+      notify(errorText(caught), 'error');
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -318,6 +352,17 @@ export function SettingsScreen() {
           <div className="section-head">
             <p className="eyebrow">Account</p>
           </div>
+          {deviceHasProgress && (
+            <div className="settings-row">
+              <div className="settings-row__body">
+                <div className="settings-row__title">Progress saved on this device</div>
+                <div className="settings-row__text">Lessons, scores, sets and your picture can be added to your account.</div>
+              </div>
+              <button className="btn btn--ghost btn--sm" onClick={() => setAddOpen(true)}>
+                Add to my account
+              </button>
+            </div>
+          )}
           <div className="settings-row">
             <div className="settings-row__body">
               <div className="settings-row__title">{email ?? 'Signed in'}</div>
@@ -350,6 +395,27 @@ export function SettingsScreen() {
           </button>
         </div>
       </section>
+
+      {addOpen && (
+        <Sheet
+          title="Add this device's progress?"
+          onClose={() => setAddOpen(false)}
+          footer={
+            <>
+              <button className="btn btn--ghost" onClick={() => setAddOpen(false)} disabled={adding}>
+                Cancel
+              </button>
+              <button className="btn btn--primary" onClick={bringProgress} disabled={adding}>
+                {adding ? <Spinner /> : null} Add to my account
+              </button>
+            </>
+          }
+        >
+          <p className="muted">
+            Lessons, scores, practice sets, coach messages and your picture are copied. What is already in your account stays as it is.
+          </p>
+        </Sheet>
+      )}
 
       {switchOpen && (
         <Sheet

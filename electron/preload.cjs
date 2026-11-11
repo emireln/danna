@@ -32,6 +32,11 @@ contextBridge.exposeInMainWorld(
       get: () => call('settings:get'),
       set: (patch) => call('settings:set', patch),
     }),
+    session: Object.freeze({
+      get: (key) => call('session:get', { key }),
+      set: (key, value) => call('session:set', { key, value }),
+      remove: (key) => call('session:remove', { key }),
+    }),
     window: Object.freeze({
       minimize: () => call('window:minimize'),
       toggleMaximize: () => call('window:toggle-maximize'),

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Flame, Play, Search, Share2, UserPlus } from 'lucide-react';
 import { ShareSheet, type ShareItem } from '../components/ShareSheet';
 import { Avatar, Empty, Notice, Skeleton } from '../components/ui';
+import { PersonAvatar } from '../components/PersonAvatar';
 import { errorText } from '../lib/bridge';
 import { timeAgo } from '../lib/progress';
 import { useAuth } from '../state/auth';
@@ -15,7 +16,7 @@ type Tab = 'friends' | 'requests' | 'inbox';
 export function FriendsScreen() {
   const navigate = useNavigate();
   const { backend, signOut } = useAuth();
-  const { profile, refreshSocial } = useAppData();
+  const { profile, refreshSocial, pictureUrl } = useAppData();
   const { notify } = useToast();
   const [tab, setTab] = useState<Tab>('friends');
   const [friends, setFriends] = useState<FriendRow[] | null>(null);
@@ -40,7 +41,8 @@ export function FriendsScreen() {
   useEffect(() => {
     if (!backend || backend.mode !== 'supabase') return undefined;
     const term = query.trim().toLowerCase();
-    if (term.length < 2) {
+    // The server searches from three letters on, so shorter terms are not sent.
+    if (term.length < 3) {
       setFound([]);
       return undefined;
     }
@@ -71,8 +73,19 @@ export function FriendsScreen() {
   const unseen = received.filter((share) => !share.seen).length;
 
   const ranking = useMemo(() => {
-    const rows = accepted.map((friend) => ({ id: friend.id, name: friend.display_name || friend.username, xp: friend.xp, streak: friend.streak, me: false }));
-    if (profile) rows.push({ id: profile.id, name: profile.display_name || profile.username, xp: profile.xp, streak: profile.streak, me: true });
+    const rows: Array<{ id: string; name: string; xp: number; streak: number; me: boolean; friend: FriendRow | null }> = accepted.map(
+      (friend) => ({
+        id: friend.id,
+        name: friend.display_name || friend.username,
+        xp: friend.xp ?? 0,
+        streak: friend.streak ?? 0,
+        me: false,
+        friend,
+      }),
+    );
+    if (profile) {
+      rows.push({ id: profile.id, name: profile.display_name || profile.username, xp: profile.xp, streak: profile.streak, me: true, friend: null });
+    }
     return rows.sort((a, b) => b.xp - a.xp);
   }, [accepted, profile]);
 
@@ -158,7 +171,7 @@ export function FriendsScreen() {
             />
           </label>
 
-          {query.trim().length >= 2 && (
+          {query.trim().length >= 3 && (
             <div className="set-list">
               {searching && <span className="small muted">Searching…</span>}
               {!searching && found.length === 0 && <span className="small muted">No one matches that username yet.</span>}
@@ -166,7 +179,7 @@ export function FriendsScreen() {
                 const already = friends?.some((friend) => friend.id === person.id);
                 return (
                   <div key={person.id} className="person">
-                    <Avatar name={person.display_name || person.username} color={person.avatar_color} />
+                    <PersonAvatar person={person} />
                     <div className="person__body">
                       <div className="person__name">{person.display_name || person.username}</div>
                       <div className="person__meta">@{person.username}</div>
@@ -196,7 +209,11 @@ export function FriendsScreen() {
                       <span className="small muted" style={{ width: 22, fontWeight: 700 }}>
                         {index + 1}
                       </span>
-                      <Avatar name={row.name} size="sm" />
+                      {row.friend ? (
+                        <PersonAvatar person={row.friend} size="sm" />
+                      ) : (
+                        <Avatar name={row.name} size="sm" src={pictureUrl} />
+                      )}
                       <div className="person__body">
                         <div className="person__name">{row.me ? `${row.name} (you)` : row.name}</div>
                       </div>
@@ -216,11 +233,11 @@ export function FriendsScreen() {
                   <div className="set-list">
                     {accepted.map((friend) => (
                       <div key={friend.id} className="person">
-                        <Avatar name={friend.display_name || friend.username} color={friend.avatar_color} />
+                        <PersonAvatar person={friend} />
                         <div className="person__body">
                           <div className="person__name">{friend.display_name || friend.username}</div>
                           <div className="person__meta">
-                            @{friend.username} · {friend.xp} XP
+                            @{friend.username} · {friend.xp ?? 0} XP
                           </div>
                         </div>
                         <div className="person__actions">
@@ -257,7 +274,7 @@ export function FriendsScreen() {
               <span className="field__label">Wants to connect</span>
               {incoming.map((friend) => (
                 <div key={friend.friendship_id} className="person">
-                  <Avatar name={friend.display_name || friend.username} color={friend.avatar_color} />
+                  <PersonAvatar person={friend} />
                   <div className="person__body">
                     <div className="person__name">{friend.display_name || friend.username}</div>
                     <div className="person__meta">@{friend.username}</div>
@@ -279,7 +296,7 @@ export function FriendsScreen() {
               <span className="field__label">Waiting for a reply</span>
               {outgoing.map((friend) => (
                 <div key={friend.friendship_id} className="person">
-                  <Avatar name={friend.display_name || friend.username} color={friend.avatar_color} />
+                  <PersonAvatar person={friend} />
                   <div className="person__body">
                     <div className="person__name">{friend.display_name || friend.username}</div>
                     <div className="person__meta">@{friend.username}</div>

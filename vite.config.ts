@@ -4,13 +4,16 @@ import react from '@vitejs/plugin-react';
 // Writes a Content-Security-Policy into index.html. Development needs inline
 // scripts for React Fast Refresh; production allows only the bundled scripts.
 function securityPolicy(options: { dev: boolean; supabaseUrl: string }): Plugin {
-  const connect = ["'self'", 'https://*.supabase.co', 'wss://*.supabase.co'];
+  // The app may contact only its own project address. No wildcard hosts.
+  const connect = ["'self'"];
+  const images = ["'self'", 'data:', 'blob:'];
   if (options.supabaseUrl) {
     try {
       const origin = new URL(options.supabaseUrl).origin;
-      connect.push(origin, origin.replace(/^https:/, 'wss:'));
+      connect.push(origin);
+      images.push(origin); // banner images come from the project's storage
     } catch {
-      // An invalid URL is reported by the app at runtime; the policy keeps defaults.
+      // An invalid URL is reported by the app at runtime; the policy keeps the defaults.
     }
   }
   if (options.dev) connect.push('http://localhost:5173', 'ws://localhost:5173');
@@ -19,10 +22,12 @@ function securityPolicy(options: { dev: boolean; supabaseUrl: string }): Plugin 
     "default-src 'self'",
     `script-src 'self'${options.dev ? " 'unsafe-inline'" : ''}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https:",
+    `img-src ${images.join(' ')}`,
     "font-src 'self' data:",
     `connect-src ${connect.join(' ')}`,
     "media-src 'self' blob:",
+    "worker-src 'none'",
+    "frame-src 'none'",
     "object-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",

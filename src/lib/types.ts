@@ -107,6 +107,10 @@ export interface ProfileRow {
   streak: number;
   last_active: string | null;
   onboarding_done: boolean;
+  /** Storage path of the picture on an online account; always null on this device. */
+  avatar_path: string | null;
+  /** When the picture last changed (its version). Null when there is no picture. */
+  avatar_updated_at: string | null;
   created_at: string;
 }
 
@@ -165,14 +169,17 @@ export interface PersonRow {
   username: string;
   display_name: string;
   avatar_color: string;
-  xp: number;
-  streak: number;
+  avatar_path: string | null;
+  avatar_updated_at: string | null;
 }
 
 export interface FriendRow extends PersonRow {
   friendship_id: string;
   status: 'pending' | 'accepted';
   direction: 'incoming' | 'outgoing';
+  /** Shown for accepted friends only; null while a request is pending. */
+  xp: number | null;
+  streak: number | null;
   created_at: string;
 }
 

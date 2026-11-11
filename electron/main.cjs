@@ -7,6 +7,7 @@ const keystore = require('./keystore.cjs');
 const ai = require('./ai.cjs');
 const localdb = require('./localdb.cjs');
 const settings = require('./settings.cjs');
+const sessionStore = require('./session.cjs');
 const { userError } = require('./errors.cjs');
 
 // Set by `npm run dev`; packaged builds always serve the bundled interface.
@@ -53,10 +54,17 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 function serveApp(request) {
-  const { pathname } = new URL(request.url);
-  const relative = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
-  const file = path.normalize(path.join(DIST, relative));
-  if (!file.startsWith(DIST)) return new Response('Not found', { status: 404 });
+  let relative;
+  try {
+    const { pathname } = new URL(request.url);
+    relative = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
+  } catch {
+    return new Response('Not found', { status: 404 });
+  }
+  // Only files inside the bundled interface folder. The separator matters: a sibling folder
+  // such as "dist-other" must not pass the check just because its name starts the same way.
+  const file = path.resolve(DIST, `.${relative}`);
+  if (!file.startsWith(DIST + path.sep)) return new Response('Not found', { status: 404 });
   return net.fetch(pathToFileURL(file).toString());
 }
 
@@ -192,6 +200,17 @@ function assertProvider(provider) {
   return provider;
 }
 
+// The interface may only send short chat turns. Anything else is refused or trimmed.
+function cleanMessages(list) {
+  if (!Array.isArray(list) || list.length === 0 || list.length > 60) {
+    throw userError('That message could not be sent. Try again.');
+  }
+  return list.map((item) => ({
+    role: item && item.role === 'assistant' ? 'assistant' : 'user',
+    content: item && typeof item.content === 'string' ? item.content.slice(0, 12000) : '',
+  }));
+}
+
 function keysState() {
   return {
     connections: keystore.listConnections().map((connection) => ({
@@ -258,8 +277,8 @@ function registerIpc() {
     const key = keystore.getKey(selection.provider);
     if (!key) throw userError('Your AI key is missing. Add it again in Settings.');
     const text = await ai.complete(selection.provider, key, selection.model, {
-      system: typeof system === 'string' ? system : '',
-      messages,
+      system: typeof system === 'string' ? system.slice(0, 20000) : '',
+      messages: cleanMessages(messages),
       json: Boolean(json),
       maxTokens,
     });
@@ -270,15 +289,28 @@ function registerIpc() {
     if (!keystore.hasKey('openai')) throw userError('Add an OpenAI key in Settings to transcribe speaking answers.');
     if (!(audio instanceof ArrayBuffer) || audio.byteLength === 0) throw userError('No recording was found. Try again.');
     if (audio.byteLength > 24 * 1024 * 1024) throw userError('That recording is too long. Try a shorter answer.');
-    const text = await ai.transcribe(keystore.getKey('openai'), Buffer.from(audio), typeof mime === 'string' ? mime : 'audio/webm');
+    const type = typeof mime === 'string' && /^audio\/[a-z0-9.+-]{1,40}$/i.test(mime) ? mime : 'audio/webm';
+    const text = await ai.transcribe(keystore.getKey('openai'), Buffer.from(audio), type);
     return { text };
   });
 
   // Offline data: only the actions listed in localdb.cjs are reachable.
-  handle('local:call', ({ method, args }) => localdb.call(String(method), args));
+  // Offline data: only the actions listed in localdb.cjs are reachable, with a short argument list.
+  handle('local:call', ({ method, args }) => {
+    if (typeof method !== 'string' || method.length > 40) throw userError('That action is not available right now.');
+    if (args !== undefined && (!Array.isArray(args) || args.length > 8)) {
+      throw userError('That action is not available right now.');
+    }
+    return localdb.call(method, args);
+  });
 
   handle('settings:get', () => settings.get());
   handle('settings:set', (patch) => settings.set(patch));
+
+  // The sign-in session is stored encrypted by the operating system.
+  handle('session:get', ({ key }) => sessionStore.get(key));
+  handle('session:set', ({ key, value }) => sessionStore.set(key, value));
+  handle('session:remove', ({ key }) => sessionStore.remove(key));
 
   handle('window:minimize', () => {
     if (mainWindow) mainWindow.minimize();

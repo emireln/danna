@@ -55,6 +55,12 @@ export interface DannaBridge {
     get: () => Promise<AppSettings>;
     set: (patch: Partial<AppSettings>) => Promise<AppSettings>;
   };
+  /** Keeps the sign-in session encrypted on this device. */
+  session: {
+    get: (key: string) => Promise<string | null>;
+    set: (key: string, value: string) => Promise<boolean>;
+    remove: (key: string) => Promise<void>;
+  };
   window: {
     minimize: () => Promise<void>;
     toggleMaximize: () => Promise<void>;
@@ -86,6 +92,9 @@ const PATTERNS: Array<[RegExp, string]> = [
   [/rate limit|too many requests|\b429\b/i, 'Too many attempts. Please wait a moment and try again.'],
   [/failed to fetch|network ?error|network request failed|timed? ?out|enotfound|econn|offline/i, 'We could not connect. Check your internet connection and try again.'],
   [/duplicate key|already taken|23505/i, 'That name is already taken. Try another one.'],
+  [/maximum allowed size|payload too large|exceeded/i, 'That picture is too large. Choose a smaller one.'],
+  [/mime type|not supported/i, 'That picture type cannot be saved. Try another one.'],
+  [/reached the limit/i, 'You have reached the limit for this. Remove some items and try again.'],
   [/jwt|session (has )?expired|not authenticated|refresh token/i, 'Your session has ended. Please sign in again.'],
 ];
 

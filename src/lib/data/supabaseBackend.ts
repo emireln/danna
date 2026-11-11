@@ -30,6 +30,12 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
     return id;
   }
 
+  // Pictures are private: the storage policy lets the owner and their friends download them.
+  async function downloadPicture(path: string): Promise<Blob | null> {
+    const { data, error } = await sb.storage.from('avatars').download(path);
+    return error || !data ? null : data;
+  }
+
   return {
     mode: 'supabase',
 
@@ -47,6 +53,42 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
         throw new Error(result.error.message);
       }
       return result.data as ProfileRow;
+    },
+
+    async getAvatar() {
+      const id = await me();
+      const row = unwrap(await sb.from('profiles').select('avatar_path').eq('id', id).maybeSingle()) as {
+        avatar_path: string | null;
+      } | null;
+      return row?.avatar_path ? downloadPicture(row.avatar_path) : null;
+    },
+
+    async setAvatar(picture: Blob | null) {
+      const id = await me();
+      const path = `${id}/avatar.webp`;
+      if (picture) {
+        // Upload first, then point the profile at it, so the profile never refers to a missing file.
+        const { error } = await sb.storage
+          .from('avatars')
+          .upload(path, picture, { upsert: true, contentType: 'image/webp', cacheControl: '3600' });
+        if (error) throw new Error(error.message);
+        return unwrap(
+          await sb
+            .from('profiles')
+            .update({ avatar_path: path, avatar_updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select('*')
+            .single(),
+        ) as ProfileRow;
+      }
+      await sb.storage.from('avatars').remove([path]);
+      return unwrap(
+        await sb.from('profiles').update({ avatar_path: null, avatar_updated_at: null }).eq('id', id).select('*').single(),
+      ) as ProfileRow;
+    },
+
+    async fetchAvatar(path: string) {
+      return downloadPicture(path);
     },
 
     async listAttempts(limit = 60) {
@@ -214,12 +256,18 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       return rows.reverse();
     },
 
-    async addTutor(role, content) {
-      const id = await me();
+    async addTutor(role, content, record) {
+      const userId = await me();
       return unwrap(
         await sb
           .from('tutor_messages')
-          .insert({ user_id: id, role, content: content.slice(0, 8000) })
+          .insert({
+            user_id: userId,
+            role,
+            content: content.slice(0, 8000),
+            ...(record?.id ? { id: record.id } : {}),
+            ...(record?.created_at ? { created_at: record.created_at } : {}),
+          })
           .select('id,role,content,created_at')
           .single(),
       ) as TutorRow;

@@ -15,6 +15,8 @@ interface LocalStore {
   reviews: ReviewRow[];
   tests: TestRow[];
   tutor: TutorRow[];
+  /** The profile picture as a WebP data URL, or null. */
+  avatar?: { dataUrl: string } | null;
 }
 
 const emptyStore = (): LocalStore => ({
@@ -25,7 +27,17 @@ const emptyStore = (): LocalStore => ({
   reviews: [],
   tests: [],
   tutor: [],
+  avatar: null,
 });
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('This picture could not be saved on this device.'));
+    reader.readAsDataURL(blob);
+  });
+}
 
 function read(): LocalStore {
   try {
@@ -61,6 +73,8 @@ function defaultProfile(): ProfileRow {
     streak: 0,
     last_active: null,
     onboarding_done: false,
+    avatar_path: null,
+    avatar_updated_at: null,
     created_at: nowIso(),
   };
 }
@@ -92,6 +106,26 @@ export function createLocalBackend(): DataBackend {
         store.profile = { ...current, ...patch };
         return { ...store.profile };
       });
+    },
+
+    async getAvatar() {
+      const dataUrl = read().avatar?.dataUrl;
+      if (!dataUrl) return null;
+      return (await fetch(dataUrl)).blob();
+    },
+
+    async setAvatar(picture: Blob | null) {
+      const dataUrl = picture ? await blobToDataUrl(picture) : null;
+      return withStore((store) => {
+        const current = store.profile ?? defaultProfile();
+        store.avatar = dataUrl ? { dataUrl } : null;
+        store.profile = { ...current, avatar_updated_at: dataUrl ? nowIso() : null };
+        return { ...store.profile };
+      });
+    },
+
+    async fetchAvatar() {
+      return null;
     },
 
     async listAttempts(limit = 60) {
@@ -210,9 +244,14 @@ export function createLocalBackend(): DataBackend {
       return withStore((store) => store.tutor.slice(-limit));
     },
 
-    async addTutor(role, content) {
+    async addTutor(role, content, record) {
       return withStore((store) => {
-        const message: TutorRow = { id: newId(), role, content: content.slice(0, 8000), created_at: nowIso() };
+        const message: TutorRow = {
+          id: record?.id ?? newId(),
+          role,
+          content: content.slice(0, 8000),
+          created_at: record?.created_at ?? nowIso(),
+        };
         store.tutor = [...store.tutor, message].slice(-200);
         return message;
       });
