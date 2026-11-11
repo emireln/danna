@@ -113,3 +113,9 @@ scripts/       Logo and icon generator
 - Speaking answers are transcribed with an OpenAI key. Without one, you rate your own answer.
 - Automatic updates and Google sign-in are not included yet.
 - The online schema is covered by the tests above, but it must be run once on the Supabase project (see Online accounts).
+
+## Versions and releases
+
+Every commit bumps the patch number automatically (a pre-commit hook in `.husky/`). To start a new feature release, run `npm run bump -- minor` and commit it: a version changed by hand in a commit is kept as it is.
+
+To publish the current version to GitHub with its Windows installer: run `npm run dist` to build it, push the commit, then run `npm run release`. The release is named after the version (tag `v<version>`), and the commit messages since the previous release become its notes.
