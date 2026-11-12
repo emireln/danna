@@ -22,7 +22,7 @@ function hash(text: string): number {
   return h >>> 0;
 }
 
-function placeCorrect(correct: string, wrong: string[], seed: string): { options: string[]; answer: number } {
+export function placeCorrect(correct: string, wrong: string[], seed: string): { options: string[]; answer: number } {
   const answer = hash(seed) % (wrong.length + 1);
   const options = [...wrong];
   options.splice(answer, 0, correct);

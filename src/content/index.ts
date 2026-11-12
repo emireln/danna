@@ -30,6 +30,8 @@ export const PATH: PathItem[] = UNITS.flatMap((unit) => [
 ]);
 
 const TOEFL_LESSONS: LessonDef[] = TOEFL_UNITS.flatMap((unit) => unit.lessons);
+// The warm-up test covers reading, listening, speaking and writing, so it leaves out the grammar drills.
+const WARM_UP_LESSONS: LessonDef[] = TOEFL_LESSONS.filter((lesson) => !lesson.id.endsWith('-grammar'));
 
 export function getLesson(id: string): LessonDef | undefined {
   return PATH.find((item) => item.lesson.id === id)?.lesson ?? TOEFL_LESSONS.find((lesson) => lesson.id === id);
@@ -93,7 +95,7 @@ export function levelTest(level: Level): TestDef {
 
 /** A TOEFL-style sitting: reading, listening, speaking and writing tasks. */
 export function toeflTest(): TestDef {
-  const { questions, passages } = mixed(TOEFL_LESSONS, 18);
+  const { questions, passages } = mixed(WARM_UP_LESSONS, 18);
   return {
     id: TOEFL_TEST_ID,
     title: 'TOEFL warm-up test',
