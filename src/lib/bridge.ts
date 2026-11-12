@@ -84,6 +84,11 @@ export const bridge: DannaBridge | null = typeof window !== 'undefined' && windo
 const USER_MARK = '@@user@@';
 const FALLBACK = 'Something went wrong. Please try again.';
 
+/** An error whose message is written for the person. errorText shows it as it is. */
+export function userError(message: string): Error {
+  return new Error(`${USER_MARK}${message}`);
+}
+
 const PATTERNS: Array<[RegExp, string]> = [
   [/invalid login credentials/i, 'That email and password do not match. Please try again.'],
   [/email not confirmed/i, 'Please confirm your email first. Check your inbox for the link.'],

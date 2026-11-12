@@ -1,11 +1,30 @@
-// Offline data in the browser preview only (the desktop app uses the SQLite file).
-// Same behavior, kept in this browser's storage.
+// Offline data in the browser preview only (the desktop app uses the SQLite file). The rules are the same as
+// the desktop database (see ./rules.ts), so the preview and the app give the same answers.
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
-import type { AttemptRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorRow } from '../types';
+import { userError } from '../bridge';
+import type { AttemptKind, AttemptRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorRow } from '../types';
 import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
+import {
+  ATTEMPT_KINDS,
+  AVATAR_MAX_BYTES,
+  cleanAttempt,
+  cleanLessonRow,
+  cleanLibraryLink,
+  cleanProfilePatch,
+  cleanReviewRow,
+  cleanSkills,
+  cleanTestInput,
+  cleanTutorRole,
+  clampNumber,
+  isWebpBytes,
+  isoTime,
+} from './rules';
 
 const STORE_KEY = 'danna.local.v1';
 const ONLINE_ONLY = 'This is available with an online account.';
+// The browser keeps its copy in a small store, so only the newest items are kept here. The app keeps them all.
+const MAX_ATTEMPTS = 300;
+const MAX_TUTOR = 200;
 
 interface LocalStore {
   profile: ProfileRow | null;
@@ -31,15 +50,6 @@ const emptyStore = (): LocalStore => ({
   avatar: null,
 });
 
-function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error('This picture could not be saved on this device.'));
-    reader.readAsDataURL(blob);
-  });
-}
-
 function read(): LocalStore {
   try {
     const raw = window.localStorage.getItem(STORE_KEY);
@@ -53,12 +63,20 @@ function write(store: LocalStore): void {
   try {
     window.localStorage.setItem(STORE_KEY, JSON.stringify(store));
   } catch {
-    throw new Error('Not enough space on this device. Free some space and try again.');
+    throw userError('Not enough space on this device. Free some space and try again.');
   }
 }
 
 const nowIso = () => new Date().toISOString();
 const newId = () => crypto.randomUUID();
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  return btoa(binary);
+}
 
 function defaultProfile(): ProfileRow {
   return {
@@ -102,10 +120,7 @@ export function createLocalBackend(): DataBackend {
     async updateProfile(patch: ProfilePatch) {
       return withStore((store) => {
         const current = store.profile ?? defaultProfile();
-        if (patch.username !== undefined && !/^[a-z0-9_]{3,20}$/.test(patch.username)) {
-          throw new Error('Usernames use 3 to 20 lowercase letters, numbers or underscores.');
-        }
-        store.profile = { ...current, ...patch };
+        store.profile = { ...current, ...cleanProfilePatch(current, patch) };
         return { ...store.profile };
       });
     },
@@ -113,15 +128,27 @@ export function createLocalBackend(): DataBackend {
     async getAvatar() {
       const dataUrl = read().avatar?.dataUrl;
       if (!dataUrl) return null;
-      return (await fetch(dataUrl)).blob();
+      const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+      return new Blob([Uint8Array.from(atob(base64), (character) => character.charCodeAt(0))], { type: 'image/webp' });
     },
 
     async setAvatar(picture: Blob | null) {
-      const dataUrl = picture ? await blobToDataUrl(picture) : null;
+      if (!picture) {
+        return withStore((store) => {
+          const current = store.profile ?? defaultProfile();
+          store.avatar = null;
+          store.profile = { ...current, avatar_updated_at: null };
+          return { ...store.profile };
+        });
+      }
+      const bytes = new Uint8Array(await picture.arrayBuffer());
+      if (bytes.length === 0 || bytes.length > AVATAR_MAX_BYTES) throw userError('That picture is too large. Choose a smaller one.');
+      if (!isWebpBytes(bytes)) throw userError('That picture could not be saved. Try another one.');
+      const dataUrl = `data:image/webp;base64,${bytesToBase64(bytes)}`;
       return withStore((store) => {
         const current = store.profile ?? defaultProfile();
-        store.avatar = dataUrl ? { dataUrl } : null;
-        store.profile = { ...current, avatar_updated_at: dataUrl ? nowIso() : null };
+        store.avatar = { dataUrl };
+        store.profile = { ...current, avatar_updated_at: nowIso() };
         return { ...store.profile };
       });
     },
@@ -130,13 +157,19 @@ export function createLocalBackend(): DataBackend {
       return null;
     },
 
-    async listAttempts(limit = 60) {
-      return withStore((store) =>
-        store.attempts
+    async listAttempts(limit = 60, kind?: AttemptKind) {
+      return withStore((store) => {
+        const filter = kind && ATTEMPT_KINDS.includes(kind) ? kind : null;
+        return store.attempts
+          .filter((attempt) => filter === null || attempt.kind === filter)
           .slice()
           .sort((a, b) => b.created_at.localeCompare(a.created_at))
-          .slice(0, limit),
-      );
+          .slice(0, clampNumber(limit, 1, 500, 60));
+      });
+    },
+
+    async countAttempts(kind: AttemptKind) {
+      return withStore((store) => (ATTEMPT_KINDS.includes(kind) ? store.attempts.filter((attempt) => attempt.kind === kind).length : 0));
     },
 
     async getAttempt(id: string) {
@@ -147,13 +180,14 @@ export function createLocalBackend(): DataBackend {
       return withStore((store) => {
         const existing = row.id ? store.attempts.find((attempt) => attempt.id === row.id) : undefined;
         if (existing) return existing;
+        const profile = store.profile ?? defaultProfile();
+        store.profile = profile;
         const attempt: AttemptRow = {
-          ...row,
-          id: row.id ?? newId(),
-          user_id: store.profile?.id ?? 'local',
-          created_at: row.created_at ?? nowIso(),
+          id: row.id || newId(),
+          user_id: profile.id,
+          ...cleanAttempt(row as unknown as Record<string, unknown>, nowIso()),
         };
-        store.attempts = [attempt, ...store.attempts].slice(0, 300);
+        store.attempts = [attempt, ...store.attempts].slice(0, MAX_ATTEMPTS);
         return attempt;
       });
     },
@@ -164,17 +198,26 @@ export function createLocalBackend(): DataBackend {
 
     async setSkillScores(scores) {
       withStore((store) => {
-        store.skills = { ...store.skills, ...scores };
+        store.skills = { ...store.skills, ...cleanSkills(scores) };
       });
     },
 
     async listLessonProgress() {
-      return withStore((store) => store.lessons.slice());
+      return withStore((store) =>
+        store.lessons.map((row) => ({
+          lesson_id: row.lesson_id,
+          stars: row.stars,
+          best_pct: row.best_pct,
+          attempts: row.attempts,
+          completed_at: row.completed_at,
+        })),
+      );
     },
 
     async upsertLessonProgress(row) {
       withStore((store) => {
-        store.lessons = [...store.lessons.filter((item) => item.lesson_id !== row.lesson_id), row];
+        const clean = cleanLessonRow(row as unknown as Record<string, unknown>);
+        store.lessons = [...store.lessons.filter((item) => item.lesson_id !== clean.lesson_id), clean];
       });
     },
 
@@ -184,13 +227,16 @@ export function createLocalBackend(): DataBackend {
 
     async upsertReviewItems(rows) {
       withStore((store) => {
-        const keys = new Set(rows.map((row) => row.item_key));
-        store.reviews = [...store.reviews.filter((item) => !keys.has(item.item_key)), ...rows];
+        for (const raw of rows) {
+          const clean = cleanReviewRow(raw as unknown as Record<string, unknown>, nowIso());
+          if (!clean) continue;
+          store.reviews = [...store.reviews.filter((item) => item.item_key !== clean.item_key), clean as unknown as ReviewRow];
+        }
       });
     },
 
     async listMyTests() {
-      return withStore((store) => store.tests.slice());
+      return withStore((store) => store.tests.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)));
     },
 
     async getTest(id: string) {
@@ -201,12 +247,13 @@ export function createLocalBackend(): DataBackend {
       return withStore((store) => {
         const existing = row.id ? store.tests.find((test) => test.id === row.id) : undefined;
         if (existing) return existing;
-        const test: TestRow = {
-          ...row,
-          id: row.id ?? newId(),
-          owner_id: store.profile?.id ?? 'local',
-          created_at: row.created_at ?? nowIso(),
-        };
+        const profile = store.profile ?? defaultProfile();
+        store.profile = profile;
+        const test = {
+          id: row.id || newId(),
+          owner_id: profile.id,
+          ...cleanTestInput(row as unknown as Record<string, unknown>, nowIso()),
+        } as unknown as TestRow;
         store.tests = [test, ...store.tests];
         return test;
       });
@@ -221,11 +268,11 @@ export function createLocalBackend(): DataBackend {
     },
 
     async requestFriend() {
-      throw new Error(ONLINE_ONLY);
+      throw userError(ONLINE_ONLY);
     },
 
     async answerFriend() {
-      throw new Error(ONLINE_ONLY);
+      throw userError(ONLINE_ONLY);
     },
 
     async listShares(): Promise<ShareRow[]> {
@@ -233,7 +280,7 @@ export function createLocalBackend(): DataBackend {
     },
 
     async sendShare(_payload: SharePayload) {
-      throw new Error(ONLINE_ONLY);
+      throw userError(ONLINE_ONLY);
     },
 
     async markSharesSeen() {},
@@ -256,13 +303,15 @@ export function createLocalBackend(): DataBackend {
     },
 
     async addLibraryFile() {
-      throw new Error('Files are kept in the desktop app or in your online account.');
+      throw userError('Files are kept in the desktop app or in your online account.');
     },
 
     async deleteLibraryFile() {},
 
     async listLibraryLinks() {
-      return withStore((store) => (store.libraryLinks ?? []).slice());
+      return withStore((store) =>
+        (store.libraryLinks ?? []).slice().sort((a, b) => b.created_at.localeCompare(a.created_at)),
+      );
     },
 
     async addLibraryLink(input: NewLibraryLink) {
@@ -270,14 +319,11 @@ export function createLocalBackend(): DataBackend {
         const links = store.libraryLinks ?? [];
         const existing = input.id ? links.find((link) => link.id === input.id) : undefined;
         if (existing) return existing;
+        const clean = cleanLibraryLink(input as unknown as Record<string, unknown>);
         const link: LibraryLinkRow = {
-          id: input.id ?? newId(),
-          url: input.url,
-          title: input.title,
-          platform: input.platform,
-          category: input.category,
-          note: input.note,
-          created_at: input.created_at ?? nowIso(),
+          id: input.id || newId(),
+          ...clean,
+          created_at: isoTime(input.created_at, nowIso()),
           updated_at: nowIso(),
         };
         store.libraryLinks = [link, ...links];
@@ -285,14 +331,15 @@ export function createLocalBackend(): DataBackend {
       });
     },
 
-    async updateLibraryLink(id: string, patch: LibraryLinkPatch) {
+    async updateLibraryLink(id: string, patchInput: LibraryLinkPatch) {
       return withStore((store) => {
+        const patch: LibraryLinkPatch = patchInput && typeof patchInput === 'object' ? patchInput : {};
         const link = (store.libraryLinks ?? []).find((item) => item.id === id);
-        if (!link) throw new Error('That link is no longer in your library.');
+        if (!link) throw userError('That link is no longer in your library.');
         Object.assign(link, {
-          title: patch.title ?? link.title,
-          category: patch.category ?? link.category,
-          note: patch.note ?? link.note,
+          title: patch.title === undefined ? link.title : String(patch.title ?? '').slice(0, 200),
+          category: patch.category === undefined ? link.category : String(patch.category || 'General').slice(0, 40),
+          note: patch.note === undefined ? link.note : String(patch.note ?? '').slice(0, 500),
           updated_at: nowIso(),
         });
         return { ...link };
@@ -306,18 +353,24 @@ export function createLocalBackend(): DataBackend {
     },
 
     async listTutor(limit = 40) {
-      return withStore((store) => store.tutor.slice(-limit));
+      return withStore((store) =>
+        store.tutor
+          .slice()
+          .sort((a, b) => a.created_at.localeCompare(b.created_at))
+          .slice(-clampNumber(limit, 1, 200, 40)),
+      );
     },
 
     async addTutor(role, content, record) {
       return withStore((store) => {
         const message: TutorRow = {
-          id: record?.id ?? newId(),
-          role,
-          content: content.slice(0, 8000),
-          created_at: record?.created_at ?? nowIso(),
+          id: record?.id || newId(),
+          role: cleanTutorRole(role),
+          content: String(content ?? '').slice(0, 8000),
+          created_at: isoTime(record?.created_at, nowIso()),
         };
-        store.tutor = [...store.tutor, message].slice(-200);
+        // A message that is already there keeps its first copy, as the app does.
+        if (!store.tutor.some((item) => item.id === message.id)) store.tutor = [...store.tutor, message].slice(-MAX_TUTOR);
         return message;
       });
     },

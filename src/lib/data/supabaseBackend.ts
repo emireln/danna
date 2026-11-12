@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
   AnnouncementRow,
+  AttemptKind,
   AttemptRow,
   FriendRow,
   LessonProgressRow,
@@ -17,6 +18,7 @@ import type {
 } from '../types';
 import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
+import { userError } from '../bridge';
 
 const LIBRARY_BUCKET = 'library';
 const FILE_COLUMNS = 'id,name,kind,mime_type,size_bytes,pages,created_at,updated_at';
@@ -34,7 +36,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
   async function me(): Promise<string> {
     const { data } = await sb.auth.getSession();
     const id = data.session?.user.id;
-    if (!id) throw new Error('Your session has expired. Sign in again to continue.');
+    if (!id) throw userError('Your session has expired. Sign in again to continue.');
     return id;
   }
 
@@ -56,8 +58,8 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       const id = await me();
       const result = await sb.from('profiles').update(patch).eq('id', id).select('*').single();
       if (result.error) {
-        if (result.error.code === '23505') throw new Error('That username is taken. Try another one.');
-        if (result.error.code === '23514') throw new Error('Usernames use 3–20 lowercase letters, numbers or underscores.');
+        if (result.error.code === '23505') throw userError('That username is taken. Try another one.');
+        if (result.error.code === '23514') throw userError('Usernames use 3 to 20 lowercase letters, numbers or underscores.');
         throw new Error(result.error.message);
       }
       return result.data as ProfileRow;
@@ -99,11 +101,22 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       return downloadPicture(path);
     },
 
-    async listAttempts(limit = 60) {
+    async listAttempts(limit = 60, kind?: AttemptKind) {
       const id = await me();
-      return unwrap(
-        await sb.from('attempts').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(limit),
-      ) as AttemptRow[];
+      let query = sb.from('attempts').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(limit);
+      if (kind) query = query.eq('kind', kind);
+      return unwrap(await query) as AttemptRow[];
+    },
+
+    async countAttempts(kind: AttemptKind) {
+      const id = await me();
+      const { count, error } = await sb
+        .from('attempts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', id)
+        .eq('kind', kind);
+      if (error) throw new Error(error.message);
+      return count ?? 0;
     },
 
     async getAttempt(attemptId: string) {
@@ -200,7 +213,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       const id = await me();
       const result = await sb.from('friendships').insert({ requester_id: id, addressee_id: userId });
       if (result.error) {
-        if (result.error.code === '23505') throw new Error('You already have a request or friendship with this person.');
+        if (result.error.code === '23505') throw userError('You already have a request or friendship with this person.');
         throw new Error(result.error.message);
       }
     },

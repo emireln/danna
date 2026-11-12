@@ -2,7 +2,7 @@
 // the bridge. Friends and sharing are not part of offline use.
 import type { DannaBridge } from '../bridge';
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
-import type { AttemptRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorRow } from '../types';
+import type { AttemptKind, AttemptRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorRow } from '../types';
 import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch } from './backend';
 
 const ONLINE_ONLY = 'This is available with an online account.';
@@ -26,7 +26,8 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
     },
     fetchAvatar: async () => null,
 
-    listAttempts: (limit = 60) => call<AttemptRow[]>('listAttempts', [limit]),
+    listAttempts: (limit = 60, kind?: AttemptKind) => call<AttemptRow[]>('listAttempts', [limit, kind]),
+    countAttempts: (kind: AttemptKind) => call<number>('countAttempts', [kind]),
     getAttempt: (id: string) => call<AttemptRow | null>('getAttempt', [id]),
     insertAttempt: (row: NewAttempt) => call<AttemptRow>('insertAttempt', [row]),
 

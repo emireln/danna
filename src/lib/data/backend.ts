@@ -113,7 +113,10 @@ export interface DataBackend {
   /** A friend's picture by its storage path. Online accounts only. */
   fetchAvatar(path: string): Promise<Blob | null>;
 
-  listAttempts(limit?: number): Promise<AttemptRow[]>;
+  /** The newest attempts first, optionally only one kind of attempt. */
+  listAttempts(limit?: number, kind?: AttemptKind): Promise<AttemptRow[]>;
+  /** How many attempts of one kind exist, whatever the page size. */
+  countAttempts(kind: AttemptKind): Promise<number>;
   getAttempt(id: string): Promise<AttemptRow | null>;
   insertAttempt(row: NewAttempt): Promise<AttemptRow>;
 
