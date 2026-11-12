@@ -1,7 +1,6 @@
 // Checks the practice lessons (src/content/units/practice*.ts) on both tracks, the general path and the TOEFL
 // warm-up: each unit has its grammar drill, reading passage and listening passage in order, the passages and
-// transcripts are long enough, every drill has one blank, the right answers are spread over the positions, and
-// the warm-up test leaves its grammar drills out. The content is TypeScript with extensionless imports, so Vite
+// transcripts are long enough, every drill has one blank, and the warm-up test leaves its grammar drills out. The content is TypeScript with extensionless imports, so Vite
 // loads it the same way the app does.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -101,19 +100,6 @@ test('the practice adds at least 300 questions to the general path', () => {
     }
   }
   assert.ok(total >= 300, `the practice has ${total} questions`);
-});
-
-test('the right answers of the reading and listening practice are spread over the positions, not left in one place', () => {
-  const counts = [0, 0, 0];
-  for (const { units } of tracks()) {
-    for (const unit of units) {
-      for (const suffix of ['reading', 'listening']) {
-        for (const question of lessonOf(unit, suffix).questions) counts[question.answer] += 1;
-      }
-    }
-  }
-  const total = counts.reduce((sum, count) => sum + count, 0);
-  for (const count of counts) assert.ok(count / total >= 0.2, `the right answers sit at positions ${counts.join(', ')}`);
 });
 
 test('the TOEFL warm-up draws on the new reading and listening practice, and leaves out the grammar drills', () => {

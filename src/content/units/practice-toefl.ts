@@ -1,5 +1,5 @@
 // Practice for the TOEFL warm-up: a grammar drill, an academic reading passage and a lecture or conversation
-// for each unit. The right answer is written first; practiceLessons places it (see practice.ts).
+// for each unit. The right answer is written first; mc() places it at a varied position (see authoring.ts).
 import { mc, pick } from '../authoring';
 import type { PracticeSet } from './practice';
 

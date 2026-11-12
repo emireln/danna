@@ -22,27 +22,36 @@ function hash(text: string): number {
   return h >>> 0;
 }
 
-export function placeCorrect(correct: string, wrong: string[], seed: string): { options: string[]; answer: number } {
+function placeCorrect(correct: string, wrong: string[], seed: string): { options: string[]; answer: number } {
   const answer = hash(seed) % (wrong.length + 1);
   const options = [...wrong];
   options.splice(answer, 0, correct);
   return { options, answer };
 }
 
-/** A multiple-choice item. `answer` is the index of the right option. */
+/**
+ * Moves the right option to the position a hash of the seed picks, so the right letter varies from item to item.
+ * `answer` is the index of the right option in the list as the author wrote it.
+ */
+function placeAnswer(options: string[], answer: number, seed: string): { options: string[]; answer: number } {
+  return placeCorrect(options[answer], options.filter((_, index) => index !== answer), seed);
+}
+
+/** A multiple-choice item. `answer` is the index of the right option in the list as written. */
 export function mc(prompt: string, options: string[], answer: number, explanation?: string): Draft {
-  return { type: 'choice', prompt, options, answer, explanation };
+  const placed = placeAnswer(options, answer, prompt);
+  return { type: 'choice', prompt, options: placed.options, answer: placed.answer, explanation };
 }
 
 /** A grammar item: the sentence has a gap (___), and the correct form is placed among the others. */
 export function pick(sentence: string, correct: string, wrong: string[], explanation?: string): Draft {
-  const { options, answer } = placeCorrect(correct, wrong, sentence);
-  return mc(sentence, options, answer, explanation);
+  return mc(sentence, [correct, ...wrong], 0, explanation);
 }
 
 /** A listening item: the transcript is read aloud before the question. */
 export function listen(prompt: string, transcript: string, options: string[], answer: number, explanation?: string): Draft {
-  return { type: 'choice', prompt, options, answer, explanation, listen: transcript };
+  const placed = placeAnswer(options, answer, prompt);
+  return { type: 'choice', prompt, options: placed.options, answer: placed.answer, explanation, listen: transcript };
 }
 
 /** Text with blanks written as {{word}}. The learner types each missing word. */
@@ -105,8 +114,7 @@ export function vocabulary(input: Omit<LessonInput, 'items' | 'skill'> & { words
   const meanings = input.words.map(([, meaning]) => meaning);
   const items: Draft[] = input.words.map(([word, meaning], index) => {
     const wrong = [1, 2, 3].map((step) => meanings[(index + step) % meanings.length]);
-    const { options, answer } = placeCorrect(meaning, wrong, word);
-    return mc(`What does “${word}” mean?`, options, answer);
+    return mc(`What does “${word}” mean?`, [meaning, ...wrong], 0);
   });
   input.words.slice(0, 4).forEach(([word, , example]) => {
     if (!example.includes(`[${word}]`)) throw new Error(`The example for “${word}” must contain [${word}].`);

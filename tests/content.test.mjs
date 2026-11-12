@@ -62,6 +62,23 @@ test('every multiple-choice item has a prompt, three to five options and a valid
   }
 });
 
+test('the right answers are spread over the positions, so no letter is the answer most of the time', () => {
+  // One row of counts for each number of options: most items have three, and the vocabulary meanings have four.
+  const rows = new Map();
+  for (const lesson of allLessons()) {
+    for (const question of lesson.questions.filter((item) => item.type === 'choice')) {
+      const size = question.options.length;
+      const row = rows.get(size) ?? new Array(size).fill(0);
+      row[question.answer] += 1;
+      rows.set(size, row);
+    }
+  }
+  for (const [size, row] of rows) {
+    const total = row.reduce((sum, count) => sum + count, 0);
+    for (const count of row) assert.ok(count / total >= 0.5 / size, `with ${size} options the right answers sit at ${row.join(', ')}`);
+  }
+});
+
 test('every gap-fill item has at least one blank, and every blank has a word', () => {
   for (const lesson of allLessons()) {
     for (const question of lesson.questions.filter((item) => item.type === 'cloze')) {
