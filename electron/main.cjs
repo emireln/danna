@@ -312,7 +312,6 @@ function registerIpc() {
     return { text };
   });
 
-  // Offline data: only the actions listed in localdb.cjs are reachable.
   // Offline data: only the actions listed in localdb.cjs are reachable, with a short argument list.
   handle('local:call', ({ method, args }) => {
     if (typeof method !== 'string' || method.length > 40) throw userError('That action is not available right now.');

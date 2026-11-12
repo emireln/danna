@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, ClipboardCheck, Languages, PenLine, Plus, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, ClipboardCheck, GraduationCap, Languages, PenLine, Plus, Sparkles, Star } from 'lucide-react';
 import { GenerateSheet } from '../components/GenerateSheet';
 import { BackLink, Empty, FeatureCard, Notice, PageHeader, ProgressBar, SectionTitle, Skeleton, Tabs } from '../components/ui';
-import { MINI_MOCK_ID, lessonsForSkill, miniMock } from '../content';
+import { TOEFL_TEST_ID, levelTest, lessonsForSkill, toeflLessons, toeflTest } from '../content';
+import { LEVELS } from '../lib/types';
 import { SECTION_ART, SECTION_BASE } from '../lib/art';
 import { errorText } from '../lib/bridge';
 import { progressMap } from '../lib/roadmap';
@@ -54,6 +55,9 @@ function useSelfStudyData() {
   return { progress, tests, map, loadError };
 }
 
+const LEVEL_TESTS = LEVELS.map((level) => levelTest(level));
+const TOEFL_TEST = toeflTest();
+
 export function StudyScreen() {
   const navigate = useNavigate();
   const { ready: aiReady } = useAI();
@@ -61,7 +65,6 @@ export function StudyScreen() {
   const { progress, tests, map, loadError } = useSelfStudyData();
   const [tab, setTab] = useState<'sections' | 'mock'>('sections');
   const [generating, setGenerating] = useState(false);
-  const mini = miniMock();
   const aiMocks = tests.filter((test) => test.skill === 'mixed');
 
   return (
@@ -78,14 +81,21 @@ export function StudyScreen() {
             meta="Grammar, word order and vocabulary"
             onClick={() => navigate('/study/language')}
           />
-          <FeatureCard icon={<PenLine />} title="Write an argument" meta="Writing practice" onClick={() => navigate('/play/lesson/u6-l3')} />
+          <FeatureCard icon={<PenLine />} title="Writing" meta="Essays, emails and reviews" onClick={() => navigate('/study/writing')} />
           <FeatureCard
             icon={<ClipboardCheck />}
-            title={mini.title}
-            meta={`${mini.minutes} min · all four skills`}
-            onClick={() => navigate(`/play/test/${MINI_MOCK_ID}`)}
+            title="Level tests"
+            meta="One test for each level, from A1 to C1"
+            onClick={() => setTab('mock')}
           />
         </div>
+
+        <FeatureCard
+          icon={<GraduationCap />}
+          title="TOEFL warm-up"
+          meta="Optional. Academic reading, lectures, and speaking and writing tasks in the style of the test."
+          onClick={() => navigate('/study/toefl')}
+        />
 
         <Tabs
           label="Self study views"
@@ -139,13 +149,30 @@ export function StudyScreen() {
 
         {tab === 'mock' && (
           <div className="stack">
-            <button className="set-row" onClick={() => navigate(`/play/test/${MINI_MOCK_ID}`)}>
+            {LEVEL_TESTS.map((test) => (
+              <button key={test.id} className="set-row" onClick={() => navigate(`/play/test/${test.id}`)}>
+                <span className="icon-tile icon-tile--sm">
+                  <ClipboardCheck />
+                </span>
+                <span className="set-row__body">
+                  <span className="set-row__title">{test.title}</span>
+                  <span className="set-row__meta">
+                    {plural(test.questions.length, 'question')} · {test.minutes} min · {test.subtitle}
+                  </span>
+                </span>
+                <ArrowRight className="muted" aria-hidden="true" />
+              </button>
+            ))}
+
+            <button className="set-row" onClick={() => navigate(`/play/test/${TOEFL_TEST.id}`)}>
               <span className="icon-tile icon-tile--sm">
                 <ClipboardCheck />
               </span>
               <span className="set-row__body">
-                <span className="set-row__title">{mini.title}</span>
-                <span className="set-row__meta">Reading, listening, speaking and writing · {mini.minutes} min</span>
+                <span className="set-row__title">{TOEFL_TEST.title}</span>
+                <span className="set-row__meta">
+                  {plural(TOEFL_TEST.questions.length, 'question')} · {TOEFL_TEST.minutes} min · {TOEFL_TEST.subtitle}
+                </span>
               </span>
               <ArrowRight className="muted" aria-hidden="true" />
             </button>
@@ -190,6 +217,67 @@ export function StudyScreen() {
   );
 }
 
+/** The optional TOEFL warm-up: its lessons and its test, laid out like the other sections. */
+function ToeflSection() {
+  const navigate = useNavigate();
+  const { progress, map, loadError } = useSelfStudyData();
+  const lessons = toeflLessons();
+  const completed = lessons.filter((lesson) => (map.get(lesson.id)?.stars ?? 0) >= 1).length;
+
+  return (
+    <div className="page">
+      <BackLink to="/study">Self study</BackLink>
+      <PageHeader title="TOEFL warm-up">
+        <p className="muted">Academic reading, lectures, and speaking and writing tasks in the style of the test.</p>
+        <div className="mt-3">
+          <ProgressBar value={completed} max={Math.max(1, lessons.length)} label="TOEFL warm-up progress" />
+        </div>
+        <p className="small muted mt-3">
+          {completed} of {plural(lessons.length, 'lesson')} complete
+        </p>
+      </PageHeader>
+
+      <button className="btn btn--primary btn--block mt-4" onClick={() => navigate(`/play/test/${TOEFL_TEST_ID}`)}>
+        Take the TOEFL warm-up test
+      </button>
+
+      <SectionTitle title="Lessons" />
+      {loadError && <Notice tone="error">{loadError}</Notice>}
+      {progress === null ? (
+        <Skeleton height={180} />
+      ) : (
+        <div className="set-list">
+          {lessons.map((lesson) => {
+            const stars = map.get(lesson.id)?.stars ?? 0;
+            return (
+              <button key={lesson.id} className="set-row" onClick={() => navigate(`/play/lesson/${lesson.id}`)}>
+                <span className="set-row__body">
+                  <span className="set-row__title">{lesson.title}</span>
+                  <span className="set-row__meta">
+                    {lesson.blurb} · {lesson.minutes} min
+                  </span>
+                </span>
+                <span className="set-row__stars" role="img" aria-label={`${stars} of 3 stars`}>
+                  {[1, 2, 3].map((value) => (
+                    <Star
+                      key={value}
+                      size={16}
+                      aria-hidden="true"
+                      className={value <= stars ? 'is-on' : undefined}
+                      fill={value <= stars ? 'currentColor' : 'none'}
+                    />
+                  ))}
+                </span>
+                <ArrowRight className="muted" aria-hidden="true" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function StudySectionScreen() {
   const navigate = useNavigate();
   const { skill: raw } = useParams();
@@ -197,6 +285,7 @@ export function StudySectionScreen() {
   const { profile } = useAppData();
   const { progress, tests, map, loadError } = useSelfStudyData();
   const [generating, setGenerating] = useState(false);
+  if (raw === 'toefl') return <ToeflSection />;
   const skill = (SKILLS as readonly string[]).includes(raw ?? '') ? (raw as Skill) : null;
 
   if (!skill) {

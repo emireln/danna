@@ -8,6 +8,7 @@ import { FileViewer } from '../components/FileViewer';
 import { LibraryCoach } from '../components/LibraryCoach';
 import { PlatformLogo } from '../components/PlatformLogo';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Skeleton, Spinner, Tabs } from '../components/ui';
+import { Select } from '../components/Pickers';
 import { bridge, errorText } from '../lib/bridge';
 import { KIND_LABEL, KIND_MIME, LIBRARY_MAX_BYTES, LIBRARY_TEXT_LIMIT, kindForFile } from '../lib/library';
 import { readPdf } from '../lib/pdf';
@@ -316,14 +317,13 @@ export function LibraryScreen() {
               </label>
               <label className="field library-add__category">
                 <span className="field__label">Category</span>
-                <select className="input" value={category} onChange={(event) => setCategory(event.target.value)} disabled={savingLink}>
-                  {CATEGORIES.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                  <option value={OTHER_CATEGORY}>Other…</option>
-                </select>
+                <Select
+                  label="Category"
+                  value={category}
+                  onChange={setCategory}
+                  disabled={savingLink}
+                  options={[...CATEGORIES.map((item) => ({ value: item, label: item })), { value: OTHER_CATEGORY, label: 'Other…' }]}
+                />
               </label>
               {category === OTHER_CATEGORY && (
                 <label className="field library-add__category">
@@ -374,18 +374,14 @@ export function LibraryScreen() {
                           </div>
                         </div>
                         <div className="person__actions">
-                          <select
-                            className="input library-category"
-                            value={link.category}
-                            aria-label="Category"
-                            onChange={(event) => void changeCategory(link, event.target.value)}
-                          >
-                            {[...new Set([...CATEGORIES, link.category])].map((item) => (
-                              <option key={item} value={item}>
-                                {item}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="library-category">
+                            <Select
+                              label="Category"
+                              value={link.category}
+                              onChange={(value) => void changeCategory(link, value)}
+                              options={[...new Set([...CATEGORIES, link.category])].map((item) => ({ value: item, label: item }))}
+                            />
+                          </div>
                           <button className="btn btn--ghost btn--sm" onClick={() => openLink(link.url, navigate)}>
                             <ExternalLink /> Open
                           </button>

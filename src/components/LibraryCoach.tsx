@@ -10,7 +10,7 @@ import type { LibraryFileRow } from '../lib/types';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 
-const SYSTEM = `You are a patient English coach for a learner preparing for the TOEFL. Answer only from the excerpts from the learner's files that come with the question. If the excerpts do not contain the answer, say so briefly and say what they do cover. Keep answers short and clear. Quote short phrases from the excerpts in quotation marks, and name the file each one comes from in square brackets, like [Unit 3.pdf].`;
+const SYSTEM = `You are a patient English coach. Answer only from the excerpts from the learner's files that come with the question. If the excerpts do not contain the answer, say so briefly and say what they do cover. Keep answers short and clear. Quote short phrases from the excerpts in quotation marks, and name the file each one comes from in square brackets, like [Unit 3.pdf].`;
 
 interface Turn {
   role: 'user' | 'assistant';

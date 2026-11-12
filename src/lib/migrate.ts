@@ -56,6 +56,7 @@ export async function copyProgress(from: DataBackend, to: DataBackend): Promise<
     await to.updateProfile({
       display_name: name,
       avatar_color: setup.avatar_color,
+      goal: setup.goal,
       target_score: setup.target_score,
       exam_date: setup.exam_date,
       daily_minutes: setup.daily_minutes,

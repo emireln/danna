@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { Field, Notice, Sheet, Spinner } from './ui';
+import { Select } from './Pickers';
 import { extractJson, testRequest, validateGeneratedTest } from '../lib/ai';
 import { errorText } from '../lib/bridge';
 import { useAI } from '../state/ai';
@@ -80,23 +81,15 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
       </Field>
       <div className="grid-2">
         <Field label="Section">
-          <select className="input" value={skill} onChange={(event) => setSkill(event.target.value as Skill | 'mixed')}>
-            <option value="mixed">Mixed</option>
-            {SKILLS.map((item) => (
-              <option key={item} value={item}>
-                {SKILL_LABEL[item]}
-              </option>
-            ))}
-          </select>
+          <Select<Skill | 'mixed'>
+            label="Section"
+            value={skill}
+            onChange={setSkill}
+            options={[{ value: 'mixed', label: 'Mixed' }, ...SKILLS.map((item) => ({ value: item, label: SKILL_LABEL[item] }))]}
+          />
         </Field>
         <Field label="Level">
-          <select className="input" value={level} onChange={(event) => setLevel(event.target.value as Level)}>
-            {LEVELS.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
+          <Select<Level> label="Level" value={level} onChange={setLevel} options={LEVELS.map((item) => ({ value: item, label: item }))} />
         </Field>
       </div>
       <Field label="Questions">

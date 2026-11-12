@@ -1,4 +1,4 @@
-// The diagnostic estimates a TOEFL-style score across the five skills.
+// The level check: a short mixed test that places the learner and shows the five skills.
 import type { Passage, TestDef } from '../lib/types';
 import { choice, cloze, reorder, speaking, writing } from './build';
 
@@ -17,8 +17,8 @@ const registration =
 export function diagnosticTest(): TestDef {
   return {
     id: DIAGNOSTIC_ID,
-    title: 'Diagnostic test',
-    subtitle: 'An estimate of your TOEFL score across five skills',
+    title: 'Level check',
+    subtitle: 'Find your level and the skills to work on, across five skills',
     kind: 'diagnostic',
     skill: 'mixed',
     minutes: 15,

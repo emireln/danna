@@ -26,8 +26,9 @@ export function CoachScreen() {
   const [messages, setMessages] = useState<TutorRow[] | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [failure, setFailure] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!backend) return undefined;
@@ -46,23 +47,28 @@ export function CoachScreen() {
     };
   }, [backend]);
 
+  // Only the conversation scrolls, and it opens on the newest message.
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [messages?.length, sending]);
+    const list = listRef.current;
+    if (list) list.scrollTop = list.scrollHeight;
+  }, [messages?.length, sending, failure]);
 
   const send = async (text: string) => {
     const content = text.trim();
     if (!content || sending || !backend || !profile) return;
     setSending(true);
+    setFailure(null);
     setDraft('');
     try {
       const userRow = await backend.addTutor('user', content);
       const history = [...(messages ?? []), userRow];
       setMessages(history);
-      const reply = await complete({ system: coachSystem(profile), messages: chatHistory(history), maxTokens: 1400 });
+      const reply = await complete({ system: coachSystem(profile), messages: chatHistory(history), maxTokens: 2048 });
       const coachRow = await backend.addTutor('assistant', reply.text);
       setMessages((previous) => [...(previous ?? []), coachRow]);
     } catch (error) {
+      // The message stays in the conversation and the reason stays on screen until the next try.
+      setFailure(errorText(error));
       notify(errorText(error), 'error');
     } finally {
       setSending(false);
@@ -74,6 +80,7 @@ export function CoachScreen() {
     try {
       await backend.clearTutor();
       setMessages([]);
+      setFailure(null);
       setConfirmClear(false);
     } catch (error) {
       notify(errorText(error), 'error');
@@ -90,7 +97,7 @@ export function CoachScreen() {
   const providerLabel = selection ? connections.find((item) => item.provider === selection.provider)?.label : undefined;
 
   return (
-    <div className="page">
+    <div className="page page--coach">
       <PageHeader
         eyebrow="Ask anything"
         title="Coach"
@@ -119,54 +126,58 @@ export function CoachScreen() {
         </Notice>
       )}
 
-      {messages === null ? (
-        <Skeleton height={260} />
-      ) : (
-        <div className="chat mt-4" aria-live="polite">
-          {messages.length === 0 && ready && (
-            <div className="stack">
-              <p className="muted">Ask anything about English or TOEFL. Try one of these to start.</p>
-              <div className="suggest">
-                {SUGGESTIONS.map((suggestion) => (
-                  <button key={suggestion} onClick={() => send(suggestion)} disabled={sending}>
-                    {suggestion}
-                  </button>
-                ))}
+      <div className="coach__list" ref={listRef} aria-live="polite">
+        {messages === null ? (
+          <Skeleton height={260} />
+        ) : (
+          <div className="chat">
+            {messages.length === 0 && ready && (
+              <div className="stack">
+                <p className="muted">Ask anything about English. Try one of these to start.</p>
+                <div className="suggest">
+                  {SUGGESTIONS.map((suggestion) => (
+                    <button key={suggestion} onClick={() => send(suggestion)} disabled={sending}>
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-          {messages.map((message) => (
-            <div key={message.id} className={`bubble ${message.role === 'user' ? 'bubble--user' : 'bubble--coach'}`}>
-              {message.content}
-            </div>
-          ))}
-          {sending && (
-            <div className="bubble bubble--coach muted" aria-label="Coach is typing">
-              Thinking…
-            </div>
-          )}
-          <div ref={endRef} />
-        </div>
-      )}
+            )}
+            {messages.map((message) => (
+              <div key={message.id} className={`bubble ${message.role === 'user' ? 'bubble--user' : 'bubble--coach'}`}>
+                {message.content}
+              </div>
+            ))}
+            {sending && (
+              <div className="bubble bubble--coach muted" aria-label="Coach is typing">
+                Thinking…
+              </div>
+            )}
+            {failure && <Notice tone="error">{failure}</Notice>}
+          </div>
+        )}
+      </div>
 
-      <div className="chat-input mt-4">
-        <textarea
-          rows={1}
-          value={draft}
-          placeholder="Ask your coach…"
-          disabled={!ready || sending}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={onKey}
-          aria-label="Message your coach"
-        />
-        <button
-          className="btn btn--primary btn--icon"
-          onClick={() => send(draft)}
-          disabled={!ready || sending || !draft.trim()}
-          aria-label="Send message"
-        >
-          <ArrowUp />
-        </button>
+      <div className="coach__composer">
+        <div className="chat-input">
+          <textarea
+            rows={1}
+            value={draft}
+            placeholder="Ask your coach…"
+            disabled={!ready || sending}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={onKey}
+            aria-label="Message your coach"
+          />
+          <button
+            className="btn btn--primary btn--icon"
+            onClick={() => send(draft)}
+            disabled={!ready || sending || !draft.trim()}
+            aria-label="Send message"
+          >
+            <ArrowUp />
+          </button>
+        </div>
       </div>
 
       {confirmClear && (

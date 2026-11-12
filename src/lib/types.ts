@@ -13,8 +13,12 @@ export const SKILL_LABEL: Record<Skill, string> = {
   language: 'Language',
 };
 
-export type Level = 'A2' | 'B1' | 'B2' | 'C1';
-export const LEVELS: readonly Level[] = ['A2', 'B1', 'B2', 'C1'];
+export type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
+export const LEVELS: readonly Level[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
+
+/** What the learner is practising for. General English is the default; TOEFL is an optional warm-up. */
+export type Goal = 'english' | 'toefl';
+export const GOALS: readonly Goal[] = ['english', 'toefl'];
 
 export type Accent = 'blue' | 'teal' | 'amber' | 'ink';
 
@@ -99,6 +103,7 @@ export interface ProfileRow {
   username: string;
   display_name: string;
   avatar_color: string;
+  goal: Goal;
   target_score: number;
   exam_date: string | null;
   daily_minutes: number;

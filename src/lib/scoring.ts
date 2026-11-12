@@ -30,6 +30,7 @@ export function toeflRange(estimate: number): [number, number] {
 }
 
 export function bandFor(percent: number): Level {
+  if (percent < 20) return 'A1';
   if (percent < 35) return 'A2';
   if (percent < 60) return 'B1';
   if (percent < 78) return 'B2';

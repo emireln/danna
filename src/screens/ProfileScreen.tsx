@@ -6,7 +6,7 @@ import { errorText } from '../lib/bridge';
 import { PictureError, prepareAvatar } from '../lib/avatar';
 import { daysUntil, formatDate, levelInfo, timeAgo } from '../lib/progress';
 import { plural } from '../lib/text';
-import { toeflRange } from '../lib/scoring';
+import { bandFor, toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow } from '../lib/types';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -68,6 +68,7 @@ export function ProfileScreen() {
   const level = levelInfo(profile.xp);
   const diagnostics = (attempts ?? []).filter((attempt) => attempt.kind === 'diagnostic');
   const best = diagnostics.reduce((max, attempt) => Math.max(max, attempt.predicted ?? 0), 0);
+  const bestPercent = diagnostics.reduce((max, attempt) => Math.max(max, attempt.score_pct), 0);
   const daysLeft = daysUntil(profile.exam_date);
   const libraryTotal = (libraryCounts?.files ?? 0) + (libraryCounts?.links ?? 0);
 
@@ -172,11 +173,20 @@ export function ProfileScreen() {
         </div>
         <div className="stat">
           <span className="stat__value">{diagnostics.length}</span>
-          <span className="stat__label">Diagnostics taken</span>
+          <span className="stat__label">Level checks taken</span>
         </div>
         <div className="stat">
-          <span className="stat__value">{best ? best : '—'}</span>
-          <span className="stat__label">{best ? `Best estimate · ${toeflRange(best).join('–')}` : 'Best estimate'}</span>
+          {profile.goal === 'toefl' ? (
+            <>
+              <span className="stat__value">{best ? best : '—'}</span>
+              <span className="stat__label">{best ? `Best TOEFL estimate · ${toeflRange(best).join('–')}` : 'Best TOEFL estimate'}</span>
+            </>
+          ) : (
+            <>
+              <span className="stat__value">{diagnostics.length ? bandFor(bestPercent) : '—'}</span>
+              <span className="stat__label">Best level</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -184,7 +194,7 @@ export function ProfileScreen() {
         <FeatureCard
           icon={<Settings2 />}
           title="Learning setup"
-          meta={`Target ${profile.target_score} · level ${profile.level} · ${profile.daily_minutes} min a day${
+          meta={`${profile.goal === 'toefl' ? `TOEFL warm-up, target ${profile.target_score}` : 'General English'} · level ${profile.level} · ${profile.daily_minutes} min a day${
             daysLeft !== null && daysLeft >= 0 ? ` · exam in ${plural(daysLeft, 'day')}` : ''
           }`}
           action={

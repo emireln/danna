@@ -53,7 +53,7 @@ function saveImage(attempt: AttemptRow, estimate: number | null) {
   const font = "'Inter Variable', Inter, 'Segoe UI', sans-serif";
   ctx.fillStyle = '#ffffff';
   ctx.font = `600 34px ${font}`;
-  ctx.fillText('danna · TOEFL estimate', 72, 110);
+  ctx.fillText(estimate !== null ? 'danna · TOEFL estimate' : 'danna · level report', 72, 110);
   ctx.font = `750 190px ${font}`;
   ctx.fillText(String(estimate ?? attempt.score_pct), 72, 340);
   ctx.font = `600 40px ${font}`;
@@ -144,12 +144,13 @@ export function ReportScreen() {
 
   const percent = attempt.score_pct;
   const isEstimate = attempt.kind === 'diagnostic' || attempt.kind === 'mock';
-  const estimate = isEstimate ? (attempt.predicted ?? toeflEstimate(percent)) : null;
+  // The TOEFL estimate is shown only to learners who chose the TOEFL warm-up.
+  const estimate = isEstimate && profile?.goal === 'toefl' ? (attempt.predicted ?? toeflEstimate(percent)) : null;
   const [low, high] = estimate !== null ? toeflRange(estimate) : [percent, percent];
   const skills = attempt.skills;
   const advice = adviceFor(skills, percent, estimate);
   const plan = studyPlan(skills);
-  const goal = profile ? Math.round(profile.target_score / 1.2) : undefined;
+  const goal = profile?.goal === 'toefl' ? Math.round(profile.target_score / 1.2) : undefined;
   const axes = SKILLS.map((skill) => ({ label: SKILL_LABEL[skill], value: skills[skill] ?? 0 }));
   const cardOrder = SKILLS.filter((skill) => skills[skill] !== undefined).sort((a, b) => (skills[a] ?? 0) - (skills[b] ?? 0));
 
@@ -160,8 +161,8 @@ export function ReportScreen() {
         <h1 className="report-hero__title">{isEstimate ? 'Score report' : attempt.title}</h1>
         {isEstimate && (
           <>
-            <p className="report-hero__sub">TOEFL predicted score</p>
-            <span className="report-hero__pill">Overall score</span>
+            <p className="report-hero__sub">{estimate !== null ? 'TOEFL predicted score' : `Your level is ${bandFor(percent)}`}</p>
+            <span className="report-hero__pill">{estimate !== null ? 'Overall score' : 'Overall'}</span>
           </>
         )}
         <div className="mt-3">

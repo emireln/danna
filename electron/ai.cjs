@@ -1,6 +1,5 @@
-// Model-provider adapters. Every request to OpenAI, Anthropic, Google Gemini and
-// OpenRouter is made here, in the Electron main process, so API keys never
-// reach the renderer.
+// Model-provider adapters. Every request to OpenAI, Anthropic, Google Gemini, OpenRouter and
+// DeepSeek is made here, in the Electron main process, so API keys never reach the renderer.
 
 const { userError, MARK } = require('./errors.cjs');
 
@@ -70,16 +69,38 @@ async function request(url, { method = 'GET', headers = {}, body, timeoutMs = TI
   return data;
 }
 
+// A provider's message is quoted to the person only after anything that looks like a key is hidden.
+function quoteDetail(message) {
+  const clean = String(message || '')
+    .replace(/sk-[\w-]{8,}/g, 'sk-…')
+    .replace(/AIza[\w-]{20,}/g, 'AIza…')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 180);
+  return clean ? `: ${clean}` : '';
+}
+
 function asProviderError(provider, error) {
   const label = PROVIDERS[provider].label;
   if (error && String(error.message || '').includes(MARK)) return error;
-  if (error && (error.status === 401 || error.status === 403)) {
+  const status = error && error.status;
+  const message = error && error.message ? String(error.message) : '';
+  if (status === 401 || status === 403 || (status === 400 && /api[ _-]?key|key not valid/i.test(message))) {
     return userError(`${label} did not accept this key. Check that it is still active.`);
   }
-  if (error && error.status === 429) {
+  if (status === 402) {
+    return userError(`${label} says this account has no credit left. Add credit on ${label}, then try again.`);
+  }
+  if (status === 404 || (/model/i.test(message) && /not exist|not found|unavailable|no longer/i.test(message))) {
+    return userError(`${label} no longer offers the selected model. Choose another model in Settings.`);
+  }
+  if (status === 400 || status === 422) {
+    return userError(`${label} could not use this request${quoteDetail(message)}. Try a shorter message or another model.`);
+  }
+  if (status === 429) {
     return userError(`${label} is busy right now. Please try again in a moment.`);
   }
-  if (error && /Network error/.test(String(error.message))) {
+  if (error && /Network error/.test(message)) {
     return userError(`We could not reach ${label}. Check your internet connection.`);
   }
   return userError(`${label} could not finish that. Please try again.`);
@@ -211,6 +232,10 @@ function normalizeMessages(messages) {
   return out;
 }
 
+const firstChoice = (data) => (data && Array.isArray(data.choices) && data.choices[0]) || {};
+const choiceText = (choice) => String((choice.message && choice.message.content) || '');
+
+// Each completer returns the reply text and whether the provider stopped because it ran out of room.
 const COMPLETERS = {
   async openai(key, model, system, messages, json, maxTokens) {
     const body = {
@@ -225,7 +250,8 @@ const COMPLETERS = {
       body,
       timeoutMs: COMPLETION_TIMEOUT_MS,
     });
-    return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    const choice = firstChoice(data);
+    return { text: choiceText(choice), cut: choice.finish_reason === 'length' };
   },
 
   async anthropic(key, model, system, messages, _json, maxTokens) {
@@ -237,7 +263,10 @@ const COMPLETERS = {
       body,
       timeoutMs: COMPLETION_TIMEOUT_MS,
     });
-    return (data.content || []).filter((block) => block.type === 'text').map((block) => block.text).join('');
+    return {
+      text: (data.content || []).filter((block) => block.type === 'text').map((block) => block.text).join(''),
+      cut: data.stop_reason === 'max_tokens',
+    };
   },
 
   async gemini(key, model, system, messages, json, maxTokens) {
@@ -260,9 +289,11 @@ const COMPLETERS = {
       body,
       timeoutMs: COMPLETION_TIMEOUT_MS,
     });
-    return ((data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [])
-      .map((part) => part.text || '')
-      .join('');
+    const candidate = (data.candidates && data.candidates[0]) || {};
+    return {
+      text: ((candidate.content && candidate.content.parts) || []).map((part) => part.text || '').join(''),
+      cut: candidate.finishReason === 'MAX_TOKENS',
+    };
   },
 
   async openrouter(key, model, system, messages, _json, maxTokens) {
@@ -277,13 +308,18 @@ const COMPLETERS = {
       body,
       timeoutMs: COMPLETION_TIMEOUT_MS,
     });
-    return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    const choice = firstChoice(data);
+    return { text: choiceText(choice), cut: choice.finish_reason === 'length' };
   },
+
   async deepseek(key, model, system, messages, json, maxTokens) {
     const body = {
       model,
       messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages],
       max_tokens: maxTokens,
+      // Thinking is on by default. Its reasoning spends the same reply budget, so a short answer can
+      // end up empty. The tutor, the graders and the set writer need a direct reply, so it is off.
+      thinking: { type: 'disabled' },
     };
     if (json) body.response_format = { type: 'json_object' };
     const data = await request('https://api.deepseek.com/chat/completions', {
@@ -292,7 +328,8 @@ const COMPLETERS = {
       body,
       timeoutMs: COMPLETION_TIMEOUT_MS,
     });
-    return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    const choice = firstChoice(data);
+    return { text: choiceText(choice), cut: choice.finish_reason === 'length' };
   },
 };
 
@@ -301,11 +338,15 @@ async function complete(provider, key, model, { system = '', messages = [], json
   const cleanMessages = normalizeMessages(messages);
   const limit = Math.min(Math.max(Number(maxTokens) || 2048, 256), 8192);
   try {
-    const text = await COMPLETERS[provider](key, model, String(system || '').slice(0, 24000), cleanMessages, Boolean(json), limit);
-    if (!String(text || '').trim()) {
-      throw userError('The assistant did not reply this time. Please try again.');
+    const { text, cut } = await COMPLETERS[provider](key, model, String(system || '').slice(0, 24000), cleanMessages, Boolean(json), limit);
+    if (!text.trim()) {
+      throw userError(
+        cut
+          ? 'The reply ran out of room before it was written. Try a shorter question.'
+          : 'The assistant did not reply this time. Please try again.',
+      );
     }
-    return String(text);
+    return text;
   } catch (error) {
     throw asProviderError(provider, error);
   }

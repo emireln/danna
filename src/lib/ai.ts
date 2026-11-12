@@ -3,6 +3,7 @@
 import {
   SKILLS,
   type ChatMessage,
+  type Goal,
   type Level,
   type Passage,
   type Question,
@@ -12,6 +13,7 @@ import {
 } from './types';
 
 const LEVEL_GUIDE: Record<Level, string> = {
+  A1: 'beginner (A1): single words and very short, simple sentences about daily life',
   A2: 'elementary (A2): short, simple sentences and everyday words',
   B1: 'intermediate (B1): clear everyday and study topics',
   B2: 'upper-intermediate (B2): academic topics and longer sentences',
@@ -153,7 +155,7 @@ export function testRequest(options: { skill: Skill | 'mixed'; level: Level; top
   prompt: string;
 } {
   const system = [
-    'You write original TOEFL-style practice material for English learners.',
+    'You write original English practice material for learners.',
     'Reply with one JSON object and nothing else: no markdown and no commentary.',
     'Shape: {"title": string, "description": string, "minutes": number, "passages": [{"id": "p1", "title": string, "text": string}], "questions": [...]}',
     'Each question has "id" (unique), "skill" (reading | listening | speaking | writing | language), "prompt", "explanation" (one or two sentences), "type", and:',
@@ -187,8 +189,8 @@ export function writingRequest(options: { task: string; rubric: string[]; minWor
 } {
   const words = options.response.trim() ? options.response.trim().split(/\s+/).length : 0;
   const system = [
-    'You are an experienced TOEFL writing rater.',
-    'Score the response from 0 to 5 (decimals allowed) using the TOEFL criteria: task fulfilment, development, organization and language use.',
+    'You are an experienced English writing teacher.',
+    'Score the response from 0 to 5 (decimals allowed) using these criteria: task fulfilment, development, organisation and language use.',
     'Reply with one JSON object only: {"score": number, "strengths": [up to 3 short strings], "improvements": [up to 3 short strings], "revision": "one improved sentence taken from the response"}.',
     'Be specific and honest. Quote the learner\'s own words when you point out an error. Keep the total feedback under 120 words.',
   ].join('\n');
@@ -201,7 +203,7 @@ export function speakingRequest(options: { task: string; rubric: string[]; trans
   prompt: string;
 } {
   const system = [
-    'You are an experienced TOEFL speaking rater. You receive an automatic transcript of a spoken answer of about 45 seconds.',
+    'You are an experienced English speaking teacher. You receive an automatic transcript of a spoken answer of about 45 seconds.',
     'Score from 0 to 5 for delivery, language use and topic development.',
     'Reply with one JSON object only: {"score": number, "strengths": [up to 3 short strings], "improvements": [up to 3 short strings], "revision": "one sentence the learner could say instead"}.',
     'Keep the total feedback under 100 words.',
@@ -223,13 +225,17 @@ export function parseFeedback(raw: unknown): Feedback {
   };
 }
 
-export function coachSystem(profile: { level: Level; target_score: number }): string {
+export function coachSystem(profile: { level: Level; goal: Goal; target_score: number }): string {
+  const aim =
+    profile.goal === 'toefl'
+      ? `The learner is also warming up for the TOEFL iBT, aiming for a score of ${profile.target_score}.`
+      : 'The learner is studying English in general, for everyday life, study and work.';
   return [
-    'You are the danna coach: a patient English and TOEFL coach.',
-    `The learner is at ${LEVEL_GUIDE[profile.level]} and wants a TOEFL iBT score of ${profile.target_score}.`,
+    'You are the danna coach: a patient English coach.',
+    `The learner is at ${LEVEL_GUIDE[profile.level]}. ${aim}`,
     'Answer in short paragraphs. When you correct a mistake, show the corrected sentence and explain the rule in one sentence.',
     'When asked for practice, give three to five short items and put the answers at the end. Use plain text: no tables and no emoji.',
-    'If a question is unrelated to English or TOEFL, answer briefly and steer the conversation back to learning.',
+    'If a question is unrelated to English, answer briefly and steer the conversation back to learning.',
   ].join('\n');
 }
 

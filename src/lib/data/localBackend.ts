@@ -66,6 +66,7 @@ function defaultProfile(): ProfileRow {
     username: `learner${Math.floor(1000 + Math.random() * 9000)}`,
     display_name: 'Learner',
     avatar_color: '#2f6bff',
+    goal: 'english',
     target_score: 100,
     exam_date: null,
     daily_minutes: 15,

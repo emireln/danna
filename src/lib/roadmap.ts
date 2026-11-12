@@ -1,6 +1,6 @@
 // Roadmap progress: lessons unlock in order, and a lesson is done once it earns a star.
 import { PATH, type PathItem } from '../content';
-import type { LessonProgressRow } from './types';
+import { LEVELS, type Level, type LessonProgressRow } from './types';
 
 export type NodeState = 'done' | 'current' | 'locked';
 
@@ -32,10 +32,10 @@ export function progressMap(rows: LessonProgressRow[]): Map<string, LessonProgre
   return new Map(rows.map((row) => [row.lesson_id, row]));
 }
 
-/** Completed lessons from earlier units, so a learner who starts at B2 is not repeated. */
-export function placementRows(level: string): LessonProgressRow[] {
-  const unitsDone = level === 'B1' ? 1 : level === 'B2' ? 2 : level === 'C1' ? 3 : 0;
-  return PATH.filter((item) => Number(item.unit.number) <= unitsDone).map((item) => ({
+/** Every lesson and check of the levels below the chosen one counts as done, so a learner who starts at B1 is not repeated. */
+export function placementRows(level: Level): LessonProgressRow[] {
+  const below = LEVELS.indexOf(level);
+  return PATH.filter((item) => LEVELS.indexOf(item.unit.level) < below).map((item) => ({
     lesson_id: item.lesson.id,
     stars: 1,
     best_pct: 80,

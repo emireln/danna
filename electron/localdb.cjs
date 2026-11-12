@@ -8,7 +8,8 @@ const { userError } = require('./errors.cjs');
 
 const SKILLS = ['reading', 'listening', 'speaking', 'writing', 'language'];
 const TEST_SKILLS = [...SKILLS, 'mixed'];
-const LEVELS = ['A2', 'B1', 'B2', 'C1'];
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
+const GOALS = ['english', 'toefl'];
 const ATTEMPT_KINDS = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice', 'review'];
 // Same limits as the online database, so a copy from this device never fails on a value.
 const AVATAR_MAX_BYTES = 300 * 1024;
@@ -18,6 +19,7 @@ const PROFILE_FIELDS = new Set([
   'username',
   'display_name',
   'avatar_color',
+  'goal',
   'target_score',
   'exam_date',
   'daily_minutes',
@@ -38,6 +40,7 @@ CREATE TABLE IF NOT EXISTS profile (
   exam_date TEXT,
   daily_minutes INTEGER NOT NULL DEFAULT 15,
   level TEXT NOT NULL DEFAULT 'B1',
+  goal TEXT NOT NULL DEFAULT 'english',
   xp INTEGER NOT NULL DEFAULT 0,
   streak INTEGER NOT NULL DEFAULT 0,
   last_active TEXT,
@@ -140,6 +143,10 @@ function db() {
   if (!profileColumns.includes('avatar_updated_at')) {
     connection.exec('ALTER TABLE profile ADD COLUMN avatar_updated_at TEXT');
   }
+  // Databases from before 0.4.0 do not have the learning goal yet. Their learners were all practising for TOEFL.
+  if (!profileColumns.includes('goal')) {
+    connection.exec("ALTER TABLE profile ADD COLUMN goal TEXT NOT NULL DEFAULT 'english'");
+  }
   return connection;
 }
 
@@ -182,6 +189,8 @@ function cleanProfileValue(key, value, current) {
       return clamp(value, 5, 180, current.daily_minutes);
     case 'level':
       return LEVELS.includes(value) ? value : current.level;
+    case 'goal':
+      return GOALS.includes(value) ? value : current.goal;
     case 'xp':
       return Math.max(current.xp, clamp(value, 0, 10000000, current.xp));
     case 'streak':

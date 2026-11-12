@@ -69,3 +69,58 @@ test('a DeepSeek reply goes to the chat endpoint with the chosen model and the s
     assert.equal(body.max_tokens, 300);
   });
 });
+
+test('DeepSeek replies come with thinking switched off, so the whole reply budget goes to the answer', async () => {
+  const reply = { choices: [{ message: { role: 'assistant', content: 'Short answer' }, finish_reason: 'stop' }] };
+  await withFetch(reply, async (calls) => {
+    await ai.complete('deepseek', 'sk-test', 'deepseek-flash', { messages: [{ role: 'user', content: 'Hi' }], maxTokens: 1400 });
+    assert.deepEqual(JSON.parse(calls[0].body).thinking, { type: 'disabled' });
+  });
+});
+
+test('an empty reply that stopped at the length limit says so, instead of a generic failure', async () => {
+  const reply = { choices: [{ message: { role: 'assistant', content: null }, finish_reason: 'length' }] };
+  await withFetch(reply, async () => {
+    await assert.rejects(
+      ai.complete('deepseek', 'sk-test', 'deepseek-flash', { messages: [{ role: 'user', content: 'Hi' }] }),
+      (error) => /ran out of room/.test(error.message),
+    );
+  });
+});
+
+// Replaces fetch with one failing reply for one test.
+async function withFailure(status, body, run) {
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  try {
+    return await run();
+  } finally {
+    globalThis.fetch = original;
+  }
+}
+
+test('a DeepSeek account without credit is told to add credit, and the key is never shown', async () => {
+  await withFailure(402, { error: { message: 'Insufficient Balance' } }, async () => {
+    await assert.rejects(
+      ai.complete('deepseek', 'sk-test-secret-123456', 'deepseek-flash', { messages: [{ role: 'user', content: 'Hi' }] }),
+      (error) => {
+        assert.match(error.message, /no credit left/);
+        assert.doesNotMatch(error.message, /sk-test/);
+        return true;
+      },
+    );
+  });
+});
+
+test('a rejected request quotes the provider reason, with anything that looks like a key hidden', async () => {
+  await withFailure(400, { error: { message: 'Invalid value for sk-live-abcdef123456 in max_tokens' } }, async () => {
+    await assert.rejects(
+      ai.complete('deepseek', 'sk-test', 'deepseek-flash', { messages: [{ role: 'user', content: 'Hi' }] }),
+      (error) => {
+        assert.match(error.message, /could not use this request: Invalid value for sk-… in max_tokens/);
+        assert.doesNotMatch(error.message, /abcdef/);
+        return true;
+      },
+    );
+  });
+});

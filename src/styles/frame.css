@@ -119,11 +119,40 @@
   }
 
   /* ---------- Welcome ---------- */
+  /* The welcome fills its screen: the card scrolls if needed, and the Back and Continue bar stays at the bottom. */
   .welcome {
-    min-height: 100%;
-    display: grid;
-    place-items: center;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .welcome__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
     padding: 40px 24px;
+  }
+
+  .welcome__body > .welcome__card {
+    margin: auto;
+  }
+
+  .welcome__footer {
+    flex: none;
+    background: var(--canvas);
+    border-top: 1px solid var(--line);
+  }
+
+  .welcome__bar {
+    width: min(560px, 100%);
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
 
   .welcome__card {

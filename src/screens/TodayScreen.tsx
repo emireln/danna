@@ -3,17 +3,18 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, GraduationCap, Languages, Map as MapIcon, RotateCw, ScanSearch } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
-import { Badge, FeatureCard, Notice, PageHeader, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
+import { Badge, Field, FeatureCard, Notice, PageHeader, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
+import { DateField, Select, todayIso } from '../components/Pickers';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { nodeStates, progressMap as indexProgress } from '../lib/roadmap';
 import { daysUntil } from '../lib/progress';
-import { toeflRange } from '../lib/scoring';
+import { bandFor, toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, type Skill } from '../lib/types';
 import { useToast } from '../state/toast';
 import { useAI } from '../state/ai';
 import { errorText } from '../lib/bridge';
-import { MINI_MOCK_ID } from '../content';
+import { levelTestId } from '../content';
 
 const TILE_COLORS: Record<Skill, string> = {
   reading: '#17245c',
@@ -122,17 +123,21 @@ export function TodayScreen() {
           title="Your next step"
           aside={
             <>
-              <label className="sr-only" htmlFor="focus-select">
-                Focus
-              </label>
-              <select id="focus-select" className="select-line" value={focus} onChange={(event) => setFocus(event.target.value as 'all' | Skill)}>
-                <option value="all">Recommended for you</option>
-                <option value="reading">Reading focus</option>
-                <option value="listening">Listening focus</option>
-                <option value="speaking">Speaking focus</option>
-                <option value="writing">Writing focus</option>
-                <option value="language">Language focus</option>
-              </select>
+              <Select<'all' | Skill>
+                id="focus-select"
+                label="Focus"
+                variant="line"
+                value={focus}
+                onChange={setFocus}
+                options={[
+                  { value: 'all', label: 'Recommended for you' },
+                  { value: 'reading', label: 'Reading focus' },
+                  { value: 'listening', label: 'Listening focus' },
+                  { value: 'speaking', label: 'Speaking focus' },
+                  { value: 'writing', label: 'Writing focus' },
+                  { value: 'language', label: 'Grammar and vocabulary' },
+                ]}
+              />
             </>
           }
         />
@@ -149,22 +154,26 @@ export function TodayScreen() {
               icon={<GraduationCap />}
               title="Learning setup"
               badge={<Badge tone="done">Done</Badge>}
-              meta={`Target ${profile?.target_score ?? 100} · ${profile?.level ?? 'B1'} · ${profile?.daily_minutes ?? 15} min a day`}
+              meta={`${profile?.goal === 'toefl' ? `TOEFL warm-up, target ${profile.target_score}` : 'General English'} · ${profile?.level ?? 'B1'} · ${profile?.daily_minutes ?? 15} min a day`}
               onClick={() => navigate('/setup')}
             />
             {diagnostic ? (
               <FeatureCard
                 icon={<ScanSearch />}
-                title="Score report"
-                meta={`Estimated TOEFL ${diagnostic.predicted ?? '—'} of 120${diagnostic.predicted ? `, range ${toeflRange(diagnostic.predicted).join('–')}` : ''}`}
+                title="Level report"
+                meta={
+                  profile?.goal === 'toefl' && diagnostic.predicted
+                    ? `Estimated TOEFL ${diagnostic.predicted} of 120, range ${toeflRange(diagnostic.predicted).join('–')}`
+                    : `Your level is ${bandFor(diagnostic.score_pct)}`
+                }
                 onClick={() => navigate(`/report/${diagnostic.id}`)}
               />
             ) : (
               <FeatureCard
                 icon={<ScanSearch />}
-                title="Diagnostic test"
+                title="Level check"
                 badge={<Badge tone="beta">Beta</Badge>}
-                meta="Estimate your TOEFL score across five skills in about 15 minutes."
+                meta="Find your level and the skills to work on, in about 15 minutes."
                 onClick={() => navigate('/play/diagnostic')}
               />
             )}
@@ -209,9 +218,9 @@ export function TodayScreen() {
         ) : (
           <section className="hero" aria-label="Roadmap complete">
             <h2 className="hero__title">Roadmap complete</h2>
-            <p className="hero__text">Every unit is finished. Take the mini mock test to see where you stand now.</p>
-            <button className="btn btn--white btn--block hero__cta" onClick={() => navigate(`/play/test/${MINI_MOCK_ID}`)}>
-              Start mini mock test
+            <p className="hero__text">Every unit is finished. Take your level test to see where you stand now.</p>
+            <button className="btn btn--white btn--block hero__cta" onClick={() => navigate(`/play/test/${levelTestId(profile?.level ?? 'B1')}`)}>
+              Start {profile?.level ?? 'B1'} level test
             </button>
           </section>
         )}
@@ -278,11 +287,9 @@ export function TodayScreen() {
             </>
           }
         >
-          <label className="field">
-            <span className="field__label">Your TOEFL date</span>
-            <input className="input" type="date" value={dateDraft} onChange={(event) => setDateDraft(event.target.value)} />
-            <span className="field__hint">Leave it empty to hide the countdown.</span>
-          </label>
+          <Field label="Exam date" hint="Leave it empty to hide the countdown.">
+            <DateField label="Exam date" value={dateDraft} onChange={setDateDraft} min={todayIso()} />
+          </Field>
         </Sheet>
       )}
     </div>

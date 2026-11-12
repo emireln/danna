@@ -52,6 +52,7 @@ export type ProfilePatch = Partial<
     | 'username'
     | 'display_name'
     | 'avatar_color'
+    | 'goal'
     | 'target_score'
     | 'exam_date'
     | 'daily_minutes'

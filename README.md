@@ -1,6 +1,6 @@
 # danna
 
-A focused English and TOEFL practice app for Windows. It has its own window bar and a tray icon, so practice stays one click away.
+An English learning app for Windows, from A1 to C1, with an optional TOEFL warm-up. It has its own window bar and a tray icon, so practice stays one click away.
 
 ## Two ways to use danna
 
@@ -11,10 +11,10 @@ Your profile picture works in both modes. Pictures are converted to a small WebP
 
 ## What is inside
 
-- **Today**: a recommended lesson, a diagnostic test, banners, and a countdown to your exam.
-- **Roadmap**: six units with lessons, unit checks, stars and unlocking.
-- **Self study**: sections for Reading, Listening, Speaking and Writing, language sets, and mini mock tests.
-- **Diagnostic and score report**: an estimated TOEFL score out of 120, a five-skill radar, skill cards with tips, and a study plan.
+- **Today**: your next lesson, the level check, banners, and an optional exam countdown.
+- **Roadmap**: General English from A1 to C1. Each unit has lessons, a unit check, stars and unlocking. Your level decides where you start.
+- **Self study**: sections for Reading, Listening, Speaking, Writing and Language, a level test for each level, and the optional TOEFL warm-up.
+- **Level check and report**: your level, a five-skill radar, skill cards with tips, and a study plan. With the TOEFL warm-up, the report also shows an estimated score out of 120.
 - **Review**: spaced repetition for every missed question.
 - **Coach**: an AI tutor chat.
 - **My library** (from your profile): keep PDF, TXT and Markdown files and read them in the app. Save learning links from YouTube, Coursera, Khan Academy and other platforms, with the platform's logo, and sort them into categories. Ask the tutor questions about the files you choose; it answers only from them and names the file.
@@ -42,6 +42,7 @@ npm test
 - `tests/migrate.test.mjs` checks how progress and library items are copied between a device and an account: nothing is lost, running the copy twice adds nothing, and the higher numbers win.
 - `tests/library.test.mjs` checks the library helpers: the file kinds it keeps, and the passages the tutor reads for a question.
 - `tests/platforms.test.mjs` checks how links are matched to platforms and how pasted links are checked.
+- `tests/content.test.mjs` checks every bundled lesson item (choices, gaps, ordering, writing and speaking), the unique and short lesson ids, the level and TOEFL tests, and the placement of a new learner.
 - `tests/ai-providers.test.mjs` checks key detection, DeepSeek's model ranking, and the model and chat requests (without the network).
 - `supabase/tests/policies.test.mjs` runs the real schema on PostgreSQL (PGlite, in-process) and checks what each person can and cannot do: row-level security on every table, friend requests, sharing, private pictures and library files, limits, quotas, and an upgrade from the first schema version.
 
@@ -70,7 +71,7 @@ The installer is written to `release/danna-setup-<version>-x64.exe`. Delete the 
 ## Online accounts (Supabase)
 
 1. For a new project: in the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket, the library and the release notes.
-2. For a project that already runs the earlier version: paste the whole of `supabase/migrations/0002_library.sql` into the **SQL Editor** and run it. It adds My library (its tables, the private `library` bucket and its rules) and the 0.3.0 release note. It is safe to run again.
+2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note). Both are safe to run again.
 3. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
 4. Never add a service-role or secret key to the app. Only the publishable key is bundled.
 
@@ -108,7 +109,7 @@ scripts/       Logo, icon, platform and installer art generators; version bump a
 src/           Interface (React and TypeScript)
   assets/      Logo, icon and platform logos (WebP)
   components/  Title bar, shared UI, file viewer, tutor, platform logos, charts, question renderer
-  content/     Bundled lessons, passages, the diagnostic, the mini mock and release notes
+  content/     Bundled lessons for A1 to C1 and the TOEFL warm-up (units/), passages, the level check, level tests and release notes
   lib/         Scoring, grading, review scheduling, AI prompts, data backends, progress copying,
                library, platforms and PDF support
   screens/     One file per screen

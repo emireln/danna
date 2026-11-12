@@ -1,8 +1,8 @@
 {
   "name": "danna",
   "productName": "danna",
-  "version": "0.3.8",
-  "description": "danna: a focused English and TOEFL practice desktop app with AI tutoring, roadmaps and friends.",
+  "version": "0.4.0",
+  "description": "danna: an English learning desktop app, from A1 to C1, with an optional TOEFL warm-up, AI tutoring, roadmaps and friends.",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
