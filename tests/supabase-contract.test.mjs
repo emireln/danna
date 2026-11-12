@@ -138,6 +138,7 @@ test('every table, function, bucket and column the online backend uses exists in
   await backend.setSkillScores({ reading: 80 });
   await backend.listLessonProgress();
   await backend.upsertLessonProgress({ lesson_id: 'a1-u1-l1', stars: 2, best_pct: 80, attempts: 1, completed_at: null });
+  await backend.upsertLessonProgressMany([{ lesson_id: 'b1-u1-l1', stars: 1, best_pct: 80, attempts: 0, completed_at: null }]);
   await backend.listReviewItems();
   await backend.upsertReviewItems([
     { item_key: 'k', skill: 'reading', payload: { question: { id: 'q' } }, ease: 2.5, interval_days: 1, reps: 1, due_at: '2026-01-01T00:00:00.000Z' },

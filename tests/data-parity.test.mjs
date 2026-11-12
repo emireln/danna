@@ -171,9 +171,20 @@ async function scenario(backend) {
 
   await step('a lesson is recorded', async () => {
     await backend.upsertLessonProgress({ lesson_id: 'a1-u1-l1', stars: 9, best_pct: -5, attempts: 2, completed_at: null });
-    return backend.listLessonProgress();
+    return (await backend.listLessonProgress()).slice().sort(byKey('lesson_id'));
   });
   await step('a lesson without an id is refused', () => backend.upsertLessonProgress({ stars: 1 }));
+  await step('several lessons are saved together', async () => {
+    await backend.upsertLessonProgressMany([
+      { lesson_id: 'b1-u1-l1', stars: 1, best_pct: 80, attempts: 0, completed_at: '2026-03-06T10:00:00.000Z' },
+      { lesson_id: 'b1-u1-l2', stars: 2, best_pct: 90, attempts: 0, completed_at: '2026-03-06T10:00:00.000Z' },
+    ]);
+    return (await backend.listLessonProgress()).slice().sort(byKey('lesson_id'));
+  });
+  await step('a set of lessons with one refused row saves nothing', async () => {
+    await backend.upsertLessonProgressMany([{ lesson_id: 'c1-u1-l1', stars: 1 }, { stars: 2 }]);
+    return (await backend.listLessonProgress()).slice().sort(byKey('lesson_id'));
+  });
 
   await step('review items are checked', async () => {
     const question = { id: 'q1', type: 'choice', prompt: 'Pick one', options: ['a', 'b', 'c'], answer: 0, skill: 'reading' };

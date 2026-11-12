@@ -11,6 +11,7 @@ import {
   type TestContent,
   type TutorRow,
 } from './types';
+import { placeAnswer } from './placement';
 
 const LEVEL_GUIDE: Record<Level, string> = {
   A1: 'beginner (A1): single words and very short, simple sentences about daily life',
@@ -73,7 +74,9 @@ function toQuestion(raw: unknown, index: number, fallback: Skill | 'mixed'): Que
       if (options.length < 3 || options.length > 5 || !Number.isInteger(answer) || answer < 0 || answer >= options.length) {
         throw new Error('Choice question has invalid options.');
       }
-      return { ...common, type: 'choice', options, answer };
+      // The model usually lists the right option first. It moves to a place chosen for this question, as in the bundled sets.
+      const placed = placeAnswer(options, answer, prompt);
+      return { ...common, type: 'choice', options: placed.options, answer: placed.answer };
     }
     case 'cloze': {
       const body = str(q.text, 900);

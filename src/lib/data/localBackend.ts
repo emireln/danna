@@ -221,6 +221,15 @@ export function createLocalBackend(): DataBackend {
       });
     },
 
+    async upsertLessonProgressMany(rows) {
+      // Every row is checked before anything is written, so a refused row leaves the store as it was.
+      const cleaned = rows.slice(0, 500).map((row) => cleanLessonRow(row as unknown as Record<string, unknown>));
+      withStore((store) => {
+        const ids = new Set(cleaned.map((row) => row.lesson_id));
+        store.lessons = [...store.lessons.filter((item) => !ids.has(item.lesson_id)), ...cleaned];
+      });
+    },
+
     async listReviewItems() {
       return withStore((store) => store.reviews.slice());
     },

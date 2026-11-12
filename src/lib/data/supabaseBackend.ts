@@ -164,6 +164,19 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       );
     },
 
+    async upsertLessonProgressMany(rows) {
+      if (!rows.length) return;
+      const id = await me();
+      unwrap(
+        await sb
+          .from('lesson_progress')
+          .upsert(
+            rows.map((row) => ({ ...row, user_id: id, updated_at: new Date().toISOString() })),
+            { onConflict: 'user_id,lesson_id' },
+          ),
+      );
+    },
+
     async listReviewItems() {
       const id = await me();
       return unwrap(

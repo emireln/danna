@@ -3,6 +3,7 @@
 // short and consistent. Answer positions are fixed by a hash of the item, so they are never the same
 // letter every time and never change between runs.
 import type { Accent, Level, Passage, Question, Skill } from '../lib/types';
+import { placeAnswer } from '../lib/placement';
 import type { LessonDef, UnitDef } from './roadmap';
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
@@ -13,29 +14,6 @@ export type Draft = DistributiveOmit<Question, 'id' | 'skill'>;
 /** A vocabulary entry: the word, its meaning, and an example with the word in [brackets]. */
 export type WordEntry = [word: string, meaning: string, example: string];
 
-function hash(text: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i += 1) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-function placeCorrect(correct: string, wrong: string[], seed: string): { options: string[]; answer: number } {
-  const answer = hash(seed) % (wrong.length + 1);
-  const options = [...wrong];
-  options.splice(answer, 0, correct);
-  return { options, answer };
-}
-
-/**
- * Moves the right option to the position a hash of the seed picks, so the right letter varies from item to item.
- * `answer` is the index of the right option in the list as the author wrote it.
- */
-function placeAnswer(options: string[], answer: number, seed: string): { options: string[]; answer: number } {
-  return placeCorrect(options[answer], options.filter((_, index) => index !== answer), seed);
-}
 
 /** A multiple-choice item. `answer` is the index of the right option in the list as written. */
 export function mc(prompt: string, options: string[], answer: number, explanation?: string): Draft {

@@ -125,6 +125,8 @@ export interface DataBackend {
 
   listLessonProgress(): Promise<LessonProgressRow[]>;
   upsertLessonProgress(row: LessonProgressRow): Promise<void>;
+  /** Several lessons in one save, all or nothing. Used when the level is set. */
+  upsertLessonProgressMany(rows: LessonProgressRow[]): Promise<void>;
 
   listReviewItems(): Promise<ReviewRow[]>;
   upsertReviewItems(rows: ReviewRow[]): Promise<void>;

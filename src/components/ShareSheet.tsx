@@ -29,13 +29,20 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
 
+  // The result that was picked before the sheet opened, so it is listed even when it is older than the newest ones.
+  const pickedResultId = preferredItem?.kind === 'result' ? preferredItem.id : null;
+
   useEffect(() => {
     if (!backend) return undefined;
     let active = true;
     Promise.all([backend.listAttempts(12), backend.listMyTests()])
-      .then(([recent, mine]) => {
+      .then(async ([recent, mine]) => {
+        const picked =
+          pickedResultId && !recent.some((attempt) => attempt.id === pickedResultId)
+            ? await backend.getAttempt(pickedResultId).catch(() => null)
+            : null;
         if (!active) return;
-        setAttempts(recent);
+        setAttempts(picked ? [picked, ...recent] : recent);
         setTests(mine);
       })
       .catch((error: unknown) => notify(errorText(error), 'error'))
@@ -45,7 +52,7 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
     return () => {
       active = false;
     };
-  }, [backend, notify]);
+  }, [backend, notify, pickedResultId]);
 
   const send = async () => {
     if (!backend || !recipient || !item) return;

@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -86,6 +86,15 @@ export function Sheet({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const dialog = useRef<HTMLDivElement>(null);
+
+  // The dialog takes the focus when it opens, and the control that opened it gets the focus back when it closes.
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialog.current?.focus();
+    return () => opener?.focus();
+  }, []);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -93,6 +102,25 @@ export function Sheet({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
+
+  // Tab moves through the dialog only, so the keyboard does not reach the page behind it.
+  const keepFocusInside = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Tab' || !dialog.current) return;
+    const items = Array.from(
+      dialog.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
+    ).filter((item) => !item.hasAttribute('disabled'));
+    if (items.length === 0) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === dialog.current)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
 
   return (
     <motion.div
@@ -104,10 +132,13 @@ export function Sheet({
       }}
     >
       <motion.div
+        ref={dialog}
         className="sheet"
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        tabIndex={-1}
+        onKeyDown={keepFocusInside}
         initial={{ opacity: 0, y: 18, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}

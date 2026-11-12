@@ -100,10 +100,7 @@ export function SetupScreen() {
       const firstTime = !profile.onboarding_done;
       // The earlier levels are marked done before the setup is marked finished. If that fails, the setup is
       // still open, so pressing the button again finishes the placement.
-      if (firstTime && backend) {
-        const rows = placementRows(shownLevel);
-        await Promise.all(rows.map((row) => backend.upsertLessonProgress(row)));
-      }
+      if (firstTime && backend) await backend.upsertLessonProgressMany(placementRows(shownLevel));
       await patchProfile({
         username: shownUsername,
         display_name: shownName.trim(),

@@ -370,6 +370,19 @@ function upsertLessonProgress(row = {}) {
     );
 }
 
+// Several lessons at once, all or nothing: a row that is refused undoes the rows before it.
+function upsertLessonProgressMany(rows = []) {
+  const list = Array.isArray(rows) ? rows.slice(0, 500) : [];
+  db().exec('BEGIN');
+  try {
+    for (const row of list) upsertLessonProgress(row && typeof row === 'object' ? row : {});
+    db().exec('COMMIT');
+  } catch (error) {
+    db().exec('ROLLBACK');
+    throw error;
+  }
+}
+
 function toReview(row) {
   return {
     item_key: row.item_key,
@@ -626,6 +639,7 @@ const METHODS = {
   setSkillScores,
   listLessonProgress,
   upsertLessonProgress,
+  upsertLessonProgressMany,
   listReviewItems,
   upsertReviewItems,
   listMyTests,

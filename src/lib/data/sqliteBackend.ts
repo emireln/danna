@@ -36,6 +36,7 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
 
     listLessonProgress: () => call<LessonProgressRow[]>('listLessonProgress'),
     upsertLessonProgress: (row: LessonProgressRow) => call<void>('upsertLessonProgress', [row]),
+    upsertLessonProgressMany: (rows: LessonProgressRow[]) => call<void>('upsertLessonProgressMany', [rows]),
 
     listReviewItems: () => call<ReviewRow[]>('listReviewItems'),
     upsertReviewItems: (rows: ReviewRow[]) => call<void>('upsertReviewItems', [rows]),
