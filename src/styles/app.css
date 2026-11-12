@@ -69,7 +69,7 @@
   body {
     margin: 0;
     font-family: var(--font);
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.55;
     color: var(--ink);
     background: var(--canvas);
@@ -169,7 +169,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 0 calc(20px + var(--overlay-w)) 0 20px;
+    padding: 0 calc(28px + var(--overlay-w)) 0 28px;
     -webkit-app-region: drag;
   }
 
@@ -272,13 +272,20 @@
   }
 
   .page {
-    width: min(960px, 100%);
+    width: min(1120px, 100%);
     margin: 0 auto;
-    padding: 28px 24px 40px;
+    padding: 36px 48px 56px;
   }
 
   .page--wide {
-    width: min(1040px, 100%);
+    width: min(1240px, 100%);
+  }
+
+  /* Phones and narrow windows keep a 16px gutter, so the content gets the width. */
+  @media (max-width: 640px) {
+    .page {
+      padding: 24px 16px 40px;
+    }
   }
 
   .canvas {

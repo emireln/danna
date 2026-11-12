@@ -106,12 +106,34 @@ export function toeflTest(): TestDef {
   };
 }
 
+export const wordsTestId = (level: Level): string => `words-${level.toLowerCase()}`;
+
+/** A vocabulary test for one level: the words of every unit of that level, taken in turns. */
+export function wordsTest(level: Level): TestDef {
+  const lessons = PATH.filter((item) => !item.checkpoint && item.unit.level === level && item.lesson.id.endsWith('-words')).map(
+    (item) => item.lesson,
+  );
+  const { questions, passages } = mixed(lessons, 30);
+  return {
+    id: wordsTestId(level),
+    title: `${level} vocabulary test`,
+    subtitle: 'Words from every unit of this level',
+    kind: 'mock',
+    skill: 'language',
+    minutes: Math.max(8, Math.round(questions.length * 0.6)),
+    passages,
+    questions,
+  };
+}
+
 /** Resolves any bundled test id. Returns null for ids that are stored in Supabase. */
 export function bundledTest(id: string): TestDef | null {
   if (id === DIAGNOSTIC_ID) return diagnosticTest();
   if (id === TOEFL_TEST_ID) return toeflTest();
   const level = LEVELS.find((item) => levelTestId(item) === id);
   if (level) return levelTest(level);
+  const words = LEVELS.find((item) => wordsTestId(item) === id);
+  if (words) return wordsTest(words);
   const item = PATH.find((entry) => entry.lesson.id === id);
   if (item) return lessonTest(item.lesson, item.checkpoint);
   const toefl = TOEFL_LESSONS.find((lesson) => lesson.id === id);

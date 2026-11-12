@@ -17,7 +17,7 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: var(--space-5);
-    margin-bottom: var(--space-5);
+    margin-bottom: var(--space-6);
   }
 
   .page-header__main {
@@ -34,7 +34,7 @@
   }
 
   .page-title {
-    font-size: 28px;
+    font-size: 32px;
     line-height: 1.2;
     font-weight: 750;
     letter-spacing: -0.02em;
@@ -55,7 +55,7 @@
   }
 
   .section-title h2 {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .section-title__aside {

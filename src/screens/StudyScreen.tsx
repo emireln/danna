@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, ClipboardCheck, GraduationCap, Languages, PenLine, Plus, Sparkles, Star } from 'lucide-react';
 import { GenerateSheet } from '../components/GenerateSheet';
 import { BackLink, Empty, FeatureCard, Notice, PageHeader, ProgressBar, SectionTitle, Skeleton, Tabs } from '../components/ui';
-import { TOEFL_TEST_ID, levelTest, lessonsForSkill, toeflLessons, toeflTest } from '../content';
+import { TOEFL_TEST_ID, levelTest, lessonsForSkill, toeflLessons, toeflTest, wordsTest } from '../content';
 import { LEVELS } from '../lib/types';
 import { SECTION_ART, SECTION_BASE } from '../lib/art';
 import { errorText } from '../lib/bridge';
@@ -56,6 +56,7 @@ function useSelfStudyData() {
 }
 
 const LEVEL_TESTS = LEVELS.map((level) => levelTest(level));
+const WORD_TESTS = LEVELS.map((level) => wordsTest(level));
 const TOEFL_TEST = toeflTest();
 
 export function StudyScreen() {
@@ -149,7 +150,7 @@ export function StudyScreen() {
 
         {tab === 'mock' && (
           <div className="stack">
-            {LEVEL_TESTS.map((test) => (
+            {[...LEVEL_TESTS, ...WORD_TESTS].map((test) => (
               <button key={test.id} className="set-row" onClick={() => navigate(`/play/test/${test.id}`)}>
                 <span className="icon-tile icon-tile--sm">
                   <ClipboardCheck />
