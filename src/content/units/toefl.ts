@@ -74,7 +74,7 @@ export const TOEFL_UNITS: UnitDef[] = [
           mc('What happens when pollen is carried from one flower to another?', ['Fruit and seeds can form', 'The flower closes', 'The bee loses its energy'], 0),
           mc('According to the passage, why have many bee colonies declined?', ['Disease, pesticides and the loss of meadows', 'Too many flowers', 'Cold winters only'], 0),
           mc('What can farmers do to help bees?', ['Plant flowers near their fields and use fewer chemicals', 'Remove all the flowers', 'Move the bees to cities'], 0),
-          mc('The word “declined” is closest in meaning to:', ['decreased', 'increased', 'changed colour'], 0),
+          mc('The word “declined” is closest in meaning to:', ['decreased', 'increased', 'changed color'], 0),
         ],
       }),
       vocabulary({
@@ -149,7 +149,7 @@ export const TOEFL_UNITS: UnitDef[] = [
   unit({
     id: 'tf-u3',
     title: 'Speaking and writing tasks',
-    blurb: 'Practise the speaking and writing tasks in the style of the test.',
+    blurb: 'Practice the speaking and writing tasks in the style of the test.',
     level: 'B2',
     accent: 'blue',
     lessons: [
@@ -163,24 +163,24 @@ export const TOEFL_UNITS: UnitDef[] = [
         items: [
           speak('Some people prefer to study alone. Others prefer to study in groups. Which do you prefer? Explain your choice with reasons and details.', 45, ['Clear choice', 'Two reasons with details', 'Fluent delivery']),
           speak('Describe a place you know well. Explain why it is special to you.', 45, ['Describes the place', 'Explains why it matters', 'Fluent delivery']),
-          speak('Your university plans to replace printed textbooks with e-books. Describe the plan, then say whether you support it.', 60, ['Summarises the plan', 'States a clear opinion', 'Fluent delivery']),
+          speak('Your university plans to replace printed textbooks with e-books. Describe the plan, then say whether you support it.', 60, ['Summarizes the plan', 'States a clear opinion', 'Fluent delivery']),
         ],
       }),
       lesson({
         id: 'tf-u3-l2',
         unitId: 'tf-u3',
-        title: 'Summarising a reading and a lecture',
+        title: 'Summarizing a reading and a lecture',
         blurb: 'Combine what you read with what you heard.',
         skill: 'writing',
         minutes: 10,
         items: [
-          write('Reading: a new bus route would reduce traffic in the centre. Lecture: the study shows that the route would increase pollution because of the extra buses. Summarise how the lecture challenges the reading.', 120, [
-            'Summarises both sources',
+          write('Reading: a new bus route would reduce traffic in the center. Lecture: the study shows that the route would increase pollution because of the extra buses. Summarize how the lecture challenges the reading.', 120, [
+            'Summarizes both sources',
             'Shows the contrast clearly',
             'Uses linking words',
           ]),
-          write('Reading: the library will close on Sundays to save money. Lecture: students will lose a quiet place to study, and the savings are small. Summarise the main points of the lecture about the reading.', 120, [
-            'Summarises both sources',
+          write('Reading: the library will close on Sundays to save money. Lecture: students will lose a quiet place to study, and the savings are small. Summarize the main points of the lecture about the reading.', 120, [
+            'Summarizes both sources',
             'Shows the contrast clearly',
             'Uses linking words',
           ]),
@@ -197,12 +197,12 @@ export const TOEFL_UNITS: UnitDef[] = [
           write('Some people believe that universities should require all students to take a foreign language. Do you agree or disagree? Use specific reasons and examples.', 120, [
             'Clear position',
             'Specific reasons and examples',
-            'Organised paragraphs',
+            'Organized paragraphs',
           ]),
           write('Do you think technology makes people more or less social? Support your opinion with reasons and examples.', 120, [
             'Clear position',
             'Specific reasons and examples',
-            'Organised paragraphs',
+            'Organized paragraphs',
           ]),
         ],
       }),

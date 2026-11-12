@@ -57,7 +57,7 @@ export const C1_UNITS: UnitDef[] = [
           pick('Not only ___ clever, but he is also kind.', 'is he', ['he is', 'he does']),
           pick('Hardly ___ we arrived when it started to rain.', 'had', ['did', 'have']),
           pick('Under no circumstances ___ you leave the building.', 'should', ['would', 'do'], 'Under no circumstances takes inversion.'),
-          pick('Only later ___ I realise how much I had learned.', 'did', ['do', 'was']),
+          pick('Only later ___ I realize how much I had learned.', 'did', ['do', 'was']),
           pick('Little ___ she know about the surprise.', 'did', ['does', 'knew']),
           order('Not only did she finish the report, but she also wrote the summary.'),
         ],

@@ -185,7 +185,7 @@ export function SetupScreen() {
                 <>
                   <StepHead
                     eyebrow="Your goal"
-                    title="What do you want to practise?"
+                    title="What do you want to practice?"
                     text="Most people choose General English. The TOEFL warm-up is an extra track you can add at any time."
                   />
                   <div className="choice-grid" role="radiogroup" aria-label="Goal">
@@ -195,7 +195,7 @@ export function SetupScreen() {
                     </button>
                     <button role="radio" aria-checked={shownGoal === 'toefl'} className="choice" onClick={() => setGoal('toefl')}>
                       <span className="choice__title">TOEFL warm-up</span>
-                      <span className="choice__text">Practise in the style of the test, with an estimated score and a countdown.</span>
+                      <span className="choice__text">Practice in the style of the test, with an estimated score and a countdown.</span>
                     </button>
                   </div>
                   {shownGoal === 'toefl' && (

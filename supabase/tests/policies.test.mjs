@@ -466,9 +466,26 @@ test('an existing version 1 database upgrades in place, keeps its data, and can 
   ).rows;
   assert.equal(newColumns.length, 2);
 
+  // Learners from the TOEFL-only app keep the TOEFL track. Profiles created from now on start as General English.
+  const oldGoals = (await upgrade.query('select goal from public.profiles where id in ($1, $2) order by id', [ALICE, BOB])).rows;
+  assert.deepEqual(
+    oldGoals.map((row) => row.goal),
+    ['toefl', 'toefl'],
+  );
+  await addUser(upgrade, CAROL, 'carol@example.test', { username: 'carol', display_name: 'Carol' });
+  const newGoal = (await upgrade.query('select goal from public.profiles where id = $1', [CAROL])).rows[0].goal;
+  assert.equal(newGoal, 'english');
+  await upgrade.query("update public.profiles set level = 'A1' where id = $1", [ALICE]);
+  await assert.rejects(upgrade.query("update public.profiles set goal = 'other' where id = $1", [ALICE]));
+
   await upgrade.exec(schemaSql);
   const again = (await upgrade.query('select count(*)::int as n from public.attempts')).rows[0].n;
   assert.equal(again, 1);
+  const stillToefl = (await upgrade.query('select goal from public.profiles where id in ($1, $2) order by id', [ALICE, BOB])).rows;
+  assert.deepEqual(
+    stillToefl.map((row) => row.goal),
+    ['toefl', 'toefl'],
+  );
   await upgrade.close();
 });
 

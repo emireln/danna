@@ -16,7 +16,7 @@ export const SKILL_LABEL: Record<Skill, string> = {
 export type Level = 'A1' | 'A2' | 'B1' | 'B2' | 'C1';
 export const LEVELS: readonly Level[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 
-/** What the learner is practising for. General English is the default; TOEFL is an optional warm-up. */
+/** What the learner is practicing for. General English is the default; TOEFL is an optional warm-up. */
 export type Goal = 'english' | 'toefl';
 export const GOALS: readonly Goal[] = ['english', 'toefl'];
 

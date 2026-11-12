@@ -251,7 +251,7 @@ export const A1_UNITS: UnitDef[] = [
         items: [
           speak('Tell us your name, where you are from and what you do.', 40, ['Says name and origin', 'Uses simple present sentences', 'Speaks clearly']),
           speak('Describe your home. Say where it is and what rooms it has.', 40, ['Names places', 'Uses there is or there are', 'Speaks clearly']),
-          speak('Talk about your favourite food and why you like it.', 40, ['Gives a clear reason', 'Uses like with a noun or -ing', 'Speaks clearly']),
+          speak('Talk about your favorite food and why you like it.', 40, ['Gives a clear reason', 'Uses like with a noun or -ing', 'Speaks clearly']),
         ],
       }),
     ],

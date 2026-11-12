@@ -239,7 +239,7 @@ function registerIpc() {
     if (clean.length > 300 || /\s/.test(clean)) throw userError('Paste the whole key. It should not contain spaces.');
     const candidates = ai.detectCandidates(clean);
     if (candidates.length === 0) {
-      throw userError('We do not recognise this key yet. Try an OpenAI, Anthropic, Gemini, OpenRouter or DeepSeek key.');
+      throw userError('We do not recognize this key yet. Try an OpenAI, Anthropic, Gemini, OpenRouter or DeepSeek key.');
     }
     // A key that could belong to two providers is checked with each; the one that accepts it is used.
     let provider = null;

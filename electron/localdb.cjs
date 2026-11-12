@@ -143,9 +143,11 @@ function db() {
   if (!profileColumns.includes('avatar_updated_at')) {
     connection.exec('ALTER TABLE profile ADD COLUMN avatar_updated_at TEXT');
   }
-  // Databases from before 0.4.0 do not have the learning goal yet. Their learners were all practising for TOEFL.
+  // Databases from before 0.4.0 do not have the learning goal yet. Their learners were all practicing for the
+  // TOEFL, so they keep the TOEFL track. New profiles default to General English (see the CREATE TABLE above).
   if (!profileColumns.includes('goal')) {
     connection.exec("ALTER TABLE profile ADD COLUMN goal TEXT NOT NULL DEFAULT 'english'");
+    connection.exec("UPDATE profile SET goal = 'toefl'");
   }
   return connection;
 }

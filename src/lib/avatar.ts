@@ -30,7 +30,7 @@ export async function prepareAvatar(file: File): Promise<Blob> {
     const context = canvas.getContext('2d');
     if (!context) throw new PictureError('This picture could not be prepared. Try again.');
     context.imageSmoothingQuality = 'high';
-    // Crop to the centre square, then scale it down.
+    // Crop to the center square, then scale it down.
     context.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
 
     for (const quality of QUALITY_STEPS) {

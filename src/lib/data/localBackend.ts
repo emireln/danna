@@ -1,5 +1,5 @@
 // Offline data in the browser preview only (the desktop app uses the SQLite file).
-// Same behaviour, kept in this browser's storage.
+// Same behavior, kept in this browser's storage.
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
 import type { AttemptRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorRow } from '../types';
 import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';

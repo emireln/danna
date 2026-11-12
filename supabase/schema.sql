@@ -982,13 +982,19 @@ where not exists (select 1 from public.announcements where version = '0.3.0');
 -- Security
 --  * The goal can only be one of two values, and each person can change only their own row.
 --  * Existing rows keep their data. Every value they hold already fits the new rules.
+--  * Learners from before 0.4.0 keep the TOEFL track: their goal is toefl. New profiles start as General English.
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
 -- 1. Learning goal and the A1 level
 -- ---------------------------------------------------------------------------
+-- Learners from before 0.4.0 were all practicing for the TOEFL, so every row that exists when the
+-- column is added gets the TOEFL track. Profiles created afterwards start as General English.
 alter table public.profiles
-  add column if not exists goal text not null default 'english';
+  add column if not exists goal text not null default 'toefl';
+
+alter table public.profiles
+  alter column goal set default 'english';
 
 alter table public.profiles
   drop constraint if exists profiles_goal_check,

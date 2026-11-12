@@ -10,7 +10,7 @@ const portoPassage: Passage = {
   text:
     'Porto, in northern Portugal, has been a busy port for many centuries. Over time, merchants from many countries arrived ' +
     'by sea and built warehouses along the river. Today visitors often walk across the old bridges and taste port wine in the ' +
-    'cellars. Although the city has grown quickly since the 1990s, many of its narrow streets and colourful houses have been ' +
+    'cellars. Although the city has grown quickly since the 1990s, many of its narrow streets and colorful houses have been ' +
     'carefully preserved. Local people say that Porto has changed a great deal, but it has never lost its character.',
 };
 
@@ -82,7 +82,7 @@ export const B1_UNITS: UnitDef[] = [
         items: [
           mc('What has Porto been for many centuries?', ['A busy port', 'A capital city', 'A mountain village'], 0),
           mc('What do visitors often do today?', ['Walk across the old bridges', 'Work in the warehouses', 'Climb the mountains'], 0),
-          mc('What has been carefully preserved?', ['The narrow streets and colourful houses', 'The modern airport', 'The railway station'], 0),
+          mc('What has been carefully preserved?', ['The narrow streets and colorful houses', 'The modern airport', 'The railway station'], 0),
           mc('What do local people say about Porto?', ['It has changed a lot but kept its character', 'It has become quiet and empty', 'It has never changed at all'], 0),
         ],
       }),

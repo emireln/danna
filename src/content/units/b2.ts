@@ -9,7 +9,7 @@ const phoneHabits: Passage = {
   title: 'Why we check our phones',
   text:
     'Most people check their phones dozens of times a day. Researchers who studied these habits found that many people had ' +
-    'picked up their phones before they even realised it. Some had been checking the news while they waited for a bus; others ' +
+    'picked up their phones before they even realized it. Some had been checking the news while they waited for a bus; others ' +
     'had opened social media without any clear reason. Experts say that short pauses can help. If you have kept your phone in ' +
     'another room for an hour, you may notice that your mind feels calmer. Many people who have tried this say they sleep better too.',
 };
@@ -38,7 +38,7 @@ export const B2_UNITS: UnitDef[] = [
           pick('When we arrived, the film ___ already started.', 'had', ['has', 'was'], 'Had shows the earlier of two past events.'),
           pick('She ___ never seen snow before she moved to Canada.', 'had', ['has', 'was']),
           pick('By the time the police came, the thief ___ escaped.', 'had', ['has', 'did']),
-          pick('I realised I ___ my wallet at the restaurant.', 'had left', ['left', 'have left']),
+          pick('I realized I ___ my wallet at the restaurant.', 'had left', ['left', 'have left']),
           pick('They ___ the house before the storm arrived.', 'had repaired', ['repaired', 'have repaired']),
           pick('Had you ___ the report before the meeting?', 'read', ['reading', 'readen']),
           pick('He was tired because he ___ all night.', 'had worked', ['worked', 'has worked']),
@@ -73,7 +73,7 @@ export const B2_UNITS: UnitDef[] = [
         passages: [phoneHabits],
         items: [
           mc('How often do most people check their phones?', ['Dozens of times a day', 'Once a week', 'Only at night'], 0),
-          mc('What did researchers find about many people?', ['They had picked up their phones before they realised it', 'They never used their phones', 'They only used them at work'], 0),
+          mc('What did researchers find about many people?', ['They had picked up their phones before they realized it', 'They never used their phones', 'They only used them at work'], 0),
           mc('What do experts say can help?', ['Short pauses away from the phone', 'Buying a bigger phone', 'Checking the news more often'], 0),
           mc('What do people who tried it say?', ['They sleep better', 'They lose their friends', 'They feel more tired'], 0),
         ],
@@ -198,7 +198,7 @@ export const B2_UNITS: UnitDef[] = [
           write('Is it better to study at university or to learn a practical skill? Explain your view with examples.', 120, [
             'Clear position',
             'Specific examples',
-            'Good paragraph organisation',
+            'Good paragraph organization',
           ]),
         ],
       }),
@@ -250,11 +250,11 @@ export const B2_UNITS: UnitDef[] = [
         id: 'b2-u4-l3',
         unitId: 'b2-u4',
         title: 'Discussing the news',
-        blurb: 'Summarise a story and give a reasoned view on it.',
+        blurb: 'Summarize a story and give a reasoned view on it.',
         skill: 'speaking',
         minutes: 7,
         items: [
-          speak('Choose a news story from this week. Summarise it and give your view on it.', 60, ['Summarises clearly', 'Gives a reasoned view', 'Speaks fluently']),
+          speak('Choose a news story from this week. Summarize it and give your view on it.', 60, ['Summarizes clearly', 'Gives a reasoned view', 'Speaks fluently']),
           speak('Do you think working from home is better than working in an office? Give two reasons.', 60, ['Gives two reasons', 'Compares both options', 'Speaks fluently']),
           speak('Which skills will be most important for jobs in the next ten years? Explain your ideas.', 60, ['Explains each skill', 'Uses examples', 'Speaks fluently']),
         ],
