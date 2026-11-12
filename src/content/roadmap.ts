@@ -8,6 +8,7 @@ import { B2_UNITS } from './units/b2';
 import { C1_UNITS } from './units/c1';
 import { TOEFL_UNITS as TOEFL_TRACK } from './units/toefl';
 import { WORD_LESSONS } from './units/words';
+import { practiceFor } from './units/practice';
 
 export interface LessonDef {
   id: string;
@@ -33,12 +34,15 @@ export interface UnitDef {
 
 const numbered = (units: UnitDef[]): UnitDef[] => units.map((unit, index) => ({ ...unit, number: index + 1 }));
 
-/** Every unit ends with its vocabulary lesson (units/words.ts). */
-const withWords = (units: UnitDef[]): UnitDef[] =>
-  units.map((unit) => (WORD_LESSONS[unit.id] ? { ...unit, lessons: [...unit.lessons, WORD_LESSONS[unit.id]] } : unit));
+/** Each unit ends with its practice lessons (units/practice*.ts), then its vocabulary (units/words.ts). */
+const complete = (units: UnitDef[]): UnitDef[] =>
+  units.map((unit) => ({
+    ...unit,
+    lessons: [...unit.lessons, ...practiceFor(unit.id), ...(WORD_LESSONS[unit.id] ? [WORD_LESSONS[unit.id]] : [])],
+  }));
 
 /** General English, A1 to C1, in order. */
-export const UNITS: UnitDef[] = numbered(withWords([...A1_UNITS, ...A2_UNITS, ...B1_UNITS, ...B2_UNITS, ...C1_UNITS]));
+export const UNITS: UnitDef[] = numbered(complete([...A1_UNITS, ...A2_UNITS, ...B1_UNITS, ...B2_UNITS, ...C1_UNITS]));
 
 /** The optional TOEFL warm-up track. */
-export const TOEFL_UNITS: UnitDef[] = numbered(withWords(TOEFL_TRACK));
+export const TOEFL_UNITS: UnitDef[] = numbered(complete(TOEFL_TRACK));
