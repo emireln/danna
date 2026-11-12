@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { animate, motion } from 'framer-motion';
+import { useT } from '../lib/i18n/react';
 
 /** Counts from 0 to `to`. */
 export function CountUp({ to, duration = 1.1, decimals = 0 }: { to: number; duration?: number; decimals?: number }) {
@@ -13,6 +14,7 @@ export function CountUp({ to, duration = 1.1, decimals = 0 }: { to: number; dura
 
 /** Half-circle score gauge with an animated arc. `value` is shown against `max`. */
 export function Gauge({ value, max, range }: { value: number; max: number; range: string }) {
+  const t = useT();
   const r = 118;
   const cx = 160;
   const cy = 150;
@@ -20,7 +22,7 @@ export function Gauge({ value, max, range }: { value: number; max: number; range
   const fraction = max > 0 ? Math.min(1, Math.max(0, value / max)) : 0;
 
   return (
-    <div className="gauge" role="img" aria-label={`${value} of ${max}, range ${range}`}>
+    <div className="gauge" role="img" aria-label={t('{value} of {max}, range {range}', { value, max, range })}>
       <svg viewBox="0 0 320 166" width="100%" aria-hidden="true">
         <path d={arc} fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth={16} strokeLinecap="round" />
         <motion.path
@@ -38,7 +40,7 @@ export function Gauge({ value, max, range }: { value: number; max: number; range
         <span className="gauge__big">
           <CountUp to={value} />
         </span>
-        <span className="gauge__of">of {max}</span>
+        <span className="gauge__of">{t('of {max}', { max })}</span>
         <span className="gauge__range">{range}</span>
       </div>
     </div>
@@ -52,6 +54,7 @@ export interface RadarAxis {
 
 /** Five-axis radar. `goal` draws a dashed reference polygon (for example a target score). */
 export function Radar({ axes, goal }: { axes: RadarAxis[]; goal?: number }) {
+  const t = useT();
   const size = 440;
   const cx = size / 2;
   const cy = 176;
@@ -68,7 +71,7 @@ export function Radar({ axes, goal }: { axes: RadarAxis[]; goal?: number }) {
   const dataPoints = axes.map((axis) => axis.value);
 
   return (
-    <svg className="radar" viewBox={`0 0 ${size} 352`} role="img" aria-label="Skill radar chart">
+    <svg className="radar" viewBox={`0 0 ${size} 352`} role="img" aria-label={t('Skill radar chart')}>
       <motion.g
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -133,11 +136,12 @@ export interface DonutSlice {
 }
 
 export function Donut({ slices }: { slices: DonutSlice[] }) {
+  const t = useT();
   const r = 74;
   const c = 2 * Math.PI * r;
   let accumulated = 0;
   return (
-    <svg viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Study plan split">
+    <svg viewBox="0 0 200 200" width="200" height="200" role="img" aria-label={t('Study plan split')}>
       <g transform="rotate(-90 100 100)">
         <circle cx="100" cy="100" r={r} fill="none" stroke="#eef1f6" strokeWidth={26} />
         {slices.map((slice, index) => {

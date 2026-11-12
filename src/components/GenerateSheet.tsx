@@ -5,6 +5,7 @@ import { Field, Notice, Sheet, Spinner } from './ui';
 import { Select } from './Pickers';
 import { extractJson, testRequest, validateGeneratedTest } from '../lib/ai';
 import { errorText } from '../lib/bridge';
+import { useT } from '../lib/i18n/react';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
@@ -20,6 +21,7 @@ interface GenerateSheetProps {
 /** Asks the chosen model for a practice set, validates it, and saves it to the user's sets. */
 export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: GenerateSheetProps) {
   const navigate = useNavigate();
+  const t = useT();
   const { complete } = useAI();
   const { backend } = useAuth();
   const { notify } = useToast();
@@ -52,10 +54,10 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
         minutes: generated.minutes,
         content: generated.content,
       });
-      notify('Your set is ready.', 'ok');
+      notify(t('Your set is ready.'), 'ok');
       navigate(`/play/test/${row.id}`);
     } catch (caught) {
-      setError(errorText(caught));
+      setError(t(errorText(caught)));
     } finally {
       setBusy(false);
     }
@@ -68,32 +70,38 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
       footer={
         <>
           <button className="btn btn--ghost" onClick={onClose} disabled={busy}>
-            Cancel
+            {t('Cancel')}
           </button>
           <button className="btn btn--primary" onClick={generate} disabled={busy}>
-            {busy ? <Spinner /> : <Sparkles />} Generate set
+            {busy ? <Spinner /> : <Sparkles />} {t('Generate set')}
           </button>
         </>
       }
     >
-      <Field label="Topic (optional)" hint="For example: climate policy, university housing, job interviews.">
-        <input className="input" value={topic} maxLength={120} onChange={(event) => setTopic(event.target.value)} placeholder="Leave empty for everyday academic life" />
+      <Field label={t('Topic (optional)')} hint={t('For example: climate policy, university housing, job interviews.')}>
+        <input
+          className="input"
+          value={topic}
+          maxLength={120}
+          onChange={(event) => setTopic(event.target.value)}
+          placeholder={t('Leave empty for everyday academic life')}
+        />
       </Field>
       <div className="grid-2">
-        <Field label="Section">
+        <Field label={t('Section')}>
           <Select<Skill | 'mixed'>
-            label="Section"
+            label={t('Section')}
             value={skill}
             onChange={setSkill}
-            options={[{ value: 'mixed', label: 'Mixed' }, ...SKILLS.map((item) => ({ value: item, label: SKILL_LABEL[item] }))]}
+            options={[{ value: 'mixed', label: t('Mixed') }, ...SKILLS.map((item) => ({ value: item, label: t(SKILL_LABEL[item]) }))]}
           />
         </Field>
-        <Field label="Level">
-          <Select<Level> label="Level" value={level} onChange={setLevel} options={LEVELS.map((item) => ({ value: item, label: item }))} />
+        <Field label={t('Level')}>
+          <Select<Level> label={t('Level')} value={level} onChange={setLevel} options={LEVELS.map((item) => ({ value: item, label: item }))} />
         </Field>
       </div>
-      <Field label="Questions">
-        <div className="segmented self-start" role="radiogroup" aria-label="Number of questions">
+      <Field label={t('Questions')}>
+        <div className="segmented self-start" role="radiogroup" aria-label={t('Number of questions')}>
           {[5, 8, 10].map((value) => (
             <button key={value} role="radio" aria-checked={count === value} className={`segmented__btn ${count === value ? 'is-active' : ''}`} onClick={() => setCount(value)}>
               {value}
@@ -101,7 +109,7 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
           ))}
         </div>
       </Field>
-      <Notice tone="info">The set is saved with your practice sets. The model you chose in Settings writes it.</Notice>
+      <Notice tone="info">{t('The set is saved with your practice sets. The model you chose in Settings writes it.')}</Notice>
       {error && <Notice tone="error">{error}</Notice>}
     </Sheet>
   );

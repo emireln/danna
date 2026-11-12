@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoUrl from '../assets/logo.webp';
+import { useT } from '../lib/i18n/react';
 
 // The danna logo. The WebP file is generated from brand/logo.png by `npm run icons`.
 export function BrandMark({ size = 26 }: { size?: number }) {
@@ -86,6 +87,7 @@ export function Sheet({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const t = useT();
   const dialog = useRef<HTMLDivElement>(null);
 
   // The dialog takes the focus when it opens, and the control that opened it gets the focus back when it closes.
@@ -145,7 +147,7 @@ export function Sheet({
       >
         <div className="sheet__head">
           <h3>{title}</h3>
-          <button className="btn btn--icon" onClick={onClose} aria-label="Close">
+          <button className="btn btn--icon" onClick={onClose} aria-label={t('Close')}>
             <X />
           </button>
         </div>
@@ -172,6 +174,7 @@ export function ConfirmSheet({
   onClose: () => void;
   busy?: boolean;
 }) {
+  const t = useT();
   return (
     <Sheet
       title={title}
@@ -179,7 +182,7 @@ export function ConfirmSheet({
       footer={
         <>
           <button className="btn btn--ghost" onClick={onClose} disabled={busy}>
-            Cancel
+            {t('Cancel')}
           </button>
           <button className="btn btn--danger" onClick={onConfirm} disabled={busy}>
             {busy ? <Spinner /> : null} {confirmLabel}

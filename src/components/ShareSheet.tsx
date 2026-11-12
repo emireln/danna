@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Field, Sheet, Spinner, Empty } from './ui';
 import { errorText } from '../lib/bridge';
+import { tn } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
 import { formatDate } from '../lib/progress';
-import { plural } from '../lib/text';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
 import type { AttemptRow, FriendRow, TestRow } from '../lib/types';
@@ -19,6 +20,7 @@ interface ShareSheetProps {
 
 /** Sends one of your results or sets to a friend. The note is limited to 280 characters. */
 export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose, onSent }: ShareSheetProps) {
+  const t = useT();
   const { backend } = useAuth();
   const { notify } = useToast();
   const [attempts, setAttempts] = useState<AttemptRow[]>([]);
@@ -45,7 +47,7 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
         setAttempts(picked ? [picked, ...recent] : recent);
         setTests(mine);
       })
-      .catch((error: unknown) => notify(errorText(error), 'error'))
+      .catch((error: unknown) => notify(t(errorText(error)), 'error'))
       .finally(() => {
         if (active) setLoading(false);
       });
@@ -65,11 +67,11 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
         testId: item.kind === 'test' ? item.id : undefined,
         note: note.trim(),
       });
-      notify('Sent. Your friend will see it in their inbox.', 'ok');
+      notify(t('Sent. Your friend will see it in their inbox.'), 'ok');
       onSent?.();
       onClose();
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     } finally {
       setBusy(false);
     }
@@ -79,25 +81,25 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
 
   return (
     <Sheet
-      title="Share with a friend"
+      title={t('Share with a friend')}
       onClose={onClose}
       footer={
         <>
           <button className="btn btn--ghost" onClick={onClose} disabled={busy}>
-            Cancel
+            {t('Cancel')}
           </button>
           <button className="btn btn--primary" onClick={send} disabled={busy || !recipient || !item || friends.length === 0}>
-            {busy ? <Spinner /> : null} Send
+            {busy ? <Spinner /> : null} {t('Send')}
           </button>
         </>
       }
     >
       {friends.length === 0 ? (
-        <Empty title="Add a friend first">Search for a username in Friends, then send a request.</Empty>
+        <Empty title={t('Add a friend first')}>{t('Search for a username in Friends, then send a request.')}</Empty>
       ) : (
         <>
           <div className="field">
-            <span className="field__label">Send to</span>
+            <span className="field__label">{t('Send to')}</span>
             <div className="row row--wrap">
               {friends.map((friend) => (
                 <button
@@ -113,10 +115,10 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
           </div>
 
           <div className="field">
-            <span className="field__label">What to send</span>
+            <span className="field__label">{t('What to send')}</span>
             {loading ? (
               <span className="row small muted">
-                <Spinner dark /> Loading your results and sets
+                <Spinner dark /> {t('Loading your results and sets')}
               </span>
             ) : (
               <div className="set-list">
@@ -130,9 +132,12 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
                       onClick={() => setItem(candidate)}
                     >
                       <span className="set-row__body">
-                        <span className="set-row__title">{attempt.title}</span>
+                        <span className="set-row__title">{t(attempt.title)}</span>
                         <span className="set-row__meta">
-                          {attempt.predicted ? `Estimate ${attempt.predicted} / 120` : `${attempt.score_pct}%`} · {formatDate(attempt.created_at)}
+                          {attempt.predicted
+                            ? t('Estimate {score} / 120', { score: attempt.predicted })
+                            : `${attempt.score_pct}%`}{' '}
+                          · {formatDate(attempt.created_at)}
                         </span>
                       </span>
                     </button>
@@ -148,27 +153,33 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
                       onClick={() => setItem(candidate)}
                     >
                       <span className="set-row__body">
-                        <span className="set-row__title">{test.title}</span>
-                        <span className="set-row__meta">Practice set · {plural(test.content.questions.length, 'question')}</span>
+                        <span className="set-row__title">{t(test.title)}</span>
+                        <span className="set-row__meta">
+                          {t('Practice set · {questions}', {
+                            questions: tn('{count} question', '{count} questions', test.content.questions.length, {
+                              count: test.content.questions.length,
+                            }),
+                          })}
+                        </span>
                       </span>
                     </button>
                   );
                 })}
                 {attempts.length === 0 && tests.length === 0 && (
-                  <span className="small muted">Finish a session or create a set first.</span>
+                  <span className="small muted">{t('Finish a session or create a set first.')}</span>
                 )}
               </div>
             )}
           </div>
 
-          <Field label="Note (optional)">
+          <Field label={t('Note (optional)')}>
             <textarea
               className="input"
               rows={2}
               maxLength={280}
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Try this one before Friday."
+              placeholder={t('Try this one before Friday.')}
             />
           </Field>
         </>

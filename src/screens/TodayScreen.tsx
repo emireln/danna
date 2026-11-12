@@ -14,6 +14,8 @@ import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, t
 import { useToast } from '../state/toast';
 import { useAI } from '../state/ai';
 import { errorText } from '../lib/bridge';
+import { useLanguage, useT } from '../lib/i18n/react';
+import { tn, type Lang } from '../lib/i18n';
 import { levelTestId } from '../content';
 
 const TILE_COLORS: Record<Skill, string> = {
@@ -24,10 +26,16 @@ const TILE_COLORS: Record<Skill, string> = {
   language: '#0e7c6b',
 };
 
-const SKILL_LETTER: Partial<Record<Skill, string>> = { reading: 'R', listening: 'L', speaking: 'S', writing: 'W' };
+// The letter on each skill tile: the first letter of the skill's name in the language the app is shown in.
+const SKILL_LETTER: Record<Lang, Partial<Record<Skill, string>>> = {
+  en: { reading: 'R', listening: 'L', speaking: 'S', writing: 'W' },
+  pt: { reading: 'L', listening: 'C', speaking: 'F', writing: 'E' },
+};
 
 export function TodayScreen() {
   const navigate = useNavigate();
+  const t = useT();
+  const { lang } = useLanguage();
   const { backend } = useAuth();
   const { profile, banners, patchProfile } = useAppData();
   const { notify } = useToast();
@@ -81,9 +89,9 @@ export function TodayScreen() {
     try {
       await patchProfile({ exam_date: dateDraft || null });
       setDateOpen(false);
-      notify(dateDraft ? 'Exam date saved.' : 'Exam date removed.', 'ok');
+      notify(dateDraft ? t('Exam date saved.') : t('Exam date removed.'), 'ok');
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     } finally {
       setSaving(false);
     }
@@ -92,51 +100,60 @@ export function TodayScreen() {
   const tiles: Array<{ key: string; label: string; count: number; color: string; letter?: string; icon?: 'lang' | 'review'; to: string }> = [
     ...(['reading', 'listening', 'speaking', 'writing'] as Skill[]).map((skill) => ({
       key: skill,
-      label: SKILL_LABEL[skill],
+      label: t(SKILL_LABEL[skill]),
       count: skillTasks(skill),
       color: TILE_COLORS[skill],
-      letter: SKILL_LETTER[skill],
+      letter: SKILL_LETTER[lang][skill],
       to: `/study/${skill}`,
     })),
-    { key: 'language', label: 'Language', count: skillTasks('language'), color: TILE_COLORS.language, icon: 'lang', to: '/study/language' },
-    { key: 'review', label: 'Daily review', count: dueNow, color: '#4b5a7a', icon: 'review', to: '/review' },
+    {
+      key: 'language',
+      label: t('Language'),
+      count: skillTasks('language'),
+      color: TILE_COLORS.language,
+      icon: 'lang',
+      to: '/study/language',
+    },
+    { key: 'review', label: t('Daily review'), count: dueNow, color: '#4b5a7a', icon: 'review', to: '/review' },
   ];
+
+  const goalText = profile?.goal === 'toefl' ? t('TOEFL warm-up, target {score}', { score: profile.target_score }) : t('General English');
 
   return (
     <div className="page">
       <PageHeader
-        eyebrow="Your plan"
-        title="Today's learning"
+        eyebrow={t('Your plan')}
+        title={t("Today's learning")}
         aside={
           <button className="btn btn--ghost btn--sm" onClick={() => navigate('/roadmap')}>
-            <MapIcon /> Roadmap
+            <MapIcon /> {t('Roadmap')}
           </button>
         }
       >
-        <p className="small muted">Your plan updates after every session.</p>
+        <p className="small muted">{t('Your plan updates after every session.')}</p>
       </PageHeader>
 
       <div className="stack">
-        {loadError && <Notice tone="error">{loadError}</Notice>}
+        {loadError && <Notice tone="error">{t(loadError)}</Notice>}
         {banners.length > 0 && <BannerCarousel items={banners} />}
 
         <SectionTitle
-          title="Your next step"
+          title={t('Your next step')}
           aside={
             <>
               <Select<'all' | Skill>
                 id="focus-select"
-                label="Focus"
+                label={t('Focus')}
                 variant="line"
                 value={focus}
                 onChange={setFocus}
                 options={[
-                  { value: 'all', label: 'Recommended for you' },
-                  { value: 'reading', label: 'Reading focus' },
-                  { value: 'listening', label: 'Listening focus' },
-                  { value: 'speaking', label: 'Speaking focus' },
-                  { value: 'writing', label: 'Writing focus' },
-                  { value: 'language', label: 'Language focus' },
+                  { value: 'all', label: t('Recommended for you') },
+                  { value: 'reading', label: t('Reading focus') },
+                  { value: 'listening', label: t('Listening focus') },
+                  { value: 'speaking', label: t('Speaking focus') },
+                  { value: 'writing', label: t('Writing focus') },
+                  { value: 'language', label: t('Language focus') },
                 ]}
               />
             </>
@@ -153,28 +170,35 @@ export function TodayScreen() {
             <FeatureCard
               muted
               icon={<GraduationCap />}
-              title="Learning setup"
-              badge={<Badge tone="done">Done</Badge>}
-              meta={`${profile?.goal === 'toefl' ? `TOEFL warm-up, target ${profile.target_score}` : 'General English'} · ${profile?.level ?? 'B1'} · ${profile?.daily_minutes ?? 15} min a day`}
+              title={t('Learning setup')}
+              badge={<Badge tone="done">{t('Done')}</Badge>}
+              meta={t('{goal} · {level} · {minutes} min a day', {
+                goal: goalText,
+                level: profile?.level ?? 'B1',
+                minutes: profile?.daily_minutes ?? 15,
+              })}
               onClick={() => navigate('/setup')}
             />
             {diagnostic ? (
               <FeatureCard
                 icon={<ScanSearch />}
-                title="Level report"
+                title={t('Level report')}
                 meta={
                   profile?.goal === 'toefl' && diagnostic.predicted
-                    ? `Estimated TOEFL ${diagnostic.predicted} of 120, range ${toeflRange(diagnostic.predicted).join('–')}`
-                    : `Your level is ${bandFor(diagnostic.score_pct)}`
+                    ? t('Estimated TOEFL {score} of 120, range {range}', {
+                        score: diagnostic.predicted,
+                        range: toeflRange(diagnostic.predicted).join('–'),
+                      })
+                    : t('Your level is {level}', { level: bandFor(diagnostic.score_pct) })
                 }
                 onClick={() => navigate(`/report/${diagnostic.id}`)}
               />
             ) : (
               <FeatureCard
                 icon={<ScanSearch />}
-                title="Level check"
-                badge={<Badge tone="beta">Beta</Badge>}
-                meta="Find your level and the skills to work on, in about 15 minutes."
+                title={t('Level check')}
+                badge={<Badge tone="beta">{t('Beta')}</Badge>}
+                meta={t('Find your level and the skills to work on, in about 15 minutes.')}
                 onClick={() => navigate('/play/diagnostic')}
               />
             )}
@@ -187,20 +211,35 @@ export function TodayScreen() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-            aria-label="Continue learning"
+            aria-label={t('Continue learning')}
           >
             <p className="eyebrow">
-              Unit {focusNode.item.unit.number} · {focusNode.item.unit.title}
+              {t('Unit {number} · {title}', { number: focusNode.item.unit.number, title: t(focusNode.item.unit.title) })}
             </p>
             <h2 className="hero__title">
-              {focusNode.item.checkpoint ? `Check your ${focusNode.item.unit.title.toLowerCase()}` : focusNode.item.lesson.title}
+              {focusNode.item.checkpoint
+                ? t('Unit check: {title}', { title: t(focusNode.item.unit.title) })
+                : t(focusNode.item.lesson.title)}
             </h2>
-            <p className="hero__text">{focusNode.item.lesson.blurb}</p>
+            <p className="hero__text">{t(focusNode.item.lesson.blurb)}</p>
             <p className="hero__meta">
-              Total time: {focusNode.item.lesson.minutes} min · {focusNode.item.lesson.questions.length} questions
+              {t('Total time: {minutes} min', { minutes: focusNode.item.lesson.minutes })} ·{' '}
+              {tn(
+                '{count} question',
+                '{count} questions',
+                focusNode.item.lesson.questions.length,
+                { count: focusNode.item.lesson.questions.length },
+              )}
             </p>
             <div className="hero__progress">
-              <div className="progress progress--on-blue" role="progressbar" aria-label="Unit progress" aria-valuemin={0} aria-valuemax={unitNodes.length} aria-valuenow={unitDone}>
+              <div
+                className="progress progress--on-blue"
+                role="progressbar"
+                aria-label={t('Unit progress')}
+                aria-valuemin={0}
+                aria-valuemax={unitNodes.length}
+                aria-valuenow={unitDone}
+              >
                 <motion.div
                   className="progress__bar"
                   initial={{ width: 0 }}
@@ -213,15 +252,18 @@ export function TodayScreen() {
               </span>
             </div>
             <button className="btn btn--white btn--block hero__cta" onClick={() => navigate(`/play/lesson/${focusNode.item.lesson.id}`)}>
-              Continue learning
+              {t('Continue learning')}
             </button>
           </motion.section>
         ) : (
-          <section className="hero" aria-label="Roadmap complete">
-            <h2 className="hero__title">Roadmap complete</h2>
-            <p className="hero__text">Every unit is finished. Take your level test to see where you stand now.</p>
-            <button className="btn btn--white btn--block hero__cta" onClick={() => navigate(`/play/test/${levelTestId(profile?.level ?? 'B1')}`)}>
-              Start {profile?.level ?? 'B1'} level test
+          <section className="hero" aria-label={t('Roadmap complete')}>
+            <h2 className="hero__title">{t('Roadmap complete')}</h2>
+            <p className="hero__text">{t('Every unit is finished. Take your level test to see where you stand now.')}</p>
+            <button
+              className="btn btn--white btn--block hero__cta"
+              onClick={() => navigate(`/play/test/${levelTestId(profile?.level ?? 'B1')}`)}
+            >
+              {t('Start {level} level test', { level: profile?.level ?? 'B1' })}
             </button>
           </section>
         )}
@@ -230,7 +272,12 @@ export function TodayScreen() {
           {tiles.map((tile) => {
             const Icon = tile.icon === 'lang' ? Languages : tile.icon === 'review' ? RotateCw : null;
             return (
-              <button key={tile.key} className="tile" onClick={() => navigate(tile.to)} aria-label={`${tile.label}, ${tile.count} to do`}>
+              <button
+                key={tile.key}
+                className="tile"
+                onClick={() => navigate(tile.to)}
+                aria-label={t('{label}, {count} to do', { label: tile.label, count: tile.count })}
+              >
                 <span className="tile__letter" style={{ background: tile.color }}>
                   {Icon ? <Icon size={16} aria-hidden="true" /> : tile.letter}
                 </span>
@@ -243,7 +290,7 @@ export function TodayScreen() {
 
         <div className="strip">
           <CalendarDays aria-hidden="true" />
-          <span>Days until exam</span>
+          <span>{t('Days until exam')}</span>
           {daysLeft === null ? (
             <button
               className="btn btn--text strip__value"
@@ -252,7 +299,7 @@ export function TodayScreen() {
                 setDateOpen(true);
               }}
             >
-              Set exam date
+              {t('Set exam date')}
             </button>
           ) : (
             <button
@@ -261,35 +308,33 @@ export function TodayScreen() {
                 setDateDraft(profile?.exam_date ?? '');
                 setDateOpen(true);
               }}
-              aria-label="Change exam date"
+              aria-label={t('Change exam date')}
             >
-              {daysLeft >= 0 ? `D-${daysLeft}` : 'Exam passed'}
+              {daysLeft >= 0 ? t('D-{days}', { days: daysLeft }) : t('Exam passed')}
             </button>
           )}
         </div>
 
-        {!aiReady && (
-          <Notice tone="info">Connect an AI key in Settings to unlock generated practice sets and coach feedback.</Notice>
-        )}
+        {!aiReady && <Notice tone="info">{t('Connect an AI key in Settings to unlock generated practice sets and coach feedback.')}</Notice>}
       </div>
 
       {dateOpen && (
         <Sheet
-          title="Exam date"
+          title={t('Exam date')}
           onClose={() => setDateOpen(false)}
           footer={
             <>
               <button className="btn btn--ghost" onClick={() => setDateOpen(false)}>
-                Cancel
+                {t('Cancel')}
               </button>
               <button className="btn btn--primary" onClick={saveDate} disabled={saving}>
-                {saving ? <Spinner /> : 'Save date'}
+                {saving ? <Spinner /> : t('Save date')}
               </button>
             </>
           }
         >
-          <Field label="Exam date" hint="Leave it empty to hide the countdown.">
-            <DateField label="Exam date" value={dateDraft} onChange={setDateDraft} min={todayIso()} />
+          <Field label={t('Exam date')} hint={t('Leave it empty to hide the countdown.')}>
+            <DateField label={t('Exam date')} value={dateDraft} onChange={setDateDraft} min={todayIso()} />
           </Field>
         </Sheet>
       )}

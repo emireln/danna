@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Cloud, Eye, EyeOff, KeyRound, Laptop, Trash2 } from 'lucide-react';
+import { LanguageSwitch } from '../components/LanguageSwitch';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
+import { tn } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { backendFor, onlineAvailable } from '../lib/session';
-import { plural } from '../lib/text';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -32,6 +34,7 @@ function candidatesFor(key: string): Provider[] {
 
 export function SettingsScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { mode, email, signOut, moveToDevice } = useAuth();
   const ai = useAI();
   const { refresh, refreshSocial } = useAppData();
@@ -70,7 +73,7 @@ export function SettingsScreen() {
 
   const candidates = candidatesFor(keyDraft.trim());
   const detected = candidates.length > 0;
-  const detectedLabel = candidates.length === 1 ? PROVIDER_LABEL[candidates[0]] : 'OpenAI or DeepSeek';
+  const detectedLabel = candidates.length === 1 ? PROVIDER_LABEL[candidates[0]] : t('OpenAI or DeepSeek');
 
   useEffect(() => {
     bridge
@@ -93,9 +96,9 @@ export function SettingsScreen() {
       await ai.refresh();
       setModelsFor(result.provider);
       setModels(result.models);
-      notify(`${result.label} is connected. The newest model is selected.`, 'ok');
+      notify(t('{label} is connected. The newest model is selected.', { label: result.label }), 'ok');
     } catch (caught) {
-      setError(errorText(caught));
+      setError(t(errorText(caught)));
     } finally {
       setBusy(false);
     }
@@ -109,7 +112,7 @@ export function SettingsScreen() {
     try {
       setModels(await bridge.keys.models(provider));
     } catch (caught) {
-      setError(errorText(caught));
+      setError(t(errorText(caught)));
     } finally {
       setLoadingModels(false);
     }
@@ -120,9 +123,9 @@ export function SettingsScreen() {
     try {
       await bridge.keys.select(provider, model);
       await ai.refresh();
-      notify('Model updated.', 'ok');
+      notify(t('Model updated.'), 'ok');
     } catch (caught) {
-      notify(errorText(caught), 'error');
+      notify(t(errorText(caught)), 'error');
     }
   };
 
@@ -135,9 +138,9 @@ export function SettingsScreen() {
         setModelsFor(null);
         setModels([]);
       }
-      notify(`${PROVIDER_LABEL[provider]} key removed.`, 'ok');
+      notify(t('{provider} key removed.', { provider: PROVIDER_LABEL[provider] }), 'ok');
     } catch (caught) {
-      notify(errorText(caught), 'error');
+      notify(t(errorText(caught)), 'error');
     } finally {
       setKeyToRemove(null);
     }
@@ -148,7 +151,7 @@ export function SettingsScreen() {
     try {
       setSettings(await bridge.settings.set({ closeToTray: !settings.closeToTray }));
     } catch (caught) {
-      notify(errorText(caught), 'error');
+      notify(t(errorText(caught)), 'error');
     }
   };
 
@@ -160,12 +163,20 @@ export function SettingsScreen() {
       await refreshSocial();
       setAddOpen(false);
       setDeviceHasProgress(false);
-      notify('Your progress from this device is now in your account.', 'ok');
+      notify(t('Your progress from this device is now in your account.'), 'ok');
       if (report.failed > 0) {
-        notify(`${plural(report.failed, 'item')} could not be copied. Try again later.`, 'error');
+        notify(
+          tn(
+            '{count} item could not be copied. Try again later.',
+            '{count} items could not be copied. Try again later.',
+            report.failed,
+            { count: report.failed },
+          ),
+          'error',
+        );
       }
     } catch (caught) {
-      notify(errorText(caught), 'error');
+      notify(t(errorText(caught)), 'error');
     } finally {
       setAdding(false);
     }
@@ -177,9 +188,9 @@ export function SettingsScreen() {
       await moveToDevice(keepCopy);
       setSwitchOpen(false);
       await refresh();
-      notify('You are now using danna on this device.', 'ok');
+      notify(t('You are now using danna on this device.'), 'ok');
     } catch (caught) {
-      notify(errorText(caught), 'error');
+      notify(t(errorText(caught)), 'error');
     } finally {
       setSwitching(false);
     }
@@ -187,10 +198,18 @@ export function SettingsScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Preferences" title="Settings" />
+      <PageHeader eyebrow={t('Preferences')} title={t('Settings')} />
 
-      <SectionTitle title="How you use danna" />
-      <div className="mode-grid" role="radiogroup" aria-label="How you use danna">
+      <SectionTitle title={t('App language')} />
+      <div className="settings-row">
+        <div className="settings-row__body">
+          <div className="settings-row__text">{t('Menus, lessons and the coach use this language.')}</div>
+        </div>
+        <LanguageSwitch />
+      </div>
+
+      <SectionTitle title={t('How you use danna')} />
+      <div className="mode-grid" role="radiogroup" aria-label={t('How you use danna')}>
         <button
           role="radio"
           aria-checked={mode === 'local'}
@@ -202,8 +221,8 @@ export function SettingsScreen() {
           <span className="mode-card__icon">
             <Laptop aria-hidden="true" />
           </span>
-          <span className="mode-card__title">On this device</span>
-          <span className="mode-card__text">Everything stays on this device.</span>
+          <span className="mode-card__title">{t('On this device')}</span>
+          <span className="mode-card__text">{t('Everything stays on this device.')}</span>
           <span className="mode-card__tick">{mode === 'local' && <span aria-hidden="true">✓</span>}</span>
         </button>
         <button
@@ -218,26 +237,27 @@ export function SettingsScreen() {
           <span className="mode-card__icon">
             <Cloud aria-hidden="true" />
           </span>
-          <span className="mode-card__title">Online account</span>
-          <span className="mode-card__text">{online ? 'Sync across your devices and connect with friends.' : 'Not available yet.'}</span>
+          <span className="mode-card__title">{t('Online account')}</span>
+          <span className="mode-card__text">{online ? t('Sync across your devices and connect with friends.') : t('Not available yet.')}</span>
           <span className="mode-card__tick">{mode === 'supabase' && <span aria-hidden="true">✓</span>}</span>
         </button>
       </div>
 
-      <SectionTitle title="AI assistant" />
+      <SectionTitle title={t('AI assistant')} />
       <div className="stack">
         <p className="small muted">
-          Bring your own key from OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. It unlocks generated sets and coach
-          feedback. The key stays on this device.
+          {t(
+            'Bring your own key from OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. It unlocks generated sets and coach feedback. The key stays on this device.',
+          )}
         </p>
 
-        {!ai.desktop && <Notice tone="info">Keys can be added in the danna desktop app.</Notice>}
+        {!ai.desktop && <Notice tone="info">{t('Keys can be added in the danna desktop app.')}</Notice>}
 
         {ai.desktop && (
           <div className="card stack">
             <div className="stack--tight">
               <label className="field__label" htmlFor="ai-key">
-                Your key
+                {t('Your key')}
               </label>
               <div className="input-action">
                 <span className="input-wrap">
@@ -247,7 +267,7 @@ export function SettingsScreen() {
                     type={showKey ? 'text' : 'password'}
                     value={keyDraft}
                     onChange={(event) => setKeyDraft(event.target.value)}
-                    placeholder="Paste your key here"
+                    placeholder={t('Paste your key here')}
                     autoComplete="off"
                     spellCheck={false}
                     disabled={busy}
@@ -259,20 +279,20 @@ export function SettingsScreen() {
                     type="button"
                     className="btn btn--icon"
                     onClick={() => setShowKey((value) => !value)}
-                    aria-label={showKey ? 'Hide key' : 'Show key'}
+                    aria-label={showKey ? t('Hide key') : t('Show key')}
                   >
                     {showKey ? <EyeOff /> : <Eye />}
                   </button>
                 </span>
                 <button className="btn btn--primary" onClick={connect} disabled={!detected || busy}>
-                  {busy ? <Spinner /> : <KeyRound />} Connect
+                  {busy ? <Spinner /> : <KeyRound />} {t('Connect')}
                 </button>
               </div>
             </div>
             {keyDraft.trim() && (
               <div className="row row--wrap">
                 <span className={`chip ${detected ? 'chip--blue' : ''}`}>
-                  {detected ? `Looks like ${detectedLabel}` : 'We do not recognize this key yet'}
+                  {detected ? t('Looks like {provider}', { provider: detectedLabel }) : t('We do not recognize this key yet')}
                 </span>
               </div>
             )}
@@ -280,7 +300,9 @@ export function SettingsScreen() {
           </div>
         )}
 
-        {ai.desktop && ai.connections.length === 0 && <Empty title="No key connected yet">Paste a key above to unlock the assistant.</Empty>}
+        {ai.desktop && ai.connections.length === 0 && (
+          <Empty title={t('No key connected yet')}>{t('Paste a key above to unlock the assistant.')}</Empty>
+        )}
 
         {ai.connections.length > 0 && (
           <div className="set-list">
@@ -292,14 +314,18 @@ export function SettingsScreen() {
                   <div className="connection__body">
                     <div className="row row--wrap">
                       <span className="connection__name">{connection.label}</span>
-                      {active && <span className="latest">In use</span>}
+                      {active && <span className="latest">{t('In use')}</span>}
                     </div>
-                    <div className="small muted">Ends in {connection.masked.slice(-4)}</div>
+                    <div className="small muted">{t('Ends in {last}', { last: connection.masked.slice(-4) })}</div>
                   </div>
                   <button className="btn btn--ghost btn--sm" onClick={() => showModels(connection.provider)} disabled={loadingThis}>
-                    {loadingThis ? <Spinner dark /> : null} Models
+                    {loadingThis ? <Spinner dark /> : null} {t('Models')}
                   </button>
-                  <button className="btn btn--icon" onClick={() => setKeyToRemove(connection.provider)} aria-label={`Remove ${connection.label} key`}>
+                  <button
+                    className="btn btn--icon"
+                    onClick={() => setKeyToRemove(connection.provider)}
+                    aria-label={t('Remove {label} key', { label: connection.label })}
+                  >
                     <Trash2 />
                   </button>
                 </div>
@@ -310,15 +336,15 @@ export function SettingsScreen() {
 
         {modelsFor && models.length > 0 && (
           <div className="stack--tight">
-            <span className="field__label">Choose a model</span>
-            <div className="model-list" role="radiogroup" aria-label="Models">
+            <span className="field__label">{t('Choose a model')}</span>
+            <div className="model-list" role="radiogroup" aria-label={t('Models')}>
               {models.map((model) => {
                 const selected = ai.selection?.provider === modelsFor && ai.selection?.model === model.id;
                 return (
                   <button key={model.id} role="radio" aria-checked={selected} className="model" onClick={() => choose(modelsFor, model.id)}>
                     <span className="model__radio" aria-hidden="true" />
                     <span className="model__label">{model.label}</span>
-                    {model.latest && <span className="latest">Newest</span>}
+                    {model.latest && <span className="latest">{t('Newest')}</span>}
                   </button>
                 );
               })}
@@ -329,16 +355,16 @@ export function SettingsScreen() {
 
       {bridge && settings && (
         <>
-          <SectionTitle title="Window" />
+          <SectionTitle title={t('Window')} />
           <div className="settings-row">
             <div className="settings-row__body">
-              <div className="settings-row__title">Keep danna in the tray</div>
-              <div className="settings-row__text">Closing the window keeps practice running. Open it again from the tray icon.</div>
+              <div className="settings-row__title">{t('Keep danna in the tray')}</div>
+              <div className="settings-row__text">{t('Closing the window keeps practice running. Open it again from the tray icon.')}</div>
             </div>
             <button
               role="switch"
               aria-checked={settings.closeToTray}
-              aria-label="Keep danna in the tray when the window closes"
+              aria-label={t('Keep danna in the tray when the window closes')}
               className="switch"
               onClick={toggleTray}
             >
@@ -350,22 +376,24 @@ export function SettingsScreen() {
 
       {mode === 'supabase' && (
         <>
-          <SectionTitle title="Account" />
+          <SectionTitle title={t('Account')} />
           {deviceHasProgress && (
             <div className="settings-row">
               <div className="settings-row__body">
-                <div className="settings-row__title">Progress saved on this device</div>
-                <div className="settings-row__text">Lessons, scores, sets, your picture and library can be added to your account.</div>
+                <div className="settings-row__title">{t('Progress saved on this device')}</div>
+                <div className="settings-row__text">
+                  {t('Lessons, scores, sets, your picture and library can be added to your account.')}
+                </div>
               </div>
               <button className="btn btn--ghost btn--sm" onClick={() => setAddOpen(true)}>
-                Add to my account
+                {t('Add to my account')}
               </button>
             </div>
           )}
           <div className="settings-row">
             <div className="settings-row__body">
-              <div className="settings-row__title">{email ?? 'Signed in'}</div>
-              <div className="settings-row__text">Your progress is saved to your account.</div>
+              <div className="settings-row__title">{email ?? t('Signed in')}</div>
+              <div className="settings-row__text">{t('Your progress is saved to your account.')}</div>
             </div>
             <button
               className="btn btn--ghost btn--sm"
@@ -374,72 +402,73 @@ export function SettingsScreen() {
                 navigate('/auth', { replace: true });
               }}
             >
-              Sign out
+              {t('Sign out')}
             </button>
           </div>
         </>
       )}
 
-      <SectionTitle title="About" />
+      <SectionTitle title={t('About')} />
       <div className="settings-row">
         <div className="settings-row__body">
           <div className="settings-row__title">danna {version}</div>
-          <div className="settings-row__text">Scores are practice estimates, not official results.</div>
+          <div className="settings-row__text">{t('Scores are practice estimates, not official results.')}</div>
         </div>
         <button className="btn btn--ghost btn--sm" onClick={() => navigate('/whats-new')}>
-          What&apos;s new
+          {t("What's new")}
         </button>
       </div>
 
       {keyToRemove && (
         <ConfirmSheet
-          title="Remove this key?"
-          confirmLabel="Remove key"
+          title={t('Remove this key?')}
+          confirmLabel={t('Remove key')}
           onConfirm={() => void removeKey(keyToRemove)}
           onClose={() => setKeyToRemove(null)}
         >
-          Your {PROVIDER_LABEL[keyToRemove]} key is removed from this device. You can add it again at any time.
+          {t('Your {provider} key is removed from this device. You can add it again at any time.', { provider: PROVIDER_LABEL[keyToRemove] })}
         </ConfirmSheet>
       )}
 
       {addOpen && (
         <Sheet
-          title="Add this device's progress?"
+          title={t("Add this device's progress?")}
           onClose={() => setAddOpen(false)}
           footer={
             <>
               <button className="btn btn--ghost" onClick={() => setAddOpen(false)} disabled={adding}>
-                Cancel
+                {t('Cancel')}
               </button>
               <button className="btn btn--primary" onClick={bringProgress} disabled={adding}>
-                {adding ? <Spinner /> : null} Add to my account
+                {adding ? <Spinner /> : null} {t('Add to my account')}
               </button>
             </>
           }
         >
           <p className="muted">
-            Lessons, scores, practice sets, coach messages, library files and your picture are copied. What is already in your account
-            stays as it is.
+            {t(
+              'Lessons, scores, practice sets, coach messages, library files and your picture are copied. What is already in your account stays as it is.',
+            )}
           </p>
         </Sheet>
       )}
 
       {switchOpen && (
         <Sheet
-          title="Use danna on this device?"
+          title={t('Use danna on this device?')}
           onClose={() => setSwitchOpen(false)}
           footer={
             <>
               <button className="btn btn--ghost" onClick={() => switchToDevice(false)} disabled={switching}>
-                Switch without copying
+                {t('Switch without copying')}
               </button>
               <button className="btn btn--primary" onClick={() => switchToDevice(true)} disabled={switching}>
-                {switching ? <Spinner /> : null} Copy my progress here
+                {switching ? <Spinner /> : null} {t('Copy my progress here')}
               </button>
             </>
           }
         >
-          <p className="muted">Your progress stays saved in your account. You can keep a copy on this device as well.</p>
+          <p className="muted">{t('Your progress stays saved in your account. You can keep a copy on this device as well.')}</p>
         </Sheet>
       )}
     </div>

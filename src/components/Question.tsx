@@ -4,6 +4,7 @@ import { CircleCheck, Mic, Play, Sparkles, Square, Volume2, XCircle } from 'luci
 import { errorText } from '../lib/bridge';
 import { parseCloze } from '../lib/grading';
 import { extractJson, parseFeedback, speakingRequest, writingRequest, type Feedback } from '../lib/ai';
+import { useT } from '../lib/i18n/react';
 import { useAI } from '../state/ai';
 import { useToast } from '../state/toast';
 import { Spinner, formatClock } from './ui';
@@ -41,15 +42,16 @@ interface SharedProps {
 type QuestionViewProps = SharedProps & { question: Question; passage?: Passage };
 
 export function QuestionView({ question, passage, ...shared }: QuestionViewProps) {
+  const t = useT();
   return (
     <>
       {passage && question.passageId === passage.id && (
-        <div className="q-passage" aria-label="Reading passage">
-          <div className="q-passage__title">{passage.title}</div>
+        <div className="q-passage" aria-label={t('Reading passage')}>
+          <div className="q-passage__title">{t(passage.title)}</div>
           {passage.text}
         </div>
       )}
-      <h2 className="q-prompt">{question.prompt}</h2>
+      <h2 className="q-prompt">{t(question.prompt)}</h2>
       {question.listen && <ListenButton text={question.listen} />}
       {question.type === 'choice' && <ChoiceBody question={question} {...shared} />}
       {question.type === 'cloze' && <ClozeBody question={question} {...shared} />}
@@ -58,8 +60,8 @@ export function QuestionView({ question, passage, ...shared }: QuestionViewProps
       {question.type === 'speaking' && <SpeakingBody question={question} {...shared} />}
       {shared.reveal && question.explanation && (
         <motion.div className="feedback-card" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-          <strong>Why</strong>
-          <p>{question.explanation}</p>
+          <strong>{t('Why')}</strong>
+          <p>{t(question.explanation)}</p>
         </motion.div>
       )}
     </>
@@ -67,6 +69,7 @@ export function QuestionView({ question, passage, ...shared }: QuestionViewProps
 }
 
 function ListenButton({ text }: { text: string }) {
+  const t = useT();
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
@@ -87,14 +90,15 @@ function ListenButton({ text }: { text: string }) {
   return (
     <button className="listen" onClick={play}>
       {playing ? <Volume2 aria-hidden="true" /> : <Play aria-hidden="true" />}
-      {playing ? 'Playing the recording' : 'Play the recording'}
+      {playing ? t('Playing the recording') : t('Play the recording')}
     </button>
   );
 }
 
 function ChoiceBody({ question, state, reveal, locked, onChange }: SharedProps & { question: ChoiceQuestion }) {
+  const t = useT();
   return (
-    <div className="options" role="radiogroup" aria-label="Answer options">
+    <div className="options" role="radiogroup" aria-label={t('Answer options')}>
       {question.options.map((option, index) => {
         const selected = state.choice === index;
         const correct = reveal && index === question.answer;
@@ -110,7 +114,7 @@ function ChoiceBody({ question, state, reveal, locked, onChange }: SharedProps &
             onClick={() => onChange({ choice: index })}
           >
             <span className="option__key">{String.fromCharCode(65 + index)}</span>
-            <span>{option}</span>
+            <span>{t(option)}</span>
             {correct && (
               <span className="option__mark option__mark--correct">
                 <CircleCheck />
@@ -129,6 +133,7 @@ function ChoiceBody({ question, state, reveal, locked, onChange }: SharedProps &
 }
 
 function ClozeBody({ question, state, reveal, locked, correctBlanks, onChange }: SharedProps & { question: ClozeQuestion }) {
+  const t = useT();
   const segments = useMemo(() => parseCloze(question.text), [question.text]);
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
   const values = state.cloze ?? [];
@@ -160,7 +165,7 @@ function ClozeBody({ question, state, reveal, locked, correctBlanks, onChange }:
               maxLength={remaining}
               autoComplete="off"
               spellCheck={false}
-              aria-label={`Blank ${segment.index + 1}`}
+              aria-label={t('Blank {number}', { number: segment.index + 1 })}
               style={{ width: `${remaining + 0.6}ch` }}
               onChange={(event) => {
                 const clean = event.target.value.replace(/\s/g, '');
@@ -182,12 +187,13 @@ function ClozeBody({ question, state, reveal, locked, correctBlanks, onChange }:
 }
 
 function ReorderBody({ question, state, reveal, locked, words, onChange }: SharedProps & { question: ReorderQuestion }) {
+  const t = useT();
   const order = state.order ?? [];
   const placed = new Set(order);
   return (
     <div className="stack--tight">
-      <div className="answer-line" aria-label="Your sentence">
-        {order.length === 0 && <span className="muted small">Tap the words in the right order.</span>}
+      <div className="answer-line" aria-label={t('Your sentence')}>
+        {order.length === 0 && <span className="muted small">{t('Tap the words in the right order.')}</span>}
         {order.map((wordIndex, position) => (
           <motion.button
             layout
@@ -217,7 +223,7 @@ function ReorderBody({ question, state, reveal, locked, words, onChange }: Share
       </div>
       {reveal && (
         <p className="small muted">
-          Correct order: <strong className="answer-key">{question.answer}</strong>
+          {t('Correct order:')} <strong className="answer-key">{question.answer}</strong>
         </p>
       )}
     </div>
@@ -225,6 +231,7 @@ function ReorderBody({ question, state, reveal, locked, words, onChange }: Share
 }
 
 function WritingBody({ question, state, locked, onChange }: SharedProps & { question: WritingQuestion }) {
+  const t = useT();
   const { ready, complete } = useAI();
   const text = state.text ?? '';
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -249,13 +256,13 @@ function WritingBody({ question, state, locked, onChange }: SharedProps & { ques
         rows={8}
         value={text}
         disabled={locked || graded}
-        placeholder="Write your response here."
-        aria-label="Your response"
+        placeholder={t('Write your response here.')}
+        aria-label={t('Your response')}
         onChange={(event) => onChange({ text: event.target.value })}
       />
       <div className="row row--between">
         <span className={`counter ${short ? 'is-short' : ''}`}>
-          {words} / {question.minWords} words
+          {t('{words} / {minWords} words', { words, minWords: question.minWords })}
         </span>
       </div>
       <Grader
@@ -263,7 +270,7 @@ function WritingBody({ question, state, locked, onChange }: SharedProps & { ques
         locked={locked}
         rubric={question.rubric}
         canAi={ready && text.trim().length > 0}
-        aiHint={ready ? 'Write a response first.' : 'Connect an AI key in Settings to get feedback on your writing.'}
+        aiHint={ready ? t('Write a response first.') : t('Connect an AI key in Settings to get feedback on your writing.')}
         runAi={runAi}
         onChange={onChange}
       />
@@ -272,6 +279,7 @@ function WritingBody({ question, state, locked, onChange }: SharedProps & { ques
 }
 
 function SpeakingBody({ question, state, locked, onChange }: SharedProps & { question: SpeakingQuestion }) {
+  const t = useT();
   const { notify } = useToast();
   const { ready, canTranscribe, complete, transcribe } = useAI();
   const [phase, setPhase] = useState<'idle' | 'recording' | 'processing'>('idle');
@@ -300,7 +308,7 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
     try {
       onChange({ transcript: await transcribe(blob) });
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     } finally {
       setPhase('idle');
     }
@@ -308,7 +316,7 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
 
   const start = async () => {
     if (!navigator.mediaDevices || typeof MediaRecorder === 'undefined') {
-      notify('Recording is not available on this device. Rate your answer yourself.', 'error');
+      notify(t('Recording is not available on this device. Rate your answer yourself.'), 'error');
       return;
     }
     try {
@@ -330,7 +338,7 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
       setPhase('recording');
       timer.current = window.setInterval(() => setLeft((value) => value - 1), 1000);
     } catch {
-      notify('The microphone is not available right now. You can rate your answer yourself.', 'error');
+      notify(t('The microphone is not available right now. You can rate your answer yourself.'), 'error');
     }
   };
 
@@ -351,34 +359,34 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
     <div className="stack">
       <div className="row">
         <span className="tone tone--good tabular">{formatClock(shown)}</span>
-        <span className="small muted">Limit {question.seconds} seconds</span>
+        <span className="small muted">{t('Limit {seconds} seconds', { seconds: question.seconds })}</span>
       </div>
       <div className="row row--wrap">
         {phase === 'idle' && (
           <button className="btn btn--primary" onClick={start} disabled={locked || graded}>
-            <Mic /> {state.audioUrl ? 'Record again' : 'Start recording'}
+            <Mic /> {state.audioUrl ? t('Record again') : t('Start recording')}
           </button>
         )}
         {phase === 'recording' && (
           <button className="btn btn--danger" onClick={stopRecording}>
-            <Square /> Stop
+            <Square /> {t('Stop')}
           </button>
         )}
         {phase === 'processing' && (
           <span className="row small muted">
-            <Spinner dark /> Transcribing your answer
+            <Spinner dark /> {t('Transcribing your answer')}
           </span>
         )}
       </div>
-      {state.audioUrl && <audio controls src={state.audioUrl} className="audio-player" aria-label="Your recording" />}
+      {state.audioUrl && <audio controls src={state.audioUrl} className="audio-player" aria-label={t('Your recording')} />}
       {state.transcript && (
         <div className="feedback-card">
-          <span className="small muted">Transcript</span>
+          <span className="small muted">{t('Transcript')}</span>
           <p>{state.transcript}</p>
         </div>
       )}
       {!state.audioUrl && phase === 'idle' && (
-        <span className="small muted">Recording is optional. You can also rate your own answer below.</span>
+        <span className="small muted">{t('Recording is optional. You can also rate your own answer below.')}</span>
       )}
       <Grader
         state={state}
@@ -387,8 +395,8 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
         canAi={ready && Boolean(state.transcript)}
         aiHint={
           canTranscribe
-            ? 'Feedback appears once the transcript is ready.'
-            : 'Add an OpenAI key in Settings to transcribe speaking. You can still rate yourself.'
+            ? t('Feedback appears once the transcript is ready.')
+            : t('Add an OpenAI key in Settings to transcribe speaking. You can still rate yourself.')
         }
         runAi={runAi}
         onChange={onChange}
@@ -408,6 +416,7 @@ interface GraderProps {
 }
 
 function Grader({ state, locked, rubric, canAi, aiHint, runAi, onChange }: GraderProps) {
+  const t = useT();
   const { notify } = useToast();
   const [busy, setBusy] = useState(false);
   const [selfMode, setSelfMode] = useState(false);
@@ -420,7 +429,7 @@ function Grader({ state, locked, rubric, canAi, aiHint, runAi, onChange }: Grade
     try {
       onChange({ feedback: await runAi() });
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     } finally {
       setBusy(false);
     }
@@ -429,27 +438,27 @@ function Grader({ state, locked, rubric, canAi, aiHint, runAi, onChange }: Grade
   return (
     <div className="feedback-card">
       <div className="row row--between">
-        <strong>Get feedback</strong>
+        <strong>{t('Get feedback')}</strong>
         {!canAi && <span className="small muted">{aiHint}</span>}
       </div>
       <div className="row row--wrap">
         {canAi && (
           <button className="btn btn--primary btn--sm" onClick={requestAi} disabled={busy || locked}>
-            {busy ? <Spinner /> : <Sparkles />} Get AI feedback
+            {busy ? <Spinner /> : <Sparkles />} {t('Get AI feedback')}
           </button>
         )}
         <button className="btn btn--ghost btn--sm" onClick={() => setSelfMode(true)} disabled={locked}>
-          Rate it myself
+          {t('Rate it myself')}
         </button>
       </div>
       {selfMode && (
         <div className="stack--tight">
           <ul>
             {rubric.map((criterion) => (
-              <li key={criterion}>{criterion}</li>
+              <li key={criterion}>{t(criterion)}</li>
             ))}
           </ul>
-          <div className="rubric-slider" role="group" aria-label="Your score out of 5">
+          <div className="rubric-slider" role="group" aria-label={t('Your score out of 5')}>
             {[0, 1, 2, 3, 4, 5].map((score) => (
               <button key={score} aria-pressed={state.selfScore === score} onClick={() => onChange({ selfScore: score })}>
                 {score}
@@ -463,19 +472,20 @@ function Grader({ state, locked, rubric, canAi, aiHint, runAi, onChange }: Grade
 }
 
 function FeedbackCard({ state }: { state: ItemState }) {
+  const t = useT();
   const score = state.feedback ? state.feedback.score : state.selfScore ?? 0;
   const tone = score >= 4 ? 'excellent' : score >= 3 ? 'good' : 'needs-work';
   return (
     <motion.div className="feedback-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
       <div className="row row--between">
-        <strong>{state.feedback ? 'AI feedback' : 'Your rating'}</strong>
+        <strong>{state.feedback ? t('AI feedback') : t('Your rating')}</strong>
         <span className={`tone tone--${tone}`}>{score} / 5</span>
       </div>
       {state.feedback && (
         <>
           {state.feedback.strengths.length > 0 && (
             <div>
-              <span className="small muted">Strengths</span>
+              <span className="small muted">{t('Strengths')}</span>
               <ul>
                 {state.feedback.strengths.map((item) => (
                   <li key={item}>{item}</li>
@@ -485,7 +495,7 @@ function FeedbackCard({ state }: { state: ItemState }) {
           )}
           {state.feedback.improvements.length > 0 && (
             <div>
-              <span className="small muted">To improve</span>
+              <span className="small muted">{t('To improve')}</span>
               <ul>
                 {state.feedback.improvements.map((item) => (
                   <li key={item}>{item}</li>
@@ -495,7 +505,7 @@ function FeedbackCard({ state }: { state: ItemState }) {
           )}
           {state.feedback.revision && (
             <p className="small">
-              <strong>Try this:</strong> {state.feedback.revision}
+              <strong>{t('Try this:')}</strong> {state.feedback.revision}
             </p>
           )}
         </>

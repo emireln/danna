@@ -3,7 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Check, Cloud, Laptop, Map as MapIcon, TrendingUp } from 'lucide-react';
 import { BrandMark, Wordmark } from '../components/ui';
+import { LanguageSwitch } from '../components/LanguageSwitch';
 import { markWelcomed, onlineAvailable } from '../lib/session';
+import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 
 const POINTS = [
@@ -16,6 +18,7 @@ type Choice = 'device' | 'account';
 
 export function WelcomeScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { status, useOffline } = useAuth();
   const [step, setStep] = useState(0);
   const [choice, setChoice] = useState<Choice | null>(null);
@@ -51,7 +54,7 @@ export function WelcomeScreen() {
                   <BrandMark size={56} />
                   <Wordmark className="wordmark--xl" />
                 </div>
-                <h1 className="welcome__title">Learn English, one small step at a time.</h1>
+                <h1 className="welcome__title">{t('Learn English, one small step at a time.')}</h1>
                 <div className="welcome__points">
                   {POINTS.map((point) => {
                     const Icon = point.icon;
@@ -60,7 +63,7 @@ export function WelcomeScreen() {
                         <span className="welcome__point-icon">
                           <Icon aria-hidden="true" />
                         </span>
-                        <span>{point.text}</span>
+                        <span>{t(point.text)}</span>
                       </div>
                     );
                   })}
@@ -76,16 +79,16 @@ export function WelcomeScreen() {
                 transition={{ duration: 0.25 }}
               >
                 <div>
-                  <p className="eyebrow">Your progress</p>
-                  <h1 className="welcome__title mt-2">How would you like to use danna?</h1>
+                  <p className="eyebrow">{t('Your progress')}</p>
+                  <h1 className="welcome__title mt-2">{t('How would you like to use danna?')}</h1>
                 </div>
-                <div className="mode-grid" role="radiogroup" aria-label="How you use danna">
+                <div className="mode-grid" role="radiogroup" aria-label={t('How you use danna')}>
                   <button role="radio" aria-checked={choice === 'device'} className="mode-card" onClick={() => setChoice('device')}>
                     <span className="mode-card__icon">
                       <Laptop aria-hidden="true" />
                     </span>
-                    <span className="mode-card__title">On this device</span>
-                    <span className="mode-card__text">No account needed. Everything stays here.</span>
+                    <span className="mode-card__title">{t('On this device')}</span>
+                    <span className="mode-card__text">{t('No account needed. Everything stays here.')}</span>
                     <span className="mode-card__tick">{choice === 'device' && <Check aria-hidden="true" />}</span>
                   </button>
                   <button
@@ -98,9 +101,9 @@ export function WelcomeScreen() {
                     <span className="mode-card__icon">
                       <Cloud aria-hidden="true" />
                     </span>
-                    <span className="mode-card__title">Online account</span>
+                    <span className="mode-card__title">{t('Online account')}</span>
                     <span className="mode-card__text">
-                      {online ? 'Sync across your devices and connect with friends.' : 'Not available yet.'}
+                      {online ? t('Sync across your devices and connect with friends.') : t('Not available yet.')}
                     </span>
                     <span className="mode-card__tick">{choice === 'account' && <Check aria-hidden="true" />}</span>
                   </button>
@@ -114,19 +117,19 @@ export function WelcomeScreen() {
       <div className="welcome__footer">
         <div className="welcome__bar">
           {step === 0 ? (
-            <span />
+            <LanguageSwitch />
           ) : (
             <button className="btn btn--ghost" onClick={() => setStep(0)}>
-              <ArrowLeft /> Back
+              <ArrowLeft /> {t('Back')}
             </button>
           )}
           {step === 0 ? (
             <button className="btn btn--primary" onClick={() => setStep(1)}>
-              Continue <ArrowRight />
+              {t('Continue')} <ArrowRight />
             </button>
           ) : (
             <button className="btn btn--primary" disabled={!choice} onClick={finish}>
-              Continue <ArrowRight />
+              {t('Continue')} <ArrowRight />
             </button>
           )}
         </div>

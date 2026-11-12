@@ -1,11 +1,13 @@
-// The app's own title bar: the wordmark, account actions and window controls.
+// The app's own title bar: the wordmark, the language, account actions and window controls.
 // On Windows it replaces the system title bar.
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeftRight, Bell, BookOpen, LogOut, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
+import { LanguageSwitch } from './LanguageSwitch';
 import { bridge, type WindowState } from '../lib/bridge';
+import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 
@@ -33,6 +35,7 @@ function useWindowControls() {
 export function TitleBar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const t = useT();
   const { status, mode, email, signOut } = useAuth();
   const { profile, incomingRequests, unseenShares, hasNewRelease, pictureUrl } = useAppData();
   const windows = useWindowControls();
@@ -57,7 +60,7 @@ export function TitleBar() {
   }, [menuOpen]);
 
   const showActions = status === 'in' && !location.pathname.startsWith('/play') && location.pathname !== '/setup';
-  const name = profile?.display_name || profile?.username || 'You';
+  const name = profile?.display_name || profile?.username || t('You');
   const friendBadge = incomingRequests + unseenShares;
   const go = (path: string) => {
     setMenuOpen(false);
@@ -66,11 +69,13 @@ export function TitleBar() {
 
   return (
     <header className="titlebar">
-      <Link to="/" className="wordmark" aria-label="danna home">
+      <Link to="/" className="wordmark" aria-label={t('danna home')}>
         danna
       </Link>
 
       <div className="titlebar__spacer" onDoubleClick={() => windows.desktop && windows.toggle()} />
+
+      <LanguageSwitch />
 
       {showActions && (
         <div className="titlebar__actions">
@@ -78,13 +83,13 @@ export function TitleBar() {
             <Link
               to="/friends"
               className="btn btn--icon icon-wrap"
-              aria-label={friendBadge ? `Friends, ${friendBadge} waiting` : 'Friends'}
+              aria-label={friendBadge ? t('Friends, {count} waiting', { count: friendBadge }) : t('Friends')}
             >
               <Users />
               {friendBadge > 0 && <span className="icon-badge">{friendBadge}</span>}
             </Link>
           )}
-          <Link to="/whats-new" className="btn btn--icon icon-wrap" aria-label="What's new">
+          <Link to="/whats-new" className="btn btn--icon icon-wrap" aria-label={t("What's new")}>
             <Bell />
             {hasNewRelease && <span className="dot-badge" aria-hidden="true" />}
           </Link>
@@ -95,7 +100,7 @@ export function TitleBar() {
               onClick={() => setMenuOpen((open) => !open)}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
-              aria-label="Account menu"
+              aria-label={t('Account menu')}
             >
               <Avatar name={name} color={profile?.avatar_color} size="sm" src={pictureUrl} />
             </button>
@@ -111,19 +116,19 @@ export function TitleBar() {
                 >
                   <div className="menu__head">
                     <span className="menu__name">{name}</span>
-                    <span className="menu__mail">{mode === 'supabase' ? (email ?? 'Online account') : 'Kept on this device'}</span>
+                    <span className="menu__mail">{mode === 'supabase' ? (email ?? t('Online account')) : t('Kept on this device')}</span>
                   </div>
                   <button className="menu__item" role="menuitem" onClick={() => go('/profile')}>
-                    <User /> Profile
+                    <User /> {t('Profile')}
                   </button>
                   <button className="menu__item" role="menuitem" onClick={() => go('/library')}>
-                    <BookOpen /> My library
+                    <BookOpen /> {t('My library')}
                   </button>
                   <button className="menu__item" role="menuitem" onClick={() => go('/settings')}>
-                    <Settings /> Settings
+                    <Settings /> {t('Settings')}
                   </button>
                   <button className="menu__item" role="menuitem" onClick={() => go('/settings')}>
-                    <ArrowLeftRight /> {mode === 'supabase' ? 'Use on this device' : 'Use an online account'}
+                    <ArrowLeftRight /> {mode === 'supabase' ? t('Use on this device') : t('Use an online account')}
                   </button>
                   {mode === 'supabase' && (
                     <>
@@ -137,7 +142,7 @@ export function TitleBar() {
                           navigate('/auth', { replace: true });
                         }}
                       >
-                        <LogOut /> Sign out
+                        <LogOut /> {t('Sign out')}
                       </button>
                     </>
                   )}
@@ -150,12 +155,12 @@ export function TitleBar() {
 
       {windows.desktop && (
         <div className="titlebar__controls">
-          <button className="titlebar__control" onClick={windows.minimize} aria-label="Minimize">
+          <button className="titlebar__control" onClick={windows.minimize} aria-label={t('Minimize')}>
             <svg viewBox="0 0 10 10" aria-hidden="true">
               <path d="M0 5.5h10" />
             </svg>
           </button>
-          <button className="titlebar__control" onClick={windows.toggle} aria-label={windows.maximized ? 'Restore' : 'Maximize'}>
+          <button className="titlebar__control" onClick={windows.toggle} aria-label={windows.maximized ? t('Restore') : t('Maximize')}>
             {windows.maximized ? (
               <svg viewBox="0 0 10 10" aria-hidden="true">
                 <path d="M2.5 0.5h7v7" />
@@ -167,7 +172,7 @@ export function TitleBar() {
               </svg>
             )}
           </button>
-          <button className="titlebar__control titlebar__control--close" onClick={windows.close} aria-label="Close">
+          <button className="titlebar__control titlebar__control--close" onClick={windows.close} aria-label={t('Close')}>
             <svg viewBox="0 0 10 10" aria-hidden="true">
               <path d="M0 0L10 10M10 0L0 10" />
             </svg>

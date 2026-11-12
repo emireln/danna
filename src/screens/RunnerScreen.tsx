@@ -9,7 +9,8 @@ import { bundledTest, diagnosticTest } from '../content';
 import { errorText } from '../lib/bridge';
 import { gradeChoice, gradeCloze, gradeReorder, shuffleWords } from '../lib/grading';
 import { nextStreak, localDate } from '../lib/progress';
-import { plural } from '../lib/text';
+import { tn } from '../lib/i18n';
+import { useT, type Translate } from '../lib/i18n/react';
 import { isReviewable, newReviewItem, scheduleReview } from '../lib/srs';
 import { createSteps, type Steps } from '../lib/steps';
 import { enterPressesPrimary } from '../lib/keyboard';
@@ -109,6 +110,7 @@ function exitPath(kind: TestDef['kind'] | undefined, isReview: boolean): string 
 
 export function RunnerScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const location = useLocation();
   const params = useParams();
   const { backend } = useAuth();
@@ -160,7 +162,7 @@ export function RunnerScreen() {
         return {
           id: 'review',
           title: 'Daily review',
-          subtitle: `${plural(rows.length, 'question')} due`,
+          subtitle: tn('{count} question due', '{count} questions due', rows.length, { count: rows.length }),
           kind: 'review',
           skill: 'mixed',
           minutes: Math.max(2, rows.length),
@@ -177,7 +179,7 @@ export function RunnerScreen() {
         return {
           id: row.id,
           title: row.title,
-          subtitle: row.description || `${row.level} · ${plural(row.content.questions.length, 'question')}`,
+          subtitle: row.description || `${row.level} · ${tn('{count} question', '{count} questions', row.content.questions.length, { count: row.content.questions.length })}`,
           kind: 'practice',
           skill: row.skill,
           minutes: row.minutes,
@@ -340,8 +342,8 @@ export function RunnerScreen() {
         attemptId,
       });
     } catch (error) {
-      setSaveError(errorText(error));
-      notify('We could not save your progress. Please try again.', 'error');
+      setSaveError(t(errorText(error)));
+      notify(t('We could not save your progress. Please try again.'), 'error');
     } finally {
       setSaving(false);
     }
@@ -403,16 +405,16 @@ export function RunnerScreen() {
     return (
       <div className="runner">
         <div className="runner__top">
-          <button className="btn btn--icon" onClick={() => navigate('/')} aria-label="Back">
+          <button className="btn btn--icon" onClick={() => navigate('/')} aria-label={t('Back')}>
             <X />
           </button>
         </div>
         <div className="runner__body">
           <div className="runner__inner">
-            <Notice tone="error">{loadError}</Notice>
+            <Notice tone="error">{t(loadError)}</Notice>
             <div>
               <button className="btn btn--ghost" onClick={() => navigate('/')}>
-                Back to today
+                {t('Back to today')}
               </button>
             </div>
           </div>
@@ -426,7 +428,7 @@ export function RunnerScreen() {
     return (
       <div className="auth" role="status">
         <Spinner dark />
-        <span className="sr-only">Loading session</span>
+        <span className="sr-only">{t('Loading session')}</span>
       </div>
     );
   }
@@ -440,38 +442,38 @@ export function RunnerScreen() {
   const feedbackText =
     question && checked && correctNow !== null
       ? correctNow >= 1
-        ? 'Correct. Nice work.'
+        ? t('Correct. Nice work.')
         : correctNow > 0
-          ? 'Partly right. Look at the explanation.'
-          : 'Not quite. Read the explanation, then continue.'
+          ? t('Partly right. Look at the explanation.')
+          : t('Not quite. Read the explanation, then continue.')
       : question && results[question.id] && !checked
-        ? 'Answer saved.'
+        ? t('Answer saved.')
         : null;
   const feedbackTone =
     correctNow !== null && correctNow >= 1 ? 'good' : correctNow !== null && correctNow > 0 ? 'partial' : checked ? 'bad' : 'idle';
   const label = !question
-    ? 'Finish'
+    ? t('Finish')
     : results[question.id]
       ? isLast
-        ? 'Finish'
-        : 'Continue'
+        ? t('Finish')
+        : t('Continue')
       : learn && isObjective(question)
-        ? 'Check'
+        ? t('Check')
         : isLast
-          ? 'Finish'
-          : 'Next';
+          ? t('Finish')
+          : t('Next');
 
   return (
     <div className="runner">
       <div className="runner__top">
-        <button className="btn btn--icon" onClick={exit} aria-label="Leave session">
+        <button className="btn btn--icon" onClick={exit} aria-label={t('Leave session')}>
           <X />
         </button>
-        <span className="runner__title">{test.title}</span>
+        <span className="runner__title">{t(test.title)}</span>
         <span className="runner__timer">{formatClock(elapsed)}</span>
       </div>
       <div className="runner__progress">
-        <ProgressBar value={index} max={Math.max(1, total)} label="Progress" />
+        <ProgressBar value={index} max={Math.max(1, total)} label={t('Progress')} />
       </div>
 
       <div className="runner__body">
@@ -486,7 +488,11 @@ export function RunnerScreen() {
               transition={{ duration: 0.24, ease: [0.2, 0.8, 0.2, 1] }}
             >
               <span className="small muted runner__count">
-                Question {index + 1} of {total} · {SKILL_LABEL[question.skill]}
+                {t('Question {number} of {total} · {skill}', {
+                  number: index + 1,
+                  total,
+                  skill: t(SKILL_LABEL[question.skill]),
+                })}
               </span>
               <QuestionView
                 question={question}
@@ -510,23 +516,25 @@ export function RunnerScreen() {
           ) : feedbackText ? (
             <span className={`feedback-line--${feedbackTone}`}>{feedbackText}</span>
           ) : (
-            <span className="muted small">{learn ? 'Answer, then check.' : 'Answer each question. Feedback comes at the end.'}</span>
+            <span className="muted small">
+              {learn ? t('Answer, then check.') : t('Answer each question. Feedback comes at the end.')}
+            </span>
           )}
         </div>
         <button className="btn btn--primary" onClick={primary} disabled={!answerable || saving}>
           {saving ? <Spinner /> : null}
           {label}
-          {!saving && (label === 'Check' ? <Check /> : <ArrowRight />)}
+          {!saving && (label === t('Check') ? <Check /> : <ArrowRight />)}
         </button>
       </div>
       {confirmLeave && (
         <ConfirmSheet
-          title="Leave this session?"
-          confirmLabel="Leave"
+          title={t('Leave this session?')}
+          confirmLabel={t('Leave')}
           onConfirm={() => navigate(exitPath(test?.kind, isReview))}
           onClose={() => setConfirmLeave(false)}
         >
-          Answers you have not finished will not be saved.
+          {t('Answers you have not finished will not be saved.')}
         </ConfirmSheet>
       )}
     </div>
@@ -535,16 +543,23 @@ export function RunnerScreen() {
 
 function Completion({ summary, onExit }: { summary: Summary; onExit: () => void }) {
   const navigate = useNavigate();
+  const t: Translate = useT();
   const isLesson = summary.kind === 'lesson' || summary.kind === 'checkpoint';
   const isDiagnostic = summary.kind === 'diagnostic';
-  const headline = isDiagnostic ? 'Your estimate is ready' : isLesson ? (summary.stars ? 'Lesson complete' : 'Keep practicing') : 'Session complete';
+  const headline = isDiagnostic
+    ? t('Your estimate is ready')
+    : isLesson
+      ? summary.stars
+        ? t('Lesson complete')
+        : t('Keep practicing')
+      : t('Session complete');
   const score = isDiagnostic && summary.predicted !== null ? summary.predicted : summary.pct;
   const suffix = isDiagnostic && summary.predicted !== null ? ' / 120' : '%';
 
   return (
     <div className="runner">
       <div className="runner__top">
-        <span className="runner__title">{summary.title}</span>
+        <span className="runner__title">{t(summary.title)}</span>
       </div>
       <div className="runner__progress">
         <ProgressBar value={100} max={100} />
@@ -557,7 +572,7 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
             {suffix}
           </div>
           {isLesson && (
-            <div className="stars" aria-label={`${summary.stars} of 3 stars`}>
+            <div className="stars" aria-label={t('{stars} of 3 stars', { stars: summary.stars })}>
               {[1, 2, 3].map((value) => (
                 <motion.span
                   key={value}
@@ -572,13 +587,13 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
             </div>
           )}
           <p className="muted">
-            +{summary.xp} XP · {summary.correct} of {summary.total} correct
+            {t('+{xp} XP · {correct} of {total} correct', { xp: summary.xp, correct: summary.correct, total: summary.total })}
           </p>
           {Object.keys(summary.skills).length > 0 && (
             <div className="skill-summary">
               {SKILLS.filter((skill) => summary.skills[skill] !== undefined).map((skill) => (
                 <div key={skill} className="plan__row">
-                  <span className="skill-summary__name">{SKILL_LABEL[skill]}</span>
+                  <span className="skill-summary__name">{t(SKILL_LABEL[skill])}</span>
                   <div className="progress skill-summary__bar">
                     <motion.div
                       className="progress__bar"
@@ -595,11 +610,15 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
           <div className="row row--wrap row--center">
             {isDiagnostic && summary.attemptId && (
               <button className="btn btn--primary" onClick={() => navigate(`/report/${summary.attemptId}`)}>
-                See my report <ArrowRight />
+                {t('See my report')} <ArrowRight />
               </button>
             )}
             <button className={isDiagnostic ? 'btn btn--ghost' : 'btn btn--primary'} onClick={onExit}>
-              {summary.kind === 'lesson' || summary.kind === 'checkpoint' ? 'Back to roadmap' : summary.kind === 'review' ? 'Back to review' : 'Done'}
+              {summary.kind === 'lesson' || summary.kind === 'checkpoint'
+                ? t('Back to roadmap')
+                : summary.kind === 'review'
+                  ? t('Back to review')
+                  : t('Done')}
             </button>
           </div>
         </motion.div>

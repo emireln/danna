@@ -12,6 +12,7 @@ import {
   type TutorRow,
 } from './types';
 import { placeAnswer } from './placement';
+import { replyLanguage } from './i18n';
 
 const LEVEL_GUIDE: Record<Level, string> = {
   A1: 'beginner (A1): single words and very short, simple sentences about daily life',
@@ -168,6 +169,7 @@ export function testRequest(options: { skill: Skill | 'mixed'; level: Level; top
     '- "writing": "minWords" (60 to 300) and "rubric" (3 short criteria).',
     '- "speaking": "seconds" (30 to 60) and "rubric" (3 short criteria).',
     'Reading choice questions set "passageId" to a passage id. Listening choice questions include "listen": a 50 to 90 word transcript that will be read aloud.',
+    `Write the title, the description and every explanation in ${replyLanguage()}. Keep passages, questions, options and answers in English.`,
     `Write for ${LEVEL_GUIDE[options.level]}. Keep every item original and unambiguous, and make wrong options plausible.`,
   ].join('\n');
 
@@ -196,6 +198,7 @@ export function writingRequest(options: { task: string; rubric: string[]; minWor
     'Score the response from 0 to 5 (decimals allowed) using these criteria: task fulfilment, development, organization and language use.',
     'Reply with one JSON object only: {"score": number, "strengths": [up to 3 short strings], "improvements": [up to 3 short strings], "revision": "one improved sentence taken from the response"}.',
     'Be specific and honest. Quote the learner\'s own words when you point out an error. Keep the total feedback under 120 words.',
+    `Write the strengths, improvements and revision in ${replyLanguage()}.`,
   ].join('\n');
   const prompt = `Task: ${options.task}\nCriteria: ${options.rubric.join('; ')}\nMinimum length: ${options.minWords} words. The response has ${words}.\n\nResponse:\n${options.response.slice(0, 6000)}`;
   return { system, prompt };
@@ -210,6 +213,7 @@ export function speakingRequest(options: { task: string; rubric: string[]; trans
     'Score from 0 to 5 for delivery, language use and topic development.',
     'Reply with one JSON object only: {"score": number, "strengths": [up to 3 short strings], "improvements": [up to 3 short strings], "revision": "one sentence the learner could say instead"}.',
     'Keep the total feedback under 100 words.',
+    `Write the strengths, improvements and revision in ${replyLanguage()}.`,
   ].join('\n');
   const prompt = `Task: ${options.task}\nCriteria: ${options.rubric.join('; ')}\n\nTranscript:\n${options.transcript.slice(0, 4000)}`;
   return { system, prompt };
@@ -239,6 +243,7 @@ export function coachSystem(profile: { level: Level; goal: Goal; target_score: n
     'Answer in short paragraphs. When you correct a mistake, show the corrected sentence and explain the rule in one sentence.',
     'When asked for practice, give three to five short items and put the answers at the end. Use plain text: no tables and no emoji.',
     'If a question is unrelated to English, answer briefly and steer the conversation back to learning.',
+    `Reply in ${replyLanguage()}. Keep the English sentences and words you teach in English.`,
   ].join('\n');
 }
 

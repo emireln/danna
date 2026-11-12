@@ -6,6 +6,7 @@ import { Field, FeatureCard, Notice, Spinner } from '../components/ui';
 import { DateField, todayIso } from '../components/Pickers';
 import { errorText } from '../lib/bridge';
 import { placementRows } from '../lib/roadmap';
+import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
@@ -36,6 +37,7 @@ function StepHead({ eyebrow, title, text }: { eyebrow: string; title: string; te
 
 export function SetupScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { backend, mode } = useAuth();
   const { profile, patchProfile, ready, loadError } = useAppData();
   const { notify } = useToast();
@@ -55,14 +57,14 @@ export function SetupScreen() {
     return (
       <div className="auth" role="status">
         <Spinner dark />
-        <span className="sr-only">Loading</span>
+        <span className="sr-only">{t('Loading')}</span>
       </div>
     );
   }
   if (!profile) {
     return (
       <div className="auth">
-        <Notice tone="error">{loadError ?? 'Your profile could not be loaded.'}</Notice>
+        <Notice tone="error">{loadError ? t(loadError) : t('Your profile could not be loaded.')}</Notice>
       </div>
     );
   }
@@ -78,9 +80,9 @@ export function SetupScreen() {
   const next = () => {
     setError(null);
     if (step === 0) {
-      if (!shownName.trim()) return setError('Add the name you want danna to use.');
+      if (!shownName.trim()) return setError(t('Add the name you want danna to use.'));
       if (mode === 'supabase' && !/^[a-z0-9_]{3,20}$/.test(shownUsername)) {
-        return setError('Usernames use 3 to 20 lowercase letters, numbers or underscores.');
+        return setError(t('Usernames use 3 to 20 lowercase letters, numbers or underscores.'));
       }
     }
     setDirection(1);
@@ -111,10 +113,10 @@ export function SetupScreen() {
         level: shownLevel,
         onboarding_done: true,
       });
-      notify('Your plan is ready.', 'ok');
+      notify(t('Your plan is ready.'), 'ok');
       navigate('/', { replace: true });
     } catch (caught) {
-      setError(errorText(caught));
+      setError(t(errorText(caught)));
     } finally {
       setBusy(false);
     }
@@ -130,7 +132,7 @@ export function SetupScreen() {
     <div className="wizard">
       <div className="wizard__body">
         <div className="wizard__content">
-          <div className="wizard__steps" aria-label={`Step ${step + 1} of ${STEPS.length}`}>
+          <div className="wizard__steps" aria-label={t('Step {step} of {total}', { step: step + 1, total: STEPS.length })}>
             {STEPS.map((label, index) => (
               <div key={label} className="wizard__step">
                 <motion.span
@@ -156,19 +158,19 @@ export function SetupScreen() {
               {step === 0 && (
                 <>
                   <StepHead
-                    eyebrow="Learning setup"
-                    title="What should danna call you?"
+                    eyebrow={t('Learning setup')}
+                    title={t('What should danna call you?')}
                     text={
                       mode === 'supabase'
-                        ? 'Your username is how friends find you. You can change these later in your profile.'
-                        : 'This is how danna greets you. You can change it later in your profile.'
+                        ? t('Your username is how friends find you. You can change these later in your profile.')
+                        : t('This is how danna greets you. You can change it later in your profile.')
                     }
                   />
-                  <Field label="Name">
+                  <Field label={t('Name')}>
                     <input className="input" value={shownName} onChange={(event) => setDisplayName(event.target.value)} maxLength={40} />
                   </Field>
                   {mode === 'supabase' && (
-                    <Field label="Username" hint="3 to 20 characters: lowercase letters, numbers and underscores.">
+                    <Field label={t('Username')} hint={t('3 to 20 characters: lowercase letters, numbers and underscores.')}>
                       <input
                         className="input"
                         value={shownUsername}
@@ -183,33 +185,35 @@ export function SetupScreen() {
               {step === 1 && (
                 <>
                   <StepHead
-                    eyebrow="Your goal"
-                    title="What do you want to practice?"
-                    text="Most people choose General English. The TOEFL warm-up is an extra track you can add at any time."
+                    eyebrow={t('Your goal')}
+                    title={t('What do you want to practice?')}
+                    text={t('Most people choose General English. The TOEFL warm-up is an extra track you can add at any time.')}
                   />
-                  <div className="choice-grid" role="radiogroup" aria-label="Goal">
+                  <div className="choice-grid" role="radiogroup" aria-label={t('Goal')}>
                     <button role="radio" aria-checked={shownGoal === 'english'} className="choice" onClick={() => setGoal('english')}>
-                      <span className="choice__title">General English</span>
-                      <span className="choice__text">Grammar, words, reading, listening, speaking and writing for daily life, study and work.</span>
+                      <span className="choice__title">{t('General English')}</span>
+                      <span className="choice__text">
+                        {t('Grammar, words, reading, listening, speaking and writing for daily life, study and work.')}
+                      </span>
                     </button>
                     <button role="radio" aria-checked={shownGoal === 'toefl'} className="choice" onClick={() => setGoal('toefl')}>
-                      <span className="choice__title">TOEFL warm-up</span>
-                      <span className="choice__text">Practice in the style of the test, with an estimated score and a countdown.</span>
+                      <span className="choice__title">{t('TOEFL warm-up')}</span>
+                      <span className="choice__text">{t('Practice in the style of the test, with an estimated score and a countdown.')}</span>
                     </button>
                   </div>
                   {shownGoal === 'toefl' && (
                     <>
-                      <p className="field__label">Target score</p>
-                      <div className="choice-grid choice-grid--four" role="radiogroup" aria-label="Target score">
+                      <p className="field__label">{t('Target score')}</p>
+                      <div className="choice-grid choice-grid--four" role="radiogroup" aria-label={t('Target score')}>
                         {TARGETS.map((score) => (
                           <button key={score} role="radio" aria-checked={shownTarget === score} className="choice" onClick={() => setTarget(score)}>
                             <span className="choice__title">{score}+</span>
-                            <span className="choice__text">out of 120</span>
+                            <span className="choice__text">{t('out of 120')}</span>
                           </button>
                         ))}
                       </div>
-                      <Field label="Exam date (optional)" hint="Shown as a countdown on the Today page.">
-                        <DateField label="Exam date" value={shownDate} onChange={setExamDate} min={todayIso()} />
+                      <Field label={t('Exam date (optional)')} hint={t('Shown as a countdown on the Today page.')}>
+                        <DateField label={t('Exam date')} value={shownDate} onChange={setExamDate} min={todayIso()} />
                       </Field>
                     </>
                   )}
@@ -219,16 +223,22 @@ export function SetupScreen() {
               {step === 2 && (
                 <>
                   <StepHead
-                    eyebrow="Daily time"
-                    title="How much time can you give each day?"
-                    text="A steady 15 minutes beats a long session once a week."
+                    eyebrow={t('Daily time')}
+                    title={t('How much time can you give each day?')}
+                    text={t('A steady 15 minutes beats a long session once a week.')}
                   />
-                  <div className="choice-grid" role="radiogroup" aria-label="Minutes per day">
+                  <div className="choice-grid" role="radiogroup" aria-label={t('Minutes per day')}>
                     {MINUTES.map((minutes) => (
                       <button key={minutes} role="radio" aria-checked={shownDaily === minutes} className="choice" onClick={() => setDaily(minutes)}>
-                        <span className="choice__title">{minutes} minutes</span>
+                        <span className="choice__title">{t('{minutes} minutes', { minutes })}</span>
                         <span className="choice__text">
-                          {minutes <= 10 ? 'A quick warm-up' : minutes <= 15 ? 'Recommended' : minutes <= 25 ? 'Steady progress' : 'Deep practice'}
+                          {minutes <= 10
+                            ? t('A quick warm-up')
+                            : minutes <= 15
+                              ? t('Recommended')
+                              : minutes <= 25
+                                ? t('Steady progress')
+                                : t('Deep practice')}
                         </span>
                       </button>
                     ))}
@@ -239,15 +249,15 @@ export function SetupScreen() {
               {step === 3 && (
                 <>
                   <StepHead
-                    eyebrow="Current level"
-                    title="Where do you feel most comfortable?"
-                    text="Be honest. The level check will confirm it."
+                    eyebrow={t('Current level')}
+                    title={t('Where do you feel most comfortable?')}
+                    text={t('Be honest. The level check will confirm it.')}
                   />
-                  <div className="choice-grid" role="radiogroup" aria-label="Current level">
+                  <div className="choice-grid" role="radiogroup" aria-label={t('Current level')}>
                     {LEVELS.map((item) => (
                       <button key={item} role="radio" aria-checked={shownLevel === item} className="choice" onClick={() => setLevel(item)}>
                         <span className="choice__title">{item}</span>
-                        <span className="choice__text">{LEVEL_TEXT[item]}</span>
+                        <span className="choice__text">{t(LEVEL_TEXT[item])}</span>
                       </button>
                     ))}
                   </div>
@@ -257,14 +267,14 @@ export function SetupScreen() {
               {step === 4 && (
                 <>
                   <StepHead
-                    eyebrow="Optional"
-                    title="Add an AI key for a personal coach"
-                    text="Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works."
+                    eyebrow={t('Optional')}
+                    title={t('Add an AI key for a personal coach')}
+                    text={t('Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works.')}
                   />
                   <FeatureCard
                     icon={<Sparkles />}
-                    title="Add it later in Settings"
-                    meta="Paste a key whenever you like. It stays on this device."
+                    title={t('Add it later in Settings')}
+                    meta={t('Paste a key whenever you like. It stays on this device.')}
                   />
                 </>
               )}
@@ -278,15 +288,15 @@ export function SetupScreen() {
       <div className="wizard__footer">
         <div className="wizard__bar">
           <button className="btn btn--ghost" onClick={back} disabled={step === 0 || busy}>
-            <ArrowLeft /> Back
+            <ArrowLeft /> {t('Back')}
           </button>
           {step < STEPS.length - 1 ? (
             <button className="btn btn--primary" onClick={next}>
-              Continue <ArrowRight />
+              {t('Continue')} <ArrowRight />
             </button>
           ) : (
             <button className="btn btn--primary" onClick={finish} disabled={busy}>
-              {busy ? <Spinner /> : null} Start my plan
+              {busy ? <Spinner /> : null} {t('Start my plan')}
             </button>
           )}
         </div>

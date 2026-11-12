@@ -4,8 +4,9 @@ import { BookOpen, Camera, Pencil, Settings2 } from 'lucide-react';
 import { Avatar, Empty, Field, FeatureCard, ProgressBar, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { PictureError, prepareAvatar } from '../lib/avatar';
+import { tn } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
 import { daysUntil, formatDate, levelInfo, timeAgo } from '../lib/progress';
-import { plural } from '../lib/text';
 import { bandFor, toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow } from '../lib/types';
 import { useAuth } from '../state/auth';
@@ -14,6 +15,7 @@ import { useToast } from '../state/toast';
 
 export function ProfileScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { backend, mode, email, signOut } = useAuth();
   const { profile, patchProfile, pictureUrl, changePicture } = useAppData();
   const { notify } = useToast();
@@ -84,9 +86,9 @@ export function ProfileScreen() {
     try {
       await patchProfile({ display_name: next });
       setEditing(false);
-      notify('Name updated.', 'ok');
+      notify(t('Name updated.'), 'ok');
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     } finally {
       setSaving(false);
     }
@@ -100,9 +102,9 @@ export function ProfileScreen() {
     setPictureBusy(true);
     try {
       await changePicture(await prepareAvatar(file));
-      notify('Picture updated.', 'ok');
+      notify(t('Picture updated.'), 'ok');
     } catch (error) {
-      notify(error instanceof PictureError ? error.message : errorText(error), 'error');
+      notify(error instanceof PictureError ? t(error.message) : t(errorText(error)), 'error');
     } finally {
       setPictureBusy(false);
     }
@@ -112,9 +114,9 @@ export function ProfileScreen() {
     setPictureBusy(true);
     try {
       await changePicture(null);
-      notify('Picture removed.', 'ok');
+      notify(t('Picture removed.'), 'ok');
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     } finally {
       setPictureBusy(false);
     }
@@ -125,34 +127,39 @@ export function ProfileScreen() {
     navigate('/auth', { replace: true });
   };
 
+  const goalText = profile.goal === 'toefl' ? t('TOEFL warm-up, target {score}', { score: profile.target_score }) : t('General English');
+  const setupMeta = t('{goal} · level {level} · {minutes} min a day', {
+    goal: goalText,
+    level: profile.level,
+    minutes: profile.daily_minutes,
+  });
+
   return (
     <div className="page">
       <div className="profile-head">
         <div className="profile-head__picture">
           <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
           <button className="btn btn--ghost btn--sm" onClick={() => fileInput.current?.click()} disabled={pictureBusy}>
-            {pictureBusy ? <Spinner dark /> : <Camera />} {pictureUrl ? 'Change picture' : 'Add picture'}
+            {pictureBusy ? <Spinner dark /> : <Camera />} {pictureUrl ? t('Change picture') : t('Add picture')}
           </button>
           {pictureUrl && (
             <button className="btn btn--text btn--text-muted small" onClick={removePicture} disabled={pictureBusy}>
-              Remove picture
+              {t('Remove picture')}
             </button>
           )}
           <input ref={fileInput} type="file" accept="image/*" hidden onChange={choosePicture} />
         </div>
 
         <div className="profile-head__main">
-          <p className="eyebrow">Your profile</p>
+          <p className="eyebrow">{t('Your profile')}</p>
           <h1 className="page-title">{name}</h1>
-          <p className="small muted">{mode === 'local' ? 'Kept on this device' : `@${profile.username} · ${email ?? ''}`}</p>
+          <p className="small muted">{mode === 'local' ? t('Kept on this device') : `@${profile.username} · ${email ?? ''}`}</p>
           <div className="profile-head__level">
             <div className="row row--between level-row">
-              <span>Level {level.level}</span>
-              <span className="muted">
-                {level.into} / {level.span} XP
-              </span>
+              <span>{t('Level {level}', { level: level.level })}</span>
+              <span className="muted">{t('{into} / {span} XP', { into: level.into, span: level.span })}</span>
             </div>
-            <ProgressBar value={level.percent} label="Level progress" />
+            <ProgressBar value={level.percent} label={t('Level progress')} />
           </div>
         </div>
 
@@ -163,33 +170,35 @@ export function ProfileScreen() {
             setEditing(true);
           }}
         >
-          <Pencil /> Edit name
+          <Pencil /> {t('Edit name')}
         </button>
       </div>
 
       <div className="grid-4 mt-6">
         <div className="stat">
           <span className="stat__value">{profile.streak}</span>
-          <span className="stat__label">Day streak</span>
+          <span className="stat__label">{t('Day streak')}</span>
         </div>
         <div className="stat">
           <span className="stat__value">{profile.xp}</span>
-          <span className="stat__label">Total XP</span>
+          <span className="stat__label">{t('Total XP')}</span>
         </div>
         <div className="stat">
           <span className="stat__value">{checks?.count ?? 0}</span>
-          <span className="stat__label">Level checks taken</span>
+          <span className="stat__label">{t('Level checks taken')}</span>
         </div>
         <div className="stat">
           {profile.goal === 'toefl' ? (
             <>
               <span className="stat__value">{best ? best : '—'}</span>
-              <span className="stat__label">{best ? `Best TOEFL estimate · ${toeflRange(best).join('–')}` : 'Best TOEFL estimate'}</span>
+              <span className="stat__label">
+                {best ? t('Best TOEFL estimate · {range}', { range: toeflRange(best).join('–') }) : t('Best TOEFL estimate')}
+              </span>
             </>
           ) : (
             <>
               <span className="stat__value">{diagnostics.length ? bandFor(bestPercent) : '—'}</span>
-              <span className="stat__label">Best level</span>
+              <span className="stat__label">{t('Best level')}</span>
             </>
           )}
         </div>
@@ -198,49 +207,57 @@ export function ProfileScreen() {
       <div className="stack mt-6">
         <FeatureCard
           icon={<Settings2 />}
-          title="Learning setup"
-          meta={`${profile.goal === 'toefl' ? `TOEFL warm-up, target ${profile.target_score}` : 'General English'} · level ${profile.level} · ${profile.daily_minutes} min a day${
-            daysLeft !== null && daysLeft >= 0 ? ` · exam in ${plural(daysLeft, 'day')}` : ''
-          }`}
+          title={t('Learning setup')}
+          meta={
+            daysLeft !== null && daysLeft >= 0
+              ? t('{base} · exam in {days}', {
+                  base: setupMeta,
+                  days: tn('{count} day', '{count} days', daysLeft, { count: daysLeft }),
+                })
+              : setupMeta
+          }
           action={
             <button className="btn btn--ghost btn--sm" onClick={() => navigate('/setup')}>
-              Edit setup
+              {t('Edit setup')}
             </button>
           }
         />
         <FeatureCard
           icon={<BookOpen />}
-          title="My library"
+          title={t('My library')}
           meta={
             libraryTotal > 0
-              ? `${plural(libraryCounts?.files ?? 0, 'file')} · ${plural(libraryCounts?.links ?? 0, 'link')}`
-              : 'Keep your PDF, TXT and Markdown files, and learning links, in one place.'
+              ? t('{files} · {links}', {
+                  files: tn('{count} file', '{count} files', libraryCounts?.files ?? 0, { count: libraryCounts?.files ?? 0 }),
+                  links: tn('{count} link', '{count} links', libraryCounts?.links ?? 0, { count: libraryCounts?.links ?? 0 }),
+                })
+              : t('Keep your PDF, TXT and Markdown files, and learning links, in one place.')
           }
           action={
             <button className="btn btn--ghost btn--sm" onClick={() => navigate('/library')}>
-              Open library
+              {t('Open library')}
             </button>
           }
         />
       </div>
 
-      <SectionTitle title="Recent activity" />
+      <SectionTitle title={t('Recent activity')} />
       {attempts === null ? (
         <Skeleton height={140} />
       ) : attempts.length === 0 ? (
-        <Empty title="No sessions yet">Your results will appear here after your first lesson or test.</Empty>
+        <Empty title={t('No sessions yet')}>{t('Your results will appear here after your first lesson or test.')}</Empty>
       ) : (
         <div className="set-list">
           {attempts.slice(0, 8).map((attempt) => {
             const openable = attempt.kind === 'diagnostic' || attempt.kind === 'mock';
             const skillScores = Object.entries(attempt.skills)
-              .map(([skill, score]) => `${SKILL_LABEL[skill as keyof typeof SKILL_LABEL]} ${score}`)
+              .map(([skill, score]) => `${t(SKILL_LABEL[skill as keyof typeof SKILL_LABEL])} ${score}`)
               .slice(0, 3);
             const detail = [formatDate(attempt.created_at), timeAgo(attempt.created_at), ...skillScores].join(' · ');
             const content = (
               <>
                 <span className="set-row__body">
-                  <span className="set-row__title">{attempt.title}</span>
+                  <span className="set-row__title">{t(attempt.title)}</span>
                   <span className="set-row__meta">{detail}</span>
                 </span>
                 <span className="chip">{attempt.predicted ? `${attempt.predicted} / 120` : `${attempt.score_pct}%`}</span>
@@ -259,35 +276,35 @@ export function ProfileScreen() {
         </div>
       )}
 
-      <SectionTitle title="Account" />
+      <SectionTitle title={t('Account')} />
       <div className="settings-row">
         <div className="settings-row__body">
-          <div className="settings-row__title">{mode === 'local' ? 'On this device' : (email ?? 'Signed in')}</div>
+          <div className="settings-row__title">{mode === 'local' ? t('On this device') : (email ?? t('Signed in'))}</div>
           <div className="settings-row__text">
-            {mode === 'local' ? 'Your progress stays on this device.' : 'Your progress is saved to your account.'}
+            {mode === 'local' ? t('Your progress stays on this device.') : t('Your progress is saved to your account.')}
           </div>
         </div>
         <button className="btn btn--ghost btn--sm" onClick={signOutNow}>
-          {mode === 'local' ? 'Switch mode' : 'Sign out'}
+          {mode === 'local' ? t('Switch mode') : t('Sign out')}
         </button>
       </div>
 
       {editing && (
         <Sheet
-          title="Your name"
+          title={t('Your name')}
           onClose={() => setEditing(false)}
           footer={
             <>
               <button className="btn btn--ghost" onClick={() => setEditing(false)} disabled={saving}>
-                Cancel
+                {t('Cancel')}
               </button>
               <button className="btn btn--primary" onClick={saveName} disabled={saving || !nameDraft.trim()}>
-                {saving ? <Spinner /> : null} Save name
+                {saving ? <Spinner /> : null} {t('Save name')}
               </button>
             </>
           }
         >
-          <Field label="Display name" hint="Shown to friends. Your username stays the same.">
+          <Field label={t('Display name')} hint={t('Shown to friends. Your username stays the same.')}>
             <input className="input" value={nameDraft} maxLength={40} onChange={(event) => setNameDraft(event.target.value)} />
           </Field>
         </Sheet>

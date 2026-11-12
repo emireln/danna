@@ -29,6 +29,7 @@ function electronStub() {
       setAppUserModelId() {},
       getPath: () => folder,
       getVersion: () => '0.4.5',
+      getLocale: () => 'pt-BR',
       isPackaged: false,
       quit() {},
     },
@@ -209,11 +210,17 @@ test('a saved key is never sent to the interface, only its ending', async () => 
 
 test('settings keep only the known preferences, and the file is written in one piece', async () => {
   const saved = await invoke('settings:set', { closeToTray: false, evil: 'x' });
-  assert.deepEqual(saved, { closeToTray: false });
+  assert.deepEqual(saved, { closeToTray: false, language: null });
   const onDisk = JSON.parse(readFileSync(join(folder, 'danna-settings.json'), 'utf8'));
-  assert.deepEqual(onDisk, { closeToTray: false });
+  assert.deepEqual(onDisk, { closeToTray: false, language: null });
   assert.equal(existsSync(join(folder, 'danna-settings.json.tmp')), false, 'no temporary file is left behind');
-  assert.deepEqual(await invoke('settings:get'), { closeToTray: false });
+  assert.deepEqual(await invoke('settings:get'), { closeToTray: false, language: null });
+});
+
+test('the app language is saved as English or Portuguese, or follows the system', async () => {
+  assert.equal((await invoke('settings:set', { language: 'pt' })).language, 'pt');
+  assert.equal((await invoke('settings:set', { language: 'fr' })).language, 'pt', 'other languages are ignored');
+  assert.equal((await invoke('settings:set', { language: null })).language, null);
 });
 
 test('the sign-in session keeps only danna keys, and small values', async () => {

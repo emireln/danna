@@ -5,6 +5,7 @@ import { ShareSheet, type ShareItem } from '../components/ShareSheet';
 import { PersonAvatar } from '../components/PersonAvatar';
 import { Avatar, ConfirmSheet, Empty, PageHeader, SectionTitle, Skeleton, Tabs } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { useT, type Translate } from '../lib/i18n/react';
 import { timeAgo } from '../lib/progress';
 import { onlineAvailable } from '../lib/session';
 import { useAuth } from '../state/auth';
@@ -15,13 +16,14 @@ import type { FriendRow, PersonRow, ShareRow } from '../lib/types';
 type Tab = 'friends' | 'requests' | 'inbox';
 
 /** What a search result already is for you: a friend, a request you sent, or a request waiting for you. */
-function relationLabel(friend: FriendRow): string {
-  if (friend.status === 'accepted') return 'Friends';
-  return friend.direction === 'outgoing' ? 'Request sent' : 'Wants to connect';
+function relationLabel(friend: FriendRow, t: Translate): string {
+  if (friend.status === 'accepted') return t('Friends');
+  return friend.direction === 'outgoing' ? t('Request sent') : t('Wants to connect');
 }
 
 export function FriendsScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { backend } = useAuth();
   const { profile, refreshSocial, pictureUrl } = useAppData();
   const { notify } = useToast();
@@ -48,7 +50,7 @@ export function FriendsScreen() {
       // Show what is known instead of loading forever.
       setFriends((current) => current ?? []);
       setShares((current) => current ?? []);
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     });
   }, [load, notify]);
 
@@ -65,7 +67,7 @@ export function FriendsScreen() {
       backend
         .searchPeople(term)
         .then(setFound)
-        .catch((error: unknown) => notify(errorText(error), 'error'))
+        .catch((error: unknown) => notify(t(errorText(error)), 'error'))
         .finally(() => setSearching(false));
     }, 300);
     return () => window.clearTimeout(timer);
@@ -110,28 +112,28 @@ export function FriendsScreen() {
       await load();
       await refreshSocial();
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     }
   };
 
   if (!online) {
     return (
       <div className="page">
-        <PageHeader eyebrow="Study together" title="Friends" />
+        <PageHeader eyebrow={t('Study together')} title={t('Friends')} />
         <Empty
-          title="Friends need an online account"
+          title={t('Friends need an online account')}
           action={
             onlineAvailable() ? (
               <button
                 className="btn btn--primary"
                 onClick={() => navigate('/auth', { state: { next: '/friends', switchingFrom: 'local' } })}
               >
-                Create an account
+                {t('Create an account')}
               </button>
             ) : undefined
           }
         >
-          Friends, shared results and shared sets work with an online account. You are using danna offline on this device.
+          {t('Friends, shared results and shared sets work with an online account. You are using danna offline on this device.')}
         </Empty>
       </div>
     );
@@ -140,44 +142,44 @@ export function FriendsScreen() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow="Study together"
-        title="Friends"
+        eyebrow={t('Study together')}
+        title={t('Friends')}
         aside={
           <button className="btn btn--primary btn--sm" onClick={() => setSharing({})} disabled={accepted.length === 0}>
-            <Share2 /> Share
+            <Share2 /> {t('Share')}
           </button>
         }
       />
 
       <Tabs
-        label="Friends"
+        label={t('Friends')}
         value={tab}
         onChange={setTab}
         items={[
-          { value: 'friends', label: 'Friends', count: accepted.length },
-          { value: 'requests', label: 'Requests', count: incoming.length, alert: true },
-          { value: 'inbox', label: 'Inbox', count: unseen, alert: true },
+          { value: 'friends', label: t('Friends'), count: accepted.length },
+          { value: 'requests', label: t('Requests'), count: incoming.length, alert: true },
+          { value: 'inbox', label: t('Inbox'), count: unseen, alert: true },
         ]}
       />
 
       {tab === 'friends' && (
         <div className="stack mt-4">
           <label className="search-field">
-            <span className="sr-only">Find people by username</span>
+            <span className="sr-only">{t('Find people by username')}</span>
             <Search aria-hidden="true" />
             <input
               className="input"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Find people by username"
+              placeholder={t('Find people by username')}
               maxLength={40}
             />
           </label>
 
           {query.trim().length >= 3 && (
             <div className="set-list">
-              {searching && <span className="small muted">Searching…</span>}
-              {!searching && found.length === 0 && <span className="small muted">No one matches that username yet.</span>}
+              {searching && <span className="small muted">{t('Searching…')}</span>}
+              {!searching && found.length === 0 && <span className="small muted">{t('No one matches that username yet.')}</span>}
               {found.map((person) => {
                 const relation = friends?.find((friend) => friend.id === person.id);
                 return (
@@ -188,13 +190,13 @@ export function FriendsScreen() {
                       <div className="person__meta">@{person.username}</div>
                     </div>
                     {relation ? (
-                      <span className="chip">{relationLabel(relation)}</span>
+                      <span className="chip">{relationLabel(relation, t)}</span>
                     ) : (
                       <button
                         className="btn btn--ghost btn--sm"
-                        onClick={() => run(() => backend!.requestFriend(person.id), 'Request sent.')}
+                        onClick={() => run(() => backend!.requestFriend(person.id), t('Request sent.'))}
                       >
-                        <UserPlus /> Add
+                        <UserPlus /> {t('Add')}
                       </button>
                     )}
                   </div>
@@ -207,7 +209,7 @@ export function FriendsScreen() {
             <Skeleton height={160} />
           ) : (
             <>
-              <SectionTitle title="Ranking by XP" />
+              <SectionTitle title={t('Ranking by XP')} />
               <div className="set-list">
                 {ranking.map((row, index) => (
                   <div key={row.id} className={`person${row.me ? ' person--me' : ''}`}>
@@ -218,7 +220,7 @@ export function FriendsScreen() {
                       <Avatar name={row.name} size="sm" src={pictureUrl} />
                     )}
                     <div className="person__body">
-                      <div className="person__name">{row.me ? `${row.name} (you)` : row.name}</div>
+                      <div className="person__name">{row.me ? t('{name} (you)', { name: row.name }) : row.name}</div>
                     </div>
                     <span className="person__meta person__streak">
                       <Flame aria-hidden="true" /> {row.streak}
@@ -226,12 +228,14 @@ export function FriendsScreen() {
                     <span className="chip">{row.xp} XP</span>
                   </div>
                 ))}
-                {accepted.length === 0 && <Empty title="No friends yet">Search for a username above and send a request.</Empty>}
+                {accepted.length === 0 && (
+                  <Empty title={t('No friends yet')}>{t('Search for a username above and send a request.')}</Empty>
+                )}
               </div>
 
               {accepted.length > 0 && (
                 <>
-                  <SectionTitle title="Your friends" />
+                  <SectionTitle title={t('Your friends')} />
                   <div className="set-list">
                     {accepted.map((friend) => (
                       <div key={friend.id} className="person">
@@ -244,10 +248,10 @@ export function FriendsScreen() {
                         </div>
                         <div className="person__actions">
                           <button className="btn btn--ghost btn--sm" onClick={() => setSharing({ friendId: friend.id })}>
-                            <Share2 /> Share
+                            <Share2 /> {t('Share')}
                           </button>
                           <button className="btn btn--text btn--text-muted small" onClick={() => setRemoving(friend)}>
-                            Remove
+                            {t('Remove')}
                           </button>
                         </div>
                       </div>
@@ -263,11 +267,11 @@ export function FriendsScreen() {
       {tab === 'requests' && (
         <div className="stack mt-4">
           {incoming.length === 0 && outgoing.length === 0 && (
-            <Empty title="No pending requests">When someone sends you a request, it appears here.</Empty>
+            <Empty title={t('No pending requests')}>{t('When someone sends you a request, it appears here.')}</Empty>
           )}
           {incoming.length > 0 && (
             <div className="set-list">
-              <p className="group-label">Wants to connect</p>
+              <p className="group-label">{t('Wants to connect')}</p>
               {incoming.map((friend) => (
                 <div key={friend.friendship_id} className="person">
                   <PersonAvatar person={friend} />
@@ -278,12 +282,12 @@ export function FriendsScreen() {
                   <div className="person__actions">
                     <button
                       className="btn btn--primary btn--sm"
-                      onClick={() => run(() => backend!.answerFriend(friend.friendship_id, true), 'You are now friends.')}
+                      onClick={() => run(() => backend!.answerFriend(friend.friendship_id, true), t('You are now friends.'))}
                     >
-                      Accept
+                      {t('Accept')}
                     </button>
                     <button className="btn btn--ghost btn--sm" onClick={() => run(() => backend!.answerFriend(friend.friendship_id, false))}>
-                      Decline
+                      {t('Decline')}
                     </button>
                   </div>
                 </div>
@@ -292,7 +296,7 @@ export function FriendsScreen() {
           )}
           {outgoing.length > 0 && (
             <div className="set-list">
-              <p className="group-label">Waiting for a reply</p>
+              <p className="group-label">{t('Waiting for a reply')}</p>
               {outgoing.map((friend) => (
                 <div key={friend.friendship_id} className="person">
                   <PersonAvatar person={friend} />
@@ -302,9 +306,9 @@ export function FriendsScreen() {
                   </div>
                   <button
                     className="btn btn--ghost btn--sm"
-                    onClick={() => run(() => backend!.answerFriend(friend.friendship_id, false), 'Request cancelled.')}
+                    onClick={() => run(() => backend!.answerFriend(friend.friendship_id, false), t('Request cancelled.'))}
                   >
-                    Cancel
+                    {t('Cancel')}
                   </button>
                 </div>
               ))}
@@ -317,46 +321,52 @@ export function FriendsScreen() {
         <div className="stack mt-4">
           {shares === null && <Skeleton height={140} />}
           {shares !== null && received.length === 0 && (
-            <Empty title="Nothing shared with you yet">When a friend shares a report or a practice set, it appears here.</Empty>
+            <Empty title={t('Nothing shared with you yet')}>{t('When a friend shares a report or a practice set, it appears here.')}</Empty>
           )}
           {received.map((share) => (
             <div key={share.id} className={`share-item ${share.seen ? '' : 'share-item--unseen'}`}>
-              {!share.seen && <span className="unseen-dot" aria-label="New" />}
+              {!share.seen && <span className="unseen-dot" aria-label={t('New')} />}
               <div className="share-item__body">
                 <span className="small muted">
-                  {share.other_display_name || share.other_username} shared {share.kind === 'result' ? 'a report' : 'a practice set'} ·{' '}
-                  {timeAgo(share.created_at)}
+                  {t('{name} shared {what} · {when}', {
+                    name: share.other_display_name || share.other_username,
+                    what: share.kind === 'result' ? t('a report') : t('a practice set'),
+                    when: timeAgo(share.created_at),
+                  })}
                 </span>
-                <h3>{share.item_title ?? 'Shared item'}</h3>
+                <h3>{share.item_title ? t(share.item_title) : t('Shared item')}</h3>
                 {share.kind === 'result' && share.item_predicted !== null && (
-                  <span className="small">Estimated TOEFL {share.item_predicted} / 120</span>
+                  <span className="small">{t('Estimated TOEFL {score} / 120', { score: share.item_predicted })}</span>
                 )}
                 {share.note && <p className="share-item__note">&ldquo;{share.note}&rdquo;</p>}
               </div>
               {share.kind === 'result' && share.attempt_id && (
                 <button className="btn btn--ghost btn--sm" onClick={() => navigate(`/report/${share.attempt_id}`)}>
-                  View report
+                  {t('View report')}
                 </button>
               )}
               {share.kind === 'test' && share.test_id && (
                 <button className="btn btn--primary btn--sm" onClick={() => navigate(`/play/test/${share.test_id}`)}>
-                  <Play /> Play
+                  <Play /> {t('Play')}
                 </button>
               )}
             </div>
           ))}
           {sent.length > 0 && (
             <div className="set-list">
-              <p className="group-label">Sent by you</p>
+              <p className="group-label">{t('Sent by you')}</p>
               {sent.map((share) => (
                 <div key={share.id} className="person">
                   <div className="person__body">
-                    <div className="person__name">{share.item_title ?? 'Shared item'}</div>
+                    <div className="person__name">{share.item_title ? t(share.item_title) : t('Shared item')}</div>
                     <div className="person__meta">
-                      To {share.other_display_name || share.other_username} · {timeAgo(share.created_at)}
+                      {t('To {name} · {when}', {
+                        name: share.other_display_name || share.other_username,
+                        when: timeAgo(share.created_at),
+                      })}
                     </div>
                   </div>
-                  {share.seen && <span className="chip chip--blue">Seen</span>}
+                  {share.seen && <span className="chip chip--blue">{t('Seen')}</span>}
                 </div>
               ))}
             </div>
@@ -366,18 +376,20 @@ export function FriendsScreen() {
 
       {removing && (
         <ConfirmSheet
-          title="Remove friend?"
-          confirmLabel="Remove"
+          title={t('Remove friend?')}
+          confirmLabel={t('Remove')}
           busy={removeBusy}
           onConfirm={async () => {
             setRemoveBusy(true);
-            await run(() => backend!.answerFriend(removing.friendship_id, false), 'Friend removed.');
+            await run(() => backend!.answerFriend(removing.friendship_id, false), t('Friend removed.'));
             setRemoveBusy(false);
             setRemoving(null);
           }}
           onClose={() => setRemoving(null)}
         >
-          {removing.display_name || removing.username} will no longer see your shared results or profile picture.
+          {t('{name} will no longer see your shared results or profile picture.', {
+            name: removing.display_name || removing.username,
+          })}
         </ConfirmSheet>
       )}
 

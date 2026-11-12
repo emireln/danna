@@ -15,7 +15,7 @@ export function checkpointOf(unit: UnitDef): LessonDef {
     id: `${unit.id}-check`,
     unitId: unit.id,
     title: 'Unit check',
-    blurb: `Mixed questions from ${unit.title.toLowerCase()}.`,
+    blurb: 'Mixed questions from this unit.',
     skill: unit.lessons[0].skill,
     minutes: Math.max(6, unit.lessons.length * 3),
     passages: unit.lessons.flatMap((lesson) => lesson.passages),

@@ -7,6 +7,7 @@ const keystore = require('./keystore.cjs');
 const ai = require('./ai.cjs');
 const localdb = require('./localdb.cjs');
 const settings = require('./settings.cjs');
+const { shellLanguage, shellText } = require('./i18n.cjs');
 const sessionStore = require('./session.cjs');
 const { userError } = require('./errors.cjs');
 
@@ -113,7 +114,7 @@ function createWindow() {
     mainWindow.hide();
     if (!trayHintShown && tray && typeof tray.displayBalloon === 'function') {
       trayHintShown = true;
-      tray.displayBalloon({ title: 'danna', content: 'danna is still running. Click the tray icon to open it again.' });
+      tray.displayBalloon({ title: 'danna', content: shellText(shellLang()).hint });
     }
   });
   mainWindow.on('closed', () => {
@@ -145,37 +146,45 @@ function showWindow() {
   mainWindow.focus();
 }
 
+// The shell's language: the one chosen in the app, else the system language.
+function shellLang() {
+  return shellLanguage(settings.get().language, app.getLocale());
+}
+
+function buildTrayMenu() {
+  const text = shellText(shellLang());
+  return Menu.buildFromTemplate([
+    { label: text.open, click: () => showWindow() },
+    {
+      label: text.learn,
+      click: () => {
+        showWindow();
+        send('app:navigate', '/');
+      },
+    },
+    {
+      label: text.review,
+      click: () => {
+        showWindow();
+        send('app:navigate', '/review');
+      },
+    },
+    { type: 'separator' },
+    {
+      label: text.quit,
+      click: () => {
+        quitting = true;
+        app.quit();
+      },
+    },
+  ]);
+}
+
 function createTray() {
   if (tray || !fs.existsSync(TRAY_ICON)) return;
   tray = new Tray(nativeImage.createFromPath(TRAY_ICON));
   tray.setToolTip('danna');
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: 'Open danna', click: () => showWindow() },
-      {
-        label: 'Continue learning',
-        click: () => {
-          showWindow();
-          send('app:navigate', '/');
-        },
-      },
-      {
-        label: 'Quick review',
-        click: () => {
-          showWindow();
-          send('app:navigate', '/review');
-        },
-      },
-      { type: 'separator' },
-      {
-        label: 'Quit danna',
-        click: () => {
-          quitting = true;
-          app.quit();
-        },
-      },
-    ]),
-  );
+  tray.setContextMenu(buildTrayMenu());
   tray.on('click', () => {
     if (mainWindow && mainWindow.isVisible() && mainWindow.isFocused()) mainWindow.hide();
     else showWindow();
@@ -322,7 +331,12 @@ function registerIpc() {
   });
 
   handle('settings:get', () => settings.get());
-  handle('settings:set', (patch) => settings.set(patch));
+  handle('settings:set', (patch) => {
+    const next = settings.set(patch);
+    // The tray menu follows the app's language.
+    if (tray && patch && typeof patch === 'object' && Object.hasOwn(patch, 'language')) tray.setContextMenu(buildTrayMenu());
+    return next;
+  });
 
   // The sign-in session is stored encrypted by the operating system.
   handle('session:get', ({ key }) => sessionStore.get(key));

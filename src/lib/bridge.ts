@@ -33,6 +33,8 @@ export interface WindowState {
 
 export interface AppSettings {
   closeToTray: boolean;
+  /** The language the app is shown in. Null follows the system language. */
+  language: 'en' | 'pt' | null;
 }
 
 export interface DannaBridge {

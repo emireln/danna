@@ -4,6 +4,7 @@ import { ArrowUp, Sparkles, Trash2 } from 'lucide-react';
 import { ConfirmSheet, Notice, PageHeader, Skeleton } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { chatHistory, coachSystem } from '../lib/ai';
+import { useT } from '../lib/i18n/react';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -19,6 +20,7 @@ const SUGGESTIONS = [
 
 export function CoachScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { backend } = useAuth();
   const { profile } = useAppData();
   const { ready, selection, complete, connections, desktop } = useAI();
@@ -68,8 +70,8 @@ export function CoachScreen() {
       setMessages((previous) => [...(previous ?? []), coachRow]);
     } catch (error) {
       // The message stays in the conversation and the reason stays on screen until the next try.
-      setFailure(errorText(error));
-      notify(errorText(error), 'error');
+      setFailure(t(errorText(error)));
+      notify(t(errorText(error)), 'error');
     } finally {
       setSending(false);
     }
@@ -83,7 +85,7 @@ export function CoachScreen() {
       setFailure(null);
       setConfirmClear(false);
     } catch (error) {
-      notify(errorText(error), 'error');
+      notify(t(errorText(error)), 'error');
     }
   };
 
@@ -99,8 +101,8 @@ export function CoachScreen() {
   return (
     <div className="page page--coach">
       <PageHeader
-        eyebrow="Ask anything"
-        title="Coach"
+        eyebrow={t('Ask anything')}
+        title={t('Coach')}
         aside={
           <>
             {ready && providerLabel && (
@@ -110,7 +112,7 @@ export function CoachScreen() {
             )}
             {(messages?.length ?? 0) > 0 && (
               <button className="btn btn--ghost btn--sm" onClick={() => setConfirmClear(true)} disabled={sending}>
-                <Trash2 /> Clear
+                <Trash2 /> {t('Clear')}
               </button>
             )}
           </>
@@ -120,13 +122,13 @@ export function CoachScreen() {
       {!ready &&
         (desktop ? (
           <Notice tone="info">
-            Add your AI key to start chatting with your coach.{' '}
+            {t('Add your AI key to start chatting with your coach.')}{' '}
             <button className="btn btn--text" onClick={() => navigate('/settings')}>
-              Open settings
+              {t('Open settings')}
             </button>
           </Notice>
         ) : (
-          <Notice tone="info">The coach runs in the danna desktop app, where your AI key is kept on this device.</Notice>
+          <Notice tone="info">{t('The coach runs in the danna desktop app, where your AI key is kept on this device.')}</Notice>
         ))}
 
       <div className="coach__list" ref={listRef} aria-live="polite">
@@ -136,11 +138,11 @@ export function CoachScreen() {
           <div className="chat">
             {messages.length === 0 && ready && (
               <div className="stack">
-                <p className="muted">Ask anything about English. Try one of these to start.</p>
+                <p className="muted">{t('Ask anything about English. Try one of these to start.')}</p>
                 <div className="suggest">
                   {SUGGESTIONS.map((suggestion) => (
-                    <button key={suggestion} onClick={() => send(suggestion)} disabled={sending}>
-                      {suggestion}
+                    <button key={suggestion} onClick={() => send(t(suggestion))} disabled={sending}>
+                      {t(suggestion)}
                     </button>
                   ))}
                 </div>
@@ -152,8 +154,8 @@ export function CoachScreen() {
               </div>
             ))}
             {sending && (
-              <div className="bubble bubble--coach muted" aria-label="Coach is typing">
-                Thinking…
+              <div className="bubble bubble--coach muted" aria-label={t('Coach is typing')}>
+                {t('Thinking…')}
               </div>
             )}
             {failure && <Notice tone="error">{failure}</Notice>}
@@ -166,17 +168,17 @@ export function CoachScreen() {
           <textarea
             rows={1}
             value={draft}
-            placeholder="Ask your coach…"
+            placeholder={t('Ask your coach…')}
             disabled={!ready || sending}
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={onKey}
-            aria-label="Message your coach"
+            aria-label={t('Message your coach')}
           />
           <button
             className="btn btn--primary btn--icon"
             onClick={() => send(draft)}
             disabled={!ready || sending || !draft.trim()}
-            aria-label="Send message"
+            aria-label={t('Send message')}
           >
             <ArrowUp />
           </button>
@@ -185,12 +187,12 @@ export function CoachScreen() {
 
       {confirmClear && (
         <ConfirmSheet
-          title="Clear this conversation?"
-          confirmLabel="Clear chat"
+          title={t('Clear this conversation?')}
+          confirmLabel={t('Clear chat')}
           onConfirm={clear}
           onClose={() => setConfirmClear(false)}
         >
-          The messages are deleted. This cannot be undone.
+          {t('The messages are deleted. This cannot be undone.')}
         </ConfirmSheet>
       )}
     </div>

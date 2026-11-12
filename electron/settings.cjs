@@ -3,7 +3,13 @@ const { app } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const DEFAULTS = { closeToTray: true };
+const DEFAULTS = { closeToTray: true, language: null };
+
+// Each setting has its own check, so a bad value in the file is ignored. A null language follows the system.
+const VALID = {
+  closeToTray: (value) => typeof value === 'boolean',
+  language: (value) => value === null || value === 'en' || value === 'pt',
+};
 
 function file() {
   return path.join(app.getPath('userData'), 'danna-settings.json');
@@ -14,7 +20,7 @@ function get() {
   try {
     const stored = JSON.parse(fs.readFileSync(file(), 'utf8'));
     for (const key of Object.keys(DEFAULTS)) {
-      if (typeof stored[key] === typeof DEFAULTS[key]) result[key] = stored[key];
+      if (VALID[key](stored[key])) result[key] = stored[key];
     }
   } catch {
     // First launch: defaults apply.
@@ -25,7 +31,7 @@ function get() {
 function set(patch = {}) {
   const next = get();
   for (const key of Object.keys(DEFAULTS)) {
-    if (patch && typeof patch[key] === typeof DEFAULTS[key]) next[key] = patch[key];
+    if (patch && VALID[key](patch[key])) next[key] = patch[key];
   }
   fs.mkdirSync(path.dirname(file()), { recursive: true });
   // Written to a temporary file first, so a crash cannot leave a half-written settings file behind.

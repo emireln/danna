@@ -2,6 +2,7 @@ import { useEffect, useRef, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Bot, Home, Layers, LibraryBig } from 'lucide-react';
+import { useT } from '../lib/i18n/react';
 
 const TABS: Array<{ to: string; label: string; icon: ComponentType<{ 'aria-hidden'?: boolean }>; end: boolean; ai?: boolean }> = [
   { to: '/', label: 'Today', icon: Home, end: true },
@@ -11,8 +12,9 @@ const TABS: Array<{ to: string; label: string; icon: ComponentType<{ 'aria-hidde
 ];
 
 function BottomNav() {
+  const t = useT();
   return (
-    <nav className="nav" aria-label="Main">
+    <nav className="nav" aria-label={t('Main')}>
       {TABS.map((tab) => {
         const Icon = tab.icon;
         return (
@@ -23,8 +25,8 @@ function BottomNav() {
             className={({ isActive }) => `nav__item ${isActive ? 'is-active' : ''}`}
           >
             <Icon aria-hidden={true} />
-            <span>{tab.label}</span>
-            {tab.ai && <span className="nav__ai">AI</span>}
+            <span>{t(tab.label)}</span>
+            {tab.ai && <span className="nav__ai">{t('AI')}</span>}
           </NavLink>
         );
       })}

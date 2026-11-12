@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { bridge } from '../lib/bridge';
+import { useT } from '../lib/i18n/react';
 import type { AnnouncementRow } from '../lib/types';
 
 /** In-app routes (starting with /) navigate; https links open in the browser. */
@@ -31,6 +32,7 @@ function BannerArt() {
 
 export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
   const navigate = useNavigate();
+  const t = useT();
   const [index, setIndex] = useState(0);
   // The carousel waits while the person points at it or works inside it, so a message can be read or used.
   const [paused, setPaused] = useState(false);
@@ -49,7 +51,7 @@ export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
       <motion.section
         key={current.id}
         className={`banner banner--${current.accent}`}
-        aria-label="Announcement"
+        aria-label={t('Announcement')}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
@@ -60,11 +62,11 @@ export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
         transition={{ duration: 0.3 }}
       >
         <div className={`banner__body${items.length > 1 ? ' banner__body--dots' : ''}`}>
-          <h2 className="banner__title">{current.title}</h2>
-          {current.body && <p className="banner__text">{current.body.split('\n')[0].replace(/^- /, '')}</p>}
+          <h2 className="banner__title">{t(current.title)}</h2>
+          {current.body && <p className="banner__text">{t(current.body.split('\n')[0].replace(/^- /, ''))}</p>}
           {current.cta_label && current.cta_url && (
             <button className="btn btn--white" onClick={() => openLink(current.cta_url ?? '', navigate)}>
-              {current.cta_label}
+              {t(current.cta_label)}
             </button>
           )}
         </div>

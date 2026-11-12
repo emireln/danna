@@ -5,8 +5,9 @@ import { BookOpen, Check, Headphones, Languages, Lock, Mic, PenLine, Star, Troph
 import { UNITS, type UnitDef } from '../content';
 import { Notice, PageHeader, ProgressBar, Skeleton } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { tn } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
 import { nodeStates, progressMap, type NodeInfo } from '../lib/roadmap';
-import { plural } from '../lib/text';
 import type { LessonProgressRow, Skill } from '../lib/types';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -25,6 +26,7 @@ const ICONS: Record<Skill, typeof BookOpen> = {
 
 export function RoadmapScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { backend } = useAuth();
   const { profile } = useAppData();
   const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
@@ -54,16 +56,23 @@ export function RoadmapScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Your path" title="Roadmap" aside={<span className="chip">Level {profile?.level ?? 'B1'}</span>}>
+      <PageHeader
+        eyebrow={t('Your path')}
+        title={t('Roadmap')}
+        aside={<span className="chip">{t('Level {level}', { level: profile?.level ?? 'B1' })}</span>}
+      >
         <div className="mt-3">
-          <ProgressBar value={done} max={Math.max(1, nodes.length)} label="Roadmap progress" />
+          <ProgressBar value={done} max={Math.max(1, nodes.length)} label={t('Roadmap progress')} />
         </div>
         <p className="small muted mt-3">
-          {done} of {plural(nodes.length, 'step')} done
+          {t('{done} of {total} done', {
+            done,
+            total: tn('{count} step', '{count} steps', nodes.length, { count: nodes.length }),
+          })}
         </p>
       </PageHeader>
 
-      {loadError && <Notice tone="error">{loadError}</Notice>}
+      {loadError && <Notice tone="error">{t(loadError)}</Notice>}
       <div className="stack">
         {progress === null && <Skeleton height={300} />}
         {progress !== null &&
@@ -81,6 +90,7 @@ export function RoadmapScreen() {
 }
 
 function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; onOpen: (lessonId: string) => void }) {
+  const t = useT();
   const height = nodes.length * ROW + 24;
   const centers = nodes.map((_, index) => ({
     x: WIDTH / 2 + OFFSETS[index % OFFSETS.length],
@@ -89,19 +99,19 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
   const doneCount = nodes.filter((node) => node.state === 'done').length;
 
   return (
-    <section className={`unit unit--${unit.accent}`} aria-label={`Unit ${unit.number}: ${unit.title}`}>
+    <section className={`unit unit--${unit.accent}`} aria-label={t('Unit {number}: {title}', { number: unit.number, title: t(unit.title) })}>
       <div className="unit__head">
         <span className="unit__badge" aria-hidden="true">
           {unit.number}
         </span>
         <div className="unit__text">
           <div className="row row--between">
-            <h2 className="unit__title">{unit.title}</h2>
+            <h2 className="unit__title">{t(unit.title)}</h2>
             <span className="chip">
               {unit.level} · {doneCount}/{nodes.length}
             </span>
           </div>
-          <p className="unit__blurb">{unit.blurb}</p>
+          <p className="unit__blurb">{t(unit.blurb)}</p>
         </div>
       </div>
 
@@ -133,6 +143,8 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
           const classes = ['node', `node--${state}`, item.checkpoint ? 'node--checkpoint' : '', state === 'current' ? 'pulse' : '']
             .filter(Boolean)
             .join(' ');
+          const title = item.checkpoint ? t('Unit check') : t(item.lesson.title);
+          const stateText = state === 'done' ? t('completed') : state === 'current' ? t('next up') : t('locked');
           return (
             <motion.button
               key={item.lesson.id}
@@ -143,20 +155,20 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
               transition={{ delay: 0.06 * index, type: 'spring', stiffness: 260, damping: 18 }}
               disabled={state === 'locked'}
               onClick={() => onOpen(item.lesson.id)}
-              aria-label={`${item.checkpoint ? 'Unit check' : item.lesson.title}, ${
-                state === 'done' ? 'completed' : state === 'current' ? 'next up' : 'locked'
-              }`}
+              aria-label={t('{title}, {state}', { title, state: stateText })}
             >
               {state === 'done' ? <Check /> : state === 'locked' ? <Lock /> : <Icon />}
-              {state === 'current' && <span className="node__bubble">START</span>}
+              {state === 'current' && <span className="node__bubble">{t('START')}</span>}
               <span className={`node__label node__label--${side}`}>
-                {item.checkpoint ? 'Unit check' : item.lesson.title}
+                {title}
                 <span className="node__meta">
-                  {item.checkpoint ? plural(item.lesson.questions.length, 'question') : `${item.lesson.minutes} min`}
+                  {item.checkpoint
+                    ? tn('{count} question', '{count} questions', item.lesson.questions.length, { count: item.lesson.questions.length })
+                    : t('{minutes} min', { minutes: item.lesson.minutes })}
                 </span>
               </span>
               {state === 'done' && (
-                <span className="node__stars" aria-label={`${stars} of 3 stars`}>
+                <span className="node__stars" aria-label={t('{stars} of 3 stars', { stars })}>
                   {[1, 2, 3].map((value) => (
                     <Star key={value} fill={value <= stars ? 'currentColor' : 'none'} className={value <= stars ? '' : 'is-off'} />
                   ))}

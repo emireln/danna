@@ -7,8 +7,9 @@ import { TOEFL_TEST_ID, levelTest, lessonsForSkill, toeflLessons, toeflTest, wor
 import { LEVELS } from '../lib/types';
 import { SECTION_ART, SECTION_BASE } from '../lib/art';
 import { errorText } from '../lib/bridge';
+import { tn } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
 import { progressMap } from '../lib/roadmap';
-import { plural } from '../lib/text';
 import { SKILLS, SKILL_LABEL, type LessonProgressRow, type Skill, type TestRow } from '../lib/types';
 import { useAI } from '../state/ai';
 import { useAppData } from '../state/appData';
@@ -61,6 +62,7 @@ const TOEFL_TEST = toeflTest();
 
 export function StudyScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { ready: aiReady } = useAI();
   const { profile } = useAppData();
   const { progress, tests, map, loadError } = useSelfStudyData();
@@ -70,40 +72,40 @@ export function StudyScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow="Practice on your own" title="Self study" />
+      <PageHeader eyebrow={t('Practice on your own')} title={t('Self study')} />
 
       <div className="stack">
-        {loadError && <Notice tone="error">{loadError}</Notice>}
+        {loadError && <Notice tone="error">{t(loadError)}</Notice>}
 
         <div className="grid-2">
           <FeatureCard
             icon={<Languages />}
-            title="Language"
-            meta="Grammar, word order and vocabulary"
+            title={t('Language')}
+            meta={t('Grammar, word order and vocabulary')}
             onClick={() => navigate('/study/language')}
           />
           <FeatureCard
             icon={<ClipboardCheck />}
-            title="Level tests"
-            meta="One test for each level, from A1 to C1"
+            title={t('Level tests')}
+            meta={t('One test for each level, from A1 to C1')}
             onClick={() => setTab('mock')}
           />
         </div>
 
         <FeatureCard
           icon={<GraduationCap />}
-          title="TOEFL warm-up"
-          meta="Optional. Academic reading, lectures, and speaking and writing tasks in the style of the test."
+          title={t('TOEFL warm-up')}
+          meta={t('Optional. Academic reading, lectures, and speaking and writing tasks in the style of the test.')}
           onClick={() => navigate('/study/toefl')}
         />
 
         <Tabs
-          label="Self study views"
+          label={t('Self study views')}
           value={tab}
           onChange={setTab}
           items={[
-            { value: 'sections', label: 'Study by section' },
-            { value: 'mock', label: 'Mock tests' },
+            { value: 'sections', label: t('Study by section') },
+            { value: 'mock', label: t('Mock tests') },
           ]}
         />
 
@@ -115,9 +117,10 @@ export function StudyScreen() {
                   const lessons = lessonsForSkill(skill);
                   const completed = lessons.filter((lesson) => (map.get(lesson.id)?.stars ?? 0) >= 1).length;
                   const questions = lessons.reduce((sum, lesson) => sum + lesson.questions.length, 0);
-                  const label = SKILL_LABEL[skill];
-                  const extra = skill === 'writing' || skill === 'speaking' ? [aiReady ? 'AI feedback' : 'Self-rating'] : [];
-                  const pills = [...SECTION_COPY[skill].pills, ...extra];
+                  const label = t(SKILL_LABEL[skill]);
+                  const extra = skill === 'writing' || skill === 'speaking' ? [aiReady ? t('AI feedback') : t('Self-rating')] : [];
+                  const pills = [...SECTION_COPY[skill].pills.map((pill) => t(pill)), ...extra];
+                  const lessonCount = tn('{count} lesson', '{count} lessons', lessons.length, { count: lessons.length });
                   return (
                     <button
                       key={skill}
@@ -125,13 +128,17 @@ export function StudyScreen() {
                       className="section-card"
                       style={{ background: SECTION_BASE[skill] }}
                       onClick={() => navigate(`/study/${skill}`)}
-                      aria-label={`${label}, ${completed} of ${plural(lessons.length, 'lesson')} complete`}
+                      aria-label={t('{label}, {completed} of {total} complete', { label, completed, total: lessonCount })}
                     >
                       <span aria-hidden="true" className="section-card__art" style={{ backgroundImage: SECTION_ART[skill] }} />
-                      <span className="section-card__kicker">{SECTION_COPY[skill].kicker}</span>
+                      <span className="section-card__kicker">{t(SECTION_COPY[skill].kicker)}</span>
                       <span className="section-card__title">{label}</span>
                       <span className="section-card__stats">
-                        {plural(lessons.length, 'lesson')} · {plural(questions, 'question')} · {completed} completed
+                        {t('{lessons} · {questions} · {completed} completed', {
+                          lessons: lessonCount,
+                          questions: tn('{count} question', '{count} questions', questions, { count: questions }),
+                          completed,
+                        })}
                       </span>
                       <span className="section-card__pills">
                         {pills.map((pill) => (
@@ -140,7 +147,7 @@ export function StudyScreen() {
                           </span>
                         ))}
                       </span>
-                      <ProgressBar value={completed} max={Math.max(1, lessons.length)} onBlue label={`${label} progress`} />
+                      <ProgressBar value={completed} max={Math.max(1, lessons.length)} onBlue label={t('{label} progress', { label })} />
                     </button>
                   );
                 })}
@@ -155,9 +162,13 @@ export function StudyScreen() {
                   <ClipboardCheck />
                 </span>
                 <span className="set-row__body">
-                  <span className="set-row__title">{test.title}</span>
+                  <span className="set-row__title">{t(test.title)}</span>
                   <span className="set-row__meta">
-                    {plural(test.questions.length, 'question')} · {test.minutes} min · {test.subtitle}
+                    {t('{questions} · {minutes} min · {subtitle}', {
+                      questions: tn('{count} question', '{count} questions', test.questions.length, { count: test.questions.length }),
+                      minutes: test.minutes,
+                      subtitle: t(test.subtitle),
+                    })}
                   </span>
                 </span>
                 <ArrowRight className="muted" aria-hidden="true" />
@@ -169,9 +180,13 @@ export function StudyScreen() {
                 <ClipboardCheck />
               </span>
               <span className="set-row__body">
-                <span className="set-row__title">{TOEFL_TEST.title}</span>
+                <span className="set-row__title">{t(TOEFL_TEST.title)}</span>
                 <span className="set-row__meta">
-                  {plural(TOEFL_TEST.questions.length, 'question')} · {TOEFL_TEST.minutes} min · {TOEFL_TEST.subtitle}
+                  {t('{questions} · {minutes} min · {subtitle}', {
+                    questions: tn('{count} question', '{count} questions', TOEFL_TEST.questions.length, { count: TOEFL_TEST.questions.length }),
+                    minutes: TOEFL_TEST.minutes,
+                    subtitle: t(TOEFL_TEST.subtitle),
+                  })}
                 </span>
               </span>
               <ArrowRight className="muted" aria-hidden="true" />
@@ -183,9 +198,15 @@ export function StudyScreen() {
                   <Sparkles />
                 </span>
                 <span className="set-row__body">
-                  <span className="set-row__title">{test.title}</span>
+                  <span className="set-row__title">{t(test.title)}</span>
                   <span className="set-row__meta">
-                    {plural(test.content.questions.length, 'question')} · {test.level} · {test.minutes} min
+                    {t('{questions} · {level} · {minutes} min', {
+                      questions: tn('{count} question', '{count} questions', test.content.questions.length, {
+                        count: test.content.questions.length,
+                      }),
+                      level: test.level,
+                      minutes: test.minutes,
+                    })}
                   </span>
                 </span>
                 <ArrowRight className="muted" aria-hidden="true" />
@@ -195,11 +216,11 @@ export function StudyScreen() {
             {aiReady ? (
               <div>
                 <button className="btn btn--ghost" onClick={() => setGenerating(true)}>
-                  <Plus /> Generate a mock test with AI
+                  <Plus /> {t('Generate a mock test with AI')}
                 </button>
               </div>
             ) : (
-              <Notice tone="info">Connect an AI key in Settings to generate mock tests on your own topics.</Notice>
+              <Notice tone="info">{t('Connect an AI key in Settings to generate mock tests on your own topics.')}</Notice>
             )}
           </div>
         )}
@@ -207,7 +228,7 @@ export function StudyScreen() {
 
       {generating && (
         <GenerateSheet
-          title="Generate a mock test"
+          title={t('Generate a mock test')}
           defaultSkill="mixed"
           defaultLevel={profile?.level ?? 'B1'}
           onClose={() => setGenerating(false)}
@@ -220,29 +241,33 @@ export function StudyScreen() {
 /** The optional TOEFL warm-up: its lessons and its test, laid out like the other sections. */
 function ToeflSection() {
   const navigate = useNavigate();
+  const t = useT();
   const { progress, map, loadError } = useSelfStudyData();
   const lessons = toeflLessons();
   const completed = lessons.filter((lesson) => (map.get(lesson.id)?.stars ?? 0) >= 1).length;
 
   return (
     <div className="page">
-      <BackLink to="/study">Self study</BackLink>
-      <PageHeader title="TOEFL warm-up">
-        <p className="muted">Academic reading, lectures, and speaking and writing tasks in the style of the test.</p>
+      <BackLink to="/study">{t('Self study')}</BackLink>
+      <PageHeader title={t('TOEFL warm-up')}>
+        <p className="muted">{t('Academic reading, lectures, and speaking and writing tasks in the style of the test.')}</p>
         <div className="mt-3">
-          <ProgressBar value={completed} max={Math.max(1, lessons.length)} label="TOEFL warm-up progress" />
+          <ProgressBar value={completed} max={Math.max(1, lessons.length)} label={t('TOEFL warm-up progress')} />
         </div>
         <p className="small muted mt-3">
-          {completed} of {plural(lessons.length, 'lesson')} complete
+          {t('{completed} of {total} complete', {
+            completed,
+            total: tn('{count} lesson', '{count} lessons', lessons.length, { count: lessons.length }),
+          })}
         </p>
       </PageHeader>
 
       <button className="btn btn--primary btn--block mt-4" onClick={() => navigate(`/play/test/${TOEFL_TEST_ID}`)}>
-        Take the TOEFL warm-up test
+        {t('Take the TOEFL warm-up test')}
       </button>
 
-      <SectionTitle title="Lessons" />
-      {loadError && <Notice tone="error">{loadError}</Notice>}
+      <SectionTitle title={t('Lessons')} />
+      {loadError && <Notice tone="error">{t(loadError)}</Notice>}
       {progress === null ? (
         <Skeleton height={180} />
       ) : (
@@ -252,12 +277,12 @@ function ToeflSection() {
             return (
               <button key={lesson.id} className="set-row" onClick={() => navigate(`/play/lesson/${lesson.id}`)}>
                 <span className="set-row__body">
-                  <span className="set-row__title">{lesson.title}</span>
+                  <span className="set-row__title">{t(lesson.title)}</span>
                   <span className="set-row__meta">
-                    {lesson.blurb} · {lesson.minutes} min
+                    {t(lesson.blurb)} · {t('{minutes} min', { minutes: lesson.minutes })}
                   </span>
                 </span>
-                <span className="set-row__stars" role="img" aria-label={`${stars} of 3 stars`}>
+                <span className="set-row__stars" role="img" aria-label={t('{stars} of 3 stars', { stars })}>
                   {[1, 2, 3].map((value) => (
                     <Star
                       key={value}
@@ -280,6 +305,7 @@ function ToeflSection() {
 
 export function StudySectionScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { skill: raw } = useParams();
   const { ready: aiReady } = useAI();
   const { profile } = useAppData();
@@ -291,32 +317,36 @@ export function StudySectionScreen() {
   if (!skill) {
     return (
       <div className="page">
-        <BackLink to="/study">Self study</BackLink>
-        <Empty title="This section does not exist">Pick a section from the self study page.</Empty>
+        <BackLink to="/study">{t('Self study')}</BackLink>
+        <Empty title={t('This section does not exist')}>{t('Pick a section from the self study page.')}</Empty>
       </div>
     );
   }
 
-  const label = SKILL_LABEL[skill];
+  const label = t(SKILL_LABEL[skill]);
   const lessons = lessonsForSkill(skill);
   const completed = lessons.filter((lesson) => (map.get(lesson.id)?.stars ?? 0) >= 1).length;
   const sets = tests.filter((test) => test.skill === skill);
+  const lowerLabel = label.toLowerCase();
 
   return (
     <div className="page">
-      <BackLink to="/study">Self study</BackLink>
+      <BackLink to="/study">{t('Self study')}</BackLink>
       <PageHeader title={label}>
-        <p className="muted">{SECTION_COPY[skill].kicker}</p>
+        <p className="muted">{t(SECTION_COPY[skill].kicker)}</p>
         <div className="mt-3">
-          <ProgressBar value={completed} max={Math.max(1, lessons.length)} label={`${label} progress`} />
+          <ProgressBar value={completed} max={Math.max(1, lessons.length)} label={t('{label} progress', { label })} />
         </div>
         <p className="small muted mt-3">
-          {completed} of {plural(lessons.length, 'lesson')} complete
+          {t('{completed} of {total} complete', {
+            completed,
+            total: tn('{count} lesson', '{count} lessons', lessons.length, { count: lessons.length }),
+          })}
         </p>
       </PageHeader>
 
-      <SectionTitle title="Lessons" />
-      {loadError && <Notice tone="error">{loadError}</Notice>}
+      <SectionTitle title={t('Lessons')} />
+      {loadError && <Notice tone="error">{t(loadError)}</Notice>}
       {progress === null ? (
         <Skeleton height={180} />
       ) : (
@@ -326,12 +356,12 @@ export function StudySectionScreen() {
             return (
               <button key={lesson.id} className="set-row" onClick={() => navigate(`/play/lesson/${lesson.id}`)}>
                 <span className="set-row__body">
-                  <span className="set-row__title">{lesson.title}</span>
+                  <span className="set-row__title">{t(lesson.title)}</span>
                   <span className="set-row__meta">
-                    {lesson.blurb} · {lesson.minutes} min
+                    {t(lesson.blurb)} · {t('{minutes} min', { minutes: lesson.minutes })}
                   </span>
                 </span>
-                <span className="set-row__stars" role="img" aria-label={`${stars} of 3 stars`}>
+                <span className="set-row__stars" role="img" aria-label={t('{stars} of 3 stars', { stars })}>
                   {[1, 2, 3].map((value) => (
                     <Star
                       key={value}
@@ -349,10 +379,12 @@ export function StudySectionScreen() {
         </div>
       )}
 
-      <SectionTitle title="Your AI sets" />
+      <SectionTitle title={t('Your AI sets')} />
       {sets.length === 0 ? (
-        <Empty title="No sets yet">
-          {aiReady ? 'Generated sets appear here. Create one on any topic.' : 'Connect an AI key in Settings to create sets on any topic.'}
+        <Empty title={t('No sets yet')}>
+          {aiReady
+            ? t('Generated sets appear here. Create one on any topic.')
+            : t('Connect an AI key in Settings to create sets on any topic.')}
         </Empty>
       ) : (
         <div className="set-list">
@@ -362,9 +394,15 @@ export function StudySectionScreen() {
                 <Sparkles />
               </span>
               <span className="set-row__body">
-                <span className="set-row__title">{test.title}</span>
+                <span className="set-row__title">{t(test.title)}</span>
                 <span className="set-row__meta">
-                  {plural(test.content.questions.length, 'question')} · {test.level} · {test.minutes} min
+                  {t('{questions} · {level} · {minutes} min', {
+                    questions: tn('{count} question', '{count} questions', test.content.questions.length, {
+                      count: test.content.questions.length,
+                    }),
+                    level: test.level,
+                    minutes: test.minutes,
+                  })}
                 </span>
               </span>
               <ArrowRight className="muted" aria-hidden="true" />
@@ -375,14 +413,14 @@ export function StudySectionScreen() {
       {aiReady && (
         <div className="mt-4">
           <button className="btn btn--ghost" onClick={() => setGenerating(true)}>
-            <Plus /> Generate a {label.toLowerCase()} set
+            <Plus /> {t('Generate a {skill} set', { skill: lowerLabel })}
           </button>
         </div>
       )}
 
       {generating && (
         <GenerateSheet
-          title={`New ${label.toLowerCase()} set`}
+          title={t('New {skill} set', { skill: lowerLabel })}
           defaultSkill={skill}
           defaultLevel={profile?.level ?? 'B1'}
           onClose={() => setGenerating(false)}

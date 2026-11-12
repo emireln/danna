@@ -10,6 +10,7 @@ import { useAI } from '../state/ai';
 import { useToast } from '../state/toast';
 import { bandFor, studyPlan, toeflEstimate, toeflRange, toneFor, TONE_LABEL, type SkillMap } from '../lib/scoring';
 import { formatLongDate } from '../lib/progress';
+import { useT, type Translate } from '../lib/i18n/react';
 import { SKILLS, SKILL_LABEL, type AttemptRow, type FriendRow, type Skill } from '../lib/types';
 
 const TIPS: Record<Skill, string> = {
@@ -22,23 +23,31 @@ const TIPS: Record<Skill, string> = {
 
 const PLAN_COLORS = ['#2f6bff', '#14b8a6', '#f5b400', '#a4adbf'];
 
-function adviceFor(skills: SkillMap, percent: number, estimate: number | null) {
+function adviceFor(skills: SkillMap, percent: number, estimate: number | null, t: Translate) {
   const ranked = SKILLS.map((skill) => ({ skill, score: skills[skill] ?? 0 })).sort((a, b) => a.score - b.score);
   const weakest = ranked[0];
   const strongest = ranked[ranked.length - 1];
   const band = bandFor(percent);
+  const weakName = t(SKILL_LABEL[weakest.skill]).toLowerCase();
+  const strongName = t(SKILL_LABEL[strongest.skill]).toLowerCase();
   const title =
     percent >= 80
-      ? `Strong across the sections, sharpen ${SKILL_LABEL[weakest.skill].toLowerCase()}`
-      : `Strong ${SKILL_LABEL[strongest.skill].toLowerCase()}, focus on ${SKILL_LABEL[weakest.skill].toLowerCase()}`;
-  const body =
-    `Your overall level looks like ${band}` +
-    (estimate !== null ? `, with an estimated TOEFL score of ${estimate}.` : '.') +
-    ` ${SKILL_LABEL[strongest.skill]} is your strongest area at ${strongest.score}/100, and ${SKILL_LABEL[weakest.skill]} needs the most attention at ${weakest.score}/100. ${TIPS[weakest.skill]}`;
-  return { title, body, weakest: weakest.skill };
+      ? t('Strong across the sections, sharpen {skill}', { skill: weakName })
+      : t('Strong {strong}, focus on {weak}', { strong: strongName, weak: weakName });
+  const level =
+    estimate !== null
+      ? t('Your overall level looks like {level}, with an estimated TOEFL score of {score}.', { level: band, score: estimate })
+      : t('Your overall level looks like {level}.', { level: band });
+  const areas = t('{strongest} is your strongest area at {strongScore}/100, and {weakest} needs the most attention at {weakScore}/100.', {
+    strongest: t(SKILL_LABEL[strongest.skill]),
+    strongScore: strongest.score,
+    weakest: t(SKILL_LABEL[weakest.skill]),
+    weakScore: weakest.score,
+  });
+  return { title, body: `${level} ${areas} ${t(TIPS[weakest.skill])}`, weakest: weakest.skill };
 }
 
-function saveImage(attempt: AttemptRow, estimate: number | null) {
+function saveImage(attempt: AttemptRow, estimate: number | null, t: Translate) {
   const canvas = document.createElement('canvas');
   canvas.width = 1200;
   canvas.height = 630;
@@ -53,11 +62,11 @@ function saveImage(attempt: AttemptRow, estimate: number | null) {
   const font = "'Inter Variable', Inter, 'Segoe UI', sans-serif";
   ctx.fillStyle = '#ffffff';
   ctx.font = `600 34px ${font}`;
-  ctx.fillText(estimate !== null ? 'danna · TOEFL estimate' : 'danna · level report', 72, 110);
+  ctx.fillText(estimate !== null ? t('danna · TOEFL estimate') : t('danna · level report'), 72, 110);
   ctx.font = `750 190px ${font}`;
   ctx.fillText(String(estimate ?? attempt.score_pct), 72, 340);
   ctx.font = `600 40px ${font}`;
-  ctx.fillText(estimate !== null ? 'of 120 (estimate)' : '% accuracy', 76, 412);
+  ctx.fillText(estimate !== null ? t('of 120 (estimate)') : t('% accuracy'), 76, 412);
   ctx.font = `500 26px ${font}`;
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
   ctx.fillText(formatLongDate(attempt.created_at), 72, 570);
@@ -67,7 +76,7 @@ function saveImage(attempt: AttemptRow, estimate: number | null) {
     const y = 180 + index * 76;
     ctx.fillStyle = '#ffffff';
     ctx.font = `600 28px ${font}`;
-    ctx.fillText(SKILL_LABEL[skill], 640, y);
+    ctx.fillText(t(SKILL_LABEL[skill]), 640, y);
     ctx.textAlign = 'right';
     ctx.fillText(`${value}`, 1128, y);
     ctx.textAlign = 'left';
@@ -92,6 +101,7 @@ function saveImage(attempt: AttemptRow, estimate: number | null) {
 
 export function ReportScreen() {
   const navigate = useNavigate();
+  const t = useT();
   const { id = '' } = useParams();
   const { backend } = useAuth();
   const { profile } = useAppData();
@@ -135,8 +145,8 @@ export function ReportScreen() {
   if (attempt === null) {
     return (
       <div className="page">
-        <Empty title="This report is not available" action={<button className="btn btn--ghost" onClick={() => navigate('/')}>Back to today</button>}>
-          It may have been removed, or it was not shared with you.
+        <Empty title={t('This report is not available')} action={<button className="btn btn--ghost" onClick={() => navigate('/')}>{t('Back to today')}</button>}>
+          {t('It may have been removed, or it was not shared with you.')}
         </Empty>
       </div>
     );
@@ -148,28 +158,28 @@ export function ReportScreen() {
   const estimate = isEstimate && profile?.goal === 'toefl' ? (attempt.predicted ?? toeflEstimate(percent)) : null;
   const [low, high] = estimate !== null ? toeflRange(estimate) : [percent, percent];
   const skills = attempt.skills;
-  const advice = adviceFor(skills, percent, estimate);
+  const advice = adviceFor(skills, percent, estimate, t);
   const plan = studyPlan(skills);
   const goal = profile?.goal === 'toefl' ? Math.round(profile.target_score / 1.2) : undefined;
-  const axes = SKILLS.map((skill) => ({ label: SKILL_LABEL[skill], value: skills[skill] ?? 0 }));
+  const axes = SKILLS.map((skill) => ({ label: t(SKILL_LABEL[skill]), value: skills[skill] ?? 0 }));
   const cardOrder = SKILLS.filter((skill) => skills[skill] !== undefined).sort((a, b) => (skills[a] ?? 0) - (skills[b] ?? 0));
 
   return (
     <div>
       <section className="report-hero">
         <p className="eyebrow">{formatLongDate(attempt.created_at)}</p>
-        <h1 className="report-hero__title">{isEstimate ? 'Score report' : attempt.title}</h1>
+        <h1 className="report-hero__title">{isEstimate ? t('Score report') : t(attempt.title)}</h1>
         {isEstimate && (
           <>
-            <p className="report-hero__sub">{estimate !== null ? 'TOEFL predicted score' : `Your level is ${bandFor(percent)}`}</p>
-            <span className="report-hero__pill">{estimate !== null ? 'Overall score' : 'Overall'}</span>
+            <p className="report-hero__sub">{estimate !== null ? t('TOEFL predicted score') : t('Your level is {level}', { level: bandFor(percent) })}</p>
+            <span className="report-hero__pill">{estimate !== null ? t('Overall score') : t('Overall')}</span>
           </>
         )}
         <div className="mt-3">
           <Gauge
             value={estimate ?? percent}
             max={estimate !== null ? 120 : 100}
-            range={estimate !== null ? `${low}–${high} of 120` : `${percent}% accuracy`}
+            range={estimate !== null ? t('{low}–{high} of 120', { low, high }) : t('{percent}% accuracy', { percent })}
           />
         </div>
       </section>
@@ -179,25 +189,27 @@ export function ReportScreen() {
           <section className="advice">
             <div className="advice__head">
               <span className="chip chip--ai">
-                <Sparkles aria-hidden="true" /> {aiReady && selection ? 'Coach' : 'Your advice'}
+                <Sparkles aria-hidden="true" /> {aiReady && selection ? t('Coach') : t('Your advice')}
               </span>
             </div>
             <h2 className="advice__title">{advice.title}</h2>
             <p className="advice__body">{advice.body}</p>
-            {!aiReady && <p className="small muted">Connect an AI key in Settings for a longer, personal explanation from your coach.</p>}
+            {!aiReady && (
+              <p className="small muted">{t('Connect an AI key in Settings for a longer, personal explanation from your coach.')}</p>
+            )}
           </section>
 
           <section>
-            <SectionTitle title="Your skill profile" />
+            <SectionTitle title={t('Your skill profile')} />
             <div className="stack stack--center">
               <Radar axes={axes} goal={goal} />
               <div className="legend">
                 <span>
-                  <i style={{ background: '#2f6bff' }} /> You
+                  <i style={{ background: '#2f6bff' }} /> {t('You')}
                 </span>
                 {goal !== undefined && (
                   <span>
-                    <i style={{ background: '#a4adbf' }} /> Your goal ({profile?.target_score})
+                    <i style={{ background: '#a4adbf' }} /> {t('Your goal ({score})', { score: profile?.target_score ?? '' })}
                   </span>
                 )}
               </div>
@@ -205,27 +217,28 @@ export function ReportScreen() {
           </section>
 
           <section>
-            <SectionTitle title="Skills to improve your score" />
+            <SectionTitle title={t('Skills to improve your score')} />
             <div className="grid-2">
               {cardOrder.map((skill) => {
                 const score = skills[skill] ?? 0;
                 const tone = toneFor(score);
+                const name = t(SKILL_LABEL[skill]);
                 return (
                   <div key={skill} className="skill-card">
                     <div className="skill-card__head">
                       <span className="icon-tile icon-tile--sm">
                         <Smile />
                       </span>
-                      <span className="skill-card__name">{SKILL_LABEL[skill]}</span>
-                      <span className={`tone tone--${tone}`}>{TONE_LABEL[tone]}</span>
+                      <span className="skill-card__name">{name}</span>
+                      <span className={`tone tone--${tone}`}>{t(TONE_LABEL[tone])}</span>
                     </div>
-                    <ProgressBar value={score} max={100} label={`${SKILL_LABEL[skill]} score`} />
+                    <ProgressBar value={score} max={100} label={t('{label} score', { label: name })} />
                     <div className="skill-card__score">
-                      Score: <b>{score}</b>/100
+                      {t('Score')}: <b>{score}</b>/100
                     </div>
                     <div className="skill-card__tip">
                       <Target aria-hidden="true" />
-                      <span>{TIPS[skill]}</span>
+                      <span>{t(TIPS[skill])}</span>
                     </div>
                   </div>
                 );
@@ -234,18 +247,20 @@ export function ReportScreen() {
           </section>
 
           <section>
-            <SectionTitle title="Today's learning plan" />
+            <SectionTitle title={t("Today's learning plan")} />
             <div className="plan">
-              <Donut slices={plan.map((slice, index) => ({ label: slice.label, percent: slice.percent, color: PLAN_COLORS[index] }))} />
+              <Donut slices={plan.map((slice, index) => ({ label: t(slice.label), percent: slice.percent, color: PLAN_COLORS[index] }))} />
               <div className="stack">
                 <p className="muted">
-                  Boost your skills in {profile?.daily_minutes ?? 15} minutes a day with questions picked for your weakest areas.
+                  {t('Boost your skills in {minutes} minutes a day with questions picked for your weakest areas.', {
+                    minutes: profile?.daily_minutes ?? 15,
+                  })}
                 </p>
                 <div className="plan__legend">
                   {plan.map((slice, index) => (
                     <div key={slice.key} className="plan__row">
                       <i style={{ background: PLAN_COLORS[index] }} />
-                      <span>{slice.label}</span>
+                      <span>{t(slice.label)}</span>
                       <span>{slice.percent}%</span>
                     </div>
                   ))}
@@ -254,7 +269,7 @@ export function ReportScreen() {
                   className="btn btn--primary self-start"
                   onClick={() => navigate(plan[0].key === 'other' ? '/study' : `/study/${plan[0].key}`)}
                 >
-                  Start today&apos;s plan <ArrowRight />
+                  {t("Start today's plan")} <ArrowRight />
                 </button>
               </div>
             </div>
@@ -263,25 +278,25 @@ export function ReportScreen() {
           <div className="row row--wrap pb-3">
             {backend?.mode === 'supabase' && (
               <button className="btn btn--primary" onClick={() => setSharing(true)}>
-                <Share2 /> Share with a friend
+                <Share2 /> {t('Share with a friend')}
               </button>
             )}
             <button
               className="btn btn--ghost"
               onClick={() => {
                 try {
-                  saveImage(attempt, estimate);
-                  notify('Image saved to your Downloads folder.', 'ok');
+                  saveImage(attempt, estimate, t);
+                  notify(t('Image saved to your Downloads folder.'), 'ok');
                 } catch {
-                  notify('The image could not be created on this device.', 'error');
+                  notify(t('The image could not be created on this device.'), 'error');
                 }
               }}
             >
-              <Download /> Save as image
+              <Download /> {t('Save as image')}
             </button>
             {attempt.kind === 'diagnostic' && (
               <button className="btn btn--ghost" onClick={() => navigate('/play/diagnostic')}>
-                Retake diagnostic
+                {t('Retake diagnostic')}
               </button>
             )}
           </div>

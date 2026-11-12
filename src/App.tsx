@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from './state/auth';
 import { AIProvider } from './state/ai';
 import { AppDataProvider, useAppData } from './state/appData';
 import { ToastProvider } from './state/toast';
+import { LanguageProvider, useT } from './lib/i18n/react';
 import { Splash } from './screens/Splash';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { AuthScreen } from './screens/AuthScreen';
@@ -48,12 +49,13 @@ function ProfileProblem() {
   const navigate = useNavigate();
   const { signOut, mode } = useAuth();
   const { refresh, loadError } = useAppData();
+  const t = useT();
   return (
     <div className="auth">
       <div className="auth__card">
-        <Notice tone="error">{loadError ?? 'We could not load your profile.'}</Notice>
+        <Notice tone="error">{loadError ? t(loadError) : t('We could not load your profile.')}</Notice>
         <button className="btn btn--primary btn--block" onClick={() => void refresh()}>
-          Try again
+          {t('Try again')}
         </button>
         <button
           className="btn btn--ghost btn--block"
@@ -62,7 +64,7 @@ function ProfileProblem() {
             navigate('/auth', { replace: true });
           }}
         >
-          {mode === 'supabase' ? 'Back to sign in' : 'Back'}
+          {mode === 'supabase' ? t('Back to sign in') : t('Back')}
         </button>
       </div>
     </div>
@@ -160,14 +162,16 @@ function Frame() {
 
 export default function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <AIProvider>
-          <AppDataProvider>
-            <Frame />
-          </AppDataProvider>
-        </AIProvider>
-      </AuthProvider>
-    </ToastProvider>
+    <LanguageProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <AIProvider>
+            <AppDataProvider>
+              <Frame />
+            </AppDataProvider>
+          </AIProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </LanguageProvider>
   );
 }

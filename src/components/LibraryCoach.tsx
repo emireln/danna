@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { Notice, Spinner } from './ui';
 import { bridge, errorText } from '../lib/bridge';
+import { replyLanguage, tn } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
 import { indexFor, retrieve } from '../lib/retrieval';
 import type { LibraryFileRow } from '../lib/types';
 import { useAI } from '../state/ai';
@@ -25,6 +27,7 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
   const { backend } = useAuth();
   const ai = useAI();
   const navigate = useNavigate();
+  const t = useT();
   const [question, setQuestion] = useState('');
   const [thread, setThread] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
@@ -41,7 +44,7 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
     if (!text || busy || !canAsk || !backend) return;
     setNotice(null);
     if (searched.length === 0) {
-      setNotice('Add a file in the Files tab first.');
+      setNotice(t('Add a file in the Files tab first.'));
       return;
     }
     setBusy(true);
@@ -58,7 +61,7 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
       );
       const indexes = docs.filter((doc) => doc.text.trim()).map(indexFor);
       if (indexes.length === 0) {
-        setNotice('These files have no readable text yet. A scanned PDF needs its text first.');
+        setNotice(t('These files have no readable text yet. A scanned PDF needs its text first.'));
         return;
       }
       // A short follow-up borrows the words of the question before it.
@@ -66,14 +69,14 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
       const found = retrieve(text, indexes, earlier);
       const history = thread.slice(-6).map(({ role, content }) => ({ role, content }));
       const reply = await ai.complete({
-        system: SYSTEM,
+        system: `${SYSTEM} Write your answer in ${replyLanguage()}. Keep quoted text in the language of the file.`,
         messages: [...history, { role: 'user', content: `Passages from the learner's files:\n\n${found.text}\n\n---\nQuestion: ${text}` }],
         maxTokens: 1200,
       });
       setThread((turns) => [...turns, { role: 'user', content: text }, { role: 'assistant', content: reply.text, files: found.files }]);
       setQuestion('');
     } catch (error) {
-      setNotice(errorText(error));
+      setNotice(t(errorText(error)));
     } finally {
       setBusy(false);
     }
@@ -81,20 +84,20 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
 
   return (
     <section className="stack">
-      {!bridge && <Notice tone="info">The coach runs in the danna desktop app, where your AI key is kept.</Notice>}
+      {!bridge && <Notice tone="info">{t('The coach runs in the danna desktop app, where your AI key is kept.')}</Notice>}
       {bridge && !ai.ready && (
         <Notice tone="info">
-          Add an AI key to use the coach.{' '}
+          {t('Add an AI key to use the coach.')}{' '}
           <button className="btn btn--text" onClick={() => navigate('/settings')}>
-            Open settings
+            {t('Open settings')}
           </button>
         </Notice>
       )}
 
       <div className="card stack--tight">
-        <span className="field__label">Files the coach reads</span>
+        <span className="field__label">{t('Files the coach reads')}</span>
         {files.length === 0 ? (
-          <span className="small muted">Add a file in the Files tab first.</span>
+          <span className="small muted">{t('Add a file in the Files tab first.')}</span>
         ) : (
           <>
             <div className="library-filters">
@@ -106,8 +109,8 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
             </div>
             <span className="small muted">
               {chosen.length > 0
-                ? `Searching ${chosen.length === 1 ? 'one file' : `${chosen.length} files`}.`
-                : 'No file is chosen, so the coach searches all of your files.'}
+                ? tn('Searching one file.', 'Searching {count} files.', chosen.length, { count: chosen.length })
+                : t('No file is chosen, so the coach searches all of your files.')}
             </span>
           </>
         )}
@@ -115,16 +118,20 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
 
       <div className="tutor-thread" aria-live="polite">
         {thread.length === 0 && (
-          <span className="small muted">Ask a question about your files. Answers come only from them, and each one names its source.</span>
+          <span className="small muted">
+            {t('Ask a question about your files. Answers come only from them, and each one names its source.')}
+          </span>
         )}
         {thread.map((turn, index) => (
           <div key={index} className={turn.role === 'user' ? 'tutor-user' : 'tutor-reply'}>
             {turn.content}
-            {turn.files && turn.files.length > 0 && <div className="small muted tutor-source">From: {turn.files.join(', ')}</div>}
+            {turn.files && turn.files.length > 0 && (
+              <div className="small muted tutor-source">{t('From: {files}', { files: turn.files.join(', ') })}</div>
+            )}
           </div>
         ))}
         {busy && (
-          <div className="tutor-reply" aria-label="Coach is typing">
+          <div className="tutor-reply" aria-label={t('Coach is typing')}>
             <Spinner dark />
           </div>
         )}
@@ -136,12 +143,12 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
         <input
           value={question}
           maxLength={500}
-          placeholder="Ask about your files"
-          aria-label="Question for the coach"
+          placeholder={t('Ask about your files')}
+          aria-label={t('Question for the coach')}
           disabled={busy || !canAsk}
           onChange={(event) => setQuestion(event.target.value)}
         />
-        <button className="btn btn--primary btn--icon" type="submit" disabled={busy || !canAsk || !question.trim()} aria-label="Send question">
+        <button className="btn btn--primary btn--icon" type="submit" disabled={busy || !canAsk || !question.trim()} aria-label={t('Send question')}>
           <ArrowUp />
         </button>
       </form>

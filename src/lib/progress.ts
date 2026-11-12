@@ -1,4 +1,5 @@
 // Dates, streaks, XP levels and countdowns.
+import { getLocale, t } from './i18n';
 
 export function localDate(date = new Date()): string {
   const y = date.getFullYear();
@@ -31,27 +32,27 @@ export function daysUntil(iso: string | null): number | null {
   return Math.round((target.getTime() - today.getTime()) / 86_400_000);
 }
 
-// The interface is English, so dates follow the same locale instead of the system language.
+// Dates follow the app's language: "Mar 4" in English, "4 de mar." in Portuguese.
 export function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(iso));
+  return new Intl.DateTimeFormat(getLocale(), { month: 'short', day: 'numeric' }).format(new Date(iso));
 }
 
 export function formatLongDate(iso: string): string {
-  return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(iso));
+  return new Intl.DateTimeFormat(getLocale(), { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(iso));
 }
 
 export function timeAgo(iso: string): string {
   const seconds = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
-  if (seconds < 60) return 'just now';
+  if (seconds < 60) return t('just now');
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 60) return t('{minutes} min ago', { minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} h ago`;
+  if (hours < 24) return t('{hours} h ago', { hours });
   const days = Math.round(hours / 24);
-  return days === 1 ? 'yesterday' : `${days} days ago`;
+  return days === 1 ? t('yesterday') : t('{days} days ago', { days });
 }
 
 export function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds} s`;
-  return `${Math.round(seconds / 60)} min`;
+  if (seconds < 60) return t('{seconds} s', { seconds });
+  return t('{minutes} min', { minutes: Math.round(seconds / 60) });
 }

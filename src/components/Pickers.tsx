@@ -3,6 +3,8 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getLang } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
 
 export interface SelectOption<T extends string> {
   value: T;
@@ -80,6 +82,7 @@ export function Select<T extends string>({
   /** `line` is the underlined style used in page headers. */
   variant?: 'field' | 'line';
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const trigger = useRef<HTMLDivElement>(null);
@@ -162,7 +165,7 @@ export function Select<T extends string>({
         onClick={() => (open ? setOpen(false) : openList())}
         onKeyDown={onKey}
       >
-        <span className="pick__value">{selected ? selected.label : placeholder}</span>
+        <span className="pick__value">{selected ? selected.label : t(placeholder)}</span>
         <ChevronDown className="pick__chev" aria-hidden="true" />
       </div>
       {anchor &&
@@ -210,9 +213,12 @@ function fromIso(value: string): Date | null {
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
 }
 
-const SHORT_DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-const LONG_DATE = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-const MONTH = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' });
+// Dates in the calendar follow the app's language, read when they are drawn.
+const dateFormat = (options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat(getLang() === 'pt' ? 'pt-BR' : 'en-GB', options);
+const shortDate = (date: Date) => dateFormat({ day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+const longDate = (date: Date) => dateFormat({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+const monthTitle = (date: Date) => dateFormat({ month: 'long', year: 'numeric' }).format(date);
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 export function DateField({
@@ -235,6 +241,7 @@ export function DateField({
   placeholder?: string;
   disabled?: boolean;
 }) {
+  const t = useT();
   const selected = fromIso(value);
   const earliest = min ? fromIso(min) : null;
   const latest = max ? fromIso(max) : null;
@@ -331,7 +338,7 @@ export function DateField({
         onClick={() => (open ? setOpen(false) : openCalendar())}
         onKeyDown={onTriggerKey}
       >
-        <span className="pick__value">{selected ? SHORT_DATE.format(selected) : placeholder}</span>
+        <span className="pick__value">{selected ? shortDate(selected) : t(placeholder)}</span>
         <CalendarDays className="pick__chev" aria-hidden="true" />
       </div>
       {anchor &&
@@ -340,7 +347,7 @@ export function DateField({
             ref={panel}
             className="pick__panel cal"
             role="dialog"
-            aria-label={label ? `Choose ${label.toLowerCase()}` : 'Choose a date'}
+            aria-label={label ? t('Choose {label}', { label: t(label).toLowerCase() }) : t('Choose a date')}
             style={{
               top: anchor.top,
               left: Math.max(16, Math.min(anchor.left, window.innerWidth - calendarWidth - 16)),
@@ -350,20 +357,20 @@ export function DateField({
             onKeyDown={onPanelKey}
           >
             <div className="cal__head">
-              <button type="button" className="btn btn--ghost btn--icon btn--sm" aria-label="Previous month" onClick={() => shiftMonth(-1)}>
+              <button type="button" className="btn btn--ghost btn--icon btn--sm" aria-label={t('Previous month')} onClick={() => shiftMonth(-1)}>
                 <ChevronLeft />
               </button>
               <span className="cal__title" aria-live="polite">
-                {MONTH.format(cursor)}
+                {monthTitle(cursor)}
               </span>
-              <button type="button" className="btn btn--ghost btn--icon btn--sm" aria-label="Next month" onClick={() => shiftMonth(1)}>
+              <button type="button" className="btn btn--ghost btn--icon btn--sm" aria-label={t('Next month')} onClick={() => shiftMonth(1)}>
                 <ChevronRight />
               </button>
             </div>
             <div className="cal__grid">
               {WEEKDAYS.map((day) => (
                 <span key={day} className="cal__dow" aria-hidden="true">
-                  {day}
+                  {t(day)}
                 </span>
               ))}
               {days.map((day) => {
@@ -377,7 +384,7 @@ export function DateField({
                     data-outside={day.getMonth() !== cursor.getMonth() || undefined}
                     data-today={iso === todayIso || undefined}
                     aria-pressed={iso === value}
-                    aria-label={LONG_DATE.format(day)}
+                    aria-label={longDate(day)}
                     disabled={isBlocked(day)}
                     tabIndex={iso === toIso(cursor) ? 0 : -1}
                     onClick={() => choose(day)}
@@ -389,7 +396,7 @@ export function DateField({
             </div>
             <div className="cal__foot">
               <button type="button" className="btn btn--text" onClick={() => choose(null)} disabled={!value}>
-                Clear
+                {t('Clear')}
               </button>
               <button
                 type="button"
@@ -397,7 +404,7 @@ export function DateField({
                 onClick={() => choose(new Date())}
                 disabled={isBlocked(fromIso(todayIso) ?? new Date())}
               >
-                Today
+                {t('Today')}
               </button>
             </div>
           </div>,
