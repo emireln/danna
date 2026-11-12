@@ -21,3 +21,6 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# the landing page is its own repository (emireln/danna-website), cloned into this folder
+website/
