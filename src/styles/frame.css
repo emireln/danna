@@ -31,7 +31,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding-left: 20px;
+    /* The same inset on both sides, so the wordmark and the account icons sit the same distance from the edges. */
+    padding: 0 20px;
     background: var(--canvas);
     border-bottom: 1px solid var(--line);
     -webkit-app-region: drag;
@@ -54,12 +55,13 @@
     display: flex;
     align-items: center;
     gap: 2px;
-    padding-right: 8px;
   }
 
+  /* The window controls go to the window's right edge, past the title bar's padding, with a gap before them. */
   .titlebar__controls {
     display: flex;
     align-self: stretch;
+    margin: 0 -20px 0 8px;
   }
 
   .titlebar__control {
