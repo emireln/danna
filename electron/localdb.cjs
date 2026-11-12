@@ -15,6 +15,11 @@ const ATTEMPT_KINDS = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice',
 const AVATAR_MAX_BYTES = 300 * 1024;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+// Limits on what the interface may store, so one attempt or set cannot fill the database.
+const MAX_ANSWERS = 300;
+const MAX_RESPONSE_LENGTH = 2000;
+const MAX_JSON_LENGTH = 200000;
+const MIME_BY_KIND = { pdf: 'application/pdf', txt: 'text/plain', md: 'text/markdown' };
 const PROFILE_FIELDS = new Set([
   'username',
   'display_name',
@@ -171,6 +176,12 @@ function optionalText(value) {
   return value === undefined || value === null || value === '' ? null : String(value);
 }
 
+// Only a real date and time is stored, always in the same format. Anything else gets the fallback.
+function isoTime(value, fallback) {
+  const time = typeof value === 'string' && value ? new Date(value) : null;
+  return time && Number.isFinite(time.getTime()) ? time.toISOString() : fallback;
+}
+
 // Profile -------------------------------------------------------------------
 
 // Keeps a value inside the limits the online database enforces, so copying never fails on it.
@@ -245,11 +256,54 @@ function toAttempt(row) {
   return { ...row, predicted: row.predicted ?? null, skills: parse(row.skills, {}), answers: parse(row.answers, []) };
 }
 
-function listAttempts(limit = 60) {
-  return db()
-    .prepare('SELECT * FROM attempts ORDER BY created_at DESC LIMIT ?')
-    .all(clamp(limit, 1, 500, 60))
-    .map(toAttempt);
+// The answers of an attempt are kept as the interface sends them, but bounded in count and length.
+function cleanResponse(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? clamp(value, -1, 1000, 0) : null;
+  if (typeof value === 'string') return value.slice(0, MAX_RESPONSE_LENGTH);
+  if (Array.isArray(value)) return value.slice(0, 50).map((item) => String(item ?? '').slice(0, 200));
+  return null;
+}
+
+function cleanAnswers(list) {
+  if (!Array.isArray(list)) return [];
+  return list.slice(0, MAX_ANSWERS).flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const fraction = Number(item.fraction);
+    return [
+      {
+        id: String(item.id ?? '').slice(0, 120),
+        skill: SKILLS.includes(item.skill) ? item.skill : 'language',
+        fraction: Number.isFinite(fraction) ? Math.min(1, Math.max(0, fraction)) : 0,
+        response: cleanResponse(item.response),
+      },
+    ];
+  });
+}
+
+// Only the five skills are kept, each as a whole number from 0 to 100.
+function cleanSkills(scores) {
+  const out = {};
+  if (!scores || typeof scores !== 'object') return out;
+  for (const skill of SKILLS) {
+    if (scores[skill] !== undefined && scores[skill] !== null) out[skill] = clamp(scores[skill], 0, 100, 0);
+  }
+  return out;
+}
+
+function listAttempts(limit = 60, kind = null) {
+  const size = clamp(limit, 1, 500, 60);
+  const rows = ATTEMPT_KINDS.includes(kind)
+    ? db().prepare('SELECT * FROM attempts WHERE kind = ? ORDER BY created_at DESC LIMIT ?').all(kind, size)
+    : db().prepare('SELECT * FROM attempts ORDER BY created_at DESC LIMIT ?').all(size);
+  return rows.map(toAttempt);
+}
+
+// How many attempts of one kind exist, so screens do not depend on the newest page of history.
+function countAttempts(kind) {
+  if (!ATTEMPT_KINDS.includes(kind)) return 0;
+  const row = db().prepare('SELECT COUNT(*) AS total FROM attempts WHERE kind = ?').get(kind);
+  return row ? Number(row.total) : 0;
 }
 
 function getAttempt(id) {
@@ -270,10 +324,10 @@ function insertAttempt(input = {}) {
       String(input.title ?? 'Practice').slice(0, 200),
       clamp(input.score_pct, 0, 100, 0),
       input.predicted === null || input.predicted === undefined ? null : clamp(input.predicted, 0, 120, 0),
-      JSON.stringify(input.skills ?? {}),
-      JSON.stringify(input.answers ?? []),
+      JSON.stringify(cleanSkills(input.skills)),
+      JSON.stringify(cleanAnswers(input.answers)),
       clamp(input.duration_s, 0, 86400, 0),
-      typeof input.created_at === 'string' ? input.created_at : now(),
+      isoTime(input.created_at, now()),
     );
   return getAttempt(id);
 }
@@ -299,13 +353,15 @@ function listLessonProgress() {
   return db().prepare('SELECT lesson_id, stars, best_pct, attempts, completed_at FROM lesson_progress').all();
 }
 
-function upsertLessonProgress(row) {
+function upsertLessonProgress(row = {}) {
+  const lessonId = typeof row.lesson_id === 'string' ? row.lesson_id.slice(0, 80) : '';
+  if (!lessonId) throw userError('That lesson could not be saved.');
   db()
     .prepare(
       'INSERT INTO lesson_progress (lesson_id, stars, best_pct, attempts, completed_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(lesson_id) DO UPDATE SET stars = excluded.stars, best_pct = excluded.best_pct, attempts = excluded.attempts, completed_at = excluded.completed_at, updated_at = excluded.updated_at',
     )
     .run(
-      String(row.lesson_id),
+      lessonId,
       clamp(row.stars, 0, 3, 0),
       clamp(row.best_pct, 0, 100, 0),
       clamp(row.attempts, 0, 100000, 0),
@@ -330,21 +386,31 @@ function listReviewItems() {
   return db().prepare('SELECT * FROM review_items').all().map(toReview);
 }
 
+// A review item needs its key and its question, or the review screen cannot show it. Other values are kept within range.
+function cleanReviewRow(row) {
+  const key = typeof row.item_key === 'string' ? row.item_key.slice(0, 200) : '';
+  if (!key || !row.payload || typeof row.payload !== 'object' || !row.payload.question) return null;
+  const payload = JSON.stringify(row.payload);
+  if (payload.length > MAX_JSON_LENGTH) return null;
+  return {
+    item_key: key,
+    skill: SKILLS.includes(row.skill) ? row.skill : 'language',
+    payload,
+    ease: Math.min(5, Math.max(1.3, Number(row.ease) || 2.5)),
+    interval_days: clamp(row.interval_days, 0, 36500, 0),
+    reps: clamp(row.reps, 0, 100000, 0),
+    due_at: isoTime(row.due_at, now()),
+  };
+}
+
 function upsertReviewItems(rows = []) {
   const statement = db().prepare(
     'INSERT INTO review_items (item_key, skill, payload, ease, interval_days, reps, due_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(item_key) DO UPDATE SET skill = excluded.skill, payload = excluded.payload, ease = excluded.ease, interval_days = excluded.interval_days, reps = excluded.reps, due_at = excluded.due_at, updated_at = excluded.updated_at',
   );
-  for (const row of rows || []) {
-    statement.run(
-      String(row.item_key),
-      String(row.skill),
-      JSON.stringify(row.payload ?? {}),
-      Number(row.ease) || 2.5,
-      clamp(row.interval_days, 0, 100000, 0),
-      clamp(row.reps, 0, 100000, 0),
-      String(row.due_at),
-      now(),
-    );
+  for (const raw of Array.isArray(rows) ? rows : []) {
+    const row = cleanReviewRow(raw && typeof raw === 'object' ? raw : {});
+    if (!row) continue;
+    statement.run(row.item_key, row.skill, row.payload, row.ease, row.interval_days, row.reps, row.due_at, now());
   }
 }
 
@@ -365,6 +431,8 @@ function getTest(id) {
 
 function insertTest(input = {}) {
   const id = typeof input.id === 'string' && input.id ? input.id : randomUUID();
+  const content = JSON.stringify(input.content ?? { passages: [], questions: [] });
+  if (content.length > MAX_JSON_LENGTH) throw userError('That practice set is too large to keep.');
   db()
     .prepare(
       'INSERT OR IGNORE INTO tests (id, title, description, kind, skill, level, minutes, content, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -377,8 +445,8 @@ function insertTest(input = {}) {
       TEST_SKILLS.includes(input.skill) ? input.skill : 'mixed',
       LEVELS.includes(input.level) ? input.level : 'B1',
       clamp(input.minutes, 1, 240, 10),
-      JSON.stringify(input.content ?? { passages: [], questions: [] }),
-      typeof input.created_at === 'string' ? input.created_at : now(),
+      content,
+      isoTime(input.created_at, now()),
     );
   return getTest(id);
 }
@@ -397,7 +465,7 @@ function addTutor(role, content, id, createdAt) {
     id: typeof id === 'string' && id ? id : randomUUID(),
     role: role === 'assistant' ? 'assistant' : 'user',
     content: String(content ?? '').slice(0, 8000),
-    created_at: typeof createdAt === 'string' && createdAt ? createdAt : now(),
+    created_at: isoTime(createdAt, now()),
   };
   db()
     .prepare('INSERT OR IGNORE INTO tutor_messages (id, role, content, created_at) VALUES (?, ?, ?, ?)')
@@ -486,7 +554,7 @@ function insertLibraryFile(input = {}) {
       id,
       String(input.name || 'File').slice(0, 200),
       input.kind,
-      String(input.mime_type || 'application/octet-stream').slice(0, 100),
+      MIME_BY_KIND[input.kind],
       bytes.length,
       bytes,
       String(input.extracted_text || '').slice(0, LIBRARY_TEXT_MAX),
@@ -530,7 +598,8 @@ function insertLibraryLink(input = {}) {
   return db().prepare(`SELECT ${LIBRARY_LINK_FIELDS} FROM library_links WHERE id = ?`).get(id);
 }
 
-function updateLibraryLink(id, patch = {}) {
+function updateLibraryLink(id, patchInput = {}) {
+  const patch = patchInput && typeof patchInput === 'object' ? patchInput : {};
   const current = db().prepare(`SELECT ${LIBRARY_LINK_FIELDS} FROM library_links WHERE id = ?`).get(String(id));
   if (!current) throw userError('That link is no longer in your library.');
   const title = patch.title === undefined ? current.title : String(patch.title ?? '').slice(0, 200);
@@ -550,6 +619,7 @@ const METHODS = {
   getProfile,
   updateProfile,
   listAttempts,
+  countAttempts,
   getAttempt,
   insertAttempt,
   getSkillScores,
@@ -579,8 +649,9 @@ const METHODS = {
 };
 
 function call(method, args) {
+  // Only the listed names count. Inherited names such as "constructor" are not actions.
+  if (!Object.hasOwn(METHODS, method)) throw userError('That action is not available right now.');
   const handler = METHODS[method];
-  if (!handler) throw userError('That action is not available right now.');
   return handler(...(Array.isArray(args) ? args : []));
 }
 

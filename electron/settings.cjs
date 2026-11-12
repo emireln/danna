@@ -28,7 +28,10 @@ function set(patch = {}) {
     if (patch && typeof patch[key] === typeof DEFAULTS[key]) next[key] = patch[key];
   }
   fs.mkdirSync(path.dirname(file()), { recursive: true });
-  fs.writeFileSync(file(), JSON.stringify(next, null, 2), 'utf8');
+  // Written to a temporary file first, so a crash cannot leave a half-written settings file behind.
+  const tmp = `${file()}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(next, null, 2), 'utf8');
+  fs.renameSync(tmp, file());
   return next;
 }
 

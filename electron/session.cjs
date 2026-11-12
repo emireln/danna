@@ -4,6 +4,7 @@
 const { app, safeStorage } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
+const { userError } = require('./errors.cjs');
 
 const KEY_PATTERN = /^danna\.[a-z]{2,30}$/;
 const MAX_VALUE_LENGTH = 64 * 1024;
@@ -41,7 +42,7 @@ function get(key) {
 
 function set(key, value) {
   checkKey(key);
-  if (typeof value !== 'string' || value.length > MAX_VALUE_LENGTH) throw new Error('Session value is too large.');
+  if (typeof value !== 'string' || value.length > MAX_VALUE_LENGTH) throw userError('That sign-in data is too large to keep.');
   const values = readAll();
   values[key] = value;
   return writeAll(values);

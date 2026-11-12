@@ -5,6 +5,8 @@ const { userError, MARK } = require('./errors.cjs');
 
 const TIMEOUT_MS = 60_000;
 const COMPLETION_TIMEOUT_MS = 180_000;
+// The most text one request carries, counted in characters across all turns. Older turns go first.
+const MAX_CONVERSATION_CHARS = 40_000;
 
 const PROVIDERS = Object.freeze({
   openai: { label: 'OpenAI', hint: 'sk-…' },
@@ -226,10 +228,18 @@ function normalizeMessages(messages) {
     if (last && last.role === role) last.content += `\n\n${content}`;
     else out.push({ role, content });
   }
+  // Keep the most recent turns that fit the budget. The newest turn is always kept.
+  const kept = [];
+  let total = 0;
+  for (let index = out.length - 1; index >= 0; index -= 1) {
+    total += out[index].content.length;
+    if (total > MAX_CONVERSATION_CHARS && kept.length > 0) break;
+    kept.unshift(out[index]);
+  }
   // Anthropic and Gemini expect the conversation to open with a user turn.
-  while (out.length && out[0].role !== 'user') out.shift();
-  if (!out.length) throw userError('Write a message first.');
-  return out;
+  while (kept.length && kept[0].role !== 'user') kept.shift();
+  if (!kept.length) throw userError('Write a message first.');
+  return kept;
 }
 
 const firstChoice = (data) => (data && Array.isArray(data.choices) && data.choices[0]) || {};
