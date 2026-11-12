@@ -21,7 +21,7 @@ export function CoachScreen() {
   const navigate = useNavigate();
   const { backend } = useAuth();
   const { profile } = useAppData();
-  const { ready, selection, complete, connections } = useAI();
+  const { ready, selection, complete, connections, desktop } = useAI();
   const { notify } = useToast();
   const [messages, setMessages] = useState<TutorRow[] | null>(null);
   const [draft, setDraft] = useState('');
@@ -117,14 +117,17 @@ export function CoachScreen() {
         }
       />
 
-      {!ready && (
-        <Notice tone="info">
-          Add your AI key to start chatting with your coach.{' '}
-          <button className="btn btn--text" onClick={() => navigate('/settings')}>
-            Open settings
-          </button>
-        </Notice>
-      )}
+      {!ready &&
+        (desktop ? (
+          <Notice tone="info">
+            Add your AI key to start chatting with your coach.{' '}
+            <button className="btn btn--text" onClick={() => navigate('/settings')}>
+              Open settings
+            </button>
+          </Notice>
+        ) : (
+          <Notice tone="info">The coach runs in the danna desktop app, where your AI key is kept on this device.</Notice>
+        ))}
 
       <div className="coach__list" ref={listRef} aria-live="polite">
         {messages === null ? (

@@ -18,6 +18,7 @@ export function ProfileScreen() {
   const { profile, patchProfile, pictureUrl, changePicture } = useAppData();
   const { notify } = useToast();
   const [attempts, setAttempts] = useState<AttemptRow[] | null>(null);
+  const [checks, setChecks] = useState<{ count: number; rows: AttemptRow[] } | null>(null);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [saving, setSaving] = useState(false);
@@ -25,16 +26,20 @@ export function ProfileScreen() {
   const [libraryCounts, setLibraryCounts] = useState<{ files: number; links: number } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
+  // The recent sessions, and the level checks: their total, and the ones that give the best results.
   useEffect(() => {
     if (!backend) return undefined;
     let active = true;
-    backend
-      .listAttempts(40)
-      .then((rows) => {
-        if (active) setAttempts(rows);
+    Promise.all([backend.listAttempts(8), backend.countAttempts('diagnostic'), backend.listAttempts(200, 'diagnostic')])
+      .then(([recent, count, rows]) => {
+        if (!active) return;
+        setAttempts(recent);
+        setChecks({ count, rows });
       })
       .catch(() => {
-        if (active) setAttempts([]);
+        if (!active) return;
+        setAttempts([]);
+        setChecks({ count: 0, rows: [] });
       });
     return () => {
       active = false;
@@ -66,7 +71,7 @@ export function ProfileScreen() {
 
   const name = profile.display_name || profile.username;
   const level = levelInfo(profile.xp);
-  const diagnostics = (attempts ?? []).filter((attempt) => attempt.kind === 'diagnostic');
+  const diagnostics = checks?.rows ?? [];
   const best = diagnostics.reduce((max, attempt) => Math.max(max, attempt.predicted ?? 0), 0);
   const bestPercent = diagnostics.reduce((max, attempt) => Math.max(max, attempt.score_pct), 0);
   const daysLeft = daysUntil(profile.exam_date);
@@ -172,7 +177,7 @@ export function ProfileScreen() {
           <span className="stat__label">Total XP</span>
         </div>
         <div className="stat">
-          <span className="stat__value">{diagnostics.length}</span>
+          <span className="stat__value">{checks?.count ?? 0}</span>
           <span className="stat__label">Level checks taken</span>
         </div>
         <div className="stat">

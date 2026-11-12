@@ -44,12 +44,13 @@ export function TodayScreen() {
   useEffect(() => {
     if (!backend) return undefined;
     let active = true;
-    Promise.all([backend.listLessonProgress(), backend.listReviewItems(), backend.listAttempts(40)])
-      .then(([rows, items, attempts]) => {
+    // The newest level check, however many sessions have been done since.
+    Promise.all([backend.listLessonProgress(), backend.listReviewItems(), backend.listAttempts(1, 'diagnostic')])
+      .then(([rows, items, checks]) => {
         if (!active) return;
         setProgress(rows);
         setReviews(items);
-        setDiagnostic(attempts.find((attempt) => attempt.kind === 'diagnostic') ?? null);
+        setDiagnostic(checks[0] ?? null);
       })
       .catch((error: unknown) => {
         console.error('Could not load your progress', error);
@@ -135,7 +136,7 @@ export function TodayScreen() {
                   { value: 'listening', label: 'Listening focus' },
                   { value: 'speaking', label: 'Speaking focus' },
                   { value: 'writing', label: 'Writing focus' },
-                  { value: 'language', label: 'Grammar and vocabulary' },
+                  { value: 'language', label: 'Language focus' },
                 ]}
               />
             </>

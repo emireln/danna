@@ -4,6 +4,7 @@ import { Layers, Play } from 'lucide-react';
 import { Empty, Notice, PageHeader, SectionTitle, Skeleton } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { plural } from '../lib/text';
+import { questionPreview } from '../lib/srs';
 import { SKILL_LABEL, type ReviewRow } from '../lib/types';
 import { useAuth } from '../state/auth';
 
@@ -87,7 +88,7 @@ export function ReviewScreen() {
                 <div key={item.item_key} className="set-row set-row--static">
                   <span className="chip chip--blue">{SKILL_LABEL[item.skill]}</span>
                   <span className="set-row__body">
-                    <span className="set-row__title">{item.payload.question.prompt}</span>
+                    <span className="set-row__title">{questionPreview(item.payload?.question)}</span>
                   </span>
                   <span className="set-row__when">{dueText(item.due_at, now)}</span>
                 </div>

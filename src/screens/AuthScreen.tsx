@@ -5,11 +5,15 @@ import { BrandMark, Field, Notice, Sheet, Spinner, Tabs, Wordmark } from '../com
 import { errorText } from '../lib/bridge';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { backendFor, onlineAvailable } from '../lib/session';
+import { returnPath } from '../lib/navigation';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 
 interface AuthRouteState {
+  /** Where to go after signing in, set by the screen that asked for an account. */
   next?: string;
+  /** The page the person was on when the sign-in was required, set by the route guard. */
+  from?: string;
   switchingFrom?: 'local';
 }
 
@@ -19,7 +23,7 @@ export function AuthScreen() {
   const { status, mode: accountMode, signIn, signUp, useOffline } = useAuth();
   const { refresh, refreshSocial } = useAppData();
   const routeState = (location.state ?? {}) as AuthRouteState;
-  const next = routeState.next ?? '/';
+  const next = returnPath(routeState.next ?? routeState.from);
   const online = onlineAvailable();
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');

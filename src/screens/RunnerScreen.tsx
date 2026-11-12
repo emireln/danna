@@ -11,6 +11,8 @@ import { gradeChoice, gradeCloze, gradeReorder, shuffleWords } from '../lib/grad
 import { nextStreak, localDate } from '../lib/progress';
 import { plural } from '../lib/text';
 import { isReviewable, newReviewItem, scheduleReview } from '../lib/srs';
+import { createSteps, type Steps } from '../lib/steps';
+import { enterPressesPrimary } from '../lib/keyboard';
 import { overallPercent, skillPercents, starsFor, toeflEstimate, XP, type SkillMap } from '../lib/scoring';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -128,6 +130,9 @@ export function RunnerScreen() {
   const [elapsed, setElapsed] = useState(0);
   const [confirmLeave, setConfirmLeave] = useState(false);
   const startedAt = useRef(Date.now());
+  // The steps of one session's save, and the id its attempt gets, so a retry after a failure never writes twice.
+  const steps = useRef<Steps>(createSteps());
+  const attemptRef = useRef<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -140,6 +145,8 @@ export function RunnerScreen() {
     setRevealed({});
     setBlankMarks({});
     startedAt.current = Date.now();
+    steps.current.reset();
+    attemptRef.current = null;
 
     const load = async (): Promise<TestDef> => {
       if (!backend) throw new Error('Sign in to start a session.');
@@ -219,6 +226,7 @@ export function RunnerScreen() {
     if (!test || !backend || !profile) return;
     setSaving(true);
     setSaveError(null);
+    const run = steps.current;
     try {
       const answers = test.questions.map((item) => finalResults[item.id]).filter((item): item is AnswerRecord => Boolean(item));
       const skills = skillPercents(answers);
@@ -230,77 +238,94 @@ export function RunnerScreen() {
         test.kind === 'diagnostic' ? XP.diagnostic : test.kind === 'checkpoint' ? XP.checkpoint : test.kind === 'lesson' ? XP.lesson : 0;
       const xp = correct * (isReview ? XP.review : XP.correct) + answers.length * XP.attempt + bonus;
 
-      let attemptId: string | null = null;
-      if (!isReview) {
+      // The attempt gets its id once. A retry after a failure finds the same attempt instead of saving it again.
+      if (!isReview && !attemptRef.current) attemptRef.current = crypto.randomUUID();
+      const attemptId: string | null = isReview ? null : attemptRef.current;
+      if (attemptId) {
         const kind: AttemptKind =
           test.kind === 'diagnostic' ? 'diagnostic' : test.kind === 'mock' ? 'mock' : test.kind === 'checkpoint' ? 'checkpoint' : test.kind === 'lesson' ? 'lesson' : 'practice';
-        const attempt = await backend.insertAttempt({
-          kind,
-          ref_id: test.id,
-          title: test.title,
-          score_pct: pct,
-          predicted,
-          skills,
-          answers,
-          duration_s: duration,
+        await run.run('attempt', async () => {
+          try {
+            await backend.insertAttempt({
+              id: attemptId,
+              kind,
+              ref_id: test.id,
+              title: test.title,
+              score_pct: pct,
+              predicted,
+              skills,
+              answers,
+              duration_s: duration,
+            });
+          } catch (error) {
+            // A save that reached the database before the connection failed is found again by its id.
+            if (!(await backend.getAttempt(attemptId).catch(() => null))) throw error;
+          }
         });
-        attemptId = attempt.id;
       }
 
-      if (test.kind === 'diagnostic') {
-        await backend.setSkillScores(skills);
-      } else if (!isReview && Object.keys(skills).length > 0) {
-        const merged: SkillMap = {};
-        for (const skill of SKILLS) {
-          const fresh = skills[skill];
-          const previous = currentSkills[skill];
-          if (fresh === undefined) continue;
-          merged[skill] = previous === undefined ? fresh : Math.round(previous * 0.7 + fresh * 0.3);
+      await run.run('skills', async () => {
+        if (test.kind === 'diagnostic') {
+          await backend.setSkillScores(skills);
+        } else if (!isReview && Object.keys(skills).length > 0) {
+          const merged: SkillMap = {};
+          for (const skill of SKILLS) {
+            const fresh = skills[skill];
+            const previous = currentSkills[skill];
+            if (fresh === undefined) continue;
+            merged[skill] = previous === undefined ? fresh : Math.round(previous * 0.7 + fresh * 0.3);
+          }
+          await backend.setSkillScores(merged);
         }
-        await backend.setSkillScores(merged);
-      }
+      });
       if (!isReview) await reloadSkills();
 
       if (test.kind === 'lesson' || test.kind === 'checkpoint') {
-        const rows = await backend.listLessonProgress();
-        const previous = rows.find((row) => row.lesson_id === test.id);
-        const stars = starsFor(pct);
-        await backend.upsertLessonProgress({
-          lesson_id: test.id,
-          stars: Math.max(previous?.stars ?? 0, stars),
-          best_pct: Math.max(previous?.best_pct ?? 0, pct),
-          attempts: (previous?.attempts ?? 0) + 1,
-          completed_at: stars >= 1 ? (previous?.completed_at ?? new Date().toISOString()) : (previous?.completed_at ?? null),
+        await run.run('progress', async () => {
+          const rows = await backend.listLessonProgress();
+          const previous = rows.find((row) => row.lesson_id === test.id);
+          const stars = starsFor(pct);
+          await backend.upsertLessonProgress({
+            lesson_id: test.id,
+            stars: Math.max(previous?.stars ?? 0, stars),
+            best_pct: Math.max(previous?.best_pct ?? 0, pct),
+            attempts: (previous?.attempts ?? 0) + 1,
+            completed_at: stars >= 1 ? (previous?.completed_at ?? new Date().toISOString()) : (previous?.completed_at ?? null),
+          });
         });
       }
 
-      const existing = await backend.listReviewItems();
-      const byKey = new Map(existing.map((row) => [row.item_key, row]));
-      const updates: ReviewRow[] = [];
-      for (const item of test.questions) {
-        if (!isReviewable(item)) continue;
-        const answer = finalResults[item.id];
-        if (!answer) continue;
-        const correctAnswer = answer.fraction >= 1;
-        if (isReview) {
-          const row = byKey.get(item.id);
-          if (row) updates.push(scheduleReview(row, correctAnswer));
-        } else if (!correctAnswer) {
-          const key = `${test.id}:${item.id}`;
-          const row = byKey.get(key);
-          const passageForItem = item.passageId ? test.passages.find((entry) => entry.id === item.passageId) : undefined;
-          const payload = { question: item, passage: passageForItem };
-          updates.push(row ? scheduleReview(row, false) : newReviewItem(key, item.skill, payload));
+      await run.run('review', async () => {
+        const existing = await backend.listReviewItems();
+        const byKey = new Map(existing.map((row) => [row.item_key, row]));
+        const updates: ReviewRow[] = [];
+        for (const item of test.questions) {
+          if (!isReviewable(item)) continue;
+          const answer = finalResults[item.id];
+          if (!answer) continue;
+          const correctAnswer = answer.fraction >= 1;
+          if (isReview) {
+            const row = byKey.get(item.id);
+            if (row) updates.push(scheduleReview(row, correctAnswer));
+          } else if (!correctAnswer) {
+            const key = `${test.id}:${item.id}`;
+            const row = byKey.get(key);
+            const passageForItem = item.passageId ? test.passages.find((entry) => entry.id === item.passageId) : undefined;
+            const payload = { question: item, passage: passageForItem };
+            updates.push(row ? scheduleReview(row, false) : newReviewItem(key, item.skill, payload));
+          }
         }
-      }
-      if (updates.length > 0) await backend.upsertReviewItems(updates);
+        if (updates.length > 0) await backend.upsertReviewItems(updates);
+      });
 
       const today = localDate();
-      await patchProfile({
-        xp: profile.xp + xp,
-        streak: nextStreak(profile.last_active, profile.streak, today),
-        last_active: today,
-      });
+      await run.run('profile', () =>
+        patchProfile({
+          xp: profile.xp + xp,
+          streak: nextStreak(profile.last_active, profile.streak, today),
+          last_active: today,
+        }),
+      );
 
       setSummary({
         kind: test.kind,
@@ -353,7 +378,7 @@ export function RunnerScreen() {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       const typing = target?.tagName === 'TEXTAREA' || target?.tagName === 'INPUT';
-      if (event.key === 'Enter' && !event.shiftKey && !(typing && target?.tagName === 'TEXTAREA')) {
+      if (event.key === 'Enter' && enterPressesPrimary(target?.tagName, event.shiftKey)) {
         primaryRef.current();
       }
       if (!typing && question?.type === 'choice' && !checked && /^[1-4]$/.test(event.key)) {

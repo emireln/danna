@@ -32,12 +32,14 @@ function BannerArt() {
 export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
   const navigate = useNavigate();
   const [index, setIndex] = useState(0);
+  // The carousel waits while the person points at it or works inside it, so a message can be read or used.
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (items.length < 2) return undefined;
+    if (items.length < 2 || paused) return undefined;
     const timer = window.setInterval(() => setIndex((value) => (value + 1) % items.length), 7000);
     return () => window.clearInterval(timer);
-  }, [items.length]);
+  }, [items.length, paused]);
 
   const current = items[Math.min(index, items.length - 1)];
   if (!current) return null;
@@ -48,6 +50,10 @@ export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
         key={current.id}
         className={`banner banner--${current.accent}`}
         aria-label="Announcement"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}

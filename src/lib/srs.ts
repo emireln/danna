@@ -47,3 +47,18 @@ export function scheduleReview(row: ReviewRow, correct: boolean, now = new Date(
 export function isReviewable(question: Question): boolean {
   return question.type !== 'writing' && question.type !== 'speaking';
 }
+
+/**
+ * A short line that tells the person which question is waiting: the prompt, or the sentence with its gaps
+ * shown, without giving the answer away. A broken item still gives a line.
+ */
+export function questionPreview(question: Question | undefined | null): string {
+  if (!question || typeof question !== 'object') return 'Review question';
+  if (question.type === 'cloze' && typeof question.text === 'string') {
+    const gapped = question.text.replace(/\{\{[^{}]+\}\}/g, '___').replace(/\s+/g, ' ').trim();
+    return gapped.length > 140 ? `${gapped.slice(0, 137)}…` : gapped;
+  }
+  if (question.type === 'reorder') return 'Put the words of this sentence in the right order.';
+  const prompt = typeof question.prompt === 'string' ? question.prompt.trim() : '';
+  return prompt || 'Review question';
+}

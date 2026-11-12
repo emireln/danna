@@ -39,13 +39,21 @@ export function TitleBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const anchor = useRef<HTMLDivElement>(null);
 
+  // The account menu closes on a press outside it, and on Escape.
   useEffect(() => {
     if (!menuOpen) return undefined;
     const onDown = (event: MouseEvent) => {
       if (!anchor.current?.contains(event.target as Node)) setMenuOpen(false);
     };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false);
+    };
     window.addEventListener('mousedown', onDown);
-    return () => window.removeEventListener('mousedown', onDown);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
   }, [menuOpen]);
 
   const showActions = status === 'in' && !location.pathname.startsWith('/play') && location.pathname !== '/setup';

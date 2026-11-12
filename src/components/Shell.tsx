@@ -37,9 +37,10 @@ export function AppShell() {
   const mainRef = useRef<HTMLElement>(null);
   const section = location.pathname.split('/')[1] || 'today';
 
+  // Every new page starts at its top, including a sub-page of the same section (a skill or a report).
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
-  }, [section]);
+  }, [location.pathname]);
 
   return (
     <div className="shell">

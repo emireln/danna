@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, ClipboardCheck, GraduationCap, Languages, PenLine, Plus, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, ClipboardCheck, GraduationCap, Languages, Plus, Sparkles, Star } from 'lucide-react';
 import { GenerateSheet } from '../components/GenerateSheet';
 import { BackLink, Empty, FeatureCard, Notice, PageHeader, ProgressBar, SectionTitle, Skeleton, Tabs } from '../components/ui';
 import { TOEFL_TEST_ID, levelTest, lessonsForSkill, toeflLessons, toeflTest, wordsTest } from '../content';
@@ -75,14 +75,13 @@ export function StudyScreen() {
       <div className="stack">
         {loadError && <Notice tone="error">{loadError}</Notice>}
 
-        <div className="grid-3">
+        <div className="grid-2">
           <FeatureCard
             icon={<Languages />}
             title="Language"
             meta="Grammar, word order and vocabulary"
             onClick={() => navigate('/study/language')}
           />
-          <FeatureCard icon={<PenLine />} title="Writing" meta="Essays, emails and reviews" onClick={() => navigate('/study/writing')} />
           <FeatureCard
             icon={<ClipboardCheck />}
             title="Level tests"

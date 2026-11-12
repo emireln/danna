@@ -98,6 +98,12 @@ export function SetupScreen() {
     setError(null);
     try {
       const firstTime = !profile.onboarding_done;
+      // The earlier levels are marked done before the setup is marked finished. If that fails, the setup is
+      // still open, so pressing the button again finishes the placement.
+      if (firstTime && backend) {
+        const rows = placementRows(shownLevel);
+        await Promise.all(rows.map((row) => backend.upsertLessonProgress(row)));
+      }
       await patchProfile({
         username: shownUsername,
         display_name: shownName.trim(),
@@ -108,10 +114,6 @@ export function SetupScreen() {
         level: shownLevel,
         onboarding_done: true,
       });
-      if (firstTime && backend) {
-        const rows = placementRows(shownLevel);
-        await Promise.all(rows.map((row) => backend.upsertLessonProgress(row)));
-      }
       notify('Your plan is ready.', 'ok');
       navigate('/', { replace: true });
     } catch (caught) {
