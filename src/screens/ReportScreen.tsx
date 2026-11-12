@@ -155,7 +155,7 @@ export function ReportScreen() {
   const cardOrder = SKILLS.filter((skill) => skills[skill] !== undefined).sort((a, b) => (skills[a] ?? 0) - (skills[b] ?? 0));
 
   return (
-    <div className="report">
+    <div>
       <section className="report-hero">
         <p className="eyebrow">{formatLongDate(attempt.created_at)}</p>
         <h1 className="report-hero__title">{isEstimate ? 'Score report' : attempt.title}</h1>

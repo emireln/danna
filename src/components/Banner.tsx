@@ -59,7 +59,7 @@ export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="banner__body" style={{ paddingBottom: items.length > 1 ? 30 : undefined }}>
+        <div className={`banner__body${items.length > 1 ? ' banner__body--dots' : ''}`}>
           <h2 className="banner__title">{current.title}</h2>
           {current.body && <p className="banner__text">{current.body.split('\n')[0].replace(/^- /, '')}</p>}
           {current.cta_label && current.cta_url && (

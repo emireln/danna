@@ -52,7 +52,7 @@ export function AppShell() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-            style={{ minHeight: '100%', height: '100%' }}
+            className="shell__page"
           >
             <Outlet />
           </motion.div>

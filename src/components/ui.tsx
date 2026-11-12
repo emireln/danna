@@ -34,7 +34,7 @@ export function Avatar({
   return (
     <span className={`avatar ${sizeClass}`} style={color && !src ? { background: color } : undefined} aria-hidden="true">
       {src ? (
-        <img src={src} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit', display: 'block' }} />
+        <img className="avatar__img" src={src} alt="" draggable={false} />
       ) : (
         initials(name)
       )}

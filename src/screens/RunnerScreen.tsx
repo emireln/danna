@@ -447,6 +447,8 @@ export function RunnerScreen() {
       : question && results[question.id] && !checked
         ? 'Answer saved.'
         : null;
+  const feedbackTone =
+    correctNow !== null && correctNow >= 1 ? 'good' : correctNow !== null && correctNow > 0 ? 'partial' : checked ? 'bad' : 'idle';
   const label = !question
     ? 'Finish'
     : results[question.id]
@@ -506,9 +508,7 @@ export function RunnerScreen() {
           {saveError ? (
             <span className="text-red">{saveError}</span>
           ) : feedbackText ? (
-            <span style={{ color: correctNow !== null && correctNow >= 1 ? 'var(--green)' : correctNow && correctNow > 0 ? '#b7791f' : checked ? 'var(--red)' : 'var(--ink-2)' }}>
-              {feedbackText}
-            </span>
+            <span className={`feedback-line--${feedbackTone}`}>{feedbackText}</span>
           ) : (
             <span className="muted small">{learn ? 'Answer, then check.' : 'Answer each question. Feedback comes at the end.'}</span>
           )}

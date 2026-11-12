@@ -112,12 +112,12 @@ function ChoiceBody({ question, state, reveal, locked, onChange }: SharedProps &
             <span className="option__key">{String.fromCharCode(65 + index)}</span>
             <span>{option}</span>
             {correct && (
-              <span className="option__mark" style={{ color: 'var(--green)' }}>
+              <span className="option__mark option__mark--correct">
                 <CircleCheck />
               </span>
             )}
             {wrong && (
-              <span className="option__mark" style={{ color: 'var(--red)' }}>
+              <span className="option__mark option__mark--wrong">
                 <XCircle />
               </span>
             )}
@@ -217,7 +217,7 @@ function ReorderBody({ question, state, reveal, locked, words, onChange }: Share
       </div>
       {reveal && (
         <p className="small muted">
-          Correct order: <strong style={{ color: 'var(--ink)' }}>{question.answer}</strong>
+          Correct order: <strong className="answer-key">{question.answer}</strong>
         </p>
       )}
     </div>
@@ -350,12 +350,10 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
   return (
     <div className="stack">
       <div className="row">
-        <span className="tone tone--good" style={{ fontVariantNumeric: 'tabular-nums' }}>
-          {formatClock(shown)}
-        </span>
+        <span className="tone tone--good tabular">{formatClock(shown)}</span>
         <span className="small muted">Limit {question.seconds} seconds</span>
       </div>
-      <div className="row" style={{ flexWrap: 'wrap' }}>
+      <div className="row row--wrap">
         {phase === 'idle' && (
           <button className="btn btn--primary" onClick={start} disabled={locked || graded}>
             <Mic /> {state.audioUrl ? 'Record again' : 'Start recording'}
@@ -372,7 +370,7 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
           </span>
         )}
       </div>
-      {state.audioUrl && <audio controls src={state.audioUrl} style={{ width: '100%', maxWidth: 420 }} aria-label="Your recording" />}
+      {state.audioUrl && <audio controls src={state.audioUrl} className="audio-player" aria-label="Your recording" />}
       {state.transcript && (
         <div className="feedback-card">
           <span className="small muted">Transcript</span>
@@ -434,7 +432,7 @@ function Grader({ state, locked, rubric, canAi, aiHint, runAi, onChange }: Grade
         <strong>Get feedback</strong>
         {!canAi && <span className="small muted">{aiHint}</span>}
       </div>
-      <div className="row" style={{ flexWrap: 'wrap' }}>
+      <div className="row row--wrap">
         {canAi && (
           <button className="btn btn--primary btn--sm" onClick={requestAi} disabled={busy || locked}>
             {busy ? <Spinner /> : <Sparkles />} Get AI feedback

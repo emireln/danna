@@ -27,6 +27,8 @@
 
     --teal: #13b5a4;
     --amber: #f5b400;
+    /* Amber for text on white: the bright amber is for stars and marks, this one reads as text. */
+    --amber-ink: #b7791f;
     --slate: #a4adbf;
     --red: #e5484d;
     --red-50: #fff2f2;

@@ -20,10 +20,81 @@
     margin-bottom: var(--space-6);
   }
 
+  /* The text column takes the free width, so the progress bar under a title spans the header like the page. */
   .page-header__main {
     display: grid;
     gap: var(--space-1);
+    flex: 1 1 auto;
+    width: 100%;
     min-width: 0;
+  }
+
+  /* ---------- Small pieces that screens used to style inline, so every one is styled in one place ---------- */
+  .brand-mark {
+    display: block;
+    flex: none;
+  }
+
+  .avatar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    display: block;
+  }
+
+  .splash-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .shell__page {
+    min-height: 100%;
+    height: 100%;
+  }
+
+  .feedback-line--good {
+    color: var(--green);
+  }
+
+  .feedback-line--partial {
+    color: var(--amber-ink);
+  }
+
+  .feedback-line--bad {
+    color: var(--red);
+  }
+
+  .feedback-line--idle {
+    color: var(--ink-2);
+  }
+
+  .option__mark--correct {
+    color: var(--green);
+  }
+
+  .option__mark--wrong {
+    color: var(--red);
+  }
+
+  .answer-key {
+    color: var(--ink);
+    font-weight: 650;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .audio-player {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .banner__body--dots {
+    padding-bottom: 30px;
   }
 
   .page-header__aside {
