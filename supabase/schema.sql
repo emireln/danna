@@ -1029,3 +1029,27 @@ select
   0,
   true
 where not exists (select 1 from public.announcements where version = '0.4.0');
+
+-- ---------------------------------------------------------------------------
+-- 12. Migration 0004: the 0.5.0 release note (the same SQL as supabase/migrations/0004_release_0_5_0.sql).
+-- ---------------------------------------------------------------------------
+insert into public.announcements (kind, title, body, version, accent, priority, published)
+select
+  'release_note',
+  'danna 0.5.0',
+  '- Portuguese (PT-BR) for the whole app. Choose the language in Settings' || E'
+' ||
+  '- Your day streak shows beside your picture, with a flame that grows at 10 and 50 days' || E'
+' ||
+  '- A report a friend shares opens as their report, with their name on it' || E'
+' ||
+  '- Profile pictures of your friends show up as soon as you are friends' || E'
+' ||
+  '- danna checks for new versions and installs them in the background' || E'
+' ||
+  '- The In use label in AI keys sits beside the key name',
+  '0.5.0',
+  'blue',
+  0,
+  true
+where not exists (select 1 from public.announcements where version = '0.5.0');

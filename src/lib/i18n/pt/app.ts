@@ -714,4 +714,14 @@ export const APP_PT: Record<string, string> = {
   'Downloading danna {version} in the background.': 'Baixando o danna {version} em segundo plano.',
   'danna {version} is ready. It installs when you close danna.': 'O danna {version} está pronto. Ele é instalado quando você fechar o danna.',
   'Restart to update': 'Reiniciar para atualizar',
+
+  // What's new: the 0.5.0 release note
+  'Portuguese (PT-BR) for the whole app. Choose the language in Settings': 'Português (PT-BR) em todo o app. Escolha o idioma em Configurações',
+  'Your day streak shows beside your picture, with a flame that grows at 10 and 50 days':
+    'Sua sequência de dias aparece ao lado da foto, com uma chama que cresce aos 10 e aos 50 dias',
+  'A report a friend shares opens as their report, with their name on it':
+    'Um relatório compartilhado por um amigo abre como o relatório dele, com o nome dele',
+  'Profile pictures of your friends show up as soon as you are friends': 'As fotos de perfil dos seus amigos aparecem assim que vocês são amigos',
+  'danna checks for new versions and installs them in the background': 'O danna verifica novas versões e as instala em segundo plano',
+  'The In use label in AI keys sits beside the key name': 'O aviso Em uso nas chaves de IA fica ao lado do nome da chave',
 };
