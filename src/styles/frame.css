@@ -89,6 +89,10 @@
     overflow: visible;
   }
 
+  .streak__days {
+    font-variant-numeric: tabular-nums;
+  }
+
   .streak__outer {
     fill: #f97316;
   }
