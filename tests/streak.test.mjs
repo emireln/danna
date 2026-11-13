@@ -34,3 +34,21 @@ test('the flame changes at 10 days and again at 50 days', async () => {
   assert.equal(streakTier(50), 'inferno');
   assert.equal(streakTier(365), 'inferno');
 });
+
+test('the flame shows its tier, the halo and sparks from 50 days, the day count, and nothing without a streak', async () => {
+  const { createElement } = await import('react');
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  const { StreakFire } = await server.ssrLoadModule('/src/components/StreakFire.tsx');
+  const html = (days) => renderToStaticMarkup(createElement(StreakFire, { days }));
+
+  assert.equal(html(0), '', 'no streak, no flame');
+  assert.match(html(3), /streak--ember/);
+  assert.match(html(12), /streak--blaze/);
+  assert.doesNotMatch(html(12), /streak__halo/, 'the halo is for the inferno only');
+  assert.match(html(55), /streak--inferno/);
+  assert.match(html(55), /streak__halo/);
+  assert.match(html(55), /streak__sparks/);
+  assert.match(html(1), /aria-label="1 day streak"/);
+  assert.match(html(12), /aria-label="12 days streak"/);
+  assert.match(html(12), />12</, 'the count is shown beside the flame');
+});
