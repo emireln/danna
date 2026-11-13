@@ -128,6 +128,54 @@ export function wordsTest(level: Level): TestDef {
   };
 }
 
+// Mock tests of two skills together: reading with listening, and writing with speaking. Each draws on the
+// lessons of one level, or of the TOEFL track, in turns, like the level tests.
+const SKILL_PAIRS = [
+  { key: 'reading-listening', skills: ['reading', 'listening'], title: 'reading and listening mock', subtitle: 'Questions from the reading and listening lessons' },
+  { key: 'writing-speaking', skills: ['writing', 'speaking'], title: 'writing and speaking mock', subtitle: 'Tasks from the writing and speaking lessons' },
+] as const;
+
+function pairTest(id: string, title: string, subtitle: string, lessons: LessonDef[]): TestDef {
+  const { questions, passages } = mixed(lessons, 20);
+  return {
+    id,
+    title,
+    subtitle,
+    kind: 'mock',
+    skill: 'mixed',
+    minutes: Math.max(10, Math.round(questions.length * 0.8)),
+    passages,
+    questions,
+  };
+}
+
+/** The two-skill mock tests of one level: reading with listening, and writing with speaking. */
+export function levelSkillTests(level: Level): TestDef[] {
+  return SKILL_PAIRS.map((pair) => {
+    const lessons = PATH.filter(
+      (item) => !item.checkpoint && item.unit.level === level && (pair.skills as readonly string[]).includes(item.lesson.skill),
+    ).map((item) => item.lesson);
+    return pairTest(`mock-${level.toLowerCase()}-${pair.key}`, `${level} ${pair.title}`, pair.subtitle, lessons);
+  });
+}
+
+/** The two-skill mock tests of the TOEFL warm-up track. */
+export function toeflSkillTests(): TestDef[] {
+  return SKILL_PAIRS.map((pair) =>
+    pairTest(
+      `mock-toefl-${pair.key}`,
+      `TOEFL ${pair.title}`,
+      pair.subtitle,
+      TOEFL_LESSONS.filter((lesson) => (pair.skills as readonly string[]).includes(lesson.skill)),
+    ),
+  );
+}
+
+/** Every two-skill mock test: for each level, and for the TOEFL track. */
+export function skillTests(): TestDef[] {
+  return [...LEVELS.flatMap((level) => levelSkillTests(level)), ...toeflSkillTests()];
+}
+
 /** Resolves any bundled test id. Returns null for ids that are stored in Supabase. */
 export function bundledTest(id: string): TestDef | null {
   if (id === DIAGNOSTIC_ID) return diagnosticTest();
@@ -136,6 +184,8 @@ export function bundledTest(id: string): TestDef | null {
   if (level) return levelTest(level);
   const words = LEVELS.find((item) => wordsTestId(item) === id);
   if (words) return wordsTest(words);
+  const pair = skillTests().find((test) => test.id === id);
+  if (pair) return pair;
   const item = PATH.find((entry) => entry.lesson.id === id);
   if (item) return lessonTest(item.lesson, item.checkpoint);
   const toefl = TOEFL_LESSONS.find((lesson) => lesson.id === id);

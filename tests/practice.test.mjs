@@ -31,17 +31,24 @@ const tracks = () => [
   { units: roadmap.TOEFL_UNITS, minimumPassage: () => 80, minimumTranscript: 60 },
 ];
 
-test('every unit, on both tracks, has grammar, reading and listening practice in that order, before its vocabulary', () => {
+test('every unit, on both tracks, has its practice in order before its vocabulary, which comes last', () => {
+  // Grammar, reading, listening, then the extra reading, listening, writing and speaking, then the vocabulary.
+  const order = ['grammar', 'reading', 'listening', 'reading-2', 'listening-2', 'writing', 'speaking', 'words'];
+  const skills = ['language', 'reading', 'listening', 'reading', 'listening', 'writing', 'speaking', 'language'];
   for (const unit of [...roadmap.UNITS, ...roadmap.TOEFL_UNITS]) {
     const ids = unit.lessons.map((lesson) => lesson.id);
     const start = ids.indexOf(`${unit.id}-grammar`);
     assert.ok(start > 0, `${unit.id} has its grammar practice after its own lessons`);
-    assert.equal(ids[start + 1], `${unit.id}-reading`, `${unit.id}: reading follows grammar`);
-    assert.equal(ids[start + 2], `${unit.id}-listening`, `${unit.id}: listening follows reading`);
-    assert.equal(ids[start + 3], `${unit.id}-words`, `${unit.id}: vocabulary comes last`);
-    assert.equal(unit.lessons[start].skill, 'language');
-    assert.equal(unit.lessons[start + 1].skill, 'reading');
-    assert.equal(unit.lessons[start + 2].skill, 'listening');
+    assert.deepEqual(
+      ids.slice(start, start + order.length),
+      order.map((part) => `${unit.id}-${part}`),
+      `${unit.id}: the practice is in order, and the vocabulary comes last`,
+    );
+    assert.deepEqual(
+      unit.lessons.slice(start, start + order.length).map((lesson) => lesson.skill),
+      skills,
+      `${unit.id}: each lesson has the skill of its part`,
+    );
   }
 });
 

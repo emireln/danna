@@ -122,13 +122,20 @@ function learnerTexts(value, found = [], seen = new Set()) {
 }
 
 test('the lessons, tests, passages and announcements read in Portuguese', async () => {
-  const { UNITS, TOEFL_UNITS, diagnosticTest, levelTest, toeflTest, wordsTest } = await server.ssrLoadModule('/src/content/index.ts');
+  const { UNITS, TOEFL_UNITS, diagnosticTest, levelSkillTests, levelTest, toeflSkillTests, toeflTest, wordsTest } = await server.ssrLoadModule(
+    '/src/content/index.ts',
+  );
   const { LOCAL_ANNOUNCEMENTS } = await server.ssrLoadModule('/src/content/announcements.ts');
   const levels = ['A1', 'A2', 'B1', 'B2', 'C1'];
   const texts = [
     ...learnerTexts(UNITS),
     ...learnerTexts(TOEFL_UNITS),
-    ...learnerTexts([diagnosticTest(), toeflTest(), ...levels.flatMap((level) => [levelTest(level), wordsTest(level)])]),
+    ...learnerTexts([
+      diagnosticTest(),
+      toeflTest(),
+      ...toeflSkillTests(),
+      ...levels.flatMap((level) => [levelTest(level), wordsTest(level), ...levelSkillTests(level)]),
+    ]),
   ];
   for (const row of LOCAL_ANNOUNCEMENTS) {
     texts.push(row.title);

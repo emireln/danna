@@ -9,6 +9,7 @@ import { C1_UNITS } from './units/c1';
 import { TOEFL_UNITS as TOEFL_TRACK } from './units/toefl';
 import { WORD_LESSONS } from './units/words';
 import { practiceFor } from './units/practice';
+import { extraFor } from './units/extra';
 
 export interface LessonDef {
   id: string;
@@ -34,11 +35,19 @@ export interface UnitDef {
 
 const numbered = (units: UnitDef[]): UnitDef[] => units.map((unit, index) => ({ ...unit, number: index + 1 }));
 
-/** Each unit ends with its practice lessons (units/practice*.ts), then its vocabulary (units/words.ts). */
+/**
+ * Each unit ends with its practice lessons (units/practice*.ts), its extra lessons (units/extra*.ts), and then
+ * its vocabulary (units/words.ts).
+ */
 const complete = (units: UnitDef[]): UnitDef[] =>
   units.map((unit) => ({
     ...unit,
-    lessons: [...unit.lessons, ...practiceFor(unit.id), ...(WORD_LESSONS[unit.id] ? [WORD_LESSONS[unit.id]] : [])],
+    lessons: [
+      ...unit.lessons,
+      ...practiceFor(unit.id),
+      ...extraFor(unit.id),
+      ...(WORD_LESSONS[unit.id] ? [WORD_LESSONS[unit.id]] : []),
+    ],
   }));
 
 /** General English, A1 to C1, in order. */
