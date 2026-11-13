@@ -50,7 +50,7 @@ export function WelcomeScreen() {
                 transition={{ duration: 0.25 }}
               >
                 <div className="welcome__brand">
-                  <BrandMark size={56} />
+                  <BrandMark size={48} />
                   <Wordmark className="wordmark--xl" />
                 </div>
                 <h1 className="welcome__title">{t('Learn English, one small step at a time.')}</h1>

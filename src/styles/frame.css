@@ -354,11 +354,12 @@
     gap: 26px;
   }
 
+  /* The mark sits beside the wordmark, on one line. */
   .welcome__brand {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
   }
 
   .welcome__title {
