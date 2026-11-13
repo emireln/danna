@@ -87,6 +87,14 @@ export interface NewLibraryFile {
   pages: number | null;
 }
 
+/** New text for a TXT or Markdown file in the library. The file keeps its name, kind and place. */
+export interface LibraryFileUpdate {
+  /** The whole text, as the file's bytes. */
+  blob: Blob;
+  /** The text the tutor reads: the start of the text. */
+  extracted_text: string;
+}
+
 export interface NewLibraryLink {
   id?: string;
   created_at?: string;
@@ -155,6 +163,8 @@ export interface DataBackend {
   /** The text read from the file. The tutor uses it. */
   getLibraryText(id: string): Promise<string>;
   addLibraryFile(input: NewLibraryFile): Promise<LibraryFileRow>;
+  /** Saves new text for a TXT or Markdown file. A PDF keeps its own pages, so it cannot be changed this way. */
+  updateLibraryFile(id: string, input: LibraryFileUpdate): Promise<LibraryFileRow>;
   deleteLibraryFile(id: string): Promise<void>;
 
   listLibraryLinks(): Promise<LibraryLinkRow[]>;

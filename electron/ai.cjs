@@ -29,7 +29,8 @@ function detectCandidates(rawKey) {
   const key = String(rawKey || '').trim();
   if (key.startsWith('sk-ant-')) return ['anthropic'];
   if (key.startsWith('sk-or-')) return ['openrouter'];
-  if (/^AIza[\w-]{30,}$/.test(key)) return ['gemini'];
+  // Google issues two key formats, "AIza..." and "AQ...". The Gemini API accepts both.
+  if (/^(AIza[\w-]{30,}|AQ\.[\w-]{30,})$/.test(key)) return ['gemini'];
   if (key.startsWith('sk-proj-') || key.startsWith('sk-svcacct-') || key.startsWith('sk-admin-')) return ['openai'];
   if (key.startsWith('sk-')) return ['openai', 'deepseek'];
   return [];
@@ -80,6 +81,7 @@ function quoteDetail(message) {
   const clean = String(message || '')
     .replace(/sk-[\w-]{8,}/g, 'sk-…')
     .replace(/AIza[\w-]{20,}/g, 'AIza…')
+    .replace(/AQ\.[\w-]{20,}/g, 'AQ.…')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 180);

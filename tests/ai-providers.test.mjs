@@ -30,6 +30,12 @@ test('a key starting with sk- could be OpenAI or DeepSeek; other key formats are
   assert.deepEqual(ai.detectCandidates('not a key'), []);
 });
 
+test('Google Gemini keys: both formats are recognised, the AIza one and the AQ. one', () => {
+  assert.deepEqual(ai.detectCandidates('AIzaTestKeyTestKeyTestKeyTestKeyTest'), ['gemini']);
+  assert.deepEqual(ai.detectCandidates('AQ.TestKeyTestKeyTestKeyTestKeyTest'), ['gemini']);
+  assert.deepEqual(ai.detectCandidates('AQ.short'), []);
+});
+
 test('DeepSeek: the newest model is ranked first, then the older names', () => {
   const ids = ['deepseek-chat', 'deepseek-v4-pro', 'deepseek-flash', 'deepseek-reasoner', 'deepseek-v4-flash'];
   const ranked = [...ids].sort((a, b) => ai.deepseekRank(b) - ai.deepseekRank(a));

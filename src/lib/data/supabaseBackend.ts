@@ -17,7 +17,7 @@ import type {
   LibraryKind,
   LibraryLinkRow,
 } from '../types';
-import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
+import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
 import { userError } from '../bridge';
 import { cleanAttachments, cleanChatTitle } from './rules';
@@ -344,6 +344,33 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       } | null;
       unwrap(await sb.from('library_files').delete().eq('id', fileId));
       if (row) await sb.storage.from(LIBRARY_BUCKET).remove([row.storage_path]);
+    },
+
+    async updateLibraryFile(fileId: string, input: LibraryFileUpdate) {
+      const row = unwrap(await sb.from('library_files').select('kind,storage_path').eq('id', fileId).maybeSingle()) as {
+        kind: LibraryKind;
+        storage_path: string;
+      } | null;
+      if (!row) throw new Error('That file is no longer in your library.');
+      if (row.kind === 'pdf') throw new Error('A PDF keeps its pages, so its text is saved as a new file.');
+      if (input.blob.size === 0) throw new Error('The text is empty. Write something before you save.');
+      // The bytes are replaced in the owner's folder, then the row is updated to match them.
+      const { error: uploadError } = await sb.storage
+        .from(LIBRARY_BUCKET)
+        .upload(row.storage_path, input.blob, { upsert: true, contentType: KIND_MIME[row.kind] });
+      if (uploadError) throw new Error(uploadError.message);
+      const result = await sb
+        .from('library_files')
+        .update({
+          size_bytes: input.blob.size,
+          extracted_text: input.extracted_text.slice(0, 400000),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', fileId)
+        .select(FILE_COLUMNS)
+        .single();
+      if (result.error) throw new Error(result.error.message);
+      return result.data as LibraryFileRow;
     },
 
     async listLibraryLinks() {

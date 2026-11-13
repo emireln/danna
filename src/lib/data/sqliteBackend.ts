@@ -3,7 +3,7 @@
 import type { DannaBridge } from '../bridge';
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
 import type { AttemptKind, AttemptRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorChatRow, TutorRow } from '../types';
-import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch } from './backend';
+import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch } from './backend';
 
 const ONLINE_ONLY = 'This is available with an online account.';
 
@@ -65,6 +65,10 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
           data,
         },
       ]);
+    },
+    updateLibraryFile: async (id: string, input: LibraryFileUpdate) => {
+      const data = await input.blob.arrayBuffer();
+      return call<LibraryFileRow>('updateLibraryFile', [id, { data, extracted_text: input.extracted_text }]);
     },
     deleteLibraryFile: (id: string) => call<void>('deleteLibraryFile', [id]),
     listLibraryLinks: () => call<LibraryLinkRow[]>('listLibraryLinks'),

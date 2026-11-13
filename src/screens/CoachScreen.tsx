@@ -9,7 +9,7 @@ import { Notice, PageHeader, Skeleton, Spinner } from '../components/ui';
 import { readAttachment } from '../lib/attachments';
 import { chatHistory, coachSystem } from '../lib/ai';
 import { errorText } from '../lib/bridge';
-import { MAX_FILES, TITLE_SYSTEM, attachmentsOf, cleanTitle, fallbackTitle, type PendingFile } from '../lib/coach';
+import { MAX_FILES, STARTERS, STARTER_COUNT, TITLE_SYSTEM, attachmentsOf, cleanTitle, fallbackTitle, pickStarters, type PendingFile } from '../lib/coach';
 import { useT } from '../lib/i18n/react';
 import { indexFor, retrieve, type LibraryDocument } from '../lib/retrieval';
 import type { ChatImage, LibraryFileRow, TutorChatRow, TutorRow } from '../lib/types';
@@ -17,13 +17,6 @@ import { useAI } from '../state/ai';
 import { useAppData } from '../state/appData';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
-
-const SUGGESTIONS = [
-  'Explain my weakest skill and what to do this week',
-  'Quiz me on present perfect vs past simple',
-  'Correct this sentence and explain the rule: She have went to school yesterday.',
-  'Plan my next 15 minutes of study',
-];
 
 const ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,text/markdown,.md,.markdown,.txt,.pdf';
 // The text of the files sent in a chat is kept for its follow-up questions, up to this many files.
@@ -55,6 +48,8 @@ export function CoachScreen() {
   const [historyMatches, setHistoryMatches] = useState<Set<string> | null>(null);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [libraryFiles, setLibraryFiles] = useState<LibraryFileRow[]>([]);
+  // The questions offered to start a chat are picked at random, and picked again for each new chat.
+  const [starters, setStarters] = useState(() => pickStarters(STARTERS, STARTER_COUNT));
 
   const listRef = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -301,6 +296,7 @@ export function CoachScreen() {
   const newChat = () => {
     setHistoryOpen(false);
     setPending([]);
+    setStarters(pickStarters(STARTERS, STARTER_COUNT));
     void openChat(null);
   };
 
@@ -413,7 +409,7 @@ export function CoachScreen() {
               <div className="stack">
                 <p className="muted">{t('Ask anything about English. Try one of these to start.')}</p>
                 <div className="suggest">
-                  {SUGGESTIONS.map((suggestion) => (
+                  {starters.map((suggestion) => (
                     <button key={suggestion} onClick={() => send(t(suggestion))} disabled={sending}>
                       {t(suggestion)}
                     </button>

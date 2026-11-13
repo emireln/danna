@@ -713,6 +713,22 @@ function insertLibraryFile(input = {}) {
   return db().prepare(`SELECT ${LIBRARY_FILE_FIELDS} FROM library_files WHERE id = ?`).get(id);
 }
 
+// Saves new text for a TXT or Markdown file: its bytes and the text the tutor reads are replaced, and its name and place stay.
+function updateLibraryFile(id, input = {}) {
+  const fileId = String(id);
+  const current = db().prepare('SELECT kind FROM library_files WHERE id = ?').get(fileId);
+  if (!current) throw userError('That file is no longer in your library.');
+  if (current.kind === 'pdf') throw userError('A PDF keeps its pages, so its text is saved as a new file.');
+  const bytes = toBuffer(input.data);
+  if (!bytes || bytes.length > LIBRARY_FILE_MAX_BYTES) throw userError('That file is too large. Choose one under 20 MB.');
+  // An empty file cannot be stored (the database keeps no empty bytes), so the text stays as it was.
+  if (bytes.length === 0) throw userError('The text is empty. Write something before you save.');
+  db()
+    .prepare('UPDATE library_files SET data = ?, size_bytes = ?, extracted_text = ?, updated_at = ? WHERE id = ?')
+    .run(bytes, bytes.length, String(input.extracted_text || '').slice(0, LIBRARY_TEXT_MAX), now(), fileId);
+  return db().prepare(`SELECT ${LIBRARY_FILE_FIELDS} FROM library_files WHERE id = ?`).get(fileId);
+}
+
 function deleteLibraryFile(id) {
   db().prepare('DELETE FROM library_files WHERE id = ?').run(String(id));
   return true;
@@ -795,6 +811,7 @@ const METHODS = {
   getLibraryFileData,
   getLibraryText,
   insertLibraryFile,
+  updateLibraryFile,
   deleteLibraryFile,
   listLibraryLinks,
   insertLibraryLink,

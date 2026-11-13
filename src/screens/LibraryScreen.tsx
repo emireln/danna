@@ -443,7 +443,7 @@ export function LibraryScreen() {
 
       {tab === 'ask' && <LibraryCoach files={files ?? []} selected={selected} onToggle={toggleSelected} />}
 
-      {viewing && <FileViewer file={viewing} onClose={() => setViewing(null)} />}
+      {viewing && <FileViewer file={viewing} onClose={() => setViewing(null)} onChanged={() => void load()} />}
 
       {fileToRemove && (
         <ConfirmSheet

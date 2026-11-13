@@ -41,6 +41,8 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
   const [thread, setThread] = useState<Turn[]>([]);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // The list of files is folded away by default, so the conversation has the room.
+  const [choosing, setChoosing] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
 
   const chosen = files.filter((file) => selected.includes(file.id));
@@ -69,10 +71,13 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
     try {
       const docs = await Promise.all(
         searched.map(async (file) => {
-          let body = texts.get(file.id);
+          // The key holds the time of the last change, so a file that was edited is read again.
+          const key = `${file.id}@${file.updated_at}`;
+          let body = texts.get(key);
           if (body === undefined) {
             body = await backend.getLibraryText(file.id);
-            texts.set(file.id, body);
+            for (const old of [...texts.keys()]) if (old.startsWith(`${file.id}@`)) texts.delete(old);
+            texts.set(key, body);
           }
           return { id: file.id, name: file.name, text: body };
         }),
@@ -121,25 +126,32 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
         </Notice>
       )}
 
-      <div className="card library-coach__files">
-        <span className="field__label">{t('Files the coach reads')}</span>
-        {files.length === 0 ? (
-          <span className="small muted">{t('Add a file in the Files tab first.')}</span>
-        ) : (
-          <>
-            <div className="library-filters">
-              {files.map((file) => (
-                <button key={file.id} className="chip-toggle" aria-pressed={selected.includes(file.id)} onClick={() => onToggle(file.id)}>
-                  {file.name}
-                </button>
-              ))}
-            </div>
-            <span className="small muted">
+      <div className="coach-reads">
+        <div className="coach-reads__row">
+          <span className="coach-reads__label">{t('Reads')}</span>
+          {files.length === 0 ? (
+            <span className="coach-reads__files muted">{t('Add a file in the Files tab first.')}</span>
+          ) : (
+            <span className="coach-reads__files" title={chosen.length > 0 ? chosen.map((file) => file.name).join(', ') : undefined}>
               {chosen.length > 0
-                ? tn('Searching one file.', 'Searching {count} files.', chosen.length, { count: chosen.length })
-                : t('No file is chosen, so the coach searches all of your files.')}
+                ? chosen.map((file) => file.name).join(', ')
+                : tn('All {count} file', 'All {count} files', files.length, { count: files.length })}
             </span>
-          </>
+          )}
+          {files.length > 0 && (
+            <button className="btn btn--text btn--sm" type="button" aria-expanded={choosing} onClick={() => setChoosing((open) => !open)}>
+              {t('Choose files')}
+            </button>
+          )}
+        </div>
+        {choosing && files.length > 0 && (
+          <div className="library-filters coach-reads__picker">
+            {files.map((file) => (
+              <button key={file.id} className="chip-toggle" aria-pressed={selected.includes(file.id)} onClick={() => onToggle(file.id)}>
+                {file.name}
+              </button>
+            ))}
+          </div>
         )}
       </div>
 

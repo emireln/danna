@@ -1,5 +1,5 @@
-// PDF support for the library: the text the tutor reads, and the pages drawn in the viewer.
-// pdf.js is loaded the first time a PDF is used, so the rest of the app stays light.
+// PDF support for the library: the text the tutor reads, the text of each page for Find, and the pages drawn in
+// the viewer. pdf.js is loaded the first time a PDF is used, so the rest of the app stays light.
 import { LIBRARY_TEXT_LIMIT } from './library';
 
 type PdfJs = typeof import('pdfjs-dist');
@@ -15,12 +15,25 @@ function loadPdfJs(): Promise<PdfJs> {
   return loader;
 }
 
-/** Opens a PDF. close() releases it when the caller is done. */
+/** Opens a PDF. The bytes are copied, so the caller can open the same file again. close() releases it when the caller is done. */
 async function openPdf(bytes: ArrayBuffer) {
   const pdfjs = await loadPdfJs();
-  const task = pdfjs.getDocument({ data: new Uint8Array(bytes) });
+  const task = pdfjs.getDocument({ data: new Uint8Array(bytes.slice(0)) });
   const pdf = await task.promise;
   return { pdf, close: () => task.destroy() };
+}
+
+/** The text of one page, with its words in reading order. Scanned pages have no text. */
+async function textOfPage(pdf: Awaited<ReturnType<typeof openPdf>>['pdf'], number: number): Promise<string> {
+  const page = await pdf.getPage(number);
+  const content = await page.getTextContent();
+  const line = content.items
+    .map((item) => ('str' in item ? `${item.str}${item.hasEOL ? '\n' : ' '}` : ''))
+    .join('')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+  page.cleanup();
+  return line;
 }
 
 /** The text of a PDF, page by page, and its page count. Scanned pages have no text to read. */
@@ -29,17 +42,24 @@ export async function readPdf(bytes: ArrayBuffer): Promise<{ text: string; pages
   try {
     const parts: string[] = [];
     for (let number = 1; number <= pdf.numPages; number += 1) {
-      const page = await pdf.getPage(number);
-      const content = await page.getTextContent();
-      const line = content.items
-        .map((item) => ('str' in item ? `${item.str}${item.hasEOL ? '\n' : ' '}` : ''))
-        .join('')
-        .replace(/[ \t]+/g, ' ')
-        .trim();
+      const line = await textOfPage(pdf, number);
       if (line) parts.push(line);
-      page.cleanup();
     }
     return { text: parts.join('\n\n').slice(0, LIBRARY_TEXT_LIMIT), pages: pdf.numPages };
+  } finally {
+    await close();
+  }
+}
+
+/** The text of each page, in order, for the first pages the viewer draws. Find searches these. */
+export async function pdfPageTexts(bytes: ArrayBuffer, maxPages = 60): Promise<string[]> {
+  const { pdf, close } = await openPdf(bytes);
+  try {
+    const texts: string[] = [];
+    for (let number = 1; number <= Math.min(pdf.numPages, maxPages); number += 1) {
+      texts.push(await textOfPage(pdf, number));
+    }
+    return texts;
   } finally {
     await close();
   }

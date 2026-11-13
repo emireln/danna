@@ -251,6 +251,9 @@ async function scenario(backend) {
     }),
   );
 
+  await step('a text file that is not in the library cannot be saved', () =>
+    backend.updateLibraryFile('missing', { blob: new Blob(['text']), extracted_text: 'text' }),
+  );
   await step('a link must be https', () => backend.addLibraryLink({ url: 'http://example.com', title: '', platform: 'other', category: 'General', note: '' }));
   await step('a link is saved', async () => {
     await backend.addLibraryLink({

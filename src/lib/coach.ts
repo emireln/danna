@@ -87,3 +87,46 @@ export type PendingFile = PendingPicture | PendingDocument | PendingLibrary;
 export function attachmentsOf(files: PendingFile[]): TutorAttachment[] {
   return files.map((file) => ({ name: file.name, kind: file.kind, size: file.size }));
 }
+
+/** Questions the coach offers to start a chat. Some are picked at random each time, so every new chat starts differently. */
+export const STARTERS: readonly string[] = [
+  'Explain my weakest skill and what to do this week',
+  'Quiz me on present perfect vs past simple',
+  'Correct this sentence and explain the rule: She have went to school yesterday.',
+  'Plan my next 15 minutes of study',
+  'Give me five phrasal verbs for everyday conversation, with an example for each',
+  'Explain when to use make and do, with examples',
+  'Quiz me on prepositions of time: in, on and at',
+  'Teach me five idioms I can use at work, and how to use them',
+  'Help me practise the past continuous with a short story',
+  'Explain the difference between much and many, with examples',
+  'Give me a short text with three mistakes, and let me find them',
+  'Give me a short reading about travel, then three questions about it',
+  'Explain the first conditional with two example sentences',
+  'Quiz me on modal verbs: can, could, must and should',
+  'Practise small talk with me. Start with a question about my day.',
+  'Teach me how to start and end a formal email in English',
+  'Give me ten food words, with a sentence for each',
+  'Explain the difference between since and for, with examples',
+  'Help me describe my home with there is and there are',
+  'Give me one listening tip I can practise for ten minutes a day',
+  'Explain when to use a and an, with examples',
+  'Write a short dialogue in a restaurant, then quiz me on its words',
+  'What are the most common mistakes Portuguese speakers make in English?',
+  'Give me a TOEFL-style question about the main idea of a short passage',
+  'Teach me five words for feelings, with examples',
+  'Explain the difference between say, tell and speak',
+];
+
+/** How many starter questions a new chat shows. */
+export const STARTER_COUNT = 4;
+
+/** A random pick of `count` items from the pool, in a random order. The pool itself is not changed. */
+export function pickStarters<T>(pool: readonly T[], count: number, random: () => number = Math.random): T[] {
+  const copy = [...pool];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(random() * (index + 1));
+    [copy[index], copy[swap]] = [copy[swap], copy[index]];
+  }
+  return copy.slice(0, Math.max(0, count));
+}

@@ -621,10 +621,6 @@ export const APP_PT: Record<string, string> = {
   'The coach runs in the danna desktop app, where your AI key is kept.':
     'O coach funciona no app de desktop do danna, onde a sua chave de IA fica guardada.',
   'Add an AI key to use the coach.': 'Adicione uma chave de IA para usar o coach.',
-  'Files the coach reads': 'Arquivos que o coach lê',
-  'Searching one file.': 'Consultando um arquivo.',
-  'Searching {count} files.': 'Consultando {count} arquivos.',
-  'No file is chosen, so the coach searches all of your files.': 'Nenhum arquivo escolhido: o coach consulta todos os seus arquivos.',
   'Ask a question about your files. Answers come only from them, and each one names its source.':
     'Pergunte sobre os seus arquivos. As respostas vêm só deles, e cada uma indica a fonte.',
   'From: {files}': 'De: {files}',
@@ -633,6 +629,59 @@ export const APP_PT: Record<string, string> = {
   'Send question': 'Enviar pergunta',
   'This file is not available on this device yet.': 'Este arquivo ainda não está disponível neste dispositivo.',
   'This PDF could not be shown. The coach can still read its text.': 'Não foi possível mostrar este PDF. O coach ainda consegue ler o texto dele.',
+  'Reads': 'Consulta',
+  'All {count} file': 'Todos os {count} arquivo',
+  'All {count} files': 'Todos os {count} arquivos',
+  'Choose files': 'Escolher arquivos',
+
+  // The file viewer: editing and Find
+  'Edit': 'Editar',
+  'Done editing': 'Concluir edição',
+  'Editor mode': 'Modo editor',
+  'Save as new file': 'Salvar como novo arquivo',
+  'Saved as {name} in your library.': 'Salvo como {name} na sua biblioteca.',
+  '{name} is saved.': '{name} foi salvo.',
+  'This text is larger than 20 MB, so it cannot be saved.': 'Este texto é maior que 20 MB, por isso não pode ser salvo.',
+  'The text is empty. Write something before you save.': 'O texto está vazio. Escreva algo antes de salvar.',
+  'A PDF keeps its pages as they are. Saving makes a Markdown file with this text in your library.':
+    'Um PDF mantém as suas páginas como estão. Salvar cria um arquivo Markdown com este texto na sua biblioteca.',
+  'Text of {name}': 'Texto de {name}',
+  'Discard your changes?': 'Descartar as alterações?',
+  'Discard changes': 'Descartar alterações',
+  'The changes to {name} are not saved yet. They will be lost.': 'As alterações em {name} ainda não foram salvas. Elas serão perdidas.',
+  'Find': 'Localizar',
+  'Find in this file': 'Localizar neste arquivo',
+  'Previous match': 'Resultado anterior',
+  'Next match': 'Próximo resultado',
+  'Match case': 'Diferenciar maiúsculas',
+  'No matches': 'Nenhum resultado',
+  '{index} of {count}': '{index} de {count}',
+  '{index} of {count} · page {page}': '{index} de {count} · página {page}',
+
+  // The coach's starter questions
+  'Give me five phrasal verbs for everyday conversation, with an example for each':
+    'Me dê cinco phrasal verbs para conversas do dia a dia, com um exemplo de cada',
+  'Explain when to use make and do, with examples': 'Explique quando usar make e do, com exemplos',
+  'Quiz me on prepositions of time: in, on and at': 'Me faça um quiz sobre preposições de tempo: in, on e at',
+  'Teach me five idioms I can use at work, and how to use them': 'Me ensine cinco expressões idiomáticas para usar no trabalho, e como usá-las',
+  'Help me practise the past continuous with a short story': 'Me ajude a praticar o past continuous com uma historinha curta',
+  'Explain the difference between much and many, with examples': 'Explique a diferença entre much e many, com exemplos',
+  'Give me a short text with three mistakes, and let me find them': 'Me dê um texto curto com três erros, e deixe que eu os encontre',
+  'Give me a short reading about travel, then three questions about it': 'Me dê um texto curto sobre viagens, depois três perguntas sobre ele',
+  'Explain the first conditional with two example sentences': 'Explique o first conditional com duas frases de exemplo',
+  'Quiz me on modal verbs: can, could, must and should': 'Me faça um quiz sobre verbos modais: can, could, must e should',
+  'Practise small talk with me. Start with a question about my day.': 'Vamos praticar small talk. Comece com uma pergunta sobre o meu dia.',
+  'Teach me how to start and end a formal email in English': 'Me ensine a começar e a terminar um e-mail formal em inglês',
+  'Give me ten food words, with a sentence for each': 'Me dê dez palavras sobre comida, com uma frase para cada uma',
+  'Explain the difference between since and for, with examples': 'Explique a diferença entre since e for, com exemplos',
+  'Help me describe my home with there is and there are': 'Me ajude a descrever a minha casa com there is e there are',
+  'Give me one listening tip I can practise for ten minutes a day': 'Me dê uma dica de listening que eu possa praticar por dez minutos por dia',
+  'Explain when to use a and an, with examples': 'Explique quando usar a e an, com exemplos',
+  'Write a short dialogue in a restaurant, then quiz me on its words': 'Escreva um diálogo curto em um restaurante e depois me faça um quiz sobre as palavras dele',
+  'What are the most common mistakes Portuguese speakers make in English?': 'Quais são os erros mais comuns que falantes de português cometem em inglês?',
+  'Give me a TOEFL-style question about the main idea of a short passage': 'Me dê uma questão no estilo TOEFL sobre a ideia principal de um texto curto',
+  'Teach me five words for feelings, with examples': 'Me ensine cinco palavras para sentimentos, com exemplos',
+  'Explain the difference between say, tell and speak': 'Explique a diferença entre say, tell e speak',
 
   // Pickers and calendar
   'Choose': 'Escolher',
@@ -781,4 +830,16 @@ export const APP_PT: Record<string, string> = {
   'Practice sets you make with AI stay saved, on this device or in your account':
     'Os conjuntos de prática que você cria com a IA ficam salvos, neste aparelho ou na sua conta',
   'The danna logo sits beside its name on the first screen': 'O logo do danna fica ao lado do nome na primeira tela',
+
+  // The 0.7.0 release note (What’s new)
+  'Edit your TXT and Markdown files in My library, and save the changes': 'Edite os seus arquivos TXT e Markdown em Minha biblioteca, e salve as alterações',
+  'A PDF keeps its pages: its text is saved as a new Markdown file, with the PDF as it was':
+    'Um PDF mantém as suas páginas: o texto dele é salvo como um novo arquivo Markdown, e o PDF continua como estava',
+  'Find text in a file, like Notepad: Ctrl+F, then Enter for the next match':
+    'Busque um texto em um arquivo, como no Bloco de Notas: Ctrl+F, e depois Enter para o próximo resultado',
+  'The day streak sits beside your profile picture': 'A sequência de dias fica ao lado da sua foto de perfil',
+  'The coach offers other starter questions each time you start a chat':
+    'O coach oferece outras perguntas para começar a cada novo chat',
+  'Google Gemini keys in the new AQ. format are recognised': 'As chaves do Google Gemini no formato novo, com AQ., são reconhecidas',
+  'The files the coach reads take one line, so the chat has more room': 'Os arquivos que o coach lê ocupam uma linha, e o chat ganha mais espaço',
 };

@@ -342,6 +342,11 @@ export function createLocalBackend(): DataBackend {
 
     async deleteLibraryFile() {},
 
+    // The browser preview holds no files, so none can be found to change.
+    async updateLibraryFile() {
+      throw userError('That file is no longer in your library.');
+    },
+
     async listLibraryLinks() {
       return withStore((store) =>
         (store.libraryLinks ?? []).slice().sort((a, b) => b.created_at.localeCompare(a.created_at)),

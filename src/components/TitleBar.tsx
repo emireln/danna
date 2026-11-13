@@ -94,10 +94,10 @@ export function TitleBar() {
             {hasNewRelease && <span className="dot-badge" aria-hidden="true" />}
           </Link>
 
-          <StreakFire days={streak} />
           <Link to="/library" className="btn btn--icon icon-wrap" aria-label={t('My library')}>
             <BookOpen />
           </Link>
+          <StreakFire days={streak} />
 
           <div className="menu-anchor" ref={anchor}>
             <button

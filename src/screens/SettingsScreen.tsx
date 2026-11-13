@@ -27,7 +27,7 @@ const PROVIDER_LABEL: Record<Provider, string> = {
 function candidatesFor(key: string): Provider[] {
   if (key.startsWith('sk-ant-')) return ['anthropic'];
   if (key.startsWith('sk-or-')) return ['openrouter'];
-  if (/^AIza[\w-]{30,}$/.test(key)) return ['gemini'];
+  if (/^(AIza[\w-]{30,}|AQ\.[\w-]{30,})$/.test(key)) return ['gemini'];
   if (key.startsWith('sk-proj-') || key.startsWith('sk-svcacct-') || key.startsWith('sk-admin-')) return ['openai'];
   if (key.startsWith('sk-')) return ['openai', 'deepseek'];
   return [];
