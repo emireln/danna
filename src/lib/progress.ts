@@ -15,6 +15,26 @@ export function nextStreak(lastActive: string | null, streak: number, today = lo
   return lastActive === yesterday ? streak + 1 : 1;
 }
 
+/** The streak as it stands today: it still counts on the day after the last study day. */
+export function activeStreak(profile: { streak: number; last_active: string | null }, today = localDate()): number {
+  if (profile.streak <= 0 || !profile.last_active) return 0;
+  return profile.last_active === today || profile.last_active === previousDay(today) ? profile.streak : 0;
+}
+
+function previousDay(day: string): string {
+  const [y, m, d] = day.split('-').map(Number);
+  return localDate(new Date(y, m - 1, d - 1));
+}
+
+export type StreakTier = 'ember' | 'blaze' | 'inferno';
+
+/** The flame grows with the streak: a small one, an animated one from 10 days, and a blue one from 50 days. */
+export function streakTier(days: number): StreakTier {
+  if (days >= 50) return 'inferno';
+  if (days >= 10) return 'blaze';
+  return 'ember';
+}
+
 export function levelInfo(xp: number): { level: number; into: number; span: number; percent: number } {
   const span = 200;
   const level = Math.floor(xp / span) + 1;

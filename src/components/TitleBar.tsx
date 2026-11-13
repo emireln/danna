@@ -5,10 +5,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeftRight, Bell, BookOpen, LogOut, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
+import { StreakFire } from './StreakFire';
 import { bridge, type WindowState } from '../lib/bridge';
 import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
+import { activeStreak } from '../lib/progress';
 
 function useWindowControls() {
   const [maximized, setMaximized] = useState(false);
@@ -61,6 +63,7 @@ export function TitleBar() {
   const showActions = status === 'in' && !location.pathname.startsWith('/play') && location.pathname !== '/setup';
   const name = profile?.display_name || profile?.username || t('You');
   const friendBadge = incomingRequests + unseenShares;
+  const streak = profile ? activeStreak(profile) : 0;
   const go = (path: string) => {
     setMenuOpen(false);
     navigate(path);
@@ -90,6 +93,8 @@ export function TitleBar() {
             <Bell />
             {hasNewRelease && <span className="dot-badge" aria-hidden="true" />}
           </Link>
+
+          <StreakFire days={streak} />
 
           <div className="menu-anchor" ref={anchor}>
             <button

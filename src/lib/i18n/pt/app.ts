@@ -705,4 +705,8 @@ export const APP_PT: Record<string, string> = {
   '{strongest} is the strongest area at {strongScore}/100, and {weakest} has the lowest score at {weakScore}/100.':
     '{strongest} é a área mais forte, com {strongScore}/100, e {weakest} tem a menor pontuação, com {weakScore}/100.',
   'a friend': 'um amigo',
+
+  // Day streak
+  '{count} day streak': '{count} dia seguido',
+  '{count} days streak': '{count} dias seguidos',
 };
