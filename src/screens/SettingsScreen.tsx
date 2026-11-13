@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cloud, Eye, EyeOff, KeyRound, Laptop, Trash2 } from 'lucide-react';
+import { Cloud, Eye, EyeOff, KeyRound, Laptop, Play, Trash2, Volume2 } from 'lucide-react';
 import { LanguageSwitch } from '../components/LanguageSwitch';
+import { Select } from '../components/Pickers';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
+import { narrate, type Narration } from '../lib/speech';
+import { VOICE_OPTIONS } from '../lib/voices';
 import { backendFor, onlineAvailable } from '../lib/session';
 import { useUpdateStatus } from '../lib/update';
 import { useAI } from '../state/ai';
@@ -58,6 +61,53 @@ export function SettingsScreen() {
   const [deviceHasProgress, setDeviceHasProgress] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [sampling, setSampling] = useState(false);
+  const sample = useRef<Narration | null>(null);
+
+  // Saves the voice for listening. The next passage is read with it.
+  async function saveVoice(value: string) {
+    if (!bridge) return;
+    try {
+      setSettings(await bridge.settings.set({ voice: value }));
+    } catch (error) {
+      notify(t(errorText(error)), 'error');
+    }
+  }
+
+  // The sample is read with the voice on this screen, so the learner can hear it before a passage uses it.
+  function playSample() {
+    if (sample.current) {
+      sample.current.stop();
+      return;
+    }
+    sample.current = narrate('Hello! Listen closely to how this voice sounds. Then try to repeat each sentence after it.', {
+      onStart: () => setSampling(true),
+      onEnd: () => {
+        sample.current = null;
+        setSampling(false);
+      },
+      onNotice: (message) => notify(message),
+    });
+  }
+
+  // Looks for a newer version now, and says what was found.
+  async function checkUpdates() {
+    if (!bridge) return;
+    setChecking(true);
+    try {
+      const result = await bridge.update.check();
+      if (result.state === 'unavailable') notify(t('Updates are checked in the installed danna app.'));
+      else if (result.state === 'failed') notify(t('Could not check for updates. Try again later.'), 'error');
+      else if (result.state === 'idle') notify(t('danna is up to date.'), 'ok');
+      else if (result.state === 'ready') notify(t('danna {version} is ready. It installs when you close danna.', { version: result.version ?? '' }), 'ok');
+      else notify(t('Downloading danna {version} in the background.', { version: result.version ?? '' }), 'ok');
+    } catch (error) {
+      notify(t(errorText(error)), 'error');
+    } finally {
+      setChecking(false);
+    }
+  }
 
   // Offline progress that can still be added to the account.
   useEffect(() => {
@@ -357,6 +407,28 @@ export function SettingsScreen() {
 
       {bridge && settings && (
         <>
+          <SectionTitle title={t('Listening voice')} />
+          <div className="stack">
+            <p className="small muted">
+              {t('Reads the listening passages aloud. A natural voice uses the key you added for that provider, and the text is sent to that provider.')}
+            </p>
+            <Select
+              label={t('Listening voice')}
+              value={settings.voice}
+              onChange={(value) => void saveVoice(value)}
+              options={VOICE_OPTIONS.map((option) => ({ value: option.value, label: t(option.label) }))}
+            />
+            <div>
+              <button className="btn btn--ghost btn--sm" onClick={playSample}>
+                {sampling ? <Volume2 aria-hidden="true" /> : <Play aria-hidden="true" />} {sampling ? t('Stop the sample') : t('Play a sample')}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {bridge && settings && (
+        <>
           <SectionTitle title={t('Window')} />
           <div className="settings-row">
             <div className="settings-row__body">
@@ -425,6 +497,11 @@ export function SettingsScreen() {
         {update.state === 'ready' && (
           <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.install()}>
             {t('Restart to update')}
+          </button>
+        )}
+        {bridge && (
+          <button className="btn btn--ghost btn--sm" onClick={() => void checkUpdates()} disabled={checking}>
+            {checking ? <Spinner dark /> : null} {t('Check for updates')}
           </button>
         )}
         <button className="btn btn--ghost btn--sm" onClick={() => navigate('/whats-new')}>

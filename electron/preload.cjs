@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld(
     ai: Object.freeze({
       complete: (request) => call('ai:complete', request),
       transcribe: (audio, mime) => call('ai:transcribe', { audio, mime }),
+      speak: (text, voice) => call('ai:speak', { text, voice }),
     }),
     local: Object.freeze({
       call: (method, args) => call('local:call', { method, args }),
@@ -46,6 +47,7 @@ contextBridge.exposeInMainWorld(
     }),
     update: Object.freeze({
       status: () => call('update:status'),
+      check: () => call('update:check'),
       install: () => call('update:install'),
       onStatus: (callback) => listen('update:status', callback),
     }),

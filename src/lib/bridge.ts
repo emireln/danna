@@ -37,10 +37,26 @@ export interface UpdateStatus {
   version: string | null;
 }
 
+/** The result of a natural voice request. Without a key for the voice, `unavailable` is true and the device voice reads. */
+export interface SpeechReply {
+  unavailable?: boolean;
+  audio?: Uint8Array;
+  mime?: string;
+  provider?: string;
+}
+
+/** What a check for updates found: a newer version downloading or ready, none (idle), or the check could not be made. */
+export interface UpdateCheck {
+  state: 'idle' | 'downloading' | 'ready' | 'unavailable' | 'failed';
+  version: string | null;
+}
+
 export interface AppSettings {
   closeToTray: boolean;
   /** The language the app is shown in. Null follows the system language. */
   language: 'en' | 'pt' | null;
+  /** The voice for listening: 'auto', 'device', or a named voice such as 'openai:coral'. */
+  voice: string;
 }
 
 export interface DannaBridge {
@@ -55,6 +71,7 @@ export interface DannaBridge {
   ai: {
     complete: (request: CompletionRequest) => Promise<CompletionResult>;
     transcribe: (audio: ArrayBuffer, mime: string) => Promise<{ text: string }>;
+    speak: (text: string, voice: string) => Promise<SpeechReply>;
   };
   local: {
     call: <T = unknown>(method: string, args?: unknown[]) => Promise<T>;
@@ -78,6 +95,7 @@ export interface DannaBridge {
   };
   update: {
     status: () => Promise<UpdateStatus>;
+    check: () => Promise<UpdateCheck>;
     install: () => Promise<void>;
     onStatus: (callback: (status: UpdateStatus) => void) => () => void;
   };

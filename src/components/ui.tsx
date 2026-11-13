@@ -1,4 +1,4 @@
-import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -225,29 +225,55 @@ export function Empty({
   );
 }
 
-/** A search box with its magnifier inside the left edge. Used for the chat history, the library and the mention picker. */
+/**
+ * A search box with its magnifier inside the left edge and its own clear button, in place of the browser's.
+ * Used for the chat history, the library, the find box of a file, and the search of the whole app.
+ */
 export function SearchField({
   value,
   onChange,
   placeholder,
   label,
+  inputRef,
+  onKeyDown,
+  autoFocus = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
   label: string;
+  inputRef?: RefObject<HTMLInputElement | null>;
+  onKeyDown?: (event: ReactKeyboardEvent<HTMLInputElement>) => void;
+  autoFocus?: boolean;
 }) {
+  const t = useT();
   return (
     <label className="search-field">
       <Search aria-hidden="true" />
       <input
+        ref={inputRef}
         className="input"
         type="search"
         value={value}
         placeholder={placeholder}
         aria-label={label}
+        autoFocus={autoFocus}
+        onKeyDown={onKeyDown}
         onChange={(event) => onChange(event.target.value)}
       />
+      {value && (
+        <button
+          type="button"
+          className="search-field__clear"
+          aria-label={t('Clear search')}
+          onClick={() => {
+            onChange('');
+            inputRef?.current?.focus();
+          }}
+        >
+          <X aria-hidden="true" />
+        </button>
+      )}
     </label>
   );
 }

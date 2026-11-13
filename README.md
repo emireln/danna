@@ -19,8 +19,9 @@ Your profile picture works in both modes. Pictures are converted to a small WebP
 - **Coach**: an AI tutor chat.
 - **My library** (from your profile): keep PDF, TXT and Markdown files and read them in the app. Edit TXT and Markdown files there and save them, and find text in any file with Ctrl+F. Save learning links from YouTube, Coursera, Khan Academy and other platforms, with the platform's logo, and sort them into categories. Ask the tutor questions about the files you choose; it answers only from them and names the file.
 - **Friends** (online only): search by username from three letters, requests, a ranking, shared results and sets, and an inbox.
-- **What's new**: release notes and banners.
-- **AI, bring your own key**: OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is selected by default, and you can choose another in Settings. DeepSeek's live model list is read from its API, and the newest version is chosen.
+- **What's new**: release notes and banners. Settings has Check for updates.
+- **Search**: the search button in the title bar, or Ctrl+K, finds lessons, tests, coach chats, library files and links, results and pages.
+- **AI, bring your own key**: OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is selected by default, and you can choose another in Settings. DeepSeek's live model list is read from its API, and the newest version is chosen. Listening passages are read aloud in a natural voice from your OpenAI or Google Gemini key (Settings, Listening voice). The text is sent to that provider.
 
 ## Run it
 

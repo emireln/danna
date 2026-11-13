@@ -32,9 +32,17 @@ function createUpdates({ app, updater, send, log = () => {} }) {
     updater.on('error', (error) => log(error));
   }
 
-  function check() {
-    if (!updater || !app.isPackaged) return Promise.resolve(null);
-    return updater.checkForUpdates().catch((error) => log(error));
+  // Checks now and says what was found: 'downloading' or 'ready' for a newer version (it is fetched in the
+  // background), 'idle' when this is the newest, 'unavailable' outside the installed app, or 'failed'.
+  async function check() {
+    if (!updater || !app.isPackaged) return { state: 'unavailable', version: null };
+    try {
+      await updater.checkForUpdates();
+    } catch (error) {
+      log(error);
+      return { state: 'failed', version: null };
+    }
+    return { state: current.state, version: current.version };
   }
 
   return {

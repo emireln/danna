@@ -18,7 +18,7 @@ import {
 } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import { ChevronDown, ChevronUp, Pencil, Search, X } from 'lucide-react';
-import { ConfirmSheet, Notice, Spinner } from './ui';
+import { ConfirmSheet, Notice, SearchField, Spinner } from './ui';
 import { errorText } from '../lib/bridge';
 import { findRanges, pageHits, splitHits } from '../lib/find';
 import { KIND_MIME, LIBRARY_MAX_BYTES, LIBRARY_TEXT_LIMIT } from '../lib/library';
@@ -393,17 +393,14 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
 
       {findOpen && (
         <div className="viewer__find" role="search">
-          <label className="search-field viewer__find-field">
-            <Search aria-hidden="true" />
-            <input
-              ref={findBox}
-              className="input"
-              type="search"
+          <div className="viewer__find-field">
+            <SearchField
+              inputRef={findBox}
               value={query}
               placeholder={t('Find in this file')}
-              aria-label={t('Find in this file')}
-              onChange={(event) => {
-                setQuery(event.target.value);
+              label={t('Find in this file')}
+              onChange={(value) => {
+                setQuery(value);
                 setCurrent(0);
               }}
               onKeyDown={(event) => {
@@ -413,7 +410,7 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
                 }
               }}
             />
-          </label>
+          </div>
           <span className="viewer__find-count" aria-live="polite">
             {countText}
           </span>

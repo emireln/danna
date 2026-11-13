@@ -2,6 +2,7 @@
 // DeepSeek is made here, in the Electron main process, so API keys never reach the renderer.
 
 const { userError, MARK } = require('./errors.cjs');
+const speech = require('./speech.cjs');
 
 const TIMEOUT_MS = 60_000;
 const COMPLETION_TIMEOUT_MS = 180_000;
@@ -451,4 +452,91 @@ async function transcribe(key, audio, mime) {
   throw asProviderError('openai', lastError || new Error('Transcription failed.'));
 }
 
-module.exports = { PROVIDERS, detectProvider, detectCandidates, deepseekRank, listModels, complete, transcribe };
+// Speech models answer with audio, not JSON. Their errors are read like any other provider error.
+async function requestBytes(url, { headers = {}, body, timeoutMs = COMPLETION_TIMEOUT_MS } = {}) {
+  let response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { Accept: 'audio/*, application/json', ...headers },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    const reason = error && error.name === 'TimeoutError' ? 'the request timed out' : 'could not reach the server';
+    throw new ProviderError(`Network error: ${reason}.`);
+  }
+  if (!response.ok) {
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { message: text.slice(0, 300) };
+    }
+    const detail = (data && data.error && data.error.message) || (data && data.error) || (data && data.message) || `HTTP ${response.status}`;
+    throw new ProviderError(typeof detail === 'string' ? detail : JSON.stringify(detail).slice(0, 300), response.status);
+  }
+  return Buffer.from(await response.arrayBuffer());
+}
+
+// The newest model first. An older one is tried only when the key cannot use the newer one.
+const SPEECH_MODELS = {
+  openai: ['gpt-4o-mini-tts', 'tts-1'],
+  gemini: ['gemini-2.5-flash-preview-tts', 'gemini-2.5-pro-preview-tts'],
+};
+
+async function speakOpenAI(key, text, voice) {
+  let lastError = null;
+  for (const model of SPEECH_MODELS.openai) {
+    try {
+      const bytes = await requestBytes('https://api.openai.com/v1/audio/speech', {
+        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: speech.openAISpeechBody(text, voice, model),
+      });
+      return { bytes, mime: 'audio/mpeg' };
+    } catch (error) {
+      lastError = error;
+      if (!error.status || (error.status !== 400 && error.status !== 404)) break;
+    }
+  }
+  throw lastError;
+}
+
+async function speakGemini(key, text, voice) {
+  let lastError = null;
+  for (const model of SPEECH_MODELS.gemini) {
+    try {
+      const data = await request(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
+        body: speech.geminiSpeechBody(text, voice),
+        timeoutMs: COMPLETION_TIMEOUT_MS,
+      });
+      const candidate = (data.candidates && data.candidates[0]) || {};
+      const part = ((candidate.content && candidate.content.parts) || []).find((item) => item.inlineData && item.inlineData.data);
+      if (!part) throw userError('The voice did not return any sound. Try again.');
+      const pcm = Buffer.from(part.inlineData.data, 'base64');
+      return { bytes: speech.pcmToWav(pcm, speech.sampleRateOf(part.inlineData.mimeType)), mime: 'audio/wav' };
+    } catch (error) {
+      lastError = error;
+      if (!error.status || (error.status !== 400 && error.status !== 404)) break;
+    }
+  }
+  throw lastError;
+}
+
+/** Reads a text aloud with a provider's speech model. Returns the audio bytes and their mime type. */
+async function speak(provider, key, text, voice) {
+  if (!SPEECH_MODELS[provider]) throw userError('This provider cannot read text aloud.');
+  const input = speech.speechText(text);
+  if (!input) throw userError('There is nothing to read aloud.');
+  try {
+    if (provider === 'openai') return await speakOpenAI(key, input, voice);
+    return await speakGemini(key, input, voice);
+  } catch (error) {
+    throw asProviderError(provider, error);
+  }
+}
+
+module.exports = { PROVIDERS, detectProvider, detectCandidates, deepseekRank, listModels, complete, transcribe, speak };

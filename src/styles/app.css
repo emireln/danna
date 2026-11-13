@@ -1855,6 +1855,18 @@
     height: 18px;
   }
 
+  /* The listen button, with a short note under it when the device voice reads instead of a natural one. */
+  .listen-block {
+    display: grid;
+    justify-items: start;
+    gap: 6px;
+  }
+
+  .listen-block__notice {
+    max-width: 560px;
+    margin: 0;
+  }
+
   .options {
     display: flex;
     flex-direction: column;

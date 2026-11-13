@@ -831,6 +831,39 @@ export const APP_PT: Record<string, string> = {
     'Os conjuntos de prática que você cria com a IA ficam salvos, neste aparelho ou na sua conta',
   'The danna logo sits beside its name on the first screen': 'O logo do danna fica ao lado do nome na primeira tela',
 
+  // The search of the whole app, the listening voices, and checking for updates
+  'Search': 'Buscar',
+  'Clear search': 'Limpar busca',
+  'Search danna': 'Buscar no danna',
+  'Search lessons, tests, chats, files and pages': 'Buscar aulas, testes, chats, arquivos e telas',
+  'Type a word. The search looks through every lesson, test, chat, file and page.':
+    'Digite uma palavra. A busca procura em todas as aulas, testes, chats, arquivos e telas.',
+  'Nothing matches “{query}”.': 'Nada corresponde a “{query}”.',
+  'Results': 'Resultados',
+  'Enter opens · arrow keys move · Esc closes': 'Enter abre · as setas movem · Esc fecha',
+  'Screens': 'Telas',
+  'Tests': 'Testes',
+  'Units': 'Unidades',
+  'Coach chats': 'Chats do coach',
+  'Listening voice': 'Voz para escutar',
+  'Device voice': 'Voz do aparelho',
+  'Automatic: the most natural voice your keys allow': 'Automático: a voz mais natural que as suas chaves permitem',
+  'Reads the listening passages aloud. A natural voice uses the key you added for that provider, and the text is sent to that provider.':
+    'Lê os textos de escuta em voz alta. Uma voz natural usa a chave que você adicionou para esse provedor, e o texto é enviado a esse provedor.',
+  'Play a sample': 'Ouvir um exemplo',
+  'Stop the sample': 'Parar o exemplo',
+  'Preparing the voice…': 'Preparando a voz…',
+  'Using the device voice. Add an OpenAI or Google Gemini key in Settings for a more natural voice.':
+    'Usando a voz do aparelho. Adicione uma chave da OpenAI ou do Google Gemini em Configurações para uma voz mais natural.',
+  'Add the key for this voice in Settings. Using the device voice for now.':
+    'Adicione a chave desta voz em Configurações. Por enquanto, usando a voz do aparelho.',
+  'The natural voice could not be used: {reason} Using the device voice for now.':
+    'Não foi possível usar a voz natural: {reason} Por enquanto, usando a voz do aparelho.',
+  'Check for updates': 'Verificar atualizações',
+  'Updates are checked in the installed danna app.': 'As atualizações são verificadas no app do danna instalado.',
+  'Could not check for updates. Try again later.': 'Não foi possível verificar atualizações. Tente de novo mais tarde.',
+  'danna is up to date.': 'O danna está atualizado.',
+
   // The 0.7.0 release note (What’s new)
   'Edit your TXT and Markdown files in My library, and save the changes': 'Edite os seus arquivos TXT e Markdown em Minha biblioteca, e salve as alterações',
   'A PDF keeps its pages: its text is saved as a new Markdown file, with the PDF as it was':
@@ -838,8 +871,14 @@ export const APP_PT: Record<string, string> = {
   'Find text in a file, like Notepad: Ctrl+F, then Enter for the next match':
     'Busque um texto em um arquivo, como no Bloco de Notas: Ctrl+F, e depois Enter para o próximo resultado',
   'The day streak sits beside your profile picture': 'A sequência de dias fica ao lado da sua foto de perfil',
-  'The coach offers other starter questions each time you start a chat':
-    'O coach oferece outras perguntas para começar a cada novo chat',
+  'Search the whole app from the title bar, or with Ctrl+K: lessons, tests, chats, files, results and pages':
+    'Busque em todo o app pela barra de título, ou com Ctrl+K: aulas, testes, chats, arquivos, resultados e telas',
+  'Listening passages are read in a natural voice from your OpenAI or Google Gemini key. Choose the voice in Settings':
+    'Os textos de escuta são lidos com uma voz natural da sua chave da OpenAI ou do Google Gemini. Escolha a voz em Configurações',
+  'Check for updates from Settings. The notifications button is gone from the title bar':
+    'Verifique atualizações em Configurações. O botão de notificações saiu da barra de título',
+  'The coach offers other starter questions each time you start a chat, and its files take one line':
+    'O coach oferece outras perguntas para começar a cada novo chat, e os arquivos que ele lê ocupam uma linha',
   'Google Gemini keys in the new AQ. format are recognised': 'As chaves do Google Gemini no formato novo, com AQ., são reconhecidas',
-  'The files the coach reads take one line, so the chat has more room': 'Os arquivos que o coach lê ocupam uma linha, e o chat ganha mais espaço',
+  'Search boxes have a clear button that matches the rest of the app': 'Os campos de busca têm um botão de limpar que combina com o resto do app',
 };

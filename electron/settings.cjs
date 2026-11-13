@@ -3,12 +3,16 @@ const { app } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const DEFAULTS = { closeToTray: true, language: null };
+const speech = require('./speech.cjs');
+
+// The voice is one of the choices in speech.cjs: automatic, the device voice, or one named natural voice.
+const DEFAULTS = { closeToTray: true, language: null, voice: 'auto' };
 
 // Each setting has its own check, so a bad value in the file is ignored. A null language follows the system.
 const VALID = {
   closeToTray: (value) => typeof value === 'boolean',
   language: (value) => value === null || value === 'en' || value === 'pt',
+  voice: (value) => speech.isVoiceChoice(value),
 };
 
 function file() {

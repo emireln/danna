@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, Bell, BookOpen, LogOut, Settings, User, Users } from 'lucide-react';
+import { ArrowLeftRight, BookOpen, LogOut, Search, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
 import { StreakFire } from './StreakFire';
+import { GlobalSearch } from './GlobalSearch';
 import { bridge, type WindowState } from '../lib/bridge';
 import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
@@ -38,9 +39,10 @@ export function TitleBar() {
   const navigate = useNavigate();
   const t = useT();
   const { status, mode, email, signOut } = useAuth();
-  const { profile, incomingRequests, unseenShares, hasNewRelease, pictureUrl } = useAppData();
+  const { profile, incomingRequests, unseenShares, pictureUrl } = useAppData();
   const windows = useWindowControls();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
   const anchor = useRef<HTMLDivElement>(null);
 
   // The account menu closes on a press outside it, and on Escape.
@@ -69,6 +71,19 @@ export function TitleBar() {
     navigate(path);
   };
 
+  // Ctrl+K opens the search of the whole app, from any screen where the title bar has its actions.
+  useEffect(() => {
+    if (!showActions) return undefined;
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setSearching(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showActions]);
+
   return (
     <header className="titlebar">
       <Link to="/" className="wordmark" aria-label={t('danna home')}>
@@ -79,6 +94,9 @@ export function TitleBar() {
 
       {showActions && (
         <div className="titlebar__actions">
+          <button className="btn btn--icon" onClick={() => setSearching(true)} aria-label={t('Search')} title={t('Search')}>
+            <Search />
+          </button>
           {mode === 'supabase' && (
             <Link
               to="/friends"
@@ -89,11 +107,6 @@ export function TitleBar() {
               {friendBadge > 0 && <span className="icon-badge">{friendBadge}</span>}
             </Link>
           )}
-          <Link to="/whats-new" className="btn btn--icon icon-wrap" aria-label={t("What's new")}>
-            <Bell />
-            {hasNewRelease && <span className="dot-badge" aria-hidden="true" />}
-          </Link>
-
           <Link to="/library" className="btn btn--icon icon-wrap" aria-label={t('My library')}>
             <BookOpen />
           </Link>
@@ -184,6 +197,7 @@ export function TitleBar() {
           </button>
         </div>
       )}
+      {searching && <GlobalSearch onClose={() => setSearching(false)} />}
     </header>
   );
 }

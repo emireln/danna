@@ -716,6 +716,129 @@
 
   .search-field .input {
     padding-left: 42px;
+    padding-right: 44px;
+  }
+
+  /* The browser's own clear mark is hidden: the search field has its own clear button, in the app's style. */
+  .search-field input[type='search']::-webkit-search-cancel-button,
+  .search-field input[type='search']::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+
+  .search-field__clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+
+  .search-field__clear:hover {
+    background: var(--primary-50);
+    color: var(--primary-700);
+  }
+
+  .search-field__clear:focus-visible {
+    outline: 2px solid var(--primary-100);
+    outline-offset: 1px;
+  }
+
+  .search-field__clear svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  /* ---------- The search of the whole app: a panel under the title bar, with the results in groups ---------- */
+  .palette-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: grid;
+    justify-items: center;
+    align-items: start;
+    padding: 64px 24px 24px;
+    background: rgba(15, 27, 51, 0.28);
+  }
+
+  .palette {
+    width: min(640px, 100%);
+    max-height: calc(100vh - 88px);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lift);
+  }
+
+  .palette__body {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .palette__hint {
+    margin: 0;
+    padding: 14px 6px;
+  }
+
+  .palette__list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .palette__group {
+    padding: 10px 10px 4px;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .palette__item {
+    display: grid;
+    gap: 2px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .palette__item.is-active {
+    background: var(--primary-50);
+  }
+
+  .palette__title {
+    font-weight: 650;
+    color: var(--ink);
+  }
+
+  .palette__detail {
+    overflow: hidden;
+    font-size: 13px;
+    color: var(--muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .palette__foot {
+    margin: 0;
+    padding: 0 4px;
   }
 
   /* ---------- Quiet text buttons, such as Remove or Remove picture ---------- */

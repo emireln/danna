@@ -210,11 +210,16 @@ test('a saved key is never sent to the interface, only its ending', async () => 
 
 test('settings keep only the known preferences, and the file is written in one piece', async () => {
   const saved = await invoke('settings:set', { closeToTray: false, evil: 'x' });
-  assert.deepEqual(saved, { closeToTray: false, language: null });
+  assert.deepEqual(saved, { closeToTray: false, language: null, voice: 'auto' });
   const onDisk = JSON.parse(readFileSync(join(folder, 'danna-settings.json'), 'utf8'));
-  assert.deepEqual(onDisk, { closeToTray: false, language: null });
+  assert.deepEqual(onDisk, { closeToTray: false, language: null, voice: 'auto' });
   assert.equal(existsSync(join(folder, 'danna-settings.json.tmp')), false, 'no temporary file is left behind');
-  assert.deepEqual(await invoke('settings:get'), { closeToTray: false, language: null });
+  assert.deepEqual(await invoke('settings:get'), { closeToTray: false, language: null, voice: 'auto' });
+
+  // A voice that is not one of the choices is ignored, and the one kept before stays.
+  const kept = await invoke('settings:set', { voice: 'openai:coral' });
+  assert.equal(kept.voice, 'openai:coral');
+  assert.equal((await invoke('settings:set', { voice: 'robot' })).voice, 'openai:coral');
 });
 
 test('the app language is saved as English or Portuguese, or follows the system', async () => {

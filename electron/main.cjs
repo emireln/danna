@@ -5,6 +5,7 @@ const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const keystore = require('./keystore.cjs');
 const ai = require('./ai.cjs');
+const speech = require('./speech.cjs');
 const localdb = require('./localdb.cjs');
 const settings = require('./settings.cjs');
 const { shellLanguage, shellText } = require('./i18n.cjs');
@@ -325,6 +326,17 @@ function registerIpc() {
     return { text, provider: selection.provider, model: selection.model };
   });
 
+  // Reads a text aloud with the natural voice the learner chose. Without a key for it, the device voice is used.
+  handle('ai:speak', async ({ text, voice }) => {
+    const picked = speech.pickSpeech(speech.isVoiceChoice(voice) ? voice : 'auto', {
+      openai: keystore.hasKey('openai'),
+      gemini: keystore.hasKey('gemini'),
+    });
+    if (!picked) return { unavailable: true };
+    const result = await ai.speak(picked.provider, keystore.getKey(picked.provider), typeof text === 'string' ? text : '', picked.voice);
+    return { audio: new Uint8Array(result.bytes), mime: result.mime, provider: picked.provider };
+  });
+
   handle('ai:transcribe', async ({ audio, mime }) => {
     if (!keystore.hasKey('openai')) throw userError('Add an OpenAI key in Settings to transcribe speaking answers.');
     if (!(audio instanceof ArrayBuffer) || audio.byteLength === 0) throw userError('No recording was found. Try again.');
@@ -344,6 +356,7 @@ function registerIpc() {
   });
 
   handle('update:status', () => updates.status());
+  handle('update:check', () => updates.check());
   handle('update:install', () => updates.install());
   handle('settings:get', () => settings.get());
   handle('settings:set', (patch) => {

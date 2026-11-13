@@ -1,7 +1,7 @@
 // The coach: a list of chats, each with its own history. A chat is named from its first question. A
 // message can carry up to ten files (pictures, PDF, TXT, Markdown) and mentioned library files.
 import { useCallback, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AtSign, ArrowUp, BookOpen, FileText, History, Image as ImageIcon, Paperclip, Plus, Sparkles, X } from 'lucide-react';
 import { ChatHistory } from '../components/ChatHistory';
 import { MentionSheet } from '../components/MentionSheet';
@@ -28,6 +28,7 @@ const PICTURES_ONLY = 'Describe these pictures and tell me what is useful for le
 
 export function CoachScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const t = useT();
   const { backend } = useAuth();
   const { profile } = useAppData();
@@ -84,16 +85,19 @@ export function CoachScreen() {
     [backend, t],
   );
 
-  // On open, the newest chat that is not archived is shown. Without one, a new chat is ready to start.
+  // On open, the chat a search result asked for is shown, else the newest chat that is not archived. Without one, a
+  // new chat is ready to start.
   useEffect(() => {
     if (!backend) return undefined;
     let cancelled = false;
+    const requested = (location.state as { chatId?: string } | null)?.chatId;
     backend
       .listTutorChats()
       .then((rows) => {
         if (cancelled) return undefined;
         setChats(rows);
-        return openChat(rows.find((chat) => !chat.archived)?.id ?? null);
+        const target = requested && rows.some((chat) => chat.id === requested) ? requested : (rows.find((chat) => !chat.archived)?.id ?? null);
+        return openChat(target);
       })
       .catch((error: unknown) => {
         if (cancelled) return;
@@ -104,6 +108,14 @@ export function CoachScreen() {
       cancelled = true;
     };
   }, [backend, openChat]);
+
+  // A search result that asks for a chat, while the coach is already open. The request is used once.
+  useEffect(() => {
+    const requested = (location.state as { chatId?: string } | null)?.chatId;
+    if (!requested) return;
+    void openChat(requested);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.key, location.pathname, navigate, openChat]);
 
   // The conversation opens on its newest message.
   useEffect(() => {

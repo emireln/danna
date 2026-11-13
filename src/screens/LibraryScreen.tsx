@@ -1,7 +1,7 @@
 // My library: learning files (PDF, TXT, Markdown), learning links with their platform logos, and
 // the coach that answers from the files you choose. Works on this device and in your account.
 import { useCallback, useEffect, useState, type DragEvent, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ExternalLink, Eye, MessageSquare, Plus, Trash2 } from 'lucide-react';
 import { openLink } from '../components/Banner';
 import { FileViewer } from '../components/FileViewer';
@@ -45,6 +45,7 @@ export function LibraryScreen() {
   const { backend, mode } = useAuth();
   const { notify } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const t = useT();
   const [tab, setTab] = useState<Tab>('files');
   const [files, setFiles] = useState<LibraryFileRow[] | null>(null);
@@ -83,6 +84,20 @@ export function LibraryScreen() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // A search result opens the library on its tab, with its search filled in, or with its file shown.
+  useEffect(() => {
+    const intent = location.state as { tab?: Tab; query?: string; fileId?: string } | null;
+    if (!intent || (intent.fileId && files === null)) return;
+    if (intent.tab) setTab(intent.tab);
+    if (typeof intent.query === 'string') setQuery(intent.query);
+    if (intent.fileId) {
+      const file = files?.find((item) => item.id === intent.fileId);
+      if (file) setViewing(file);
+    }
+    // The request is used once, so a later visit to the library starts plainly.
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.key, location.state, files, navigate]);
 
   async function importFiles(list: FileList | File[]) {
     if (!backend) return;

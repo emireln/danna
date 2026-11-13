@@ -7,6 +7,7 @@ import { extractJson, parseFeedback, speakingRequest, writingRequest, type Feedb
 import { useT } from '../lib/i18n/react';
 import { useAI } from '../state/ai';
 import { useToast } from '../state/toast';
+import { narrate, type Narration } from '../lib/speech';
 import { Spinner, formatClock } from './ui';
 import type {
   ChoiceQuestion,
@@ -70,28 +71,40 @@ export function QuestionView({ question, passage, ...shared }: QuestionViewProps
 
 function ListenButton({ text }: { text: string }) {
   const t = useT();
-  const [playing, setPlaying] = useState(false);
+  const [state, setState] = useState<'idle' | 'preparing' | 'playing'>('idle');
+  const [notice, setNotice] = useState<string | null>(null);
+  const narration = useRef<Narration | null>(null);
 
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+  useEffect(() => () => narration.current?.stop(), []);
 
-  const play = () => {
-    const synth = window.speechSynthesis;
-    if (!synth) return;
-    synth.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.95;
-    utterance.onend = () => setPlaying(false);
-    utterance.onerror = () => setPlaying(false);
-    setPlaying(true);
-    synth.speak(utterance);
+  // A press starts the recording, and a press while it plays or loads stops it.
+  const toggle = () => {
+    if (narration.current) {
+      narration.current.stop();
+      return;
+    }
+    setNotice(null);
+    setState('preparing');
+    narration.current = narrate(text, {
+      onStart: () => setState('playing'),
+      onEnd: () => {
+        narration.current = null;
+        setState('idle');
+      },
+      onNotice: (message) => setNotice(message),
+    });
   };
 
   return (
-    <button className="listen" onClick={play}>
-      {playing ? <Volume2 aria-hidden="true" /> : <Play aria-hidden="true" />}
-      {playing ? t('Playing the recording') : t('Play the recording')}
-    </button>
+    <div className="listen-block">
+      <button className="listen" onClick={toggle} aria-pressed={state !== 'idle'}>
+        {state === 'idle' ? <Play aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
+        {state === 'idle' && t('Play the recording')}
+        {state === 'preparing' && t('Preparing the voice…')}
+        {state === 'playing' && t('Playing the recording')}
+      </button>
+      {notice && <p className="listen-block__notice small muted">{notice}</p>}
+    </div>
   );
 }
 
