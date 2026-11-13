@@ -1920,6 +1920,17 @@
     background: var(--red-50) !important;
   }
 
+  /* The letter takes the colour of the result, also when it is the chosen answer. */
+  .option.option--correct .option__key {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .option.option--wrong .option__key {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
   .option__mark {
     margin-left: auto;
     display: grid;
