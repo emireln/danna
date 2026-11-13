@@ -208,7 +208,7 @@ export function LibraryScreen() {
   for (const link of shownLinks) groups.set(link.category, [...(groups.get(link.category) ?? []), link]);
 
   return (
-    <div className="page">
+    <div className={tab === 'ask' ? 'page page--coach' : 'page'}>
       <PageHeader eyebrow={t('Private to you')} title={t('My library')} />
 
       <Tabs
@@ -420,11 +420,7 @@ export function LibraryScreen() {
         </div>
       )}
 
-      {tab === 'ask' && (
-        <div className="mt-4">
-          <LibraryCoach files={files ?? []} selected={selected} onToggle={toggleSelected} />
-        </div>
-      )}
+      {tab === 'ask' && <LibraryCoach files={files ?? []} selected={selected} onToggle={toggleSelected} />}
 
       {viewing && <FileViewer file={viewing} onClose={() => setViewing(null)} />}
 

@@ -195,45 +195,162 @@
   margin: 6px 0;
 }
 
-.tutor-thread {
+/* ---------- The library coach: the files card, the conversation, and each answer formatted as text ---------- */
+.library-coach {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
-.tutor-user,
-.tutor-reply {
-  max-width: 82%;
-  padding: 12px 14px;
-  line-height: 1.55;
-  white-space: pre-wrap;
+.library-coach__files {
+  flex: none;
 }
 
-.tutor-user {
-  align-self: flex-end;
-  border-radius: 16px 16px 4px 16px;
-  background: var(--primary);
-  color: #fff;
-}
-
-.tutor-reply {
+.answer {
   align-self: flex-start;
+  max-width: 86%;
+  padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 16px 16px 16px 4px;
-  background: #fff;
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.65;
+  box-shadow: var(--shadow-sm);
 }
 
-.tutor-source {
-  margin-top: 8px;
-  white-space: normal;
+.answer > :first-child {
+  margin-top: 0;
 }
 
-.tutor-input {
+.answer > :last-child {
+  margin-bottom: 0;
+}
+
+.answer p,
+.answer ul,
+.answer ol {
+  margin: 0 0 10px;
+}
+
+.answer ul,
+.answer ol {
+  padding-left: 22px;
+}
+
+.answer li {
+  margin: 4px 0;
+}
+
+.answer li::marker {
+  color: var(--primary);
+}
+
+/* Key terms are bold, with a soft highlight behind them. */
+.answer strong {
+  color: var(--ink);
+  font-weight: 700;
+  padding: 0 2px;
+  background: linear-gradient(transparent 58%, var(--primary-100) 58%);
+}
+
+.answer em {
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.answer h3,
+.answer h4 {
+  margin: 14px 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* A quote from a file stands out in its own box. */
+.answer blockquote {
+  margin: 10px 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 10px 10px 0;
+  background: var(--primary-50);
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.answer blockquote p {
+  margin: 0;
+}
+
+.answer code {
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 13px;
+}
+
+.answer__link {
+  color: inherit;
+}
+
+.answer__source {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-2);
+  color: var(--muted);
+  font-size: 13px;
 }
 
-.tutor-input .input {
-  flex: 1;
-  min-width: 0;
+.answer__source svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.answer--typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 16px 18px;
+}
+
+.answer--typing i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: answer-dot 1.2s ease-in-out infinite;
+}
+
+.answer--typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.answer--typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes answer-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .answer--typing i {
+    animation: none;
+  }
 }
