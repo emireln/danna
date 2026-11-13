@@ -7,6 +7,8 @@ import { GOALS, LEVELS, SKILLS, type AnswerRecord, type AttemptKind, type Goal, 
 export const ATTEMPT_KINDS: readonly AttemptKind[] = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice', 'review'];
 export const TEST_SKILLS: ReadonlyArray<Skill | 'mixed'> = [...SKILLS, 'mixed'];
 export const AVATAR_MAX_BYTES = 300 * 1024;
+/** A banner is a wide WebP strip. It is kept under this size on this device and in the account. */
+export const BANNER_MAX_BYTES = 480 * 1024;
 export const MAX_ANSWERS = 300;
 export const MAX_RESPONSE_LENGTH = 2000;
 export const MAX_JSON_LENGTH = 200_000;

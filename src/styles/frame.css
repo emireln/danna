@@ -57,7 +57,8 @@
     gap: 2px;
   }
 
-  /* ---------- Day streak, beside the profile picture: a small flame, then bigger ones at 10 and 50 days ---------- */
+  /* ---------- Day streak, beside the profile picture. Up to 200 days the flame keeps its orange look. Then its colour
+     and its movement grow: red above 200, blue above 500, and purple from 1000 days, with a slightly bigger flame. ---------- */
   .streak {
     display: inline-flex;
     align-items: center;
@@ -101,84 +102,74 @@
     fill: #fde68a;
   }
 
-  /* Ember, 1 to 9 days: a steady flame that breathes slowly. */
+  /* Up to 200 days: the orange flame, breathing slowly. */
   .streak--ember .streak__flame {
     animation: streak-breathe 2.2s ease-in-out infinite;
   }
 
-  /* Blaze, 10 to 49 days: a bigger, hotter flame that flickers, with a warm glow. */
-  .streak--blaze {
+  /* 201 to 500 days: red, with a gentle sway. */
+  .streak--ruby {
     color: #b91c1c;
-    background: #ffeee6;
-    box-shadow: inset 0 0 0 1px #fed7aa;
+    background: #fdecec;
+    box-shadow: inset 0 0 0 1px #fecaca;
   }
 
-  .streak--blaze .streak__flame {
-    animation: streak-flicker 1s ease-in-out infinite;
-    filter: drop-shadow(0 0 3px rgba(249, 115, 22, 0.55));
-  }
-
-  .streak--blaze .streak__outer {
+  .streak--ruby .streak__outer {
     fill: #ef4444;
   }
 
-  .streak--blaze .streak__core {
-    fill: #facc15;
-    animation: streak-core 0.7s ease-in-out infinite alternate;
+  .streak--ruby .streak__core {
+    fill: #fecaca;
   }
 
-  /* Inferno, 50 days and up: a blue flame with a turning halo and sparks. */
-  .streak--inferno {
-    color: #4338ca;
-    background: #eef2ff;
+  .streak--ruby .streak__flame {
+    animation: streak-sway 2.6s ease-in-out infinite;
   }
 
-  .streak--inferno .streak__flame {
-    animation: streak-flicker 1.4s ease-in-out infinite;
-    filter: drop-shadow(0 0 4px rgba(99, 102, 241, 0.6));
+  /* 501 to 999 days: blue, moving more. */
+  .streak--sapphire {
+    color: #1d4ed8;
+    background: #e8f0ff;
+    box-shadow: inset 0 0 0 1px #bfdbfe;
   }
 
-  .streak--inferno .streak__outer {
-    fill: #6366f1;
+  .streak--sapphire .streak__outer {
+    fill: #3b82f6;
   }
 
-  .streak--inferno .streak__core {
-    fill: #a5f3fc;
+  .streak--sapphire .streak__core {
+    fill: #bfdbfe;
   }
 
-  .streak__halo {
-    position: absolute;
-    inset: -5px;
-    border-radius: 50%;
-    border: 1.5px dashed #818cf8;
-    animation: streak-spin 5s linear infinite;
+  .streak--sapphire .streak__flame {
+    animation: streak-flicker 1.6s ease-in-out infinite;
   }
 
-  .streak__sparks {
-    position: relative;
-    width: 12px;
-    height: 16px;
+  /* From 1000 days: purple, moving more, with a slightly bigger flame. */
+  .streak--amethyst {
+    height: 34px;
+    color: #7e22ce;
+    background: #f3e8ff;
+    box-shadow: inset 0 0 0 1px #e9d5ff;
   }
 
-  .streak__sparks i {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: #818cf8;
-    animation: streak-spark 1.6s ease-out infinite;
+  .streak--amethyst .streak__outer {
+    fill: #a855f7;
   }
 
-  .streak__sparks i:nth-child(2) {
-    left: 15%;
-    animation-delay: 0.5s;
+  .streak--amethyst .streak__core {
+    fill: #f5d0fe;
   }
 
-  .streak__sparks i:nth-child(3) {
-    left: 80%;
-    animation-delay: 1s;
+  .streak--amethyst .streak__flame {
+    width: 24px;
+    height: 24px;
+    animation: streak-flicker 1.2s ease-in-out infinite;
+  }
+
+  .streak--amethyst .streak__flame svg {
+    width: 24px;
+    height: 24px;
   }
 
   @keyframes streak-breathe {
@@ -188,6 +179,16 @@
     }
     50% {
       transform: scale(1.06);
+    }
+  }
+
+  @keyframes streak-sway {
+    0%,
+    100% {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(-2deg) scale(1.03);
     }
   }
 
@@ -207,42 +208,8 @@
     }
   }
 
-  @keyframes streak-core {
-    from {
-      opacity: 0.7;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1.08);
-    }
-  }
-
-  @keyframes streak-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes streak-spark {
-    0% {
-      opacity: 0;
-      transform: translateY(0);
-    }
-    20% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-      transform: translate(2px, -16px);
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .streak__flame,
-    .streak__core,
-    .streak__halo,
-    .streak__sparks i {
+    .streak__flame {
       animation: none !important;
     }
   }

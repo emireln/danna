@@ -16,6 +16,9 @@ const legacySql = (await readFile(join(here, 'legacy', 'schema-v1.sql'), 'utf8')
   '',
 );
 
+// The migration that the app's current version needs, run on top of the schema, as the dashboard would run it.
+const migrationSql = await readFile(join(here, '..', 'migrations', '0006_release_0_7_0.sql'), 'utf8');
+
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
 const CAROL = '33333333-3333-4333-8333-333333333333';
@@ -426,9 +429,48 @@ test('profile pictures are private: the owner writes, friends look, everyone els
   assert.equal(friendReplace.affectedRows, 0);
 });
 
+test('profile banners are private too: the owner writes, friends look once the profile points at it, everyone else is refused', async () => {
+  const bucket = (await db.query("select public, file_size_limit, allowed_mime_types from storage.buckets where id = 'profile-banners'")).rows[0];
+  assert.equal(bucket.public, false);
+  assert.equal(bucket.file_size_limit, 491520);
+  assert.deepEqual(bucket.allowed_mime_types, ['image/webp']);
+
+  await as(db, ALICE, "insert into storage.objects (bucket_id, name, owner) values ('profile-banners', $1, $2)", [`${ALICE}/banner.webp`, ALICE]);
+  const onBehalf = await refused(as(db, ALICE, "insert into storage.objects (bucket_id, name, owner) values ('profile-banners', $1, $2)", [`${BOB}/banner.webp`, ALICE]));
+  assert.equal(onBehalf.code, PERMISSION_DENIED);
+  const extraFile = await refused(as(db, ALICE, "insert into storage.objects (bucket_id, name, owner) values ('profile-banners', $1, $2)", [`${ALICE}/other.webp`, ALICE]));
+  assert.equal(extraFile.code, PERMISSION_DENIED);
+
+  // A banner is shown to others only once the profile points at it, and only at the owner's own file.
+  assert.equal((await as(db, BOB, "select name from storage.objects where bucket_id = 'profile-banners'")).rows.length, 0);
+  const borrowed = await refused(as(db, ALICE, 'update public.profiles set banner_path = $1, banner_updated_at = now() where id = $2', [`${BOB}/banner.webp`, ALICE]));
+  assert.equal(borrowed.code, CHECK_FAILED);
+  await as(db, ALICE, 'update public.profiles set banner_path = $1, banner_updated_at = now() where id = $2', [`${ALICE}/banner.webp`, ALICE]);
+
+  const friendSees = await as(db, BOB, "select name from storage.objects where bucket_id = 'profile-banners'");
+  assert.equal(friendSees.rows.length, 1, 'a friend sees the banner');
+  const friendBanner = (await as(db, BOB, 'select banner_path, banner_updated_at from public.list_friends() where id = $1', [ALICE])).rows[0];
+  assert.equal(friendBanner.banner_path, `${ALICE}/banner.webp`, 'the friends list gives the banner path');
+  assert.equal((await as(db, CAROL, "select name from storage.objects where bucket_id = 'profile-banners'")).rows.length, 0, 'a stranger does not');
+  const anonymousSees = await refused(as(db, null, "select name from storage.objects where bucket_id = 'profile-banners'"));
+  assert.equal(anonymousSees.code, PERMISSION_DENIED);
+
+  const friendReplace = await as(db, BOB, "update storage.objects set owner = $1 where bucket_id = 'profile-banners' and name = $2", [BOB, `${ALICE}/banner.webp`]);
+  assert.equal(friendReplace.affectedRows, 0, 'a friend cannot change the banner');
+});
+
+test('migration 0006 runs on a current database, and again, without changing what is there', async () => {
+  await db.exec(migrationSql);
+  await db.exec(migrationSql);
+  assert.equal((await db.query("select count(*)::int as n from public.announcements where version = '0.7.0'")).rows[0].n, 1, 'one note for 0.7.0');
+  assert.equal((await db.query("select id from storage.buckets where id = 'profile-banners'")).rows.length, 1, 'the banner bucket is there');
+  assert.equal((await as(db, ALICE, 'select banner_path from public.profiles where id = $1', [ALICE])).rows.length, 1, 'the profile still has its banner columns');
+});
+
 test('unfriending ends access to shared results and to profile pictures', async () => {
   const visible = (await as(db, BOB, "select name from storage.objects where bucket_id = 'avatars'")).rows.length;
   assert.equal(visible, 1, 'friends can see the picture before unfriending');
+  assert.equal((await as(db, BOB, "select name from storage.objects where bucket_id = 'profile-banners'")).rows.length, 1, 'and the banner');
 
   await as(db, ALICE, 'delete from public.friendships where requester_id = $1 and addressee_id = $2 or requester_id = $2 and addressee_id = $1', [ALICE, BOB]);
 
@@ -436,6 +478,7 @@ test('unfriending ends access to shared results and to profile pictures', async 
   assert.equal(sharedAttempt.length, 0);
   assert.equal((await as(db, BOB, 'select id from public.list_shares()')).rows.length, 0);
   assert.equal((await as(db, BOB, "select name from storage.objects where bucket_id = 'avatars'")).rows.length, 0);
+  assert.equal((await as(db, BOB, "select name from storage.objects where bucket_id = 'profile-banners'")).rows.length, 0, 'and the banner');
 });
 
 test('an existing version 1 database upgrades in place, keeps its data, and can be upgraded twice', async () => {

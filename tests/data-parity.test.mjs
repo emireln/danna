@@ -100,6 +100,7 @@ function normalize(value) {
       if (key === 'id' || key === 'user_id' || key === 'owner_id') continue;
       if (key === 'updated_at') out[key] = '<now>';
       else if (key === 'avatar_updated_at') out[key] = item ? '<now>' : null;
+      else if (key === 'banner_updated_at') out[key] = item ? '<now>' : null;
       else if (key === 'created_at' && 'avatar_color' in value) out[key] = '<now>';
       else if (key === 'username' && typeof item === 'string' && item.startsWith('learner')) out[key] = '<learner>';
       else out[key] = normalize(item);
@@ -282,6 +283,16 @@ async function scenario(backend) {
     return { profile, picture: await backend.getAvatar() };
   });
 
+  await step('a banner must be WebP', () => backend.setBanner(new Blob([new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])])));
+  await step('a WebP banner is saved', async () => {
+    const profile = await backend.setBanner(webp(4096));
+    const banner = await backend.getBanner();
+    return { profile, bannerBytes: banner ? banner.size : null };
+  });
+  await step('a banner is removed', async () => {
+    const profile = await backend.setBanner(null);
+    return { profile, banner: await backend.getBanner() };
+  });
   await step('friends are not available offline', () => backend.requestFriend('someone'));
   await step('friends list is empty offline', () => backend.listFriends());
   await step('the profile at the end', () => backend.getProfile());

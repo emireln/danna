@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Flame, Play, Search, Share2, UserPlus } from 'lucide-react';
 import { ShareSheet, type ShareItem } from '../components/ShareSheet';
 import { PersonAvatar } from '../components/PersonAvatar';
+import { FriendProfile } from '../components/FriendProfile';
 import { Avatar, ConfirmSheet, Empty, PageHeader, SectionTitle, Skeleton, Tabs } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { useT, type Translate } from '../lib/i18n/react';
@@ -35,6 +36,7 @@ export function FriendsScreen() {
   const [searching, setSearching] = useState(false);
   const [sharing, setSharing] = useState<{ friendId?: string; item?: ShareItem } | null>(null);
   const [removing, setRemoving] = useState<FriendRow | null>(null);
+  const [viewing, setViewing] = useState<FriendRow | null>(null);
   const [removeBusy, setRemoveBusy] = useState(false);
   const online = backend?.mode === 'supabase';
 
@@ -239,13 +241,15 @@ export function FriendsScreen() {
                   <div className="set-list">
                     {accepted.map((friend) => (
                       <div key={friend.id} className="person">
-                        <PersonAvatar person={friend} />
-                        <div className="person__body">
-                          <div className="person__name">{friend.display_name || friend.username}</div>
-                          <div className="person__meta">
-                            @{friend.username} · {friend.xp ?? 0} XP
+                        <button className="person__main" onClick={() => setViewing(friend)}>
+                          <PersonAvatar person={friend} />
+                          <div className="person__body">
+                            <div className="person__name">{friend.display_name || friend.username}</div>
+                            <div className="person__meta">
+                              @{friend.username} · {friend.xp ?? 0} XP
+                            </div>
                           </div>
-                        </div>
+                        </button>
                         <div className="person__actions">
                           <button className="btn btn--ghost btn--sm" onClick={() => setSharing({ friendId: friend.id })}>
                             <Share2 /> {t('Share')}
@@ -376,6 +380,8 @@ export function FriendsScreen() {
           )}
         </div>
       )}
+
+      {viewing && <FriendProfile friend={viewing} shares={shares ?? []} onClose={() => setViewing(null)} />}
 
       {removing && (
         <ConfirmSheet

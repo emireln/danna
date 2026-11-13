@@ -43,7 +43,7 @@ export async function prepareAvatar(file: File): Promise<Blob> {
   }
 }
 
-function toWebp(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+export function toWebp(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {

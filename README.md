@@ -18,7 +18,8 @@ Your profile picture works in both modes. Pictures are converted to a small WebP
 - **Review**: spaced repetition for every missed question.
 - **Coach**: an AI tutor chat.
 - **My library** (from your profile): keep PDF, TXT and Markdown files and read them in the app. Edit TXT and Markdown files there and save them, and find text in any file with Ctrl+F. Save learning links from YouTube, Coursera, Khan Academy and other platforms, with the platform's logo, and sort them into categories. Ask the tutor questions about the files you choose; it answers only from them and names the file.
-- **Friends** (online only): search by username from three letters, requests, a ranking, shared results and sets, and an inbox.
+- **Friends** (online only): search by username from three letters, requests, a ranking, shared results and sets, and an inbox. Open a friend to see their banner, picture, day streak and what they shared with you.
+- **Profile**: a banner that covers the profile and the stat cards (optional, private to you and your friends), the picture on the right, and the day streak, which turns red above 200 days, blue above 500 and purple from 1000.
 - **What's new**: release notes and banners. Settings has Check for updates.
 - **Search**: the search button in the title bar, or Ctrl+K, finds lessons, tests, coach chats, library files and links, results and pages.
 - **AI, bring your own key**: OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is selected by default, and you can choose another in Settings. DeepSeek's live model list is read from its API, and the newest version is chosen. Listening passages are read aloud in a natural voice from your OpenAI or Google Gemini key (Settings, Listening voice). The text is sent to that provider.
@@ -72,7 +73,7 @@ The installer is written to `release/danna-setup-<version>-x64.exe`. Delete the 
 ## Online accounts (Supabase)
 
 1. For a new project: in the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket, the library and the release notes.
-2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note), then `supabase/migrations/0006_release_0_7_0.sql` (the 0.7.0 release note). All five are safe to run again.
+2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note), then `supabase/migrations/0006_release_0_7_0.sql` (profile banners, a friend's profile, and the 0.7.0 release note). All five are safe to run again.
 3. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
 4. Never add a service-role or secret key to the app. Only the publishable key is bundled.
 
@@ -89,7 +90,7 @@ People on this device see the release notes and banner bundled in `src/content/a
 
 - **On this device**: `danna.db` (SQLite: progress, the profile picture, library files and links) and `danna-settings.json` in the app's data folder. Nothing is sent anywhere.
 - **Sign-in session**: `danna-session.bin`, encrypted by Windows and readable only by this app for this Windows user.
-- **Online**: your account, stored in Supabase with row-level security, so only you can read your own rows. Shared results and sets are visible to the friend they were shared with, and only while you are still friends. Your picture is private: only you and your friends can download it. Your library files are private to you, not even friends can open them.
+- **Online**: your account, stored in Supabase with row-level security, so only you can read your own rows. Shared results and sets are visible to the friend they were shared with, and only while you are still friends. Your picture and your banner are private: only you and your friends can download them. Your library files are private to you, not even friends can open them.
 - **AI keys**: encrypted by Windows and used only by the app's main process. They are never saved to the online account. The tutor sends only the excerpts of the files you chose to the AI provider you connected.
 
 ## Security

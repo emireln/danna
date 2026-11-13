@@ -26,6 +26,16 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
     },
     fetchAvatar: async () => null,
 
+    getBanner: async () => {
+      const bytes = await call<Uint8Array | null>('getBanner');
+      return bytes ? new Blob([Uint8Array.from(bytes)], { type: 'image/webp' }) : null;
+    },
+    setBanner: async (picture: Blob | null) => {
+      if (!picture) return call<ProfileRow>('clearBanner');
+      return call<ProfileRow>('setBanner', [await picture.arrayBuffer()]);
+    },
+    fetchBanner: async () => null,
+
     listAttempts: (limit = 60, kind?: AttemptKind) => call<AttemptRow[]>('listAttempts', [limit, kind]),
     countAttempts: (kind: AttemptKind) => call<number>('countAttempts', [kind]),
     getAttempt: (id: string) => call<AttemptRow | null>('getAttempt', [id]),

@@ -44,6 +44,12 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
     return id;
   }
 
+  // Banners are private too, in their own bucket: the owner and their friends can download them.
+  async function downloadBanner(path: string): Promise<Blob | null> {
+    const { data, error } = await sb.storage.from('profile-banners').download(path);
+    return error || !data ? null : data;
+  }
+
   // Pictures are private: the storage policy lets the owner and their friends download them.
   async function downloadPicture(path: string): Promise<Blob | null> {
     const { data, error } = await sb.storage.from('avatars').download(path);
@@ -103,6 +109,42 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
 
     async fetchAvatar(path: string) {
       return downloadPicture(path);
+    },
+
+    async getBanner() {
+      const id = await me();
+      const row = unwrap(await sb.from('profiles').select('banner_path').eq('id', id).maybeSingle()) as {
+        banner_path: string | null;
+      } | null;
+      return row?.banner_path ? downloadBanner(row.banner_path) : null;
+    },
+
+    async setBanner(picture: Blob | null) {
+      const id = await me();
+      const path = `${id}/banner.webp`;
+      if (picture) {
+        // Upload first, then point the profile at it, so the profile never refers to a missing file.
+        const { error } = await sb.storage
+          .from('profile-banners')
+          .upload(path, picture, { upsert: true, contentType: 'image/webp', cacheControl: '3600' });
+        if (error) throw new Error(error.message);
+        return unwrap(
+          await sb
+            .from('profiles')
+            .update({ banner_path: path, banner_updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select('*')
+            .single(),
+        ) as ProfileRow;
+      }
+      await sb.storage.from('profile-banners').remove([path]);
+      return unwrap(
+        await sb.from('profiles').update({ banner_path: null, banner_updated_at: null }).eq('id', id).select('*').single(),
+      ) as ProfileRow;
+    },
+
+    async fetchBanner(path: string) {
+      return downloadBanner(path);
     },
 
     async listAttempts(limit = 60, kind?: AttemptKind) {

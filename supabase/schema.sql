@@ -200,6 +200,18 @@ alter table public.profiles
   drop constraint if exists profiles_avatar_pair,
   add constraint profiles_avatar_pair check ((avatar_path is null) = (avatar_updated_at is null)) not valid;
 
+-- A profile banner is a wide WebP picture, kept at <user id>/banner.webp, like the profile picture.
+alter table public.profiles add column if not exists banner_path text;
+alter table public.profiles add column if not exists banner_updated_at timestamptz;
+
+alter table public.profiles
+  drop constraint if exists profiles_banner_owner,
+  add constraint profiles_banner_owner check (banner_path is null or banner_path = (id::text || '/banner.webp')) not valid,
+  drop constraint if exists profiles_banner_pair,
+  add constraint profiles_banner_pair check ((banner_path is null) = (banner_updated_at is null)) not valid;
+
+
+
 alter table public.attempts
   drop constraint if exists attempts_title_length,
   add constraint attempts_title_length check (char_length(title) between 1 and 200) not valid,
@@ -630,7 +642,8 @@ $$;
 grant select on public.profiles to authenticated;
 grant update (
   username, display_name, avatar_color, target_score, exam_date, daily_minutes, level,
-  xp, streak, last_active, onboarding_done, avatar_path, avatar_updated_at
+  xp, streak, last_active, onboarding_done, avatar_path, avatar_updated_at,
+  banner_path, banner_updated_at
 ) on public.profiles to authenticated;
 
 grant select, insert on public.friendships to authenticated;
@@ -655,6 +668,25 @@ revoke all on function public.are_friends(uuid, uuid) from public, anon;
 grant execute on function public.are_friends(uuid, uuid) to authenticated;
 revoke all on function public.can_read_avatar(text) from public, anon;
 grant execute on function public.can_read_avatar(text) to authenticated;
+
+-- Banners are private: the owner, and the owner's friends, can download them.
+create or replace function public.can_read_banner(object_name text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+    from public.profiles p
+    where p.banner_path = object_name
+      and (p.id = auth.uid() or public.are_friends(p.id, auth.uid()))
+  );
+$$;
+
+revoke all on function public.can_read_banner(text) from public, anon;
+grant execute on function public.can_read_banner(text) to authenticated;
 revoke all on function public.owns_attempt(uuid, uuid) from public, anon;
 grant execute on function public.owns_attempt(uuid, uuid) to authenticated;
 revoke all on function public.owns_test(uuid, uuid) from public, anon;
@@ -694,6 +726,7 @@ as $$
 $$;
 
 -- Requests and friends for the caller. XP and streak are shown only for accepted friends.
+-- The banner's path and version let a friend's profile show the banner, as the picture is shown.
 drop function if exists public.list_friends();
 create function public.list_friends()
 returns table (
@@ -708,7 +741,9 @@ returns table (
   avatar_updated_at timestamptz,
   xp int,
   streak int,
-  created_at timestamptz
+  created_at timestamptz,
+  banner_path text,
+  banner_updated_at timestamptz
 )
 language sql
 stable
@@ -727,7 +762,9 @@ as $$
     p.avatar_updated_at,
     case when f.status = 'accepted' then p.xp end,
     case when f.status = 'accepted' then p.streak end,
-    f.created_at
+    f.created_at,
+    p.banner_path,
+    p.banner_updated_at
   from public.friendships f
   join public.profiles p
     on p.id = case when f.requester_id = auth.uid() then f.addressee_id else f.requester_id end
@@ -735,6 +772,9 @@ as $$
     and auth.uid() in (f.requester_id, f.addressee_id)
   order by f.created_at desc;
 $$;
+
+revoke all on function public.list_friends() from public, anon;
+grant execute on function public.list_friends() to authenticated;
 
 -- Shares sent or received. Shares end when the two people stop being friends.
 create or replace function public.list_shares()
@@ -788,8 +828,6 @@ $$;
 
 revoke all on function public.search_people(text) from public, anon;
 grant execute on function public.search_people(text) to authenticated;
-revoke all on function public.list_friends() from public, anon;
-grant execute on function public.list_friends() to authenticated;
 revoke all on function public.list_shares() from public, anon;
 grant execute on function public.list_shares() to authenticated;
 
@@ -834,6 +872,38 @@ drop policy if exists "avatars: remove own" on storage.objects;
 create policy "avatars: remove own" on storage.objects
   for delete to authenticated
   using (bucket_id = 'avatars' and name = ((select auth.uid())::text || '/avatar.webp'));
+
+-- A private bucket for banners: the owner uploads, replaces and removes their own, and the owner and friends download.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('profile-banners', 'profile-banners', false, 491520, array['image/webp'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "profile-banners: read own or friends" on storage.objects;
+create policy "profile-banners: read own or friends" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'profile-banners'
+    and (name = ((select auth.uid())::text || '/banner.webp') or public.can_read_banner(name))
+  );
+
+drop policy if exists "profile-banners: upload own" on storage.objects;
+create policy "profile-banners: upload own" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'profile-banners' and name = ((select auth.uid())::text || '/banner.webp'));
+
+drop policy if exists "profile-banners: replace own" on storage.objects;
+create policy "profile-banners: replace own" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'profile-banners' and name = ((select auth.uid())::text || '/banner.webp'))
+  with check (bucket_id = 'profile-banners' and name = ((select auth.uid())::text || '/banner.webp'));
+
+drop policy if exists "profile-banners: remove own" on storage.objects;
+create policy "profile-banners: remove own" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'profile-banners' and name = ((select auth.uid())::text || '/banner.webp'));
 
 -- ---------------------------------------------------------------------------
 -- 10. Seed content: release notes for the versions already shipped.
@@ -1144,9 +1214,12 @@ declare
     '- A PDF keeps its pages: its text is saved as a new Markdown file, with the PDF as it was' || E'\n' ||
     '- Find text in a file, like Notepad: Ctrl+F, then Enter for the next match' || E'\n' ||
     '- The coach offers other starter questions each time you start a chat, and its files take one line' || E'\n' ||
-    '- The day streak sits beside your profile picture' || E'\n' ||
+    '- The day streak sits beside your profile picture. It turns red above 200 days, blue above 500 and purple from 1000' || E'\n' ||
     '- Google Gemini keys in the new AQ. format are recognised' || E'\n' ||
-    '- Search boxes have a clear button that matches the rest of the app';
+    '- Search boxes have a clear button that matches the rest of the app' || E'\n' ||
+    '- Your profile has a banner that covers the profile and the stat cards. The picture moves to the right, with an edit button' || E'\n' ||
+    '- Friends can be opened to see their banner, picture, day streak and what they shared with you' || E'\n' ||
+    '- The Listening, Writing and Speaking cards in Self study have new colours';
 begin
   if exists (select 1 from public.announcements where version = '0.7.0' and kind = 'release_note') then
     update public.announcements

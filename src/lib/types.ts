@@ -116,6 +116,10 @@ export interface ProfileRow {
   avatar_path: string | null;
   /** When the picture last changed (its version). Null when there is no picture. */
   avatar_updated_at: string | null;
+  /** Storage path of the profile banner on an online account; always null on this device. */
+  banner_path: string | null;
+  /** When the banner last changed (its version). Null when there is no banner. */
+  banner_updated_at: string | null;
   created_at: string;
 }
 
@@ -185,6 +189,9 @@ export interface FriendRow extends PersonRow {
   /** Shown for accepted friends only; null while a request is pending. */
   xp: number | null;
   streak: number | null;
+  /** The banner's storage path and version, shown on a friend's profile. */
+  banner_path: string | null;
+  banner_updated_at: string | null;
   created_at: string;
 }
 

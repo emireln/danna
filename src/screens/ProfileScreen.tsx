@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Camera, Pencil, Settings2 } from 'lucide-react';
+import { BookOpen, Camera, Image as ImageIcon, Pencil, Settings2, Trash2 } from 'lucide-react';
 import { Avatar, Empty, Field, FeatureCard, ProgressBar, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { PictureError, prepareAvatar } from '../lib/avatar';
+import { prepareBanner } from '../lib/banner';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { daysUntil, formatDate, levelInfo, timeAgo } from '../lib/progress';
@@ -17,16 +18,20 @@ export function ProfileScreen() {
   const navigate = useNavigate();
   const t = useT();
   const { backend, mode, email, signOut } = useAuth();
-  const { profile, patchProfile, pictureUrl, changePicture } = useAppData();
+  const { profile, patchProfile, pictureUrl, changePicture, bannerUrl, changeBanner } = useAppData();
   const { notify } = useToast();
   const [attempts, setAttempts] = useState<AttemptRow[] | null>(null);
   const [checks, setChecks] = useState<{ count: number; rows: AttemptRow[] } | null>(null);
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const [pictureOpen, setPictureOpen] = useState(false);
   const [pictureBusy, setPictureBusy] = useState(false);
+  const [bannerOpen, setBannerOpen] = useState(false);
+  const [bannerBusy, setBannerBusy] = useState(false);
   const [libraryCounts, setLibraryCounts] = useState<{ files: number; links: number } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const bannerInput = useRef<HTMLInputElement>(null);
 
   // The recent sessions, and the level checks: their total, and the ones that give the best results.
   useEffect(() => {
@@ -102,6 +107,7 @@ export function ProfileScreen() {
     setPictureBusy(true);
     try {
       await changePicture(await prepareAvatar(file));
+      setPictureOpen(false);
       notify(t('Picture updated.'), 'ok');
     } catch (error) {
       notify(error instanceof PictureError ? t(error.message) : t(errorText(error)), 'error');
@@ -114,11 +120,42 @@ export function ProfileScreen() {
     setPictureBusy(true);
     try {
       await changePicture(null);
+      setPictureOpen(false);
       notify(t('Picture removed.'), 'ok');
     } catch (error) {
       notify(t(errorText(error)), 'error');
     } finally {
       setPictureBusy(false);
+    }
+  };
+
+  // A banner is cropped to a wide strip and kept small, like the picture. It can be changed offline too.
+  const chooseBanner = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setBannerBusy(true);
+    try {
+      await changeBanner(await prepareBanner(file));
+      setBannerOpen(false);
+      notify(t('Banner updated.'), 'ok');
+    } catch (error) {
+      notify(error instanceof PictureError ? t(error.message) : t(errorText(error)), 'error');
+    } finally {
+      setBannerBusy(false);
+    }
+  };
+
+  const removeBanner = async () => {
+    setBannerBusy(true);
+    try {
+      await changeBanner(null);
+      setBannerOpen(false);
+      notify(t('Banner removed.'), 'ok');
+    } catch (error) {
+      notify(t(errorText(error)), 'error');
+    } finally {
+      setBannerBusy(false);
     }
   };
 
@@ -136,81 +173,91 @@ export function ProfileScreen() {
 
   return (
     <div className="page">
-      <div className="profile-head">
-        <div className="profile-head__picture">
-          <div className="profile-head__avatar">
+      <input ref={fileInput} type="file" accept="image/*" hidden onChange={choosePicture} />
+      <input ref={bannerInput} type="file" accept="image/*" hidden onChange={chooseBanner} />
+
+      <section className={`profile-hero${bannerUrl ? ' profile-hero--photo' : ''}`} aria-label={t('Your profile')}>
+        <div
+          className="profile-hero__backdrop"
+          style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
+          aria-hidden="true"
+        />
+        <button className="profile-hero__banner-edit" onClick={() => setBannerOpen(true)} disabled={bannerBusy}>
+          <ImageIcon aria-hidden="true" />
+          {bannerUrl ? t('Edit banner') : t('Add banner')}
+        </button>
+
+        <div className="profile-hero__top">
+          <div className="profile-hero__who">
+            <p className="profile-hero__eyebrow">{t('Your profile')}</p>
+            <div className="profile-hero__name">
+              <h1 className="profile-hero__title">{name}</h1>
+              <button
+                className="profile-hero__icon"
+                onClick={() => {
+                  setNameDraft(profile.display_name);
+                  setEditing(true);
+                }}
+                aria-label={t('Edit name')}
+                title={t('Edit name')}
+              >
+                <Pencil aria-hidden="true" />
+              </button>
+            </div>
+            <p className="profile-hero__meta">{mode === 'local' ? t('Kept on this device') : `@${profile.username} · ${email ?? ''}`}</p>
+            <div className="profile-hero__level">
+              <div className="row row--between level-row">
+                <span>{t('Level {level}', { level: level.level })}</span>
+                <span>{t('{into} / {span} XP', { into: level.into, span: level.span })}</span>
+              </div>
+              <ProgressBar value={level.percent} label={t('Level progress')} onBlue />
+            </div>
+          </div>
+
+          <div className="profile-hero__picture">
             <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
             <button
-              className="profile-head__camera"
-              onClick={() => fileInput.current?.click()}
+              className="profile-hero__picture-edit"
+              onClick={() => setPictureOpen(true)}
               disabled={pictureBusy}
-              aria-label={pictureUrl ? t('Change picture') : t('Add picture')}
-              title={pictureUrl ? t('Change picture') : t('Add picture')}
+              aria-label={t('Edit picture')}
+              title={t('Edit picture')}
             >
-              {pictureBusy ? <Spinner dark /> : <Camera aria-hidden="true" />}
+              {pictureBusy ? <Spinner dark /> : <Pencil aria-hidden="true" />}
             </button>
           </div>
-          {pictureUrl && (
-            <button className="profile-head__remove" onClick={removePicture} disabled={pictureBusy}>
-              {t('Remove picture')}
-            </button>
-          )}
-          <input ref={fileInput} type="file" accept="image/*" hidden onChange={choosePicture} />
         </div>
 
-        <div className="profile-head__main">
-          <p className="eyebrow">{t('Your profile')}</p>
-          <h1 className="page-title">{name}</h1>
-          <p className="small muted">{mode === 'local' ? t('Kept on this device') : `@${profile.username} · ${email ?? ''}`}</p>
-          <div className="profile-head__level">
-            <div className="row row--between level-row">
-              <span>{t('Level {level}', { level: level.level })}</span>
-              <span className="muted">{t('{into} / {span} XP', { into: level.into, span: level.span })}</span>
-            </div>
-            <ProgressBar value={level.percent} label={t('Level progress')} />
+        <div className="profile-hero__stats">
+          <div className="profile-hero__stat">
+            <span className="profile-hero__value">{profile.streak}</span>
+            <span className="profile-hero__label">{t('Day streak')}</span>
+          </div>
+          <div className="profile-hero__stat">
+            <span className="profile-hero__value">{profile.xp}</span>
+            <span className="profile-hero__label">{t('Total XP')}</span>
+          </div>
+          <div className="profile-hero__stat">
+            <span className="profile-hero__value">{checks?.count ?? 0}</span>
+            <span className="profile-hero__label">{t('Level checks taken')}</span>
+          </div>
+          <div className="profile-hero__stat">
+            {profile.goal === 'toefl' ? (
+              <>
+                <span className="profile-hero__value">{best ? best : '—'}</span>
+                <span className="profile-hero__label">
+                  {best ? t('Best TOEFL estimate · {range}', { range: toeflRange(best).join('–') }) : t('Best TOEFL estimate')}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="profile-hero__value">{diagnostics.length ? bandFor(bestPercent) : '—'}</span>
+                <span className="profile-hero__label">{t('Best level')}</span>
+              </>
+            )}
           </div>
         </div>
-
-        <button
-          className="btn btn--ghost btn--sm"
-          onClick={() => {
-            setNameDraft(profile.display_name);
-            setEditing(true);
-          }}
-        >
-          <Pencil /> {t('Edit name')}
-        </button>
-      </div>
-
-      <div className="grid-4 mt-6">
-        <div className="stat">
-          <span className="stat__value">{profile.streak}</span>
-          <span className="stat__label">{t('Day streak')}</span>
-        </div>
-        <div className="stat">
-          <span className="stat__value">{profile.xp}</span>
-          <span className="stat__label">{t('Total XP')}</span>
-        </div>
-        <div className="stat">
-          <span className="stat__value">{checks?.count ?? 0}</span>
-          <span className="stat__label">{t('Level checks taken')}</span>
-        </div>
-        <div className="stat">
-          {profile.goal === 'toefl' ? (
-            <>
-              <span className="stat__value">{best ? best : '—'}</span>
-              <span className="stat__label">
-                {best ? t('Best TOEFL estimate · {range}', { range: toeflRange(best).join('–') }) : t('Best TOEFL estimate')}
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="stat__value">{diagnostics.length ? bandFor(bestPercent) : '—'}</span>
-              <span className="stat__label">{t('Best level')}</span>
-            </>
-          )}
-        </div>
-      </div>
+      </section>
 
       <div className="stack mt-6">
         <FeatureCard
@@ -296,6 +343,64 @@ export function ProfileScreen() {
           {mode === 'local' ? t('Switch mode') : t('Sign out')}
         </button>
       </div>
+
+      {pictureOpen && (
+        <Sheet
+          title={t('Profile picture')}
+          onClose={() => setPictureOpen(false)}
+          footer={
+            <button className="btn btn--ghost" onClick={() => setPictureOpen(false)} disabled={pictureBusy}>
+              {t('Close')}
+            </button>
+          }
+        >
+          <div className="stack">
+            <div className="picture-preview">
+              <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
+            </div>
+            <div className="stack--tight">
+              <button className="btn btn--primary btn--block" onClick={() => fileInput.current?.click()} disabled={pictureBusy}>
+                {pictureBusy ? <Spinner /> : <Camera aria-hidden="true" />} {pictureUrl ? t('Change picture') : t('Add picture')}
+              </button>
+              {pictureUrl && (
+                <button className="btn btn--ghost btn--block" onClick={removePicture} disabled={pictureBusy}>
+                  <Trash2 aria-hidden="true" /> {t('Remove picture')}
+                </button>
+              )}
+            </div>
+            <p className="small muted">{t('A picture is cropped to a square and kept small.')}</p>
+          </div>
+        </Sheet>
+      )}
+
+      {bannerOpen && (
+        <Sheet
+          title={t('Profile banner')}
+          onClose={() => setBannerOpen(false)}
+          footer={
+            <button className="btn btn--ghost" onClick={() => setBannerOpen(false)} disabled={bannerBusy}>
+              {t('Close')}
+            </button>
+          }
+        >
+          <div className="stack">
+            <div className="banner-preview" style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}>
+              {!bannerUrl && <span>{t('No banner yet')}</span>}
+            </div>
+            <div className="stack--tight">
+              <button className="btn btn--primary btn--block" onClick={() => bannerInput.current?.click()} disabled={bannerBusy}>
+                {bannerBusy ? <Spinner /> : <ImageIcon aria-hidden="true" />} {bannerUrl ? t('Change banner') : t('Add banner')}
+              </button>
+              {bannerUrl && (
+                <button className="btn btn--ghost btn--block" onClick={removeBanner} disabled={bannerBusy}>
+                  <Trash2 aria-hidden="true" /> {t('Remove banner')}
+                </button>
+              )}
+            </div>
+            <p className="small muted">{t('Use a wide picture. It is cropped to a strip and kept small.')}</p>
+          </div>
+        </Sheet>
+      )}
 
       {editing && (
         <Sheet

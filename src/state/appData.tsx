@@ -26,6 +26,10 @@ interface AppDataApi {
   pictureUrl: string | null;
   /** Saves a WebP picture, or removes it with null. */
   changePicture: (picture: Blob | null) => Promise<void>;
+  /** The signed-in person's banner as an object URL, or null. */
+  bannerUrl: string | null;
+  /** Saves a WebP banner, or removes it with null. */
+  changeBanner: (picture: Blob | null) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataApi | null>(null);
@@ -116,10 +120,24 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     () => (backend ? backend.getAvatar() : Promise.resolve(null)),
   );
 
+  const bannerVersion = profile?.banner_updated_at ?? null;
+  const bannerUrl = usePictureUrl(
+    profile && bannerVersion ? `own-banner:${backend?.mode ?? 'none'}:${profile.id}:${bannerVersion}` : null,
+    () => (backend ? backend.getBanner() : Promise.resolve(null)),
+  );
+
   const changePicture = useCallback(
     async (picture: Blob | null) => {
       if (!backend) throw new Error('You are not signed in.');
       setProfile(await backend.setAvatar(picture));
+    },
+    [backend],
+  );
+
+  const changeBanner = useCallback(
+    async (picture: Blob | null) => {
+      if (!backend) throw new Error('You are not signed in.');
+      setProfile(await backend.setBanner(picture));
     },
     [backend],
   );
@@ -158,6 +176,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       patchProfile,
       pictureUrl,
       changePicture,
+      bannerUrl,
+      changeBanner,
     }),
     [
       ready,
@@ -177,6 +197,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       patchProfile,
       pictureUrl,
       changePicture,
+      bannerUrl,
+      changeBanner,
     ],
   );
 

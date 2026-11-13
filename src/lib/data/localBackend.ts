@@ -40,8 +40,13 @@ interface LocalStore {
   tutorChats: TutorChatRow[];
   /** The profile picture as a WebP data URL, or null. */
   avatar?: { dataUrl: string } | null;
+  /** The profile banner as a WebP data URL, or null. */
+  banner?: { dataUrl: string } | null;
   libraryLinks?: LibraryLinkRow[];
 }
+
+// The largest banner kept on this device. Like the desktop database, a banner is a WebP picture.
+const BANNER_MAX_BYTES = 480 * 1024;
 
 const emptyStore = (): LocalStore => ({
   profile: null,
@@ -53,6 +58,7 @@ const emptyStore = (): LocalStore => ({
   tutor: [],
   tutorChats: [],
   avatar: null,
+  banner: null,
 });
 
 function read(): LocalStore {
@@ -120,6 +126,8 @@ function defaultProfile(): ProfileRow {
     onboarding_done: false,
     avatar_path: null,
     avatar_updated_at: null,
+    banner_path: null,
+    banner_updated_at: null,
     created_at: nowIso(),
   };
 }
@@ -179,6 +187,38 @@ export function createLocalBackend(): DataBackend {
     },
 
     async fetchAvatar() {
+      return null;
+    },
+
+    async getBanner() {
+      const dataUrl = read().banner?.dataUrl;
+      if (!dataUrl) return null;
+      const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+      return new Blob([Uint8Array.from(atob(base64), (character) => character.charCodeAt(0))], { type: 'image/webp' });
+    },
+
+    async setBanner(picture: Blob | null) {
+      if (!picture) {
+        return withStore((store) => {
+          const current = store.profile ?? defaultProfile();
+          store.banner = null;
+          store.profile = { ...current, banner_updated_at: null };
+          return { ...store.profile };
+        });
+      }
+      const bytes = new Uint8Array(await picture.arrayBuffer());
+      if (bytes.length === 0 || bytes.length > BANNER_MAX_BYTES) throw userError('That banner is too large. Choose a smaller picture.');
+      if (!isWebpBytes(bytes)) throw userError('That banner could not be saved. Try another picture.');
+      const dataUrl = `data:image/webp;base64,${bytesToBase64(bytes)}`;
+      return withStore((store) => {
+        const current = store.profile ?? defaultProfile();
+        store.banner = { dataUrl };
+        store.profile = { ...current, banner_updated_at: nowIso() };
+        return { ...store.profile };
+      });
+    },
+
+    async fetchBanner() {
       return null;
     },
 

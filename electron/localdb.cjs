@@ -13,6 +13,7 @@ const GOALS = ['english', 'toefl'];
 const ATTEMPT_KINDS = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice', 'review'];
 // Same limits as the online database, so a copy from this device never fails on a value.
 const AVATAR_MAX_BYTES = 300 * 1024;
+const BANNER_MAX_BYTES = 480 * 1024;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 // Limits on what the interface may store, so one attempt or set cannot fill the database.
@@ -122,6 +123,11 @@ CREATE TABLE IF NOT EXISTS avatar (
   data BLOB NOT NULL,
   updated_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS banner (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  data BLOB NOT NULL,
+  updated_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS library_files (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
@@ -159,6 +165,9 @@ function db() {
   const profileColumns = connection.prepare('PRAGMA table_info(profile)').all().map((column) => column.name);
   if (!profileColumns.includes('avatar_updated_at')) {
     connection.exec('ALTER TABLE profile ADD COLUMN avatar_updated_at TEXT');
+  }
+  if (!profileColumns.includes('banner_updated_at')) {
+    connection.exec('ALTER TABLE profile ADD COLUMN banner_updated_at TEXT');
   }
   // Databases from before 0.4.0 do not have the learning goal yet. Their learners were all practicing for the
   // TOEFL, so they keep the TOEFL track. New profiles default to General English (see the CREATE TABLE above).
@@ -253,6 +262,8 @@ function toProfile(row) {
     onboarding_done: Boolean(row.onboarding_done),
     avatar_path: null,
     avatar_updated_at: row.avatar_updated_at ?? null,
+    banner_path: null,
+    banner_updated_at: row.banner_updated_at ?? null,
   };
 }
 
@@ -664,6 +675,35 @@ function clearAvatar() {
   return getProfile();
 }
 
+// The profile banner: a WebP picture kept on this device, like the profile picture.
+function getBanner() {
+  const row = db().prepare('SELECT data FROM banner WHERE id = 1').get();
+  return row ? new Uint8Array(row.data) : null;
+}
+
+function setBanner(input) {
+  getProfile();
+  const bytes = toBuffer(input);
+  if (!bytes || bytes.length === 0 || bytes.length > BANNER_MAX_BYTES) {
+    throw userError('That banner is too large. Choose a smaller picture.');
+  }
+  if (!isWebp(bytes)) throw userError('That banner could not be saved. Try another picture.');
+  const stamp = now();
+  db()
+    .prepare(
+      'INSERT INTO banner (id, data, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at',
+    )
+    .run(bytes, stamp);
+  db().prepare('UPDATE profile SET banner_updated_at = ?').run(stamp);
+  return getProfile();
+}
+
+function clearBanner() {
+  db().prepare('DELETE FROM banner').run();
+  db().prepare('UPDATE profile SET banner_updated_at = NULL').run();
+  return getProfile();
+}
+
 // My library: learning files (PDF, TXT, Markdown) keep their bytes and extracted text; links keep their details.
 const LIBRARY_KINDS = ['pdf', 'txt', 'md'];
 const LIBRARY_FILE_MAX_BYTES = 20 * 1024 * 1024;
@@ -807,6 +847,9 @@ const METHODS = {
   getAvatar,
   setAvatar,
   clearAvatar,
+  getBanner,
+  setBanner,
+  clearBanner,
   listLibraryFiles,
   getLibraryFileData,
   getLibraryText,

@@ -26,12 +26,16 @@ function previousDay(day: string): string {
   return localDate(new Date(y, m - 1, d - 1));
 }
 
-export type StreakTier = 'ember' | 'blaze' | 'inferno';
+export type StreakTier = 'ember' | 'ruby' | 'sapphire' | 'amethyst';
 
-/** The flame grows with the streak: a small one, an animated one from 10 days, and a blue one from 50 days. */
+/**
+ * The flame keeps its orange look up to 200 days. Above 200 it turns red, above 500 blue, and from 1000 days purple.
+ * Each colour moves a little more than the one before it.
+ */
 export function streakTier(days: number): StreakTier {
-  if (days >= 50) return 'inferno';
-  if (days >= 10) return 'blaze';
+  if (days >= 1000) return 'amethyst';
+  if (days > 500) return 'sapphire';
+  if (days > 200) return 'ruby';
   return 'ember';
 }
 

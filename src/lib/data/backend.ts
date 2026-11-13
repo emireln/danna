@@ -122,6 +122,12 @@ export interface DataBackend {
   setAvatar(picture: Blob | null): Promise<ProfileRow>;
   /** A friend's picture by its storage path. Online accounts only. */
   fetchAvatar(path: string): Promise<Blob | null>;
+  /** The person's own banner as WebP, or null. Its version is profile.banner_updated_at. */
+  getBanner(): Promise<Blob | null>;
+  /** Saves a WebP banner, or removes it with null. */
+  setBanner(picture: Blob | null): Promise<ProfileRow>;
+  /** A friend's banner, at the path the friends list gives. */
+  fetchBanner(path: string): Promise<Blob | null>;
 
   /** The newest attempts first, optionally only one kind of attempt. */
   listAttempts(limit?: number, kind?: AttemptKind): Promise<AttemptRow[]>;

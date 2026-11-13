@@ -32,7 +32,7 @@ export const SECTION_ART = {
 
 export const SECTION_BASE: Record<'reading' | 'listening' | 'writing' | 'speaking', string> = {
   reading: 'linear-gradient(135deg, #16237a 0%, #22399c 100%)',
-  listening: 'linear-gradient(135deg, #2b2f92 0%, #3c4bb9 100%)',
-  writing: 'linear-gradient(135deg, #0e1632 0%, #1d2a5e 100%)',
-  speaking: 'linear-gradient(135deg, #1a4aa8 0%, #2c80d8 100%)',
+  listening: 'linear-gradient(135deg, #c2410c 0%, #f97316 100%)',
+  writing: 'linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%)',
+  speaking: 'linear-gradient(135deg, #166534 0%, #22c55e 100%)',
 };

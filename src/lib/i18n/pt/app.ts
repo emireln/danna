@@ -864,13 +864,42 @@ export const APP_PT: Record<string, string> = {
   'Could not check for updates. Try again later.': 'Não foi possível verificar atualizações. Tente de novo mais tarde.',
   'danna is up to date.': 'O danna está atualizado.',
 
+  // The profile: the banner, the picture dialog, and a friend's profile
+  'Edit banner': 'Editar banner',
+  'Add banner': 'Adicionar banner',
+  'Edit picture': 'Editar foto',
+  'Profile banner': 'Banner do perfil',
+  'Profile picture': 'Foto do perfil',
+  'No banner yet': 'Nenhum banner ainda',
+  'Change banner': 'Trocar banner',
+  'Remove banner': 'Remover banner',
+  'Use a wide picture. It is cropped to a strip and kept small.': 'Use uma foto larga. Ela é recortada em uma faixa e fica pequena.',
+  'A picture is cropped to a square and kept small.': 'A foto é recortada em um quadrado e fica pequena.',
+  'Banner updated.': 'Banner atualizado.',
+  'Banner removed.': 'Banner removido.',
+  'That picture is too detailed to save as a banner. Try a simpler one.':
+    'Esta foto tem detalhes demais para ser salva como banner. Tente uma mais simples.',
+  'No day streak yet': 'Nenhuma sequência de dias ainda',
+  'Nothing shared yet': 'Nada compartilhado ainda',
+  'When {name} shares a report or a practice set with you, it appears here.':
+    'Quando {name} compartilhar um relatório ou um conjunto de exercícios com você, ele aparece aqui.',
+  'A report': 'Um relatório',
+  'A practice set': 'Um conjunto de exercícios',
+
   // The 0.7.0 release note (What’s new)
   'Edit your TXT and Markdown files in My library, and save the changes': 'Edite os seus arquivos TXT e Markdown em Minha biblioteca, e salve as alterações',
   'A PDF keeps its pages: its text is saved as a new Markdown file, with the PDF as it was':
     'Um PDF mantém as suas páginas: o texto dele é salvo como um novo arquivo Markdown, e o PDF continua como estava',
   'Find text in a file, like Notepad: Ctrl+F, then Enter for the next match':
     'Busque um texto em um arquivo, como no Bloco de Notas: Ctrl+F, e depois Enter para o próximo resultado',
-  'The day streak sits beside your profile picture': 'A sequência de dias fica ao lado da sua foto de perfil',
+  'The day streak sits beside your profile picture. It turns red above 200 days, blue above 500 and purple from 1000':
+    'A sequência de dias fica ao lado da sua foto de perfil. Ela fica vermelha acima de 200 dias, azul acima de 500 e roxa a partir de 1000',
+  'Your profile has a banner that covers the profile and the stat cards. The picture moves to the right, with an edit button':
+    'Seu perfil tem um banner que cobre o perfil e os cartões de números. A foto fica à direita, com um botão de editar',
+  'Friends can be opened to see their banner, picture, day streak and what they shared with you':
+    'Os amigos podem ser abertos para ver o banner, a foto, a sequência de dias e o que compartilharam com você',
+  'The Listening, Writing and Speaking cards in Self study have new colours':
+    'Os cartões de Compreensão auditiva, Escrita e Fala, em Estudo livre, têm cores novas',
   'Search the whole app from the title bar, or with Ctrl+K: lessons, tests, chats, files, results and pages':
     'Busque em todo o app pela barra de título, ou com Ctrl+K: aulas, testes, chats, arquivos, resultados e telas',
   'Listening passages are read in a natural voice from your OpenAI or Google Gemini key. Choose the voice in Settings':
