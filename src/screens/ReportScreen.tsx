@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Download, Share2, Smile, Sparkles, Target } from 'lucide-react';
 import { Donut, Gauge, Radar } from '../components/charts';
 import { ShareSheet } from '../components/ShareSheet';
@@ -10,6 +10,7 @@ import { useAI } from '../state/ai';
 import { useToast } from '../state/toast';
 import { bandFor, studyPlan, toeflEstimate, toeflRange, toneFor, TONE_LABEL, type SkillMap } from '../lib/scoring';
 import { formatLongDate } from '../lib/progress';
+import { isSharedReport } from '../lib/reports';
 import { useT, type Translate } from '../lib/i18n/react';
 import { SKILLS, SKILL_LABEL, type AttemptRow, type FriendRow, type Skill } from '../lib/types';
 
@@ -45,6 +46,25 @@ function adviceFor(skills: SkillMap, percent: number, estimate: number | null, t
     weakScore: weakest.score,
   });
   return { title, body: `${level} ${areas} ${t(TIPS[weakest.skill])}`, weakest: weakest.skill };
+}
+
+/** The summary of a report a friend shared: the same scores, described without the reader's own plan. */
+function summaryFor(skills: SkillMap, t: Translate) {
+  const scored = SKILLS.filter((skill) => skills[skill] !== undefined).map((skill) => ({ skill, score: skills[skill] ?? 0 }));
+  const ranked = [...scored].sort((a, b) => a.score - b.score);
+  const weakest = ranked[0];
+  const strongest = ranked[ranked.length - 1];
+  return {
+    title: t('Skill summary'),
+    body: weakest
+      ? t('{strongest} is the strongest area at {strongScore}/100, and {weakest} has the lowest score at {weakScore}/100.', {
+          strongest: t(SKILL_LABEL[strongest.skill]),
+          strongScore: strongest.score,
+          weakest: t(SKILL_LABEL[weakest.skill]),
+          weakScore: weakest.score,
+        })
+      : '',
+  };
 }
 
 function saveImage(attempt: AttemptRow, estimate: number | null, t: Translate) {
@@ -101,6 +121,7 @@ function saveImage(attempt: AttemptRow, estimate: number | null, t: Translate) {
 
 export function ReportScreen() {
   const navigate = useNavigate();
+  const location = useLocation();
   const t = useT();
   const { id = '' } = useParams();
   const { backend } = useAuth();
@@ -110,6 +131,8 @@ export function ReportScreen() {
   const [attempt, setAttempt] = useState<AttemptRow | null | undefined>(undefined);
   const [friends, setFriends] = useState<FriendRow[]>([]);
   const [sharing, setSharing] = useState(false);
+  // Set when a friend's shared report is opened from the friends inbox.
+  const sharedBy = (location.state as { sharedBy?: string } | null)?.sharedBy ?? '';
 
   useEffect(() => {
     if (!backend) return undefined;
@@ -152,15 +175,23 @@ export function ReportScreen() {
     );
   }
 
+  // A report belongs to the person who took the test. Anything else was shared with this person.
+  const shared = isSharedReport(attempt.user_id, profile?.id);
+  const sharer = sharedBy || t('a friend');
   const percent = attempt.score_pct;
   const isEstimate = attempt.kind === 'diagnostic' || attempt.kind === 'mock';
-  // The TOEFL estimate is shown only to learners who chose the TOEFL warm-up.
-  const estimate = isEstimate && profile?.goal === 'toefl' ? (attempt.predicted ?? toeflEstimate(percent)) : null;
+  // The TOEFL estimate: the learner's own report uses their goal, and a shared report keeps the estimate it was saved with.
+  let estimate: number | null = null;
+  if (isEstimate) {
+    if (shared) estimate = attempt.predicted;
+    else if (profile?.goal === 'toefl') estimate = attempt.predicted ?? toeflEstimate(percent);
+  }
   const [low, high] = estimate !== null ? toeflRange(estimate) : [percent, percent];
   const skills = attempt.skills;
-  const advice = adviceFor(skills, percent, estimate, t);
+  const advice = shared ? null : adviceFor(skills, percent, estimate, t);
+  const summary = shared ? summaryFor(skills, t) : null;
   const plan = studyPlan(skills);
-  const goal = profile?.goal === 'toefl' ? Math.round(profile.target_score / 1.2) : undefined;
+  const goal = !shared && profile?.goal === 'toefl' ? Math.round(profile.target_score / 1.2) : undefined;
   const axes = SKILLS.map((skill) => ({ label: t(SKILL_LABEL[skill]), value: skills[skill] ?? 0 }));
   const cardOrder = SKILLS.filter((skill) => skills[skill] !== undefined).sort((a, b) => (skills[a] ?? 0) - (skills[b] ?? 0));
 
@@ -168,12 +199,18 @@ export function ReportScreen() {
     <div>
       <section className="report-hero">
         <p className="eyebrow">{formatLongDate(attempt.created_at)}</p>
-        <h1 className="report-hero__title">{isEstimate ? t('Score report') : t(attempt.title)}</h1>
-        {isEstimate && (
-          <>
-            <p className="report-hero__sub">{estimate !== null ? t('TOEFL predicted score') : t('Your level is {level}', { level: bandFor(percent) })}</p>
-            <span className="report-hero__pill">{estimate !== null ? t('Overall score') : t('Overall')}</span>
-          </>
+        <h1 className="report-hero__title">
+          {shared ? t('Report from {name}', { name: sharer }) : isEstimate ? t('Score report') : t(attempt.title)}
+        </h1>
+        {shared ? (
+          <p className="report-hero__sub">{t('Shared with you')}</p>
+        ) : (
+          isEstimate && (
+            <>
+              <p className="report-hero__sub">{estimate !== null ? t('TOEFL predicted score') : t('Your level is {level}', { level: bandFor(percent) })}</p>
+              <span className="report-hero__pill">{estimate !== null ? t('Overall score') : t('Overall')}</span>
+            </>
+          )
         )}
         <div className="mt-3">
           <Gauge
@@ -186,26 +223,35 @@ export function ReportScreen() {
 
       <div className="page">
         <div className="stack stack--loose mt-6">
-          <section className="advice">
-            <div className="advice__head">
-              <span className="chip chip--ai">
-                <Sparkles aria-hidden="true" /> {aiReady && selection ? t('Coach') : t('Your advice')}
-              </span>
-            </div>
-            <h2 className="advice__title">{advice.title}</h2>
-            <p className="advice__body">{advice.body}</p>
-            {!aiReady && (
-              <p className="small muted">{t('Connect an AI key in Settings for a longer, personal explanation from your coach.')}</p>
-            )}
-          </section>
+          {summary && (
+            <section className="advice">
+              <h2 className="advice__title">{summary.title}</h2>
+              {summary.body && <p className="advice__body">{summary.body}</p>}
+            </section>
+          )}
+
+          {advice && (
+            <section className="advice">
+              <div className="advice__head">
+                <span className="chip chip--ai">
+                  <Sparkles aria-hidden="true" /> {aiReady && selection ? t('Coach') : t('Your advice')}
+                </span>
+              </div>
+              <h2 className="advice__title">{advice.title}</h2>
+              <p className="advice__body">{advice.body}</p>
+              {!aiReady && (
+                <p className="small muted">{t('Connect an AI key in Settings for a longer, personal explanation from your coach.')}</p>
+              )}
+            </section>
+          )}
 
           <section>
-            <SectionTitle title={t('Your skill profile')} />
+            <SectionTitle title={shared ? t('Skill profile') : t('Your skill profile')} />
             <div className="stack stack--center">
               <Radar axes={axes} goal={goal} />
               <div className="legend">
                 <span>
-                  <i style={{ background: '#2f6bff' }} /> {t('You')}
+                  <i style={{ background: '#2f6bff' }} /> {shared ? sharer : t('You')}
                 </span>
                 {goal !== undefined && (
                   <span>
@@ -236,47 +282,51 @@ export function ReportScreen() {
                     <div className="skill-card__score">
                       {t('Score')}: <b>{score}</b>/100
                     </div>
-                    <div className="skill-card__tip">
-                      <Target aria-hidden="true" />
-                      <span>{t(TIPS[skill])}</span>
-                    </div>
+                    {!shared && (
+                      <div className="skill-card__tip">
+                        <Target aria-hidden="true" />
+                        <span>{t(TIPS[skill])}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           </section>
 
-          <section>
-            <SectionTitle title={t("Today's learning plan")} />
-            <div className="plan">
-              <Donut slices={plan.map((slice, index) => ({ label: t(slice.label), percent: slice.percent, color: PLAN_COLORS[index] }))} />
-              <div className="stack">
-                <p className="muted">
-                  {t('Boost your skills in {minutes} minutes a day with questions picked for your weakest areas.', {
-                    minutes: profile?.daily_minutes ?? 15,
-                  })}
-                </p>
-                <div className="plan__legend">
-                  {plan.map((slice, index) => (
-                    <div key={slice.key} className="plan__row">
-                      <i style={{ background: PLAN_COLORS[index] }} />
-                      <span>{t(slice.label)}</span>
-                      <span>{slice.percent}%</span>
-                    </div>
-                  ))}
+          {!shared && (
+            <section>
+              <SectionTitle title={t("Today's learning plan")} />
+              <div className="plan">
+                <Donut slices={plan.map((slice, index) => ({ label: t(slice.label), percent: slice.percent, color: PLAN_COLORS[index] }))} />
+                <div className="stack">
+                  <p className="muted">
+                    {t('Boost your skills in {minutes} minutes a day with questions picked for your weakest areas.', {
+                      minutes: profile?.daily_minutes ?? 15,
+                    })}
+                  </p>
+                  <div className="plan__legend">
+                    {plan.map((slice, index) => (
+                      <div key={slice.key} className="plan__row">
+                        <i style={{ background: PLAN_COLORS[index] }} />
+                        <span>{t(slice.label)}</span>
+                        <span>{slice.percent}%</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    className="btn btn--primary self-start"
+                    onClick={() => navigate(plan[0].key === 'other' ? '/study' : `/study/${plan[0].key}`)}
+                  >
+                    {t("Start today's plan")} <ArrowRight />
+                  </button>
                 </div>
-                <button
-                  className="btn btn--primary self-start"
-                  onClick={() => navigate(plan[0].key === 'other' ? '/study' : `/study/${plan[0].key}`)}
-                >
-                  {t("Start today's plan")} <ArrowRight />
-                </button>
               </div>
-            </div>
-          </section>
+            </section>
+          )}
 
           <div className="row row--wrap pb-3">
-            {backend?.mode === 'supabase' && (
+            {!shared && backend?.mode === 'supabase' && (
               <button className="btn btn--primary" onClick={() => setSharing(true)}>
                 <Share2 /> {t('Share with a friend')}
               </button>
@@ -294,7 +344,7 @@ export function ReportScreen() {
             >
               <Download /> {t('Save as image')}
             </button>
-            {attempt.kind === 'diagnostic' && (
+            {!shared && attempt.kind === 'diagnostic' && (
               <button className="btn btn--ghost" onClick={() => navigate('/play/diagnostic')}>
                 {t('Retake diagnostic')}
               </button>
@@ -303,7 +353,7 @@ export function ReportScreen() {
         </div>
       </div>
 
-      {sharing && (
+      {sharing && !shared && (
         <ShareSheet friends={friends} preferredItem={{ kind: 'result', id: attempt.id }} onClose={() => setSharing(false)} />
       )}
     </div>

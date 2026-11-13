@@ -341,7 +341,10 @@ export function FriendsScreen() {
                 {share.note && <p className="share-item__note">&ldquo;{share.note}&rdquo;</p>}
               </div>
               {share.kind === 'result' && share.attempt_id && (
-                <button className="btn btn--ghost btn--sm" onClick={() => navigate(`/report/${share.attempt_id}`)}>
+                <button className="btn btn--ghost btn--sm" onClick={() =>
+                    navigate(`/report/${share.attempt_id}`, { state: { sharedBy: share.other_display_name || share.other_username } })
+                  }
+                >
                   {t('View report')}
                 </button>
               )}

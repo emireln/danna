@@ -696,4 +696,13 @@ export const APP_PT: Record<string, string> = {
   'Friend removed.': 'Amigo removido.',
   '{count} day': '{count} dia',
   '{count} days': '{count} dias',
+
+  // Shared reports
+  'Report from {name}': 'Relatório de {name}',
+  'Shared with you': 'Compartilhado com você',
+  'Skill profile': 'Perfil de habilidades',
+  'Skill summary': 'Resumo das habilidades',
+  '{strongest} is the strongest area at {strongScore}/100, and {weakest} has the lowest score at {weakScore}/100.':
+    '{strongest} é a área mais forte, com {strongScore}/100, e {weakest} tem a menor pontuação, com {weakScore}/100.',
+  'a friend': 'um amigo',
 };
