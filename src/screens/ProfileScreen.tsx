@@ -138,12 +138,20 @@ export function ProfileScreen() {
     <div className="page">
       <div className="profile-head">
         <div className="profile-head__picture">
-          <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
-          <button className="btn btn--ghost btn--sm" onClick={() => fileInput.current?.click()} disabled={pictureBusy}>
-            {pictureBusy ? <Spinner dark /> : <Camera />} {pictureUrl ? t('Change picture') : t('Add picture')}
-          </button>
+          <div className="profile-head__avatar">
+            <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
+            <button
+              className="profile-head__camera"
+              onClick={() => fileInput.current?.click()}
+              disabled={pictureBusy}
+              aria-label={pictureUrl ? t('Change picture') : t('Add picture')}
+              title={pictureUrl ? t('Change picture') : t('Add picture')}
+            >
+              {pictureBusy ? <Spinner dark /> : <Camera aria-hidden="true" />}
+            </button>
+          </div>
           {pictureUrl && (
-            <button className="btn btn--text btn--text-muted small" onClick={removePicture} disabled={pictureBusy}>
+            <button className="profile-head__remove" onClick={removePicture} disabled={pictureBusy}>
               {t('Remove picture')}
             </button>
           )}

@@ -491,6 +491,66 @@
     gap: var(--space-2);
   }
 
+  .profile-head__avatar {
+    position: relative;
+    width: fit-content;
+  }
+
+  /* A small camera button on the picture's corner, instead of a large button under it. */
+  .profile-head__camera {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line-2);
+    border-radius: 50%;
+    background: var(--canvas);
+    color: var(--ink-2);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition:
+      border-color 0.15s var(--ease),
+      color 0.15s var(--ease);
+  }
+
+  .profile-head__camera:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .profile-head__camera:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .profile-head__camera svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .profile-head__remove {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .profile-head__remove:hover:not(:disabled) {
+    color: var(--red);
+  }
+
+  .profile-head__remove:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
   .profile-head__main {
     display: grid;
     gap: var(--space-1);
