@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Check, Cloud, Laptop, Map as MapIcon, TrendingUp } from 'lucide-react';
 import { BrandMark, Wordmark } from '../components/ui';
-import { LanguageSwitch } from '../components/LanguageSwitch';
 import { markWelcomed, onlineAvailable } from '../lib/session';
 import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
@@ -117,7 +116,8 @@ export function WelcomeScreen() {
       <div className="welcome__footer">
         <div className="welcome__bar">
           {step === 0 ? (
-            <LanguageSwitch />
+            // Keeps the Continue button on the right. The language is chosen in Settings.
+            <span aria-hidden="true" />
           ) : (
             <button className="btn btn--ghost" onClick={() => setStep(0)}>
               <ArrowLeft /> {t('Back')}

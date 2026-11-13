@@ -1,11 +1,10 @@
-// The app's own title bar: the wordmark, the language, account actions and window controls.
+// The app's own title bar: the wordmark, account actions and window controls.
 // On Windows it replaces the system title bar.
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeftRight, Bell, BookOpen, LogOut, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
-import { LanguageSwitch } from './LanguageSwitch';
 import { bridge, type WindowState } from '../lib/bridge';
 import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
@@ -74,8 +73,6 @@ export function TitleBar() {
       </Link>
 
       <div className="titlebar__spacer" onDoubleClick={() => windows.desktop && windows.toggle()} />
-
-      <LanguageSwitch />
 
       {showActions && (
         <div className="titlebar__actions">
