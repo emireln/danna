@@ -2,7 +2,7 @@
 // the bridge. Friends and sharing are not part of offline use.
 import type { DannaBridge } from '../bridge';
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
-import type { AttemptKind, AttemptRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorRow } from '../types';
+import type { AttemptKind, AttemptRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorChatRow, TutorRow } from '../types';
 import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch } from './backend';
 
 const ONLINE_ONLY = 'This is available with an online account.';
@@ -88,8 +88,14 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
 
     listAnnouncements: async () => LOCAL_ANNOUNCEMENTS.slice(),
 
-    listTutor: (limit = 40) => call<TutorRow[]>('listTutor', [limit]),
-    addTutor: (role, content, record) => call<TutorRow>('addTutor', [role, content, record?.id, record?.created_at]),
-    clearTutor: () => call<void>('clearTutor'),
+    listTutorChats: () => call<TutorChatRow[]>('listTutorChats'),
+    createTutorChat: (record) => call<TutorChatRow>('createTutorChat', [record?.id, record?.created_at]),
+    renameTutorChat: (id, title) => call<TutorChatRow>('renameTutorChat', [id, title]),
+    setTutorChatArchived: (id, archived) => call<TutorChatRow>('setTutorChatArchived', [id, archived]),
+    deleteTutorChat: (id) => call<void>('deleteTutorChat', [id]),
+    searchTutorChats: (query) => call<string[]>('searchTutorChats', [query]),
+    listTutor: (chatId, limit = 40) => call<TutorRow[]>('listTutor', [chatId, limit]),
+    addTutor: (chatId, role, content, record) =>
+      call<TutorRow>('addTutor', [chatId, role, content, record?.id, record?.created_at, record?.attachments ?? []]),
   };
 }

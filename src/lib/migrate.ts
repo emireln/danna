@@ -147,11 +147,23 @@ export async function copyProgress(from: DataBackend, to: DataBackend): Promise<
     });
   }
 
-  // Coach conversation, in order, keeping each message's own id and time.
-  const ownMessages = new Set((await to.listTutor(200)).map((message) => message.id));
-  for (const message of await from.listTutor(200)) {
-    if (ownMessages.has(message.id)) continue;
-    await to.addTutor(message.role, message.content, { id: message.id, created_at: message.created_at });
+  // Coach chats, with their names, archive state and messages in order. Each keeps its own id and time.
+  const ownChats = new Set((await to.listTutorChats()).map((chat) => chat.id));
+  for (const chat of await from.listTutorChats()) {
+    if (!ownChats.has(chat.id)) {
+      await to.createTutorChat({ id: chat.id, created_at: chat.created_at });
+      if (chat.title) await to.renameTutorChat(chat.id, chat.title);
+      if (chat.archived) await to.setTutorChatArchived(chat.id, true);
+    }
+    const ownMessages = new Set((await to.listTutor(chat.id, 200)).map((message) => message.id));
+    for (const message of await from.listTutor(chat.id, 200)) {
+      if (ownMessages.has(message.id)) continue;
+      await to.addTutor(chat.id, message.role, message.content, {
+        id: message.id,
+        created_at: message.created_at,
+        attachments: message.attachments,
+      });
+    }
   }
 
   // My library: links and files the receiving side does not have yet are copied with the same ids.

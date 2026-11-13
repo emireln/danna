@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdtempSync, rmSync } from 'node:fs';
+import { DatabaseSync } from 'node:sqlite';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -178,18 +179,94 @@ test('review items are checked before they are kept', () => {
   });
 });
 
-test('coach messages keep a valid time and a known role', () => {
+test('coach chats keep their name and archive state, and their messages stay in them', () => {
   withDatabase((local) => {
-    const kept = local.call('addTutor', ['system', 'hi', 'message-1', 'yesterday']);
+    const chat = local.call('createTutorChat', ['chat-1', '2026-03-01T09:00:00.000Z']);
+    assert.equal(chat.title, null, 'a new chat has no name until its first question names it');
+    assert.equal(local.call('renameTutorChat', ['chat-1', '  Verb   tenses  ']).title, 'Verb tenses', 'the name is one clean line');
+    assert.equal(local.call('setTutorChatArchived', ['chat-1', true]).archived, true);
+
+    const kept = local.call('addTutor', ['chat-1', 'system', 'hi', 'message-1', 'yesterday', [{ name: 'notes.pdf', kind: 'document', size: 42 }]]);
     assert.equal(kept.role, 'user', 'an unknown role becomes a user message');
     assert.ok(!Number.isNaN(Date.parse(kept.created_at)));
-    local.call('addTutor', ['assistant', 'copy', 'message-1', '2026-03-01T10:00:00.000Z']);
-    const messages = local.call('listTutor', [40]);
+    assert.deepEqual(kept.attachments, [{ name: 'notes.pdf', kind: 'document', size: 42 }], 'the names of the files are kept, not their contents');
+    local.call('addTutor', ['chat-1', 'assistant', 'copy', 'message-1', '2026-03-01T10:00:00.000Z', []]);
+    const messages = local.call('listTutor', ['chat-1', 40]);
     assert.equal(messages.length, 1, 'a message with a known id is not added again');
     assert.equal(messages[0].content, 'hi', 'the first copy is the one that stays');
-    local.call('clearTutor');
-    assert.equal(local.call('listTutor', [40]).length, 0);
+
+    assert.deepEqual(local.call('searchTutorChats', ['VERB']), ['chat-1'], 'search ignores case and finds names');
+    assert.deepEqual(local.call('searchTutorChats', ['hi']), ['chat-1'], 'and messages');
+    assert.deepEqual(local.call('searchTutorChats', ['nothing here']), []);
+
+    assert.throws(() => local.call('addTutor', ['missing', 'user', 'x']), /could not be found/, 'a message needs a chat that exists');
+    local.call('deleteTutorChat', ['chat-1']);
+    assert.equal(local.call('listTutorChats').length, 0, 'deleting a chat deletes it');
+    assert.equal(local.call('listTutor', ['chat-1', 40]).length, 0, 'and its messages');
   });
+});
+
+test('messages kept before chats existed move into one chat, and none is lost', () => {
+  const folder = mkdtempSync(join(tmpdir(), 'danna-legacy-'));
+  try {
+    // A database from before 0.6.0: messages without a chat.
+    const old = new DatabaseSync(join(folder, 'danna.db'));
+    old.exec('CREATE TABLE tutor_messages (id TEXT PRIMARY KEY, role TEXT NOT NULL, content TEXT NOT NULL, created_at TEXT NOT NULL)');
+    const insert = old.prepare('INSERT INTO tutor_messages (id, role, content, created_at) VALUES (?, ?, ?, ?)');
+    insert.run('old-1', 'user', 'Earlier question', '2026-02-01T09:00:00.000Z');
+    insert.run('old-2', 'assistant', 'Earlier answer', '2026-02-01T09:01:00.000Z');
+    old.close();
+
+    const local = loadLocalDb(folder);
+    const chats = local.call('listTutorChats');
+    assert.equal(chats.length, 1, 'the earlier messages form one chat');
+    assert.equal(chats[0].title, null);
+    const messages = local.call('listTutor', [chats[0].id, 40]);
+    assert.deepEqual(
+      messages.map((message) => message.content),
+      ['Earlier question', 'Earlier answer'],
+      'in their order',
+    );
+  } finally {
+    try {
+      rmSync(folder, { recursive: true, force: true });
+    } catch {
+      // The system cleans up the temporary folder later.
+    }
+  }
+});
+
+test('a practice set made with the AI stays saved after the app restarts', () => {
+  const folder = mkdtempSync(join(tmpdir(), 'danna-sets-'));
+  try {
+    const first = loadLocalDb(folder);
+    const saved = first.call('insertTest', [
+      {
+        title: 'Past perfect practice',
+        description: 'Three questions',
+        kind: 'ai',
+        skill: 'language',
+        level: 'B1',
+        minutes: 9,
+        content: { passages: [], questions: [{ id: 'q1', type: 'choice', prompt: 'Pick one', skill: 'language', options: ['a', 'b', 'c'], answer: 0 }] },
+      },
+    ]);
+    // A second start of the app opens the same file.
+    const again = loadLocalDb(folder);
+    assert.deepEqual(
+      again.call('listMyTests').map((set) => set.id),
+      [saved.id],
+      'the set is listed again',
+    );
+    assert.equal(again.call('getTest', [saved.id]).title, 'Past perfect practice');
+    assert.equal(again.call('getTest', [saved.id]).content.questions.length, 1);
+  } finally {
+    try {
+      rmSync(folder, { recursive: true, force: true });
+    } catch {
+      // The system cleans up the temporary folder later.
+    }
+  }
 });
 
 test('lesson progress needs a lesson, and its numbers stay in range', () => {

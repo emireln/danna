@@ -1,6 +1,6 @@
 import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronRight, X } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoUrl from '../assets/logo.webp';
 import { useT } from '../lib/i18n/react';
@@ -222,6 +222,33 @@ export function Empty({
       {children && <p className="muted small">{children}</p>}
       {action}
     </div>
+  );
+}
+
+/** A search box with its magnifier inside the left edge. Used for the chat history, the library and the mention picker. */
+export function SearchField({
+  value,
+  onChange,
+  placeholder,
+  label,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  label: string;
+}) {
+  return (
+    <label className="search-field">
+      <Search aria-hidden="true" />
+      <input
+        className="input"
+        type="search"
+        value={value}
+        placeholder={placeholder}
+        aria-label={label}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
   );
 }
 

@@ -7,6 +7,10 @@ const TIMEOUT_MS = 60_000;
 const COMPLETION_TIMEOUT_MS = 180_000;
 // The most text one request carries, counted in characters across all turns. Older turns go first.
 const MAX_CONVERSATION_CHARS = 40_000;
+// Pictures sent with one message: at most ten, each about 5 MB once encoded as base64.
+const MAX_IMAGES = 10;
+const MAX_IMAGE_CHARS = 7_000_000;
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
 const PROVIDERS = Object.freeze({
   openai: { label: 'OpenAI', hint: 'sk-…' },
@@ -218,15 +222,36 @@ async function listModels(provider, key) {
   }
 }
 
+// Pictures of a type the app does not send, or too large, are dropped. The first ten that remain go with the message.
+function cleanImages(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(
+      (image) =>
+        image &&
+        IMAGE_TYPES.includes(image.mime) &&
+        typeof image.data === 'string' &&
+        image.data.length > 0 &&
+        image.data.length <= MAX_IMAGE_CHARS,
+    )
+    .slice(0, MAX_IMAGES)
+    .map((image) => ({ mime: image.mime, data: image.data }));
+}
+
 function normalizeMessages(messages) {
   const out = [];
   for (const message of Array.isArray(messages) ? messages : []) {
     const content = String((message && message.content) || '').slice(0, 24000);
-    if (!content.trim()) continue;
+    const images = cleanImages(message && message.images);
+    if (!content.trim() && images.length === 0) continue;
     const role = message && message.role === 'assistant' ? 'assistant' : 'user';
     const last = out[out.length - 1];
-    if (last && last.role === role) last.content += `\n\n${content}`;
-    else out.push({ role, content });
+    if (last && last.role === role) {
+      last.content = [last.content, content].filter(Boolean).join('\n\n');
+      last.images = [...last.images, ...images].slice(0, MAX_IMAGES);
+    } else {
+      out.push({ role, content, images });
+    }
   }
   // Keep the most recent turns that fit the budget. The newest turn is always kept.
   const kept = [];
@@ -242,6 +267,37 @@ function normalizeMessages(messages) {
   return kept;
 }
 
+// A message with pictures takes each provider's own form for pictures. Text-only messages stay as they were.
+const hasPictures = (message) => Array.isArray(message.images) && message.images.length > 0;
+const pictureText = (message) => message.content || 'Look at the pictures.';
+
+function openAIMessage(message) {
+  if (!hasPictures(message)) return { role: message.role, content: message.content };
+  return {
+    role: message.role,
+    content: [
+      { type: 'text', text: pictureText(message) },
+      ...message.images.map((image) => ({ type: 'image_url', image_url: { url: `data:${image.mime};base64,${image.data}` } })),
+    ],
+  };
+}
+
+function anthropicMessage(message) {
+  if (!hasPictures(message)) return { role: message.role, content: message.content };
+  return {
+    role: message.role,
+    content: [
+      ...message.images.map((image) => ({ type: 'image', source: { type: 'base64', media_type: image.mime, data: image.data } })),
+      { type: 'text', text: pictureText(message) },
+    ],
+  };
+}
+
+function geminiParts(message) {
+  const pictures = hasPictures(message) ? message.images.map((image) => ({ inline_data: { mime_type: image.mime, data: image.data } })) : [];
+  return [...pictures, { text: pictureText(message) }];
+}
+
 const firstChoice = (data) => (data && Array.isArray(data.choices) && data.choices[0]) || {};
 const choiceText = (choice) => String((choice.message && choice.message.content) || '');
 
@@ -250,7 +306,7 @@ const COMPLETERS = {
   async openai(key, model, system, messages, json, maxTokens) {
     const body = {
       model,
-      messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages],
+      messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages.map(openAIMessage)],
       max_completion_tokens: maxTokens,
     };
     if (json) body.response_format = { type: 'json_object' };
@@ -265,7 +321,7 @@ const COMPLETERS = {
   },
 
   async anthropic(key, model, system, messages, _json, maxTokens) {
-    const body = { model, max_tokens: maxTokens, messages };
+    const body = { model, max_tokens: maxTokens, messages: messages.map(anthropicMessage) };
     if (system) body.system = system;
     const data = await request('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -284,7 +340,7 @@ const COMPLETERS = {
     const body = {
       contents: messages.map((message) => ({
         role: message.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: message.content }],
+        parts: geminiParts(message),
       })),
       generationConfig: {
         maxOutputTokens: maxTokens,
@@ -309,7 +365,7 @@ const COMPLETERS = {
   async openrouter(key, model, system, messages, _json, maxTokens) {
     const body = {
       model,
-      messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages],
+      messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages.map(openAIMessage)],
       max_tokens: maxTokens,
     };
     const data = await request('https://openrouter.ai/api/v1/chat/completions', {
@@ -323,6 +379,9 @@ const COMPLETERS = {
   },
 
   async deepseek(key, model, system, messages, json, maxTokens) {
+    if (messages.some(hasPictures)) {
+      throw userError('DeepSeek cannot read pictures yet. Remove the pictures, or choose another provider in Settings.');
+    }
     const body = {
       model,
       messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages],

@@ -320,6 +320,276 @@
     color: var(--muted);
   }
 
+  /* ---------- Coach messages, their files, and the files waiting to be sent ---------- */
+  .message {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 78%;
+  }
+
+  .message--user {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+
+  .message--coach {
+    align-self: flex-start;
+    align-items: flex-start;
+  }
+
+  .message .bubble {
+    max-width: 100%;
+  }
+
+  .message__files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .message--user .message__files {
+    justify-content: flex-end;
+  }
+
+  .file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 260px;
+    min-height: 30px;
+    padding: 3px 8px 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .file-chip > svg {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    color: var(--muted);
+  }
+
+  .file-chip--library {
+    border-color: var(--primary-100);
+    background: var(--primary-50);
+    color: var(--primary-700);
+  }
+
+  .file-chip--library > svg {
+    color: var(--primary-700);
+  }
+
+  .file-chip--busy {
+    color: var(--muted);
+  }
+
+  /* A file in a sent message: the same chip, on the page's own background. */
+  .file-chip--static {
+    background: var(--canvas);
+  }
+
+  .file-chip__thumb {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  .file-chip__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-chip__remove {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin-right: -4px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  .file-chip__remove:hover {
+    background: var(--line);
+    color: var(--ink);
+  }
+
+  .file-chip__remove > svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .composer-files {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .composer-files__count {
+    margin-left: auto;
+  }
+
+  .coach__composer.is-over .chat-input {
+    border-style: dashed;
+    border-color: var(--primary);
+    background: var(--primary-50);
+  }
+
+  /* ---------- Chat history: the chats, grouped, with their actions ---------- */
+  .chat-groups {
+    display: grid;
+    gap: 18px;
+    margin-top: 14px;
+  }
+
+  .chat-group__title {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .chat-list {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .chat-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 6px 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+  }
+
+  .chat-row:hover {
+    background: var(--surface-2);
+  }
+
+  .chat-row.is-active {
+    border-color: var(--primary-100);
+    background: var(--primary-50);
+  }
+
+  .chat-row__open {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+    padding: 4px 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .chat-row__open:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .chat-row__title {
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chat-row__meta {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .chat-row__actions {
+    display: flex;
+    flex: none;
+    gap: 2px;
+  }
+
+  .chat-row__edit {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .chat-row__edit .input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ---------- Mention picker: the library files a message can carry ---------- */
+  .mention-list {
+    display: grid;
+    gap: 6px;
+    max-height: 320px;
+    margin: 12px 0 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+  }
+
+  .mention-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--canvas);
+    cursor: pointer;
+  }
+
+  .mention-option.is-on {
+    border-color: var(--primary);
+    background: var(--primary-50);
+  }
+
+  .mention-option input {
+    flex: none;
+    accent-color: var(--primary);
+  }
+
+  .mention-option__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mention-option__kind {
+    flex: none;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
   /* ---------- Input with its action on the same row ---------- */
   .input-action {
     display: flex;

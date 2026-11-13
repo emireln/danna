@@ -38,6 +38,7 @@ function memory(seed = {}) {
     reviews: seed.reviews ?? [],
     tests: seed.tests ?? [],
     tutor: seed.tutor ?? [],
+    tutorChats: seed.tutorChats ?? [],
     picture: seed.picture ?? null,
     libraryFiles: seed.libraryFiles ?? [],
     libraryLinks: seed.libraryLinks ?? [],
@@ -101,13 +102,40 @@ function memory(seed = {}) {
       }
       return store.tests.find((item) => item.id === row.id);
     },
-    async listTutor(limit = 40) {
-      return store.tutor.slice(-limit).map((row) => ({ ...row }));
+    async listTutorChats() {
+      return store.tutorChats.map((row) => ({ ...row }));
     },
-    async addTutor(role, content, record) {
-      const row = { id: record?.id ?? `m${store.tutor.length + 1}`, role, content, created_at: record?.created_at ?? NOW };
+    async createTutorChat(record) {
+      const existing = store.tutorChats.find((row) => row.id === record?.id);
+      if (existing) return { ...existing };
+      const time = record?.created_at ?? NOW;
+      const row = { id: record?.id ?? `c${store.tutorChats.length + 1}`, title: null, archived: false, created_at: time, updated_at: time };
+      store.tutorChats.push(row);
+      return { ...row };
+    },
+    async renameTutorChat(id, title) {
+      const row = store.tutorChats.find((item) => item.id === id);
+      row.title = title || null;
+      return { ...row };
+    },
+    async setTutorChatArchived(id, archived) {
+      const row = store.tutorChats.find((item) => item.id === id);
+      row.archived = archived;
+      return { ...row };
+    },
+    async listTutor(chatId, limit = 40) {
+      return store.tutor
+        .filter((row) => row.chat_id === chatId)
+        .slice(-limit)
+        .map((row) => ({ ...row }));
+    },
+    async addTutor(chatId, role, content, record) {
+      const id = record?.id ?? `m${store.tutor.length + 1}`;
+      const existing = store.tutor.find((row) => row.id === id);
+      if (existing) return { ...existing };
+      const row = { id, chat_id: chatId, role, content, attachments: record?.attachments ?? [], created_at: record?.created_at ?? NOW };
       store.tutor.push(row);
-      return row;
+      return { ...row };
     },
     async listLibraryFiles() {
       return store.libraryFiles.map(({ blob, text, ...row }) => ({ ...row }));
@@ -190,7 +218,8 @@ function deviceWithProgress() {
     lessons: [{ lesson_id: 'u1-l1', stars: 2, best_pct: 90, attempts: 3, completed_at: '2026-11-08T09:30:00.000Z' }],
     reviews: [{ item_key: 'r1', skill: 'reading', payload: { question: { id: 'q' } }, ease: 2.5, interval_days: 1, reps: 5, due_at: NOW }],
     tests: [{ id: 't1', title: 'My set', description: '', kind: 'ai', skill: 'reading', level: 'B1', minutes: 10, content: { passages: [], questions: [] } }],
-    tutor: [{ id: 'm1', role: 'user', content: 'Hello', created_at: '2026-11-08T09:10:00.000Z' }],
+    tutorChats: [{ id: 'c1', title: 'Verb tenses', archived: false, created_at: '2026-11-08T09:00:00.000Z', updated_at: '2026-11-08T09:10:00.000Z' }],
+    tutor: [{ id: 'm1', chat_id: 'c1', role: 'user', content: 'Hello', attachments: [], created_at: '2026-11-08T09:10:00.000Z' }],
     picture: new Blob(['device-picture'], { type: 'image/webp' }),
   });
 }
@@ -205,8 +234,12 @@ test('an empty account receives everything, and a second copy adds nothing', asy
   assert.equal(account.store.attempts.length, 1);
   assert.equal(account.store.tests.length, 1);
   assert.equal(account.store.reviews.length, 1);
+  assert.equal(account.store.tutorChats.length, 1);
+  assert.equal(account.store.tutorChats[0].id, 'c1', 'coach chats keep their ids');
+  assert.equal(account.store.tutorChats[0].title, 'Verb tenses', 'and their names');
   assert.equal(account.store.tutor.length, 1);
   assert.equal(account.store.tutor[0].id, 'm1', 'coach messages keep their ids');
+  assert.equal(account.store.tutor[0].chat_id, 'c1', 'and their chat');
   assert.equal(account.store.tutor[0].created_at, '2026-11-08T09:10:00.000Z', 'and their times');
   assert.equal(account.store.lessons[0].stars, 2);
   assert.equal(account.store.skills.listening, 55);

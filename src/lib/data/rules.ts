@@ -2,7 +2,7 @@
 // and tests/data-parity.test.mjs checks that both sides give the same answers, so the browser preview behaves
 // like the app. When a rule changes, change it in both places.
 import { userError } from '../bridge';
-import { GOALS, LEVELS, SKILLS, type AnswerRecord, type AttemptKind, type Goal, type Level, type LibraryKind, type ProfileRow, type Skill } from '../types';
+import { GOALS, LEVELS, SKILLS, type AnswerRecord, type AttemptKind, type Goal, type Level, type LibraryKind, type ProfileRow, type Skill, type TutorAttachment } from '../types';
 
 export const ATTEMPT_KINDS: readonly AttemptKind[] = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice', 'review'];
 export const TEST_SKILLS: ReadonlyArray<Skill | 'mixed'> = [...SKILLS, 'mixed'];
@@ -204,6 +204,37 @@ export function cleanTestInput(input: Record<string, unknown>, now: string) {
 
 export function cleanTutorRole(role: unknown): 'user' | 'assistant' {
   return role === 'assistant' ? 'assistant' : 'user';
+}
+
+export const CHAT_TITLE_MAX = 120;
+export const MAX_CHATS = 500;
+export const MAX_ATTACHMENTS = 10;
+
+/** A chat's name: one line of plain text, at most 120 characters. An empty name clears it. */
+export function cleanChatTitle(title: unknown): string | null {
+  const text = String(title ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, CHAT_TITLE_MAX);
+  return text || null;
+}
+
+const ATTACHMENT_KINDS: readonly TutorAttachment['kind'][] = ['image', 'document', 'library'];
+
+/** The files that went with a message: name, kind and size only. At most ten are kept. */
+export function cleanAttachments(value: unknown): TutorAttachment[] {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, MAX_ATTACHMENTS).flatMap((item): TutorAttachment[] => {
+    if (!item || typeof item !== 'object') return [];
+    const record = item as Record<string, unknown>;
+    const name = String(record.name ?? '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 160);
+    if (!name) return [];
+    const kind = ATTACHMENT_KINDS.includes(record.kind as TutorAttachment['kind']) ? (record.kind as TutorAttachment['kind']) : 'document';
+    return [{ name, kind, size: clampNumber(record.size, 0, 2 ** 40, 0) }];
+  });
 }
 
 export function cleanLibraryLink(input: Record<string, unknown>) {

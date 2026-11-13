@@ -219,16 +219,41 @@ export interface AnnouncementRow {
   created_at: string;
 }
 
+/** A file sent with a message, or a library file mentioned in it. Only its name, kind and size are kept. */
+export interface TutorAttachment {
+  name: string;
+  kind: 'image' | 'document' | 'library';
+  size: number;
+}
+
 export interface TutorRow {
   id: string;
+  chat_id: string | null;
   role: 'user' | 'assistant';
   content: string;
+  attachments: TutorAttachment[];
   created_at: string;
+}
+
+export interface TutorChatRow {
+  id: string;
+  /** Null until the chat has a name. The first question gives it one. */
+  title: string | null;
+  archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A picture sent to the model with one message, as base64. It is not kept in the history. */
+export interface ChatImage {
+  mime: 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif';
+  data: string;
 }
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  images?: ChatImage[];
 }
 
 // AI connections (renderer view; keys themselves never reach the renderer).

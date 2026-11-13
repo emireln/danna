@@ -19,6 +19,11 @@ const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 const MAX_ANSWERS = 300;
 const MAX_RESPONSE_LENGTH = 2000;
 const MAX_JSON_LENGTH = 200000;
+// Coach chats. The same limits and rules as src/lib/data/rules.ts, which must change together with these.
+const MAX_CHATS = 500;
+const CHAT_TITLE_MAX = 120;
+const MAX_ATTACHMENTS = 10;
+const ATTACHMENT_KINDS = ['image', 'document', 'library'];
 const MIME_BY_KIND = { pdf: 'application/pdf', txt: 'text/plain', md: 'text/markdown' };
 const PROFILE_FIELDS = new Set([
   'username',
@@ -105,6 +110,13 @@ CREATE TABLE IF NOT EXISTS tutor_messages (
   content TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS tutor_chats (
+  id TEXT PRIMARY KEY,
+  title TEXT,
+  archived INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS avatar (
   id INTEGER PRIMARY KEY CHECK (id = 1),
   data BLOB NOT NULL,
@@ -153,6 +165,23 @@ function db() {
   if (!profileColumns.includes('goal')) {
     connection.exec("ALTER TABLE profile ADD COLUMN goal TEXT NOT NULL DEFAULT 'english'");
     connection.exec("UPDATE profile SET goal = 'toefl'");
+  }
+  // Coach chats came with the 0.6.0 release. Messages kept before them move into one chat, so none is lost.
+  const messageColumns = connection.prepare('PRAGMA table_info(tutor_messages)').all().map((column) => column.name);
+  if (!messageColumns.includes('chat_id')) connection.exec('ALTER TABLE tutor_messages ADD COLUMN chat_id TEXT');
+  if (!messageColumns.includes('attachments')) {
+    connection.exec("ALTER TABLE tutor_messages ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'");
+  }
+  connection.exec('CREATE INDEX IF NOT EXISTS tutor_messages_chat ON tutor_messages (chat_id, created_at)');
+  const orphans = connection
+    .prepare('SELECT MIN(created_at) AS first, MAX(created_at) AS last, COUNT(*) AS count FROM tutor_messages WHERE chat_id IS NULL')
+    .get();
+  if (orphans.count > 0) {
+    const chatId = randomUUID();
+    connection
+      .prepare('INSERT INTO tutor_chats (id, title, archived, created_at, updated_at) VALUES (?, NULL, 0, ?, ?)')
+      .run(chatId, orphans.first, orphans.last);
+    connection.prepare('UPDATE tutor_messages SET chat_id = ? WHERE chat_id IS NULL').run(chatId);
   }
   return connection;
 }
@@ -464,30 +493,136 @@ function insertTest(input = {}) {
   return getTest(id);
 }
 
-// Coach conversation -------------------------------------------------------------
+// Coach chats and their messages ---------------------------------------------------
 
-function listTutor(limit = 40) {
-  return db()
-    .prepare('SELECT id, role, content, created_at FROM tutor_messages ORDER BY created_at DESC LIMIT ?')
-    .all(clamp(limit, 1, 200, 40))
-    .reverse();
+// A chat's name: one line of plain text, at most 120 characters. An empty name clears it.
+function cleanChatTitle(title) {
+  const text = String(title ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, CHAT_TITLE_MAX);
+  return text || null;
 }
 
-function addTutor(role, content, id, createdAt) {
+// The files that went with a message: name, kind and size only. At most ten are kept.
+function cleanAttachments(value) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, MAX_ATTACHMENTS).flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const name = String(item.name ?? '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 160);
+    if (!name) return [];
+    const kind = ATTACHMENT_KINDS.includes(item.kind) ? item.kind : 'document';
+    const size = Number(item.size);
+    return [{ name, kind, size: Number.isFinite(size) ? Math.min(2 ** 40, Math.max(0, Math.round(size))) : 0 }];
+  });
+}
+
+const toChat = (row) => ({
+  id: row.id,
+  title: row.title ?? null,
+  archived: Boolean(row.archived),
+  created_at: row.created_at,
+  updated_at: row.updated_at,
+});
+
+const toMessage = (row) => ({
+  id: row.id,
+  chat_id: row.chat_id ?? null,
+  role: row.role === 'assistant' ? 'assistant' : 'user',
+  content: row.content,
+  attachments: cleanAttachments(parse(row.attachments, [])),
+  created_at: row.created_at,
+});
+
+function getChat(id) {
+  const row = db().prepare('SELECT * FROM tutor_chats WHERE id = ?').get(String(id));
+  if (!row) throw userError('This chat could not be found.');
+  return toChat(row);
+}
+
+function listTutorChats() {
+  return db().prepare('SELECT * FROM tutor_chats ORDER BY updated_at DESC').all().map(toChat);
+}
+
+function createTutorChat(id, createdAt) {
+  const wanted = typeof id === 'string' && id ? id : null;
+  if (wanted) {
+    const existing = db().prepare('SELECT * FROM tutor_chats WHERE id = ?').get(wanted);
+    if (existing) return toChat(existing);
+  }
+  if (db().prepare('SELECT COUNT(*) AS count FROM tutor_chats').get().count >= MAX_CHATS) {
+    throw userError('You have reached the limit for chats. Delete some chats and try again.');
+  }
+  const time = isoTime(createdAt, now());
+  const chatId = wanted || randomUUID();
+  db().prepare('INSERT INTO tutor_chats (id, title, archived, created_at, updated_at) VALUES (?, NULL, 0, ?, ?)').run(chatId, time, time);
+  return getChat(chatId);
+}
+
+function renameTutorChat(id, title) {
+  getChat(id);
+  db().prepare('UPDATE tutor_chats SET title = ? WHERE id = ?').run(cleanChatTitle(title), String(id));
+  return getChat(id);
+}
+
+function setTutorChatArchived(id, archived) {
+  getChat(id);
+  db().prepare('UPDATE tutor_chats SET archived = ? WHERE id = ?').run(archived ? 1 : 0, String(id));
+  return getChat(id);
+}
+
+function deleteTutorChat(id) {
+  getChat(id);
+  db().prepare('DELETE FROM tutor_messages WHERE chat_id = ?').run(String(id));
+  db().prepare('DELETE FROM tutor_chats WHERE id = ?').run(String(id));
+}
+
+// The ids of the chats whose name or messages contain the text. An empty search lists every chat.
+function searchTutorChats(query) {
+  const needle = String(query ?? '')
+    .trim()
+    .toLowerCase();
+  const ids = new Set();
+  for (const chat of db().prepare('SELECT id, title FROM tutor_chats').all()) {
+    if (!needle || String(chat.title ?? '').toLowerCase().includes(needle)) ids.add(chat.id);
+  }
+  if (needle) {
+    for (const message of db().prepare('SELECT chat_id, content FROM tutor_messages WHERE chat_id IS NOT NULL').all()) {
+      if (message.content.toLowerCase().includes(needle)) ids.add(message.chat_id);
+    }
+  }
+  return [...ids];
+}
+
+function listTutor(chatId, limit = 40) {
+  return db()
+    .prepare('SELECT * FROM (SELECT * FROM tutor_messages WHERE chat_id = ? ORDER BY created_at DESC LIMIT ?) ORDER BY created_at ASC')
+    .all(String(chatId), clamp(limit, 1, 200, 40))
+    .map(toMessage);
+}
+
+function addTutor(chatId, role, content, id, createdAt, attachments) {
+  getChat(chatId);
+  const messageId = typeof id === 'string' && id ? id : randomUUID();
+  // A message that is already there keeps its first copy, as the app does.
+  const existing = db().prepare('SELECT * FROM tutor_messages WHERE id = ?').get(messageId);
+  if (existing) return toMessage(existing);
   const row = {
-    id: typeof id === 'string' && id ? id : randomUUID(),
+    id: messageId,
+    chat_id: String(chatId),
     role: role === 'assistant' ? 'assistant' : 'user',
     content: String(content ?? '').slice(0, 8000),
+    attachments: JSON.stringify(cleanAttachments(attachments)),
     created_at: isoTime(createdAt, now()),
   };
   db()
-    .prepare('INSERT OR IGNORE INTO tutor_messages (id, role, content, created_at) VALUES (?, ?, ?, ?)')
-    .run(row.id, row.role, row.content, row.created_at);
-  return row;
-}
-
-function clearTutor() {
-  db().prepare('DELETE FROM tutor_messages').run();
+    .prepare('INSERT INTO tutor_messages (id, chat_id, role, content, attachments, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+    .run(row.id, row.chat_id, row.role, row.content, row.attachments, row.created_at);
+  db().prepare('UPDATE tutor_chats SET updated_at = ? WHERE id = ?').run(now(), row.chat_id);
+  return toMessage(row);
 }
 
 // Profile picture: one WebP file of at most 300 KB, kept in the database file.
@@ -645,9 +780,14 @@ const METHODS = {
   listMyTests,
   getTest,
   insertTest,
+  listTutorChats,
+  createTutorChat,
+  renameTutorChat,
+  setTutorChatArchived,
+  deleteTutorChat,
+  searchTutorChats,
   listTutor,
   addTutor,
-  clearTutor,
   getAvatar,
   setAvatar,
   clearAvatar,

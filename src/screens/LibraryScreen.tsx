@@ -7,7 +7,7 @@ import { openLink } from '../components/Banner';
 import { FileViewer } from '../components/FileViewer';
 import { LibraryCoach } from '../components/LibraryCoach';
 import { PlatformLogo } from '../components/PlatformLogo';
-import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Skeleton, Spinner, Tabs } from '../components/ui';
+import { ConfirmSheet, Empty, Notice, PageHeader, SearchField, SectionTitle, Skeleton, Spinner, Tabs } from '../components/ui';
 import { Select } from '../components/Pickers';
 import { bridge, errorText } from '../lib/bridge';
 import { tn } from '../lib/i18n';
@@ -60,6 +60,7 @@ export function LibraryScreen() {
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [customCategory, setCustomCategory] = useState('');
   const [filter, setFilter] = useState('All');
+  const [query, setQuery] = useState('');
   const [savingLink, setSavingLink] = useState(false);
 
   // Files need the desktop app (this device) or an online account. Links work everywhere.
@@ -203,7 +204,14 @@ export function LibraryScreen() {
   const detectedHref = normalizeLinkUrl(url);
   const detected = detectedHref ? platformForUrl(detectedHref) : null;
   const categoriesInUse = [...new Set((links ?? []).map((link) => link.category))].sort();
-  const shownLinks = (links ?? []).filter((link) => filter === 'All' || link.category === filter);
+  // The search looks at the names of the files, and at the titles, addresses and notes of the links.
+  const needle = query.trim().toLowerCase();
+  const shownFiles = (files ?? []).filter((file) => !needle || file.name.toLowerCase().includes(needle));
+  const shownLinks = (links ?? []).filter(
+    (link) =>
+      (filter === 'All' || link.category === filter) &&
+      (!needle || [link.title, link.url, link.platform, link.note].join(' ').toLowerCase().includes(needle)),
+  );
   const groups = new Map<string, LibraryLinkRow[]>();
   for (const link of shownLinks) groups.set(link.category, [...(groups.get(link.category) ?? []), link]);
 
@@ -221,6 +229,17 @@ export function LibraryScreen() {
           { value: 'ask', label: t('Ask the coach') },
         ]}
       />
+
+      {tab !== 'ask' && (
+        <div className="mt-4">
+          <SearchField
+            value={query}
+            onChange={setQuery}
+            placeholder={tab === 'files' ? t('Search your files') : t('Search your links')}
+            label={tab === 'files' ? t('Search your files') : t('Search your links')}
+          />
+        </div>
+      )}
 
       {tab === 'files' && (
         <div className="stack mt-4">
@@ -261,9 +280,11 @@ export function LibraryScreen() {
             <Skeleton height={120} />
           ) : files.length === 0 ? (
             <Empty title={t('Nothing here yet')}>{t('Add a PDF, a text or a Markdown file. Then read it, or ask the coach about it.')}</Empty>
+          ) : shownFiles.length === 0 ? (
+            <Empty title={t('No file matches your search.')} />
           ) : (
             <div className="set-list">
-              {files.map((file) => (
+              {shownFiles.map((file) => (
                 <div key={file.id} className="person">
                   <span className="chip chip--blue">{t(KIND_LABEL[file.kind])}</span>
                   <div className="person__body">

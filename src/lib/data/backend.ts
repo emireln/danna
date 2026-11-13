@@ -13,6 +13,8 @@ import type {
   Skill,
   TestContent,
   TestRow,
+  TutorAttachment,
+  TutorChatRow,
   TutorRow,
   LibraryFileRow,
   LibraryKind,
@@ -160,8 +162,24 @@ export interface DataBackend {
   updateLibraryLink(id: string, patch: LibraryLinkPatch): Promise<LibraryLinkRow>;
   deleteLibraryLink(id: string): Promise<void>;
 
-  listTutor(limit?: number): Promise<TutorRow[]>;
+  /** The coach's chats, newest first. Archived chats are included. */
+  listTutorChats(): Promise<TutorChatRow[]>;
+  /** A new empty chat. record keeps an existing id and time, used when progress is copied between devices and accounts. */
+  createTutorChat(record?: { id?: string; created_at?: string }): Promise<TutorChatRow>;
+  /** Renames a chat. An empty title clears its name. */
+  renameTutorChat(id: string, title: string): Promise<TutorChatRow>;
+  setTutorChatArchived(id: string, archived: boolean): Promise<TutorChatRow>;
+  /** Deletes a chat and every message in it. */
+  deleteTutorChat(id: string): Promise<void>;
+  /** The ids of the chats whose name or messages contain the text, without regard to case. */
+  searchTutorChats(query: string): Promise<string[]>;
+  /** The newest messages of one chat, in order. */
+  listTutor(chatId: string, limit?: number): Promise<TutorRow[]>;
   /** record keeps an existing id and time, used when progress is copied between devices and accounts. */
-  addTutor(role: TutorRow['role'], content: string, record?: { id?: string; created_at?: string }): Promise<TutorRow>;
-  clearTutor(): Promise<void>;
+  addTutor(
+    chatId: string,
+    role: TutorRow['role'],
+    content: string,
+    record?: { id?: string; created_at?: string; attachments?: TutorAttachment[] },
+  ): Promise<TutorRow>;
 }

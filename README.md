@@ -71,7 +71,7 @@ The installer is written to `release/danna-setup-<version>-x64.exe`. Delete the 
 ## Online accounts (Supabase)
 
 1. For a new project: in the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket, the library and the release notes.
-2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note). All three are safe to run again.
+2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note). All four are safe to run again.
 3. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
 4. Never add a service-role or secret key to the app. Only the publishable key is bundled.
 

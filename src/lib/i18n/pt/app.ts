@@ -724,4 +724,61 @@ export const APP_PT: Record<string, string> = {
   'Profile pictures of your friends show up as soon as you are friends': 'As fotos de perfil dos seus amigos aparecem assim que vocês são amigos',
   'danna checks for new versions and installs them in the background': 'O danna verifica novas versões e as instala em segundo plano',
   'The In use label in AI keys sits beside the key name': 'O aviso Em uso nas chaves de IA fica ao lado do nome da chave',
+
+  // Coach chats, files and mentions
+  'Yesterday': 'Ontem',
+  'Chat name': 'Nome do chat',
+  'Save': 'Salvar',
+  'Name this chat': 'Dê um nome a este chat',
+  'Untitled chat': 'Chat sem nome',
+  'Rename chat': 'Renomear chat',
+  'Restore chat': 'Restaurar chat',
+  'Archive chat': 'Arquivar chat',
+  'Delete chat': 'Excluir chat',
+  'Chat history': 'Histórico de chats',
+  'New chat': 'Novo chat',
+  'Search chats': 'Buscar chats',
+  'No chat matches your search.': 'Nenhum chat corresponde à sua busca.',
+  'No chats yet.': 'Nenhum chat ainda.',
+  'Your conversations with the coach are kept here.': 'Suas conversas com o coach ficam guardadas aqui.',
+  'Chats': 'Chats',
+  'Archived': 'Arquivados',
+  'Delete this chat?': 'Excluir este chat?',
+  'The chat and its messages are deleted. This cannot be undone.': 'O chat e as mensagens dele são excluídos. Isso não pode ser desfeito.',
+  'Chat archived.': 'Chat arquivado.',
+  'Chat restored.': 'Chat restaurado.',
+  'Chat deleted.': 'Chat excluído.',
+  'History': 'Histórico',
+  'Mention library files': 'Mencionar arquivos da biblioteca',
+  'Mention a library file': 'Mencionar um arquivo da biblioteca',
+  'Mention 1 file': 'Mencionar 1 arquivo',
+  'Mention {count} files': 'Mencionar {count} arquivos',
+  'You can mention up to {count} files in one message.': 'Você pode mencionar até {count} arquivos em uma mensagem.',
+  'You can send up to {max} files with a message.': 'Você pode enviar até {max} arquivos com uma mensagem.',
+  'Your library is empty': 'Sua biblioteca está vazia',
+  'Add a file in My library first.': 'Adicione um arquivo em Minha biblioteca primeiro.',
+  'Search your files': 'Buscar nos seus arquivos',
+  'Search your links': 'Buscar nos seus links',
+  'No file matches your search.': 'Nenhum arquivo corresponde à sua busca.',
+  'Attach files': 'Anexar arquivos',
+  'Files for this message': 'Arquivos desta mensagem',
+  'Reading files…': 'Lendo arquivos…',
+  '{count} of {max} files': '{count} de {max} arquivos',
+
+  // The 0.6.0 release note (What’s new)
+  'Coach chats: each conversation keeps its own history. Rename, archive or delete any chat':
+    'Chats com o coach: cada conversa guarda o seu histórico. Renomeie, arquive ou exclua qualquer chat',
+  'A new chat gets a short name, of four or five words, from your first question':
+    'Um novo chat recebe um nome curto, de quatro ou cinco palavras, a partir da sua primeira pergunta',
+  'Send up to 10 files to the coach at once: pictures, PDF, TXT and Markdown':
+    'Envie até 10 arquivos para o coach de uma vez: imagens, PDF, TXT e Markdown',
+  'Mention files from My library in a chat, and pick them by name': 'Mencione arquivos de Minha biblioteca em um chat e escolha-os pelo nome',
+  'Search your chat history and your library': 'Busque no seu histórico de chats e na sua biblioteca',
+  'More reading, listening, writing and speaking practice in every unit, on both tracks':
+    'Mais prática de leitura, listening, escrita e fala em todas as unidades, nas duas trilhas',
+  'New mock tests: reading with listening, and writing with speaking, for each level and the TOEFL track':
+    'Novos simulados: leitura com listening, e escrita com fala, para cada nível e para a trilha TOEFL',
+  'Practice sets you make with AI stay saved, on this device or in your account':
+    'Os conjuntos de prática que você cria com a IA ficam salvos, neste aparelho ou na sua conta',
+  'The danna logo sits beside its name on the first screen': 'O logo do danna fica ao lado do nome na primeira tela',
 };

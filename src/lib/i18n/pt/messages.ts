@@ -62,4 +62,15 @@ export const MESSAGES_PT: Record<string, string> = {
   // Review
   'Review question': 'Pergunta para revisar',
   'Put the words of this sentence in the right order.': 'Coloque as palavras desta frase na ordem certa.',
+
+  // Coach chats and files
+  'This chat could not be found.': 'Este chat não foi encontrado.',
+  'You have reached the limit for chats. Delete some chats and try again.': 'Você atingiu o limite de chats. Exclua alguns chats e tente de novo.',
+  'Only pictures, PDF, TXT and Markdown files can be sent.': 'Só é possível enviar imagens e arquivos PDF, TXT e Markdown.',
+  'This file is larger than 20 MB.': 'Este arquivo tem mais de 20 MB.',
+  'This picture could not be read. Try another one.': 'Não foi possível ler esta imagem. Tente outra.',
+  'This PDF has no readable text yet. A scanned PDF needs its text first.': 'Este PDF ainda não tem texto legível. Um PDF escaneado precisa de texto antes.',
+  'This file has no text in it.': 'Este arquivo não tem texto.',
+  'DeepSeek cannot read pictures yet. Remove the pictures, or choose another provider in Settings.':
+    'O DeepSeek ainda não lê imagens. Remova as imagens ou escolha outro provedor em Configurações.',
 };

@@ -2,7 +2,7 @@
 // the desktop database (see ./rules.ts), so the preview and the app give the same answers.
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
 import { userError } from '../bridge';
-import type { AttemptKind, AttemptRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorRow } from '../types';
+import type { AttemptKind, AttemptRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorChatRow, TutorRow } from '../types';
 import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import {
   ATTEMPT_KINDS,
@@ -14,17 +14,20 @@ import {
   cleanReviewRow,
   cleanSkills,
   cleanTestInput,
+  cleanAttachments,
+  cleanChatTitle,
   cleanTutorRole,
   clampNumber,
   isWebpBytes,
   isoTime,
+  MAX_CHATS,
 } from './rules';
 
 const STORE_KEY = 'danna.local.v1';
 const ONLINE_ONLY = 'This is available with an online account.';
 // The browser keeps its copy in a small store, so only the newest items are kept here. The app keeps them all.
 const MAX_ATTEMPTS = 300;
-const MAX_TUTOR = 200;
+const MAX_TUTOR = 1000;
 
 interface LocalStore {
   profile: ProfileRow | null;
@@ -34,6 +37,7 @@ interface LocalStore {
   reviews: ReviewRow[];
   tests: TestRow[];
   tutor: TutorRow[];
+  tutorChats: TutorChatRow[];
   /** The profile picture as a WebP data URL, or null. */
   avatar?: { dataUrl: string } | null;
   libraryLinks?: LibraryLinkRow[];
@@ -47,16 +51,37 @@ const emptyStore = (): LocalStore => ({
   reviews: [],
   tests: [],
   tutor: [],
+  tutorChats: [],
   avatar: null,
 });
 
 function read(): LocalStore {
   try {
     const raw = window.localStorage.getItem(STORE_KEY);
-    return raw ? { ...emptyStore(), ...(JSON.parse(raw) as Partial<LocalStore>) } : emptyStore();
+    return raw ? upgradeChats({ ...emptyStore(), ...(JSON.parse(raw) as Partial<LocalStore>) }) : emptyStore();
   } catch {
     return emptyStore();
   }
+}
+
+/** Messages kept before chats existed go into one chat, so nothing is lost. */
+function upgradeChats(store: LocalStore): LocalStore {
+  store.tutorChats = Array.isArray(store.tutorChats) ? store.tutorChats : [];
+  const orphans = (Array.isArray(store.tutor) ? store.tutor : []).filter((message) => !message.chat_id);
+  if (orphans.length > 0) {
+    const times = orphans.map((message) => message.created_at).sort();
+    const chat: TutorChatRow = { id: crypto.randomUUID(), title: null, archived: false, created_at: times[0], updated_at: times[times.length - 1] };
+    store.tutorChats = [...store.tutorChats, chat];
+    store.tutor = store.tutor.map((message) => ({ ...message, chat_id: message.chat_id ?? chat.id, attachments: message.attachments ?? [] }));
+  }
+  store.tutor = (store.tutor ?? []).map((message) => ({ ...message, attachments: message.attachments ?? [] }));
+  return store;
+}
+
+function findChat(store: LocalStore, id: string): TutorChatRow {
+  const chat = store.tutorChats.find((item) => item.id === id);
+  if (!chat) throw userError('This chat could not be found.');
+  return chat;
 }
 
 function write(store: LocalStore): void {
@@ -361,32 +386,94 @@ export function createLocalBackend(): DataBackend {
       });
     },
 
-    async listTutor(limit = 40) {
+    async listTutorChats() {
       return withStore((store) =>
-        store.tutor
+        store.tutorChats
           .slice()
-          .sort((a, b) => a.created_at.localeCompare(b.created_at))
-          .slice(-clampNumber(limit, 1, 200, 40)),
+          .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+          .map((chat) => ({ ...chat })),
       );
     },
 
-    async addTutor(role, content, record) {
+    async createTutorChat(record) {
       return withStore((store) => {
-        const message: TutorRow = {
-          id: record?.id || newId(),
-          role: cleanTutorRole(role),
-          content: String(content ?? '').slice(0, 8000),
-          created_at: isoTime(record?.created_at, nowIso()),
-        };
-        // A message that is already there keeps its first copy, as the app does.
-        if (!store.tutor.some((item) => item.id === message.id)) store.tutor = [...store.tutor, message].slice(-MAX_TUTOR);
-        return message;
+        const existing = record?.id ? store.tutorChats.find((chat) => chat.id === record.id) : undefined;
+        if (existing) return { ...existing };
+        const time = isoTime(record?.created_at, nowIso());
+        const chat: TutorChatRow = { id: record?.id || newId(), title: null, archived: false, created_at: time, updated_at: time };
+        if (store.tutorChats.length >= MAX_CHATS) throw userError('You have reached the limit for chats. Delete some chats and try again.');
+        store.tutorChats = [chat, ...store.tutorChats];
+        return { ...chat };
       });
     },
 
-    async clearTutor() {
+    async renameTutorChat(id, title) {
+      return withStore((store) => {
+        const chat = findChat(store, id);
+        chat.title = cleanChatTitle(title);
+        return { ...chat };
+      });
+    },
+
+    async setTutorChatArchived(id, archived) {
+      return withStore((store) => {
+        const chat = findChat(store, id);
+        chat.archived = Boolean(archived);
+        return { ...chat };
+      });
+    },
+
+    async deleteTutorChat(id) {
       withStore((store) => {
-        store.tutor = [];
+        findChat(store, id);
+        store.tutorChats = store.tutorChats.filter((chat) => chat.id !== id);
+        store.tutor = store.tutor.filter((message) => message.chat_id !== id);
+      });
+    },
+
+    async searchTutorChats(query) {
+      const needle = String(query ?? '').trim().toLowerCase();
+      return withStore((store) => {
+        const ids = new Set<string>();
+        for (const chat of store.tutorChats) {
+          if (!needle || (chat.title ?? '').toLowerCase().includes(needle)) ids.add(chat.id);
+        }
+        if (needle) {
+          for (const message of store.tutor) {
+            if (message.chat_id && message.content.toLowerCase().includes(needle)) ids.add(message.chat_id);
+          }
+        }
+        return [...ids];
+      });
+    },
+
+    async listTutor(chatId, limit = 40) {
+      return withStore((store) =>
+        store.tutor
+          .filter((message) => message.chat_id === chatId)
+          .sort((a, b) => a.created_at.localeCompare(b.created_at))
+          .slice(-clampNumber(limit, 1, 200, 40))
+          .map((message) => ({ ...message })),
+      );
+    },
+
+    async addTutor(chatId, role, content, record) {
+      return withStore((store) => {
+        const chat = findChat(store, chatId);
+        // A message that is already there keeps its first copy, as the app does.
+        const existing = record?.id ? store.tutor.find((item) => item.id === record.id) : undefined;
+        if (existing) return { ...existing };
+        const message: TutorRow = {
+          id: record?.id || newId(),
+          chat_id: chatId,
+          role: cleanTutorRole(role),
+          content: String(content ?? '').slice(0, 8000),
+          attachments: cleanAttachments(record?.attachments),
+          created_at: isoTime(record?.created_at, nowIso()),
+        };
+        store.tutor = [...store.tutor, message].slice(-MAX_TUTOR);
+        chat.updated_at = nowIso();
+        return { ...message };
       });
     },
   };

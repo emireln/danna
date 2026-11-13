@@ -124,3 +124,66 @@ test('a rejected request quotes the provider reason, with anything that looks li
     );
   });
 });
+
+const PICTURE = { mime: 'image/jpeg', data: 'aGVsbG8=' };
+const TEXT_REPLY = {
+  choices: [{ message: { content: 'A cat' }, finish_reason: 'stop' }],
+  content: [{ type: 'text', text: 'A cat' }],
+  candidates: [{ content: { parts: [{ text: 'A cat' }] }, finishReason: 'STOP' }],
+};
+
+test('a message with a picture goes to each provider in that provider’s own form, with the text', async () => {
+  const message = { role: 'user', content: 'What is this?', images: [PICTURE] };
+  await withFetch(TEXT_REPLY, async (calls) => {
+    await ai.complete('openai', 'sk-test', 'gpt-4o', { messages: [message] });
+    assert.deepEqual(JSON.parse(calls[0].body).messages[0].content, [
+      { type: 'text', text: 'What is this?' },
+      { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,aGVsbG8=' } },
+    ]);
+
+    await ai.complete('openrouter', 'sk-or-v1-test', 'some-model', { messages: [message] });
+    assert.deepEqual(JSON.parse(calls[1].body).messages[0].content[1], { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,aGVsbG8=' } });
+
+    await ai.complete('anthropic', 'sk-ant-test', 'claude-sonnet-5-5', { messages: [message] });
+    assert.deepEqual(JSON.parse(calls[2].body).messages[0].content, [
+      { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'aGVsbG8=' } },
+      { type: 'text', text: 'What is this?' },
+    ]);
+
+    await ai.complete('gemini', 'AIzaTestKeyTestKeyTestKeyTestKey1', 'gemini-3-flash', { messages: [message] });
+    assert.deepEqual(JSON.parse(calls[3].body).contents[0].parts, [
+      { inline_data: { mime_type: 'image/jpeg', data: 'aGVsbG8=' } },
+      { text: 'What is this?' },
+    ]);
+  });
+});
+
+test('a text-only message keeps the plain form each provider had before pictures', async () => {
+  await withFetch(TEXT_REPLY, async (calls) => {
+    await ai.complete('openai', 'sk-test', 'gpt-4o', { messages: [{ role: 'user', content: 'Hi' }] });
+    assert.deepEqual(JSON.parse(calls[0].body).messages[0], { role: 'user', content: 'Hi' });
+    await ai.complete('anthropic', 'sk-ant-test', 'claude-sonnet-5-5', { messages: [{ role: 'user', content: 'Hi' }] });
+    assert.deepEqual(JSON.parse(calls[1].body).messages[0], { role: 'user', content: 'Hi' });
+  });
+});
+
+test('DeepSeek is told it cannot read pictures, and no request is sent', async () => {
+  await withFetch(TEXT_REPLY, async (calls) => {
+    await assert.rejects(
+      ai.complete('deepseek', 'sk-test', 'deepseek-flash', { messages: [{ role: 'user', content: 'Look', images: [PICTURE] }] }),
+      /DeepSeek cannot read pictures yet/,
+    );
+    assert.equal(calls.length, 0);
+  });
+});
+
+test('pictures of a type the app does not send are dropped, and ten pictures at most go with one message', async () => {
+  const svg = { mime: 'image/svg+xml', data: 'PHN2Zz4=' };
+  await withFetch(TEXT_REPLY, async (calls) => {
+    await ai.complete('openai', 'sk-test', 'gpt-4o', {
+      messages: [{ role: 'user', content: 'Hi', images: [svg, ...Array.from({ length: 12 }, () => PICTURE)] }],
+    });
+    const content = JSON.parse(calls[0].body).messages[0].content;
+    assert.equal(content.filter((part) => part.type === 'image_url').length, 10);
+  });
+});

@@ -228,6 +228,8 @@ function cleanMessages(list) {
   return list.map((item) => ({
     role: item && item.role === 'assistant' ? 'assistant' : 'user',
     content: item && typeof item.content === 'string' ? item.content.slice(0, 12000) : '',
+    // The pictures themselves are checked in electron/ai.cjs, where each provider's request is built.
+    images: item && Array.isArray(item.images) ? item.images.slice(0, 10) : [],
   }));
 }
 

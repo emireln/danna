@@ -525,3 +525,33 @@ test('library bucket: private, 20 MB limit, three file types, and each person wr
   assert.equal(intrude.code, PERMISSION_DENIED);
   assert.equal((await as(db, BOB, "select name from storage.objects where bucket_id = 'library'")).rows.length, 0);
 });
+
+test('coach chats belong to their owner, their names and file lists are limited, and deleting a chat deletes its messages', async () => {
+  const chat = (await as(db, ALICE, "insert into public.tutor_chats (user_id, title) values ($1, 'Verb tenses') returning id", [ALICE])).rows[0];
+  await as(
+    db,
+    ALICE,
+    "insert into public.tutor_messages (user_id, chat_id, role, content, attachments) values ($1, $2, 'user', 'hello', '[{\"name\": \"notes.pdf\", \"kind\": \"document\", \"size\": 42}]')",
+    [ALICE, chat.id],
+  );
+
+  assert.equal((await as(db, BOB, 'select 1 from public.tutor_chats')).rows.length, 0, 'other people cannot see a chat');
+  assert.equal((await as(db, BOB, 'select 1 from public.tutor_messages where chat_id = $1', [chat.id])).rows.length, 0);
+  const renamed = await as(db, BOB, 'update public.tutor_chats set title = $2 where id = $1', [chat.id, 'Mine now']);
+  assert.equal(renamed.affectedRows, 0, 'nor rename it');
+
+  const longName = await refused(as(db, ALICE, 'insert into public.tutor_chats (user_id, title) values ($1, $2)', [ALICE, 'x'.repeat(121)]));
+  assert.equal(longName.code, CHECK_FAILED, 'a name is at most 120 characters');
+  const manyFiles = Array.from({ length: 200 }, (_, index) => ({ name: `file-${index}-${'n'.repeat(40)}.pdf`, kind: 'document', size: 1 }));
+  const bigList = await refused(
+    as(db, ALICE, "insert into public.tutor_messages (user_id, chat_id, role, content, attachments) values ($1, $2, 'user', 'x', $3)", [
+      ALICE,
+      chat.id,
+      JSON.stringify(manyFiles),
+    ]),
+  );
+  assert.equal(bigList.code, CHECK_FAILED, 'the list of file names has a size limit');
+
+  await as(db, ALICE, 'delete from public.tutor_chats where id = $1', [chat.id]);
+  assert.equal((await as(db, ALICE, 'select 1 from public.tutor_messages where chat_id = $1', [chat.id])).rows.length, 0, 'its messages go with it');
+});

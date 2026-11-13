@@ -196,15 +196,33 @@ async function scenario(backend) {
     return (await backend.listReviewItems()).slice().sort(byKey('item_key'));
   });
 
-  await step('coach messages keep their first copy and a known role', async () => {
-    await backend.addTutor('user', 'hi', { id: 'm1', created_at: '2026-03-03T09:00:00.000Z' });
-    await backend.addTutor('system', 'yo', { id: 'm2', created_at: '2026-03-03T09:01:00.000Z' });
-    await backend.addTutor('assistant', 'copy', { id: 'm1', created_at: '2026-03-03T09:00:00.000Z' });
-    return backend.listTutor(40);
+  await step('coach chats keep their names, archive state and messages', async () => {
+    await backend.createTutorChat({ id: 'c1', created_at: '2026-03-03T08:59:00.000Z' });
+    await backend.createTutorChat({ id: 'c2', created_at: '2026-03-03T08:58:00.000Z' });
+    await backend.renameTutorChat('c1', 'Verb tenses');
+    await backend.setTutorChatArchived('c2', true);
+    await backend.addTutor('c1', 'user', 'hi', {
+      id: 'm1',
+      created_at: '2026-03-03T09:00:00.000Z',
+      attachments: [{ name: 'notes.pdf', kind: 'document', size: 42 }],
+    });
+    await backend.addTutor('c1', 'system', 'yo', { id: 'm2', created_at: '2026-03-03T09:01:00.000Z' });
+    await backend.addTutor('c1', 'assistant', 'copy', { id: 'm1', created_at: '2026-03-03T09:00:00.000Z' });
+    const chats = (await backend.listTutorChats()).map(({ id, title, archived }) => ({ id, title, archived }));
+    return {
+      chats,
+      messages: await backend.listTutor('c1', 40),
+      elsewhere: await backend.listTutor('c2', 40),
+      byName: await backend.searchTutorChats('VERB TENSES'),
+      byMessage: await backend.searchTutorChats('yo'),
+    };
   });
-  await step('coach messages are cleared', async () => {
-    await backend.clearTutor();
-    return backend.listTutor(40);
+  await step('a deleted coach chat takes its messages with it', async () => {
+    await backend.deleteTutorChat('c1');
+    return {
+      chats: (await backend.listTutorChats()).map((chat) => chat.id),
+      messages: await backend.listTutor('c1', 40),
+    };
   });
 
   await step('a practice set is saved within its limits', async () => {

@@ -172,9 +172,14 @@ test('every table, function, bucket and column the online backend uses exists in
   await backend.addLibraryLink({ url: 'https://example.com', title: 't', platform: 'other', category: 'General', note: '' });
   await backend.updateLibraryLink('l1', { title: 'x' });
   await backend.deleteLibraryLink('l1');
-  await backend.listTutor(10);
-  await backend.addTutor('user', 'hello');
-  await backend.clearTutor();
+  await backend.listTutorChats();
+  await backend.createTutorChat();
+  await backend.renameTutorChat('c1', 'Verb tenses');
+  await backend.setTutorChatArchived('c1', true);
+  await backend.searchTutorChats('verb');
+  await backend.listTutor('c1', 10);
+  await backend.addTutor('c1', 'user', 'hello', { attachments: [{ name: 'notes.pdf', kind: 'document', size: 42 }] });
+  await backend.deleteTutorChat('c1');
 
   const problems = [];
   for (const record of stand.calls) {
@@ -272,7 +277,7 @@ test('shared notes are at most 280 characters, and coach messages at most 8000',
   await backend.sendShare({ recipientId: OTHER, kind: 'result', attemptId: 'a1', note: 'x'.repeat(400) });
   const share = stand.calls.find((record) => record.target.name === 'shares').ops.find((op) => op.op === 'insert');
   assert.equal(share.args[0].note.length, 280);
-  await backend.addTutor('user', 'y'.repeat(9000));
+  await backend.addTutor('c1', 'user', 'y'.repeat(9000));
   const message = stand.calls.findLast((record) => record.target.name === 'tutor_messages').ops.find((op) => op.op === 'insert');
   assert.equal(message.args[0].content.length, 8000);
 });

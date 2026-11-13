@@ -11,6 +11,7 @@ import type {
   ShareRow,
   Skill,
   TestRow,
+  TutorChatRow,
   TutorRow,
   LibraryFileRow,
   LibraryKind,
@@ -19,10 +20,13 @@ import type {
 import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
 import { userError } from '../bridge';
+import { cleanAttachments, cleanChatTitle } from './rules';
 
 const LIBRARY_BUCKET = 'library';
 const FILE_COLUMNS = 'id,name,kind,mime_type,size_bytes,pages,created_at,updated_at';
 const LINK_COLUMNS = 'id,url,title,platform,category,note,created_at,updated_at';
+const CHAT_COLUMNS = 'id,title,archived,created_at,updated_at';
+const MESSAGE_COLUMNS = 'id,chat_id,role,content,attachments,created_at';
 
 type Result<T> = { data: T; error: { message: string; code?: string } | null };
 
@@ -377,39 +381,87 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       unwrap(await sb.from('library_links').delete().eq('id', linkId));
     },
 
-    async listTutor(limit = 40) {
-      const id = await me();
+    async listTutorChats() {
+      await me();
+      return unwrap(await sb.from('tutor_chats').select(CHAT_COLUMNS).order('updated_at', { ascending: false })) as TutorChatRow[];
+    },
+
+    async createTutorChat(record) {
+      const userId = await me();
+      return unwrap(
+        await sb
+          .from('tutor_chats')
+          .insert({
+            user_id: userId,
+            ...(record?.id ? { id: record.id } : {}),
+            ...(record?.created_at ? { created_at: record.created_at, updated_at: record.created_at } : {}),
+          })
+          .select(CHAT_COLUMNS)
+          .single(),
+      ) as TutorChatRow;
+    },
+
+    async renameTutorChat(chatId, title) {
+      return unwrap(
+        await sb.from('tutor_chats').update({ title: cleanChatTitle(title) }).eq('id', chatId).select(CHAT_COLUMNS).single(),
+      ) as TutorChatRow;
+    },
+
+    async setTutorChatArchived(chatId, archived) {
+      return unwrap(
+        await sb.from('tutor_chats').update({ archived: Boolean(archived) }).eq('id', chatId).select(CHAT_COLUMNS).single(),
+      ) as TutorChatRow;
+    },
+
+    async deleteTutorChat(chatId) {
+      // The messages of the chat go with it (the database deletes them with their chat).
+      unwrap(await sb.from('tutor_chats').delete().eq('id', chatId));
+    },
+
+    async searchTutorChats(query) {
+      await me();
+      const needle = String(query ?? '').trim();
+      const chats = unwrap(await sb.from('tutor_chats').select('id,title')) as Array<{ id: string; title: string | null }>;
+      if (!needle) return chats.map((chat) => chat.id);
+      const lower = needle.toLowerCase();
+      const ids = new Set(chats.filter((chat) => (chat.title ?? '').toLowerCase().includes(lower)).map((chat) => chat.id));
+      const pattern = `%${needle.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+      const matches = unwrap(
+        await sb.from('tutor_messages').select('chat_id').not('chat_id', 'is', null).ilike('content', pattern),
+      ) as Array<{ chat_id: string }>;
+      for (const match of matches) ids.add(match.chat_id);
+      return [...ids];
+    },
+
+    async listTutor(chatId, limit = 40) {
       const rows = unwrap(
         await sb
           .from('tutor_messages')
-          .select('id,role,content,created_at')
-          .eq('user_id', id)
+          .select(MESSAGE_COLUMNS)
+          .eq('chat_id', chatId)
           .order('created_at', { ascending: false })
           .limit(limit),
       ) as TutorRow[];
       return rows.reverse();
     },
 
-    async addTutor(role, content, record) {
+    async addTutor(chatId, role, content, record) {
       const userId = await me();
       return unwrap(
         await sb
           .from('tutor_messages')
           .insert({
             user_id: userId,
+            chat_id: chatId,
             role,
             content: content.slice(0, 8000),
+            attachments: cleanAttachments(record?.attachments),
             ...(record?.id ? { id: record.id } : {}),
             ...(record?.created_at ? { created_at: record.created_at } : {}),
           })
-          .select('id,role,content,created_at')
+          .select(MESSAGE_COLUMNS)
           .single(),
       ) as TutorRow;
-    },
-
-    async clearTutor() {
-      const id = await me();
-      unwrap(await sb.from('tutor_messages').delete().eq('user_id', id));
     },
   };
 }
