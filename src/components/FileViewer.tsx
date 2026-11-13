@@ -91,6 +91,44 @@ const MarkdownText = memo(function MarkdownText({ text }: { text: string }) {
   return <ReactMarkdown components={MARKED}>{text}</ReactMarkdown>;
 });
 
+// The styles a hidden copy of a text box needs, so that the copy lays out the words the same way the box does.
+const LAYOUT_STYLES = [
+  'boxSizing',
+  'width',
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'fontStyle',
+  'letterSpacing',
+  'lineHeight',
+  'tabSize',
+  'paddingTop',
+  'paddingRight',
+  'paddingBottom',
+  'paddingLeft',
+  'borderTopWidth',
+  'borderRightWidth',
+  'borderBottomWidth',
+  'borderLeftWidth',
+] as const;
+
+// Scrolls a text box so that the character at index sits near its top. A browser scrolls a text box to its
+// selection only while the box has the focus, so the place is measured in a hidden copy with the same layout.
+function scrollBoxTo(field: HTMLTextAreaElement, index: number) {
+  const style = getComputedStyle(field);
+  const copy = document.createElement('div');
+  for (const name of LAYOUT_STYLES) copy.style[name] = style[name];
+  Object.assign(copy.style, { position: 'absolute', visibility: 'hidden', top: '0', left: '-10000px', whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
+  const marker = document.createElement('span');
+  marker.textContent = field.value.slice(index, index + 1) || ' ';
+  copy.textContent = field.value.slice(0, index);
+  copy.appendChild(marker);
+  document.body.appendChild(copy);
+  const top = marker.offsetTop;
+  copy.remove();
+  field.scrollTop = Math.max(0, top - field.clientHeight / 3);
+}
+
 export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow; onClose: () => void; onChanged: () => void }) {
   const { backend } = useAuth();
   const { notify } = useToast();
@@ -195,12 +233,14 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
     if (canvas instanceof HTMLElement) canvas.scrollIntoView({ block: 'start' });
   }
 
+  // The match is selected and scrolled into view. The focus stays in the Find box, so Enter keeps going to the next
+  // match instead of typing a new line into the text.
   function selectInEditor(index: number) {
     const range = editMatches[index];
     const field = editor.current;
     if (!range || !field) return;
-    field.focus();
     field.setSelectionRange(range[0], range[1]);
+    scrollBoxTo(field, range[0]);
   }
 
   function step(delta: number) {
