@@ -31,6 +31,12 @@ export interface WindowState {
   maximized: boolean;
 }
 
+export interface UpdateStatus {
+  /** idle: nothing newer; downloading: a newer version is on its way; ready: it installs when danna closes. */
+  state: 'idle' | 'downloading' | 'ready';
+  version: string | null;
+}
+
 export interface AppSettings {
   closeToTray: boolean;
   /** The language the app is shown in. Null follows the system language. */
@@ -69,6 +75,11 @@ export interface DannaBridge {
     close: () => Promise<void>;
     state: () => Promise<WindowState>;
     onState: (callback: (state: WindowState) => void) => () => void;
+  };
+  update: {
+    status: () => Promise<UpdateStatus>;
+    install: () => Promise<void>;
+    onStatus: (callback: (status: UpdateStatus) => void) => () => void;
   };
   onNavigate: (callback: (path: string) => void) => () => void;
   openExternal: (url: string) => Promise<void>;

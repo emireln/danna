@@ -709,4 +709,9 @@ export const APP_PT: Record<string, string> = {
   // Day streak
   '{count} day streak': '{count} dia seguido',
   '{count} days streak': '{count} dias seguidos',
+
+  // Updates
+  'Downloading danna {version} in the background.': 'Baixando o danna {version} em segundo plano.',
+  'danna {version} is ready. It installs when you close danna.': 'O danna {version} está pronto. Ele é instalado quando você fechar o danna.',
+  'Restart to update': 'Reiniciar para atualizar',
 };

@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from './state/auth';
 import { AIProvider } from './state/ai';
 import { AppDataProvider, useAppData } from './state/appData';
 import { ToastProvider } from './state/toast';
+import { UpdateNotice } from './components/UpdateNotice';
 import { LanguageProvider, useT } from './lib/i18n/react';
 import { Splash } from './screens/Splash';
 import { WelcomeScreen } from './screens/WelcomeScreen';
@@ -164,6 +165,7 @@ export default function App() {
   return (
     <LanguageProvider>
       <ToastProvider>
+        <UpdateNotice />
         <AuthProvider>
           <AIProvider>
             <AppDataProvider>

@@ -8,6 +8,7 @@ import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { backendFor, onlineAvailable } from '../lib/session';
+import { useUpdateStatus } from '../lib/update';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -43,6 +44,7 @@ export function SettingsScreen() {
 
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [version, setVersion] = useState('');
+  const update = useUpdateStatus();
   const [keyDraft, setKeyDraft] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -413,7 +415,18 @@ export function SettingsScreen() {
         <div className="settings-row__body">
           <div className="settings-row__title">danna {version}</div>
           <div className="settings-row__text">{t('Scores are practice estimates, not official results.')}</div>
+          {update.state === 'downloading' && update.version && (
+            <div className="settings-row__text">{t('Downloading danna {version} in the background.', { version: update.version })}</div>
+          )}
+          {update.state === 'ready' && update.version && (
+            <div className="settings-row__text">{t('danna {version} is ready. It installs when you close danna.', { version: update.version })}</div>
+          )}
         </div>
+        {update.state === 'ready' && (
+          <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.install()}>
+            {t('Restart to update')}
+          </button>
+        )}
         <button className="btn btn--ghost btn--sm" onClick={() => navigate('/whats-new')}>
           {t("What's new")}
         </button>

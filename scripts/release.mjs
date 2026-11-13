@@ -10,6 +10,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const tag = `v${version}`;
 const installer = join(root, 'release', `danna-setup-${version}-x64.exe`);
+// electron-builder writes these next to the installer. The app reads latest.yml to find a newer version,
+// and the blockmap lets it download only the changed parts.
+const updateInfo = join(root, 'release', 'latest.yml');
+const blockmap = `${installer}.blockmap`;
 
 const git = (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 const gh = (args) => execFileSync('gh', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -32,9 +36,12 @@ try {
   // Not published yet: continue.
 }
 
-if (!existsSync(installer)) {
+if (!existsSync(installer) || !existsSync(updateInfo) || !existsSync(blockmap)) {
   console.log(`Building ${installer} ...`);
   execSync('npm run dist', { cwd: root, stdio: 'inherit' });
+}
+for (const file of [installer, updateInfo, blockmap]) {
+  if (!existsSync(file)) throw new Error(`Missing ${file} after the build.`);
 }
 
 let range = 'HEAD~30..HEAD';
@@ -52,6 +59,8 @@ const url = gh([
   'create',
   tag,
   installer,
+  updateInfo,
+  blockmap,
   '--target',
   head,
   '--title',

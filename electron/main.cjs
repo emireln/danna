@@ -10,6 +10,8 @@ const settings = require('./settings.cjs');
 const { shellLanguage, shellText } = require('./i18n.cjs');
 const sessionStore = require('./session.cjs');
 const { userError } = require('./errors.cjs');
+const { autoUpdater } = require('electron-updater');
+const { createUpdates } = require('./updater.cjs');
 
 // Set by `npm run dev`; packaged builds always serve the bundled interface.
 const DEV_URL = !app.isPackaged && process.env.DANNA_DEV_URL ? process.env.DANNA_DEV_URL : null;
@@ -22,6 +24,14 @@ let mainWindow = null;
 let tray = null;
 let quitting = false;
 let trayHintShown = false;
+
+// Installs newer GitHub releases in the background (see electron/updater.cjs).
+const updates = createUpdates({
+  app,
+  updater: autoUpdater,
+  send: (channel, payload) => send(channel, payload),
+  log: (message) => console.error('danna updates:', message),
+});
 
 // Must run before the app is ready. The interface is served from this origin.
 protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
@@ -51,6 +61,7 @@ if (!app.requestSingleInstanceLock()) {
     registerIpc();
     createTray();
     createWindow();
+    updates.start();
   });
 }
 
@@ -330,6 +341,8 @@ function registerIpc() {
     return localdb.call(method, args);
   });
 
+  handle('update:status', () => updates.status());
+  handle('update:install', () => updates.install());
   handle('settings:get', () => settings.get());
   handle('settings:set', (patch) => {
     const next = settings.set(patch);

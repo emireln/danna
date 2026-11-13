@@ -44,6 +44,11 @@ contextBridge.exposeInMainWorld(
       state: () => call('window:state'),
       onState: (callback) => listen('window:state', callback),
     }),
+    update: Object.freeze({
+      status: () => call('update:status'),
+      install: () => call('update:install'),
+      onStatus: (callback) => listen('update:status', callback),
+    }),
     onNavigate: (callback) => listen('app:navigate', callback),
     openExternal: (url) => call('shell:open', { url }),
   }),
