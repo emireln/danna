@@ -95,6 +95,9 @@ export function TitleBar() {
           </Link>
 
           <StreakFire days={streak} />
+          <Link to="/library" className="btn btn--icon icon-wrap" aria-label={t('My library')}>
+            <BookOpen />
+          </Link>
 
           <div className="menu-anchor" ref={anchor}>
             <button
