@@ -46,6 +46,7 @@ npm test
 - `tests/platforms.test.mjs` checks how links are matched to platforms and how pasted links are checked.
 - `tests/content.test.mjs` checks every bundled lesson item (choices, gaps, ordering, writing and speaking), the unique and short lesson ids, the level and TOEFL tests, and the placement of a new learner.
 - `tests/ai-providers.test.mjs` checks key detection, DeepSeek's model ranking, and the model and chat requests (without the network).
+- `tests/vault.test.mjs` and `tests/keysync.test.mjs` check the sealing of AI keys, and how the keys of this device and of the account are kept in step.
 - `supabase/tests/policies.test.mjs` runs the real schema on PostgreSQL (PGlite, in-process) and checks what each person can and cannot do: row-level security on every table, friend requests, sharing, private pictures and library files, limits, quotas, and an upgrade from the first schema version.
 
 ## Logos, icons and the installer banner
@@ -73,7 +74,7 @@ The installer is written to `release/danna-setup-<version>-x64.exe`. Delete the 
 ## Online accounts (Supabase)
 
 1. For a new project: in the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket, the library and the release notes.
-2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note), then `supabase/migrations/0006_release_0_7_0.sql` (profile banners, a friend's profile, and the 0.7.0 release note). All five are safe to run again.
+2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note), then `supabase/migrations/0006_release_0_7_0.sql` (profile banners, a friend's profile, and the 0.7.0 release note). Then `supabase/migrations/0007_account_ai_keys.sql` (AI keys saved to the account, sealed with the password), then `supabase/migrations/0008_release_0_8_0.sql` (the 0.8.0 release note). All seven are safe to run again.
 3. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
 4. Never add a service-role or secret key to the app. Only the publishable key is bundled.
 
@@ -91,7 +92,7 @@ People on this device see the release notes and banner bundled in `src/content/a
 - **On this device**: `danna.db` (SQLite: progress, the profile picture, library files and links) and `danna-settings.json` in the app's data folder. Nothing is sent anywhere.
 - **Sign-in session**: `danna-session.bin`, encrypted by Windows and readable only by this app for this Windows user.
 - **Online**: your account, stored in Supabase with row-level security, so only you can read your own rows. Shared results and sets are visible to the friend they were shared with, and only while you are still friends. Your picture and your banner are private: only you and your friends can download them. Your library files are private to you, not even friends can open them.
-- **AI keys**: encrypted by Windows and used only by the app's main process. They are never saved to the online account. The tutor sends only the excerpts of the files you chose to the AI provider you connected.
+- **AI keys**: encrypted by Windows on this device, and used only by the app's main process. With an online account, each key is also saved to your account, sealed with a key that only your password makes (PBKDF2 and AES-GCM), so the database holds only sealed text and you add a key once. The tutor sends only the excerpts of the files you chose to the AI provider you connected.
 
 ## Security
 
@@ -101,6 +102,7 @@ People on this device see the release notes and banner bundled in `src/content/a
 - Friend requests cannot be forged or accepted on someone else's behalf. XP never goes down online.
 - Limits on text, data and rows per person keep one account from filling the database (library: 300 files of up to 20 MB, 2000 links).
 - The XP and streak are calculated on the device. The database keeps them from going down, but cannot check how they were earned.
+- AI keys saved to an account are sealed in the app before they leave the device, so the database cannot read them, the project owner included. A password reset from the email link cannot open them: those keys are added again once.
 
 ## Project structure
 
