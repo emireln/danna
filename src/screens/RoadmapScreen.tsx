@@ -166,14 +166,14 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
                     ? tn('{count} question', '{count} questions', item.lesson.questions.length, { count: item.lesson.questions.length })
                     : t('{minutes} min', { minutes: item.lesson.minutes })}
                 </span>
+                {state === 'done' && (
+                  <span className="node__stars" aria-label={t('{stars} of 3 stars', { stars })}>
+                    {[1, 2, 3].map((value) => (
+                      <Star key={value} fill={value <= stars ? 'currentColor' : 'none'} className={value <= stars ? '' : 'is-off'} />
+                    ))}
+                  </span>
+                )}
               </span>
-              {state === 'done' && (
-                <span className="node__stars" aria-label={t('{stars} of 3 stars', { stars })}>
-                  {[1, 2, 3].map((value) => (
-                    <Star key={value} fill={value <= stars ? 'currentColor' : 'none'} className={value <= stars ? '' : 'is-off'} />
-                  ))}
-                </span>
-              )}
             </motion.button>
           );
         })}

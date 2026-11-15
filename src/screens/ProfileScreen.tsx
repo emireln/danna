@@ -345,15 +345,7 @@ export function ProfileScreen() {
       </div>
 
       {pictureOpen && (
-        <Sheet
-          title={t('Profile picture')}
-          onClose={() => setPictureOpen(false)}
-          footer={
-            <button className="btn btn--ghost" onClick={() => setPictureOpen(false)} disabled={pictureBusy}>
-              {t('Close')}
-            </button>
-          }
-        >
+        <Sheet title={t('Profile picture')} onClose={() => !pictureBusy && setPictureOpen(false)}>
           <div className="stack">
             <div className="picture-preview">
               <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
@@ -374,15 +366,7 @@ export function ProfileScreen() {
       )}
 
       {bannerOpen && (
-        <Sheet
-          title={t('Profile banner')}
-          onClose={() => setBannerOpen(false)}
-          footer={
-            <button className="btn btn--ghost" onClick={() => setBannerOpen(false)} disabled={bannerBusy}>
-              {t('Close')}
-            </button>
-          }
-        >
+        <Sheet title={t('Profile banner')} onClose={() => !bannerBusy && setBannerOpen(false)}>
           <div className="stack">
             <div className="banner-preview" style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}>
               {!bannerUrl && <span>{t('No banner yet')}</span>}

@@ -30,7 +30,7 @@ export function FriendProfile({ friend, shares, onClose }: { friend: FriendRow; 
   };
 
   return (
-    <Sheet title={t('Profile')} onClose={onClose} footer={<button className="btn btn--ghost" onClick={onClose}>{t('Close')}</button>}>
+    <Sheet title={t('Profile')} onClose={onClose}>
       <div className="friend-profile">
         <div
           className={`friend-profile__banner${banner ? '' : ' friend-profile__banner--plain'}`}

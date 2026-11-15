@@ -451,10 +451,16 @@
   }
 
   /* ---------- Chat history: the chats, grouped, with their actions ---------- */
+  /* Each grid has one column that can shrink, so a long chat title is cut short instead of pushing the buttons out. */
   .chat-groups {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     margin-top: 14px;
+  }
+
+  .show-more {
+    margin-top: 8px;
   }
 
   .chat-group__title {
@@ -468,6 +474,7 @@
 
   .chat-list {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 4px;
     margin: 0;
     padding: 0;
@@ -494,6 +501,7 @@
 
   .chat-row__open {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     flex: 1;
     min-width: 0;
     gap: 2px;
@@ -1318,7 +1326,11 @@
   .pb-3 { padding-bottom: var(--space-3); }
   .text-center { text-align: center; }
   .self-start { align-self: flex-start; }
-  .stack--loose { gap: var(--space-6); }
+  .stack--loose {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
   .stack--center { align-items: center; }
 
   /* ---------- Wizard steps: the same heading block on every step ---------- */

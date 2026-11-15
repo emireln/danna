@@ -2,6 +2,7 @@
 export const APP_PT: Record<string, string> = {
   // Shell and title bar
   'Close': 'Fechar',
+  'Show {count} more': 'Mostrar mais {count}',
   'Cancel': 'Cancelar',
   'Back': 'Voltar',
   'Back to sign in': 'Voltar para o login',
@@ -910,4 +911,23 @@ export const APP_PT: Record<string, string> = {
     'O coach oferece outras perguntas para começar a cada novo chat, e os arquivos que ele lê ocupam uma linha',
   'Google Gemini keys in the new AQ. format are recognised': 'As chaves do Google Gemini no formato novo, com AQ., são reconhecidas',
   'Search boxes have a clear button that matches the rest of the app': 'Os campos de busca têm um botão de limpar que combina com o resto do app',
+
+  // The 0.8.0 release note (What’s new)
+  'Your AI keys are saved to your account, sealed with your password. Add a key once, and every device you sign in to can use it':
+    'Suas chaves de IA são salvas na sua conta, protegidas com a sua senha. Adicione uma chave uma vez, e todo aparelho em que você entrar pode usá-la',
+  'Chats and files open a page at a time, so hundreds of them stay quick and fit their screen':
+    'Chats e arquivos abrem uma página por vez, então centenas deles continuam rápidos e cabem na tela',
+  'The topic badges in Self study take the colour of their card': 'As etiquetas de tema em Estudo livre assumem a cor do seu cartão',
+  'The stars of each lesson on the roadmap sit beside it, clear of the path': 'As estrelas de cada aula no roteiro ficam ao lado dela, fora do caminho',
+  'The Close button is gone from the picture and banner windows. The X closes them': 'O botão Fechar saiu das janelas de foto e de banner. O X fecha as janelas',
+  'The picture and banner buttons have room between them': 'Os botões de foto e de banner têm espaço entre eles',
+
+  // Account AI keys and long lists
+  'Saved in your account': 'Salva na sua conta',
+  'Your keys are sealed with your account password before they are saved, so only you can open them.':
+    'Suas chaves são protegidas com a senha da sua conta antes de serem salvas, por isso só você consegue abri-las.',
+  'Some keys saved in your account could not be opened with this password. Add them again to replace them.':
+    'Algumas chaves salvas na sua conta não puderam ser abertas com esta senha. Adicione-as de novo para substituí-las.',
+  '{count} AI key saved to your account.': '{count} chave de IA salva na sua conta.',
+  '{count} AI keys saved to your account.': '{count} chaves de IA salvas na sua conta.',
 };
