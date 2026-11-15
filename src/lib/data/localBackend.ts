@@ -369,6 +369,10 @@ export function createLocalBackend(): DataBackend {
     },
     async deleteAiKey() {},
 
+    async sendFeedback() {
+      throw userError(ONLINE_ONLY);
+    },
+
     async listAnnouncements() {
       return LOCAL_ANNOUNCEMENTS.slice();
     },

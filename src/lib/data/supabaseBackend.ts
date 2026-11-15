@@ -472,6 +472,20 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       unwrap(await sb.from('ai_keys').delete().eq('provider', provider));
     },
 
+    // A feedback message is written, never read back: the table has no read policy for the app. The insert
+    // asks for no row in return, so nothing needs to be read.
+    async sendFeedback(input) {
+      const userId = await me();
+      unwrap(
+        await sb.from('feedback').insert({
+          user_id: userId,
+          rating: input.rating,
+          comment: input.comment,
+          app_version: input.app_version,
+        }),
+      );
+    },
+
     async listTutorChats() {
       await me();
       return unwrap(await sb.from('tutor_chats').select(CHAT_COLUMNS).order('updated_at', { ascending: false })) as TutorChatRow[];

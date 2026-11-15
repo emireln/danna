@@ -28,6 +28,25 @@ export const APP_PT: Record<string, string> = {
   'Use on this device': 'Usar neste dispositivo',
   'Use an online account': 'Usar uma conta online',
   'Sign out': 'Sair',
+  'Buy me a coffee': 'Me pague um café',
+  'Support': 'Apoio',
+  'Feedback': 'Opinião',
+  'Rating': 'Nota',
+  'Your comment': 'Seu comentário',
+  'Send feedback': 'Enviar opinião',
+  '{count} star': '{count} estrela',
+  '{count} stars': '{count} estrelas',
+  'Choose a rating to send.': 'Escolha uma nota para enviar.',
+  'Thank you. Your feedback was sent.': 'Obrigado. Sua opinião foi enviada.',
+  'Choose a rating from 1 to 5 stars.': 'Escolha de 1 a 5 estrelas.',
+  'Keep the comment to 1000 characters or fewer.': 'Use no máximo 1000 caracteres no comentário.',
+  'What would make danna better? (optional)': 'O que tornaria o danna melhor? (opcional)',
+  'If danna helps you learn, you can support its work with a coffee. It opens in your browser.':
+    'Se o danna ajuda você a aprender, pode apoiar o trabalho com um café. Abre no seu navegador.',
+  'Rate danna from 1 to 5 stars and leave a comment if you like. It goes to the developer.':
+    'Avalie o danna de 1 a 5 estrelas e deixe um comentário, se quiser. A opinião vai para o desenvolvedor.',
+  'Feedback is sent with an online account. On this device, nothing leaves your computer.':
+    'A opinião é enviada com uma conta online. Neste dispositivo, nada sai do seu computador.',
   'Minimize': 'Minimizar',
   'Restore': 'Restaurar',
   'Maximize': 'Maximizar',
@@ -912,6 +931,15 @@ export const APP_PT: Record<string, string> = {
   'Google Gemini keys in the new AQ. format are recognised': 'As chaves do Google Gemini no formato novo, com AQ., são reconhecidas',
   'Search boxes have a clear button that matches the rest of the app': 'Os campos de busca têm um botão de limpar que combina com o resto do app',
 
+  // The 0.9.0 release note (What's new)
+  'The progress bar on the roadmap sits beside the level badge, in the space that was empty':
+    'A barra de progresso da trilha fica ao lado do selo de nível, no espaço que estava vazio',
+  'Self study sections and pages open smoothly: no stutter, and every page starts at its top':
+    'As seções e páginas do Estudo livre abrem com suavidade: sem travamentos, e cada página começa no topo',
+  'Buy me a coffee: find it at the bottom of the profile menu, and under About in Settings':
+    'Me pague um café: fica no fim do menu do perfil e, em Configurações, logo abaixo de Sobre',
+  'Rate danna from 1 to 5 stars, with an optional comment, in Settings. Online accounts send it to the developer':
+    'Avalie o danna de 1 a 5 estrelas, com um comentário opcional, em Configurações. Contas online enviam a avaliação ao desenvolvedor',
   // The 0.8.0 release note (What’s new)
   'Your AI keys are saved to your account, sealed with your password. Add a key once, and every device you sign in to can use it':
     'Suas chaves de IA são salvas na sua conta, protegidas com a sua senha. Adicione uma chave uma vez, e todo aparelho em que você entrar pode usá-la',

@@ -19,6 +19,7 @@ const legacySql = (await readFile(join(here, 'legacy', 'schema-v1.sql'), 'utf8')
 // The migration that the app's current version needs, run on top of the schema, as the dashboard would run it.
 const migrationSql = await readFile(join(here, '..', 'migrations', '0006_release_0_7_0.sql'), 'utf8');
 const migration0007Sql = await readFile(join(here, '..', 'migrations', '0007_account_ai_keys.sql'), 'utf8');
+const migration0009Sql = await readFile(join(here, '..', 'migrations', '0009_feedback.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -132,7 +133,7 @@ test('row-level security is on for every table in the public schema', async () =
 });
 
 test('signed-out visitors cannot read any table or call any function', async () => {
-  const tables = ['profiles', 'friendships', 'attempts', 'tests', 'shares', 'skill_scores', 'lesson_progress', 'review_items', 'tutor_messages', 'announcements'];
+  const tables = ['profiles', 'friendships', 'attempts', 'tests', 'shares', 'skill_scores', 'lesson_progress', 'review_items', 'tutor_messages', 'announcements', 'feedback'];
   for (const table of tables) {
     const error = await refused(as(db, null, `select 1 from public.${table} limit 1`));
     assert.equal(error.code, PERMISSION_DENIED, table);
@@ -648,4 +649,39 @@ test('migration 0007 runs on a current database, and again, without changing the
     'sk-ant…wxyz',
     'the saved key is untouched',
   );
+});
+
+test('feedback: a signed-in person sends their own message, with a rating from 1 to 5 and a comment of up to 1000 characters', async () => {
+  await as(db, ALICE, 'insert into public.feedback (user_id, rating, comment, app_version) values ($1, 5, $2, $3)', [ALICE, 'Clear lessons', '0.9.0']);
+  const rating = await refused(as(db, ALICE, 'insert into public.feedback (user_id, rating) values ($1, 6)', [ALICE]));
+  assert.equal(rating.code, CHECK_FAILED);
+  const comment = await refused(as(db, ALICE, 'insert into public.feedback (user_id, rating, comment) values ($1, 3, $2)', [ALICE, 'x'.repeat(1001)]));
+  assert.equal(comment.code, CHECK_FAILED);
+});
+
+test('feedback: nobody reads it through the app, changes it, or sends it for someone else', async () => {
+  const forOther = await refused(as(db, BOB, 'insert into public.feedback (user_id, rating) values ($1, 4)', [ALICE]));
+  assert.equal(forOther.code, PERMISSION_DENIED);
+  const anonymous = await refused(as(db, null, 'insert into public.feedback (user_id, rating) values ($1, 4)', [BOB]));
+  assert.equal(anonymous.code, PERMISSION_DENIED);
+  assert.equal((await refused(as(db, ALICE, 'select id from public.feedback'))).code, PERMISSION_DENIED);
+  assert.equal((await refused(as(db, ALICE, 'update public.feedback set rating = 1'))).code, PERMISSION_DENIED);
+  assert.equal((await refused(as(db, ALICE, 'delete from public.feedback'))).code, PERMISSION_DENIED);
+});
+
+test('feedback: an account sends up to 50 messages, and the limit holds', async () => {
+  // Alice has one message from the test above. The refused messages were never written.
+  for (let sent = 1; sent < 50; sent += 1) {
+    await as(db, ALICE, 'insert into public.feedback (user_id, rating) values ($1, 4)', [ALICE]);
+  }
+  const over = await refused(as(db, ALICE, 'insert into public.feedback (user_id, rating) values ($1, 4)', [ALICE]));
+  assert.equal(over.code, QUOTA_REACHED);
+  assert.equal((await db.query('select count(*)::int as n from public.feedback where user_id = $1', [ALICE])).rows[0].n, 50);
+});
+
+test('migration 0009 runs on a current database, and again, without changing the feedback already sent', async () => {
+  await db.exec(migration0009Sql);
+  await db.exec(migration0009Sql);
+  assert.equal((await db.query('select count(*)::int as n from public.feedback where user_id = $1', [ALICE])).rows[0].n, 50);
+  assert.equal((await refused(as(db, ALICE, 'select id from public.feedback'))).code, PERMISSION_DENIED);
 });

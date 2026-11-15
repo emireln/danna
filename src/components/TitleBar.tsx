@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, BookOpen, LogOut, Search, Settings, User, Users } from 'lucide-react';
+import { ArrowLeftRight, BookOpen, Coffee, LogOut, Search, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
 import { StreakFire } from './StreakFire';
 import { GlobalSearch } from './GlobalSearch';
 import { bridge, type WindowState } from '../lib/bridge';
+import { openSupport } from '../lib/support';
 import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -164,6 +165,17 @@ export function TitleBar() {
                       </button>
                     </>
                   )}
+                  <div className="menu__sep" />
+                  <button
+                    className="menu__item"
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      openSupport();
+                    }}
+                  >
+                    <Coffee /> {t('Buy me a coffee')}
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>

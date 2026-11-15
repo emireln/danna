@@ -105,6 +105,9 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
       throw new Error(ONLINE_ONLY);
     },
     deleteAiKey: async () => undefined,
+    sendFeedback: async () => {
+      throw new Error(ONLINE_ONLY);
+    },
 
     listAnnouncements: async () => LOCAL_ANNOUNCEMENTS.slice(),
 

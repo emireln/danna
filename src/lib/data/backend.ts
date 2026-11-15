@@ -114,6 +114,13 @@ export interface LibraryLinkPatch {
   note?: string;
 }
 
+/** A feedback message from the account: a rating of 1 to 5 stars, an optional comment and the app version. */
+export interface NewFeedback {
+  rating: number;
+  comment: string;
+  app_version: string;
+}
+
 export interface DataBackend {
   readonly mode: BackendMode;
 
@@ -122,6 +129,8 @@ export interface DataBackend {
   /** Saves a sealed key, replacing the one for the same provider. */
   saveAiKey(row: { provider: Provider; sealed: string; masked: string }): Promise<void>;
   deleteAiKey(provider: Provider): Promise<void>;
+  /** Sends a feedback message from the signed-in account. Online accounts only. */
+  sendFeedback(input: NewFeedback): Promise<void>;
   getProfile(): Promise<ProfileRow | null>;
   updateProfile(patch: ProfilePatch): Promise<ProfileRow>;
 

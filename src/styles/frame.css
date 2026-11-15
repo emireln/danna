@@ -497,6 +497,67 @@
     color: var(--muted);
   }
 
+  /* ---------- Feedback in Settings: a row of stars and a comment ---------- */
+  .feedback-box {
+    display: grid;
+    gap: 12px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--canvas);
+  }
+
+  .feedback-box .settings-row__text {
+    margin-top: 0;
+  }
+
+  .rate-stars {
+    display: flex;
+    gap: 6px;
+  }
+
+  .rate-star {
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 10px;
+    border: 1px solid var(--line-2);
+    background: var(--canvas);
+    color: var(--line-2);
+    cursor: pointer;
+    transition:
+      transform 0.15s var(--ease),
+      color 0.15s var(--ease),
+      border-color 0.15s var(--ease),
+      background-color 0.15s var(--ease);
+  }
+
+  .rate-star:hover {
+    transform: scale(1.06);
+  }
+
+  .rate-star.is-on {
+    color: var(--amber);
+    border-color: var(--amber);
+    background: #fff8e6;
+  }
+
+  .rate-star svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* The comment keeps the input's border and focus ring, with room for a few lines. */
+  .feedback-box .rate-comment {
+    height: auto;
+    min-height: 96px;
+    padding: 10px 14px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
   .switch {
     position: relative;
     flex: none;

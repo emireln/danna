@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cloud, Eye, EyeOff, KeyRound, Laptop, Play, Trash2, Volume2 } from 'lucide-react';
+import { Cloud, Coffee, Eye, EyeOff, KeyRound, Laptop, Play, Star, Trash2, Volume2 } from 'lucide-react';
 import { LanguageSwitch } from '../components/LanguageSwitch';
 import { Select } from '../components/Pickers';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
+import { checkFeedback } from '../lib/feedback';
+import { openSupport } from '../lib/support';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
@@ -39,7 +41,7 @@ function candidatesFor(key: string): Provider[] {
 export function SettingsScreen() {
   const navigate = useNavigate();
   const t = useT();
-  const { mode, email, signOut, moveToDevice } = useAuth();
+  const { mode, email, signOut, moveToDevice, backend } = useAuth();
   const ai = useAI();
   const { refresh, refreshSocial } = useAppData();
   const { notify } = useToast();
@@ -58,6 +60,30 @@ export function SettingsScreen() {
   const [keyToRemove, setKeyToRemove] = useState<Provider | null>(null);
   const [switchOpen, setSwitchOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+
+  // The message is saved on the account's row in the database. The app cannot read it back.
+  const sendFeedbackNow = async () => {
+    if (!backend || sendingFeedback) return;
+    setSendingFeedback(true);
+    setFeedbackError(null);
+    try {
+      const draft = checkFeedback({ rating, comment });
+      await backend.sendFeedback({ ...draft, app_version: version });
+      setRating(0);
+      setHoverRating(0);
+      setComment('');
+      notify(t('Thank you. Your feedback was sent.'), 'ok');
+    } catch (caught) {
+      setFeedbackError(errorText(caught));
+    } finally {
+      setSendingFeedback(false);
+    }
+  };
   const [deviceHasProgress, setDeviceHasProgress] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -523,6 +549,74 @@ export function SettingsScreen() {
           {t("What's new")}
         </button>
       </div>
+
+      <SectionTitle title={t('Support')} />
+      <div className="settings-row">
+        <div className="settings-row__body">
+          <div className="settings-row__title">{t('Buy me a coffee')}</div>
+          <div className="settings-row__text">
+            {t('If danna helps you learn, you can support its work with a coffee. It opens in your browser.')}
+          </div>
+        </div>
+        <button className="btn btn--primary btn--sm" onClick={openSupport}>
+          <Coffee /> {t('Buy me a coffee')}
+        </button>
+      </div>
+
+      <SectionTitle title={t('Feedback')} />
+      {mode === 'supabase' ? (
+        <div className="feedback-box">
+          <p className="settings-row__text">
+            {t('Rate danna from 1 to 5 stars and leave a comment if you like. It goes to the developer.')}
+          </p>
+          <div className="rate-stars" role="group" aria-label={t('Rating')}>
+            {[1, 2, 3, 4, 5].map((value) => {
+              const on = value <= (hoverRating || rating);
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  className={`rate-star ${on ? 'is-on' : ''}`}
+                  aria-label={tn('{count} star', '{count} stars', value, { count: value })}
+                  aria-pressed={rating === value}
+                  onClick={() => setRating(value)}
+                  onMouseEnter={() => setHoverRating(value)}
+                  onMouseLeave={() => setHoverRating(0)}
+                >
+                  <Star fill={on ? 'currentColor' : 'none'} aria-hidden="true" />
+                </button>
+              );
+            })}
+          </div>
+          <textarea
+            className="input rate-comment"
+            maxLength={1000}
+            value={comment}
+            onChange={(event) => setComment(event.target.value)}
+            placeholder={t('What would make danna better? (optional)')}
+            aria-label={t('Your comment')}
+          />
+          {feedbackError && <Notice tone="error">{t(feedbackError)}</Notice>}
+          <div className="row row--between">
+            <span className="small muted">{rating ? '' : t('Choose a rating to send.')}</span>
+            <button
+              className="btn btn--primary"
+              onClick={() => void sendFeedbackNow()}
+              disabled={!rating || sendingFeedback || !backend}
+            >
+              {sendingFeedback ? <Spinner /> : null} {t('Send feedback')}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="settings-row">
+          <div className="settings-row__body">
+            <div className="settings-row__text">
+              {t('Feedback is sent with an online account. On this device, nothing leaves your computer.')}
+            </div>
+          </div>
+        </div>
+      )}
 
       {keyToRemove && (
         <ConfirmSheet
