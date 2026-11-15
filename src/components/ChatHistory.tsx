@@ -5,7 +5,7 @@ import { Archive, ArchiveRestore, Pencil, Plus, Trash2 } from 'lucide-react';
 import { getLocale } from '../lib/i18n';
 import { useT, type Translate } from '../lib/i18n/react';
 import type { TutorChatRow } from '../lib/types';
-import { ConfirmSheet, Empty, SearchField, Sheet } from './ui';
+import { ConfirmSheet, Empty, SearchField, ShowMore, Sheet, usePaged } from './ui';
 
 interface ChatHistoryProps {
   /** The chats that match the search, newest first. */
@@ -54,8 +54,11 @@ export function ChatHistory({
   const [deleting, setDeleting] = useState<TutorChatRow | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const current = chats.filter((chat) => !chat.archived);
-  const archived = chats.filter((chat) => chat.archived);
+  // Hundreds of chats are shown a page at a time. A new search starts again from the newest chats.
+  const currentAll = chats.filter((chat) => !chat.archived);
+  const archivedAll = chats.filter((chat) => chat.archived);
+  const currentPage = usePaged(currentAll, query);
+  const archivedPage = usePaged(archivedAll, query);
 
   const save = async (event: FormEvent<HTMLFormElement>, chat: TutorChatRow) => {
     event.preventDefault();
@@ -147,16 +150,18 @@ export function ChatHistory({
           </Empty>
         ) : (
           <div className="chat-groups">
-            {current.length > 0 && (
+            {currentAll.length > 0 && (
               <section aria-label={t('Chats')}>
                 <h3 className="chat-group__title">{t('Chats')}</h3>
-                <ul className="chat-list">{current.map(row)}</ul>
+                <ul className="chat-list">{currentPage.shown.map(row)}</ul>
+                <ShowMore hidden={currentPage.hidden} onClick={currentPage.showMore} />
               </section>
             )}
-            {archived.length > 0 && (
+            {archivedAll.length > 0 && (
               <section aria-label={t('Archived')}>
                 <h3 className="chat-group__title">{t('Archived')}</h3>
-                <ul className="chat-list">{archived.map(row)}</ul>
+                <ul className="chat-list">{archivedPage.shown.map(row)}</ul>
+                <ShowMore hidden={archivedPage.hidden} onClick={archivedPage.showMore} />
               </section>
             )}
           </div>

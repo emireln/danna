@@ -1,9 +1,42 @@
-import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoUrl from '../assets/logo.webp';
 import { useT } from '../lib/i18n/react';
+
+/** How many rows a long list shows at first, and how many more each press of "Show more" adds. */
+export const PAGE_SIZE = 40;
+
+/**
+ * The first page of a long list, so a list of hundreds of items stays quick and fits its sheet or screen.
+ * The page goes back to its first rows whenever `resetKey` changes, such as a new search, so a list
+ * never opens halfway down.
+ */
+export function usePaged<T>(items: T[], resetKey: string, pageSize = PAGE_SIZE) {
+  const [count, setCount] = useState(pageSize);
+  const [lastKey, setLastKey] = useState(resetKey);
+  if (lastKey !== resetKey) {
+    setLastKey(resetKey);
+    setCount(pageSize);
+  }
+  return {
+    shown: items.slice(0, count),
+    hidden: Math.max(0, items.length - count),
+    showMore: () => setCount((value) => value + pageSize),
+  };
+}
+
+/** The button under a long list. It names how many rows are still hidden, and a press shows the next page. */
+export function ShowMore({ hidden, pageSize = PAGE_SIZE, onClick }: { hidden: number; pageSize?: number; onClick: () => void }) {
+  const t = useT();
+  if (hidden <= 0) return null;
+  return (
+    <button className="btn btn--ghost btn--block show-more" onClick={onClick}>
+      {t('Show {count} more', { count: Math.min(hidden, pageSize) })}
+    </button>
+  );
+}
 
 // The danna logo. The WebP file is generated from brand/logo.png by `npm run icons`.
 export function BrandMark({ size = 26 }: { size?: number }) {

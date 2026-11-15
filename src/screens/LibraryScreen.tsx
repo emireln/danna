@@ -7,7 +7,7 @@ import { openLink } from '../components/Banner';
 import { FileViewer } from '../components/FileViewer';
 import { LibraryCoach } from '../components/LibraryCoach';
 import { PlatformLogo } from '../components/PlatformLogo';
-import { ConfirmSheet, Empty, Notice, PageHeader, SearchField, SectionTitle, Skeleton, Spinner, Tabs } from '../components/ui';
+import { ConfirmSheet, Empty, Notice, PageHeader, SearchField, SectionTitle, ShowMore, Skeleton, Spinner, Tabs, usePaged } from '../components/ui';
 import { Select } from '../components/Pickers';
 import { bridge, errorText } from '../lib/bridge';
 import { tn } from '../lib/i18n';
@@ -227,8 +227,12 @@ export function LibraryScreen() {
       (filter === 'All' || link.category === filter) &&
       (!needle || [link.title, link.url, link.platform, link.note].join(' ').toLowerCase().includes(needle)),
   );
+  // Long lists show a page at a time (the library holds up to 300 files and 2000 links). A new search or
+  // category starts again from the first page.
+  const filesPage = usePaged(shownFiles, needle);
+  const linksPage = usePaged(shownLinks, `${filter}|${needle}`);
   const groups = new Map<string, LibraryLinkRow[]>();
-  for (const link of shownLinks) groups.set(link.category, [...(groups.get(link.category) ?? []), link]);
+  for (const link of linksPage.shown) groups.set(link.category, [...(groups.get(link.category) ?? []), link]);
 
   return (
     <div className={tab === 'ask' ? 'page page--coach' : 'page'}>
@@ -298,8 +302,9 @@ export function LibraryScreen() {
           ) : shownFiles.length === 0 ? (
             <Empty title={t('No file matches your search.')} />
           ) : (
+            <>
             <div className="set-list">
-              {shownFiles.map((file) => (
+              {filesPage.shown.map((file) => (
                 <div key={file.id} className="person">
                   <span className="chip chip--blue">{t(KIND_LABEL[file.kind])}</span>
                   <div className="person__body">
@@ -328,6 +333,8 @@ export function LibraryScreen() {
                 </div>
               ))}
             </div>
+            <ShowMore hidden={filesPage.hidden} onClick={filesPage.showMore} />
+            </>
           )}
         </div>
       )}
@@ -411,7 +418,8 @@ export function LibraryScreen() {
           ) : links.length === 0 ? (
             <Empty title={t('No links yet')}>{t('Paste a link above. The platform and its logo are detected from the address.')}</Empty>
           ) : (
-            [...groups.entries()].map(([name, items]) => (
+            <>
+            {[...groups.entries()].map(([name, items]) => (
               <section key={name}>
                 <SectionTitle title={t(name)} />
                 <div className="set-list">
@@ -451,7 +459,9 @@ export function LibraryScreen() {
                   })}
                 </div>
               </section>
-            ))
+            ))}
+            <ShowMore hidden={linksPage.hidden} onClick={linksPage.showMore} />
+            </>
           )}
         </div>
       )}
