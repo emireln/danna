@@ -128,6 +128,7 @@ function defaultProfile(): ProfileRow {
     avatar_updated_at: null,
     banner_path: null,
     banner_updated_at: null,
+    ai_salt: null,
     created_at: nowIso(),
   };
 }
@@ -358,6 +359,15 @@ export function createLocalBackend(): DataBackend {
     },
 
     async markSharesSeen() {},
+
+    // The browser preview has no account, so it keeps no sealed keys.
+    async listAiKeys() {
+      return [];
+    },
+    async saveAiKey() {
+      throw new Error(ONLINE_ONLY);
+    },
+    async deleteAiKey() {},
 
     async listAnnouncements() {
       return LOCAL_ANNOUNCEMENTS.slice();

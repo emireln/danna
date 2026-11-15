@@ -67,6 +67,15 @@ export interface DannaBridge {
     remove: (provider: Provider) => Promise<KeysState>;
     models: (provider: Provider) => Promise<AIModel[]>;
     select: (provider: Provider, model: string) => Promise<AISelection>;
+    /** The key itself, for sealing it into the account. Used only for keys this device has. */
+    exportKey: (provider: Provider) => Promise<{ key: string }>;
+    /** Stores a key that was opened from the account. It is marked as an account key. */
+    importKey: (provider: Provider, key: string) => Promise<KeysState>;
+    markAccount: (provider: Provider) => Promise<KeysState>;
+    /** Removes the keys that came from the account, when the account is signed out of. */
+    forgetAccount: () => Promise<KeysState>;
+    /** Keeps the account's keys on this device as its own, when the device leaves the account. */
+    releaseAccount: () => Promise<KeysState>;
   };
   ai: {
     complete: (request: CompletionRequest) => Promise<CompletionResult>;

@@ -19,6 +19,8 @@ import type {
   LibraryFileRow,
   LibraryKind,
   LibraryLinkRow,
+  AiKeyRow,
+  Provider,
 } from '../types';
 
 export type BackendMode = 'supabase' | 'local';
@@ -63,6 +65,7 @@ export type ProfilePatch = Partial<
     | 'streak'
     | 'last_active'
     | 'onboarding_done'
+    | 'ai_salt'
   >
 >;
 
@@ -113,6 +116,12 @@ export interface LibraryLinkPatch {
 
 export interface DataBackend {
   readonly mode: BackendMode;
+
+  /** The account's AI keys, sealed. Only the signed-in owner can read them. Online accounts only. */
+  listAiKeys(): Promise<AiKeyRow[]>;
+  /** Saves a sealed key, replacing the one for the same provider. */
+  saveAiKey(row: { provider: Provider; sealed: string; masked: string }): Promise<void>;
+  deleteAiKey(provider: Provider): Promise<void>;
   getProfile(): Promise<ProfileRow | null>;
   updateProfile(patch: ProfilePatch): Promise<ProfileRow>;
 

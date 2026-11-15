@@ -20,6 +20,11 @@ contextBridge.exposeInMainWorld(
       remove: (provider) => call('keys:remove', { provider }),
       models: (provider) => call('ai:models', { provider }),
       select: (provider, model) => call('ai:select', { provider, model }),
+      exportKey: (provider) => call('keys:export', { provider }),
+      importKey: (provider, key) => call('keys:import', { provider, key }),
+      markAccount: (provider) => call('keys:mark-account', { provider }),
+      forgetAccount: () => call('keys:forget-account'),
+      releaseAccount: () => call('keys:release-account'),
     }),
     ai: Object.freeze({
       complete: (request) => call('ai:complete', request),

@@ -18,6 +18,7 @@ const legacySql = (await readFile(join(here, 'legacy', 'schema-v1.sql'), 'utf8')
 
 // The migration that the app's current version needs, run on top of the schema, as the dashboard would run it.
 const migrationSql = await readFile(join(here, '..', 'migrations', '0006_release_0_7_0.sql'), 'utf8');
+const migration0007Sql = await readFile(join(here, '..', 'migrations', '0007_account_ai_keys.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -597,4 +598,54 @@ test('coach chats belong to their owner, their names and file lists are limited,
 
   await as(db, ALICE, 'delete from public.tutor_chats where id = $1', [chat.id]);
   assert.equal((await as(db, ALICE, 'select 1 from public.tutor_messages where chat_id = $1', [chat.id])).rows.length, 0, 'its messages go with it');
+});
+
+test('AI keys are private: only the owner reads, adds, changes or removes a sealed key', async () => {
+  await as(db, ALICE, "insert into public.ai_keys (user_id, provider, sealed, masked) values ($1, 'openai', $2, 'sk-proj…abcd')", [ALICE, 'c2VhbGVkLXRleHQtZm9yLWFsaWNlLWtleQ==']);
+
+  assert.equal((await as(db, BOB, 'select provider from public.ai_keys')).rows.length, 0, 'other people see no keys');
+  const changed = await as(db, BOB, "update public.ai_keys set masked = 'x' where user_id = $1", [ALICE]);
+  assert.equal(changed.affectedRows, 0, 'other people cannot change a key');
+  const removed = await as(db, BOB, 'delete from public.ai_keys where user_id = $1', [ALICE]);
+  assert.equal(removed.affectedRows, 0, 'other people cannot remove a key');
+  assert.equal((await as(db, ALICE, 'select provider from public.ai_keys')).rows.length, 1, 'the owner still has the key');
+  const anonymous = await refused(as(db, null, 'select provider from public.ai_keys'));
+  assert.equal(anonymous.code, PERMISSION_DENIED);
+});
+
+test('an AI key row belongs to its owner, names a known provider, and holds sealed text of a real size', async () => {
+  const otherOwner = await refused(
+    as(db, BOB, "insert into public.ai_keys (user_id, provider, sealed, masked) values ($1, 'openai', $2, 'sk-…abcd')", [ALICE, 'c2VhbGVkLWtleS1ieS1ib2I=']),
+  );
+  assert.equal(otherOwner.code, PERMISSION_DENIED);
+
+  const unknownProvider = await refused(
+    as(db, BOB, "insert into public.ai_keys (user_id, provider, sealed, masked) values ($1, 'unknown', $2, 'x')", [BOB, 'c2VhbGVkLWtleS1ieS1ib2I=']),
+  );
+  assert.equal(unknownProvider.code, CHECK_FAILED);
+
+  const tooShort = await refused(as(db, BOB, "insert into public.ai_keys (user_id, provider, sealed, masked) values ($1, 'openai', 'short', 'x')", [BOB]));
+  assert.equal(tooShort.code, CHECK_FAILED);
+});
+
+test('the salt for the key sits on the profile: its owner sets it, and it has a size limit', async () => {
+  await as(db, ALICE, 'update public.profiles set ai_salt = $2 where id = $1', [ALICE, 'AAAAAAAAAAAAAAAAAAAAAA==']);
+  assert.equal((await as(db, ALICE, 'select ai_salt from public.profiles where id = $1', [ALICE])).rows[0].ai_salt, 'AAAAAAAAAAAAAAAAAAAAAA==');
+
+  const other = await as(db, BOB, 'update public.profiles set ai_salt = $2 where id = $1', [ALICE, 'BBBBBBBBBBBBBBBBBBBBBB==']);
+  assert.equal(other.affectedRows, 0, 'other people cannot set it');
+
+  const tooLong = await refused(as(db, ALICE, 'update public.profiles set ai_salt = $2 where id = $1', [ALICE, 'A'.repeat(70)]));
+  assert.equal(tooLong.code, CHECK_FAILED);
+});
+
+test('migration 0007 runs on a current database, and again, without changing the keys already saved', async () => {
+  await as(db, ALICE, "insert into public.ai_keys (user_id, provider, sealed, masked) values ($1, 'anthropic', $2, 'sk-ant…wxyz')", [ALICE, 'c2VhbGVkLWFudGhyb3BpYy1rZXk=']);
+  await db.exec(migration0007Sql);
+  await db.exec(migration0007Sql);
+  assert.equal(
+    (await as(db, ALICE, "select masked from public.ai_keys where provider = 'anthropic'")).rows[0].masked,
+    'sk-ant…wxyz',
+    'the saved key is untouched',
+  );
 });

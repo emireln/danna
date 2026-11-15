@@ -99,6 +99,12 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
       throw new Error(ONLINE_ONLY);
     },
     markSharesSeen: async () => undefined,
+    // This device has no account, so it keeps no sealed keys.
+    listAiKeys: async () => [],
+    saveAiKey: async () => {
+      throw new Error(ONLINE_ONLY);
+    },
+    deleteAiKey: async () => undefined,
 
     listAnnouncements: async () => LOCAL_ANNOUNCEMENTS.slice(),
 

@@ -3,6 +3,8 @@ import { getSupabase, requireSupabase } from '../lib/supabase';
 import { backendFor, readStoredMode, storeMode } from '../lib/session';
 import type { BackendMode, DataBackend } from '../lib/data/backend';
 import { copyProgress } from '../lib/migrate';
+import { bridge } from '../lib/bridge';
+import { deriveVault, exportVault, fromBase64, importVault, newSalt, toBase64, VAULT_STORAGE_KEY } from '../lib/vault';
 
 type Status = 'loading' | 'out' | 'in';
 
@@ -11,6 +13,8 @@ interface AuthApi {
   mode: BackendMode | null;
   backend: DataBackend | null;
   email: string | null;
+  /** The key that seals this account's AI keys. Null until the account is signed in on this device. */
+  vault: CryptoKey | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ confirmEmail: boolean }>;
   useOffline: () => void;
@@ -26,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<BackendMode | null>(null);
   const [backend, setBackend] = useState<DataBackend | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  const [vault, setVault] = useState<CryptoKey | null>(null);
 
   const enter = useCallback((next: BackendMode, who: string | null) => {
     setBackend(backendFor(next));
@@ -34,11 +39,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('in');
   }, []);
 
+  // A restart reads the vault from the encrypted session store, so the password is not asked again.
+  // A password that was typed in this session is newer than the stored copy, so it is kept.
+  const loadStoredVault = useCallback(async () => {
+    if (!bridge) return;
+    try {
+      const stored = await bridge.session.get(VAULT_STORAGE_KEY);
+      if (stored) {
+        const key = await importVault(stored);
+        setVault((current) => current ?? key);
+      }
+    } catch (error) {
+      console.error('Could not open the account vault on this device', error);
+    }
+  }, []);
+
+  // Signing in is the moment the password is known, so the vault is made here and kept on this device.
+  const unlockVault = useCallback(async (password: string) => {
+    try {
+      const account = backendFor('supabase');
+      const profile = await account.getProfile();
+      let salt = profile?.ai_salt ? fromBase64(profile.ai_salt) : null;
+      if (!salt) {
+        salt = newSalt();
+        await account.updateProfile({ ai_salt: toBase64(salt) });
+      }
+      const key = await deriveVault(password, salt);
+      setVault(key);
+      if (bridge) await bridge.session.set(VAULT_STORAGE_KEY, await exportVault(key));
+    } catch (error) {
+      // The account still works. Its AI keys wait for the next sign-in.
+      console.error('Could not open the account vault', error);
+      setVault(null);
+    }
+  }, []);
+
   const leave = useCallback(() => {
     setBackend(null);
     setMode(null);
     setEmail(null);
+    setVault(null);
     setStatus('out');
+    // The keys stay saved in the account. This device forgets its copies of them.
+    if (bridge) {
+      void bridge.keys.forgetAccount().catch(() => undefined);
+      void bridge.session.remove(VAULT_STORAGE_KEY).catch(() => undefined);
+    }
   }, []);
 
   useEffect(() => {
@@ -51,8 +97,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else if (stored === 'supabase' && sb) {
       sb.auth.getSession().then(({ data }) => {
         if (!active) return;
-        if (data.session) enter('supabase', data.session.user.email ?? null);
-        else leave();
+        if (data.session) {
+          enter('supabase', data.session.user.email ?? null);
+          void loadStoredVault();
+        } else {
+          leave();
+        }
       });
     } else {
       leave();
@@ -65,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         leave();
       } else if (event === 'SIGNED_IN' && session && readStoredMode() === 'supabase') {
         enter('supabase', session.user.email ?? null);
+        void loadStoredVault();
       }
     });
 
@@ -72,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
       subscription?.data.subscription.unsubscribe();
     };
-  }, [enter, leave]);
+  }, [enter, leave, loadStoredVault]);
 
   const signIn = useCallback(
     async (address: string, password: string) => {
@@ -81,8 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       storeMode('supabase');
       enter('supabase', data.user?.email ?? address.trim());
+      await unlockVault(password);
     },
-    [enter],
+    [enter, unlockVault],
   );
 
   const signUp = useCallback(
@@ -97,9 +149,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!data.session) return { confirmEmail: true };
       storeMode('supabase');
       enter('supabase', data.user?.email ?? address.trim());
+      await unlockVault(password);
       return { confirmEmail: false };
     },
-    [enter],
+    [enter, unlockVault],
   );
 
   const useOffline = useCallback(() => {
@@ -114,6 +167,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       // Set the mode first so the session change below is not read as a sign-out.
       storeMode('local');
+      // The AI keys this device has from the account stay here, as keys of this device only.
+      if (bridge) {
+        await bridge.keys.releaseAccount().catch(() => undefined);
+        await bridge.session.remove(VAULT_STORAGE_KEY).catch(() => undefined);
+      }
+      setVault(null);
       const sb = getSupabase();
       if (sb) await sb.auth.signOut().catch(() => undefined);
       enter('local', null);
@@ -129,8 +188,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [leave]);
 
   const api = useMemo<AuthApi>(
-    () => ({ status, mode, backend, email, signIn, signUp, useOffline, moveToDevice, signOut }),
-    [status, mode, backend, email, signIn, signUp, useOffline, moveToDevice, signOut],
+    () => ({ status, mode, backend, email, vault, signIn, signUp, useOffline, moveToDevice, signOut }),
+    [status, mode, backend, email, vault, signIn, signUp, useOffline, moveToDevice, signOut],
   );
 
   return <AuthContext.Provider value={api}>{children}</AuthContext.Provider>;

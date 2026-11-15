@@ -297,6 +297,42 @@ function registerIpc() {
     return keysState();
   });
 
+  // Keys saved in the account are sealed by the interface before they leave this device, and opened
+  // there when they come back. These handlers only move a key between the device and the account.
+  handle('keys:export', ({ provider }) => {
+    assertProvider(provider);
+    const key = keystore.getKey(provider);
+    if (!key) throw userError('Connect this provider first.');
+    return { key };
+  });
+
+  handle('keys:import', ({ provider, key }) => {
+    assertProvider(provider);
+    const clean = typeof key === 'string' ? key.trim() : '';
+    if (!clean || clean.length > 300 || /\s/.test(clean)) {
+      throw userError('A key saved in your account could not be opened. Add it again in Settings.');
+    }
+    keystore.saveKey(provider, clean, 'account');
+    return keysState();
+  });
+
+  handle('keys:mark-account', ({ provider }) => {
+    keystore.setSource(assertProvider(provider), 'account');
+    return keysState();
+  });
+
+  // Signing out removes the copies that came from the account. Keys added on this device stay.
+  handle('keys:forget-account', () => {
+    keystore.forgetAccountKeys();
+    return keysState();
+  });
+
+  // Leaving the account for this device keeps its keys here, as keys of this device.
+  handle('keys:release-account', () => {
+    keystore.moveSource('account', 'device');
+    return keysState();
+  });
+
   handle('ai:models', async ({ provider }) => {
     assertProvider(provider);
     const key = keystore.getKey(provider);

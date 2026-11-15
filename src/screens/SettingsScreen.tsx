@@ -146,6 +146,8 @@ export function SettingsScreen() {
       const result = await bridge.keys.add(keyDraft.trim());
       setKeyDraft('');
       await ai.refresh();
+      // With an account open, the new key is saved to it as well, so the other devices get it.
+      await ai.syncNow();
       setModelsFor(result.provider);
       setModels(result.models);
       notify(t('{label} is connected. The newest model is selected.', { label: result.label }), 'ok');
@@ -184,8 +186,7 @@ export function SettingsScreen() {
   const removeKey = async (provider: Provider) => {
     if (!bridge) return;
     try {
-      await bridge.keys.remove(provider);
-      await ai.refresh();
+      await ai.removeKey(provider);
       if (modelsFor === provider) {
         setModelsFor(null);
         setModels([]);
@@ -368,7 +369,10 @@ export function SettingsScreen() {
                       <span className="connection__name">{connection.label}</span>
                       {active && <span className="latest">{t('In use')}</span>}
                     </div>
-                    <div className="small muted">{t('Ends in {last}', { last: connection.masked.slice(-4) })}</div>
+                    <div className="small muted">
+                      {t('Ends in {last}', { last: connection.masked.slice(-4) })}
+                      {connection.source === 'account' && ` · ${t('Saved in your account')}`}
+                    </div>
                   </div>
                   <button className="btn btn--ghost btn--sm" onClick={() => showModels(connection.provider)} disabled={loadingThis}>
                     {loadingThis ? <Spinner dark /> : null} {t('Models')}
@@ -384,6 +388,17 @@ export function SettingsScreen() {
               );
             })}
           </div>
+        )}
+
+        {ai.accountKeys && ai.connections.length > 0 && (
+          <p className="small muted">
+            {t('Your keys are sealed with your account password before they are saved, so only you can open them.')}
+          </p>
+        )}
+        {ai.unreadable.length > 0 && (
+          <Notice tone="warn">
+            {t('Some keys saved in your account could not be opened with this password. Add them again to replace them.')}
+          </Notice>
         )}
 
         {modelsFor && models.length > 0 && (

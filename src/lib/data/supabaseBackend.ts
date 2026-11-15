@@ -16,6 +16,7 @@ import type {
   LibraryFileRow,
   LibraryKind,
   LibraryLinkRow,
+  AiKeyRow,
 } from '../types';
 import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
@@ -448,6 +449,27 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
 
     async deleteLibraryLink(linkId: string) {
       unwrap(await sb.from('library_links').delete().eq('id', linkId));
+    },
+
+    // The sealed keys. Each row is readable only by its owner, and the app opens it with a key the
+    // account password makes, so the server never sees a key itself.
+    async listAiKeys() {
+      await me();
+      return unwrap(await sb.from('ai_keys').select('provider,sealed,masked,updated_at').order('provider')) as AiKeyRow[];
+    },
+
+    async saveAiKey(row) {
+      const userId = await me();
+      unwrap(
+        await sb
+          .from('ai_keys')
+          .upsert({ user_id: userId, provider: row.provider, sealed: row.sealed, masked: row.masked }, { onConflict: 'user_id,provider' }),
+      );
+    },
+
+    async deleteAiKey(provider) {
+      await me();
+      unwrap(await sb.from('ai_keys').delete().eq('provider', provider));
     },
 
     async listTutorChats() {

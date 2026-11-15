@@ -264,6 +264,8 @@ function toProfile(row) {
     avatar_updated_at: row.avatar_updated_at ?? null,
     banner_path: null,
     banner_updated_at: row.banner_updated_at ?? null,
+    // This device has no account, so it has no salt for the account's sealed AI keys.
+    ai_salt: null,
   };
 }
 

@@ -120,6 +120,8 @@ export interface ProfileRow {
   banner_path: string | null;
   /** When the banner last changed (its version). Null when there is no banner. */
   banner_updated_at: string | null;
+  /** The salt that turns the account password into the key that seals the AI keys. Null until a key is saved. */
+  ai_salt: string | null;
   created_at: string;
 }
 
@@ -279,6 +281,16 @@ export interface AIConnection {
   hint: string;
   masked: string;
   addedAt: string;
+  /** 'account' when the key is also saved, sealed, in the signed-in account. */
+  source: 'device' | 'account';
+}
+
+/** A key saved in the account. The sealed text is useless without the password that sealed it. */
+export interface AiKeyRow {
+  provider: Provider;
+  sealed: string;
+  masked: string;
+  updated_at: string;
 }
 
 export interface AISelection {
