@@ -101,8 +101,8 @@ export function ProgressBar({
     >
       <motion.div
         className="progress__bar"
-        initial={{ width: 0 }}
-        animate={{ width: `${percent}%` }}
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: percent / 100 }}
         transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1] }}
       />
     </div>

@@ -56,15 +56,12 @@ export function RoadmapScreen() {
 
   return (
     <div className="page">
-      <PageHeader
-        eyebrow={t('Your path')}
-        title={t('Roadmap')}
-        aside={<span className="chip">{t('Level {level}', { level: profile?.level ?? 'B1' })}</span>}
-      >
-        <div className="mt-3">
+      <PageHeader eyebrow={t('Your path')} title={t('Roadmap')}>
+        <div className="roadmap-progress">
           <ProgressBar value={done} max={Math.max(1, nodes.length)} label={t('Roadmap progress')} />
+          <span className="chip">{t('Level {level}', { level: profile?.level ?? 'B1' })}</span>
         </div>
-        <p className="small muted mt-3">
+        <p className="small muted mt-2">
           {t('{done} of {total} done', {
             done,
             total: tn('{count} step', '{count} steps', nodes.length, { count: nodes.length }),
@@ -127,7 +124,7 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
                 d={d}
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
-                transition={{ duration: 0.6, delay: 0.1 * index }}
+                transition={{ duration: 0.5, delay: Math.min(index, 8) * 0.06 }}
                 style={{ stroke: finished ? 'var(--teal)' : undefined, strokeDasharray: finished ? 'none' : undefined, strokeWidth: finished ? 6 : undefined }}
               />
             );
@@ -152,7 +149,7 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
               style={{ position: 'absolute', left: center.x - size / 2, top: center.y - size / 2 }}
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.06 * index, type: 'spring', stiffness: 260, damping: 18 }}
+              transition={{ delay: Math.min(index, 10) * 0.04, type: 'spring', stiffness: 260, damping: 18 }}
               disabled={state === 'locked'}
               onClick={() => onOpen(item.lesson.id)}
               aria-label={t('{title}, {state}', { title, state: stateText })}

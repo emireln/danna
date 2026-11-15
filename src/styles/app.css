@@ -812,6 +812,23 @@
     background: #fff;
   }
 
+  /* The roadmap's progress bar and its level share one row: the bar fills the space beside the level. */
+  .roadmap-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .roadmap-progress .progress {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .roadmap-progress .chip {
+    flex: none;
+  }
+
   /* ---------- Avatar ---------- */
   .avatar {
     flex: none;
@@ -1002,19 +1019,26 @@
     color: #a1261f;
   }
 
+  /* The shimmer slides a highlight with transform, which the GPU moves without repainting the box. */
   .skeleton {
+    position: relative;
+    overflow: hidden;
     border-radius: 10px;
-    background: linear-gradient(90deg, #eef1f6 25%, #f7f9fc 37%, #eef1f6 63%);
-    background-size: 400% 100%;
+    background: #eef1f6;
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, #f7f9fc, transparent);
+    transform: translateX(-100%);
     animation: shimmer 1.4s ease infinite;
   }
 
   @keyframes shimmer {
-    0% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0 50%;
+    to {
+      transform: translateX(100%);
     }
   }
 

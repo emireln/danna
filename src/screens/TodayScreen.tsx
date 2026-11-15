@@ -242,8 +242,8 @@ export function TodayScreen() {
               >
                 <motion.div
                   className="progress__bar"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${unitNodes.length ? (unitDone / unitNodes.length) * 100 : 0}%` }}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: unitNodes.length ? unitDone / unitNodes.length : 0 }}
                   transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
                 />
               </div>

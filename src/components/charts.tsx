@@ -161,7 +161,7 @@ export function Donut({ slices }: { slices: DonutSlice[] }) {
               strokeDashoffset={offset}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.08 * index, duration: 0.5 }}
+              transition={{ delay: Math.min(index, 8) * 0.06, duration: 0.5 }}
             />
           );
         })}

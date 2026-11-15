@@ -597,8 +597,8 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
                   <div className="progress skill-summary__bar">
                     <motion.div
                       className="progress__bar"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${summary.skills[skill]}%` }}
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: (summary.skills[skill] ?? 0) / 100 }}
                       transition={{ duration: 0.9, ease: [0.2, 0.8, 0.2, 1] }}
                     />
                   </div>

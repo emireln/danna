@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ComponentType } from 'react';
+import { useLayoutEffect, useRef, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Bot, Home, Layers, LibraryBig } from 'lucide-react';
@@ -40,7 +40,8 @@ export function AppShell() {
   const section = location.pathname.split('/')[1] || 'today';
 
   // Every new page starts at its top, including a sub-page of the same section (a skill or a report).
-  useEffect(() => {
+  // It runs before the frame is painted, so the page never shows at the old scroll position first.
+  useLayoutEffect(() => {
     mainRef.current?.scrollTo({ top: 0 });
   }, [location.pathname]);
 
@@ -50,9 +51,9 @@ export function AppShell() {
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={section}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.1 } }}
             transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
             className="shell__page"
           >
