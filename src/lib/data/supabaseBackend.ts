@@ -45,16 +45,24 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
     return id;
   }
 
+  // A picture is fetched through a signed link made for this request, and the request skips the browser's
+  // cache. A plain download can be answered from the cache for an hour, so a new picture at the same path
+  // would show the old one. The bucket's policy still decides who may read the file.
+  async function downloadPrivate(bucket: string, path: string): Promise<Blob | null> {
+    const { data, error } = await sb.storage.from(bucket).createSignedUrl(path, 300);
+    if (error || !data) return null;
+    const response = await fetch(data.signedUrl, { cache: 'no-store' });
+    return response.ok ? response.blob() : null;
+  }
+
   // Banners are private too, in their own bucket: the owner and their friends can download them.
   async function downloadBanner(path: string): Promise<Blob | null> {
-    const { data, error } = await sb.storage.from('profile-banners').download(path);
-    return error || !data ? null : data;
+    return downloadPrivate('profile-banners', path);
   }
 
   // Pictures are private: the storage policy lets the owner and their friends download them.
   async function downloadPicture(path: string): Promise<Blob | null> {
-    const { data, error } = await sb.storage.from('avatars').download(path);
-    return error || !data ? null : data;
+    return downloadPrivate('avatars', path);
   }
 
   return {
