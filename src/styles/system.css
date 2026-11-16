@@ -325,6 +325,13 @@
     color: #fff;
   }
 
+  /* An empty message disables the send button. Its hover colour must not turn it pale: it keeps the blue. */
+  .chat-input .btn--primary:disabled,
+  .chat-input .btn--primary:disabled:hover {
+    background: var(--primary);
+    color: #fff;
+  }
+
   /* ---------- The volume of the listening voice ---------- */
   .volume {
     display: flex;
