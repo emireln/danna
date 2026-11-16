@@ -1114,6 +1114,15 @@ export const APP_PT: Record<string, string> = {
   'Google Gemini keys in the new AQ. format are recognised': 'As chaves do Google Gemini no formato novo, com AQ., são reconhecidas',
   'Search boxes have a clear button that matches the rest of the app': 'Os campos de busca têm um botão de limpar que combina com o resto do app',
 
+  // The 1.1.0 release note (What's new)
+  'Pictures and banners show the new one at once, even when the old one was shown a moment ago':
+    'Fotos e capas mostram a nova imagem na hora, mesmo quando a anterior acabou de aparecer',
+  'The send button of the coach stays blue when the message box is empty':
+    'O botão de enviar do coach continua azul quando a caixa de mensagem está vazia',
+  'Your AI keys reach your account: enter your password once on a device that has not opened it yet, and a sync problem is shown in Settings':
+    'Suas chaves de IA chegam à sua conta: digite sua senha uma vez em um dispositivo que ainda não a abriu, e um problema de sincronização aparece em Configurações',
+  'New grammar lessons with explanations, from A2 to C1: pronouns, gerunds, infinitives, conditionals, participle clauses, question tags and more':
+    'Novas aulas de gramática com explicações, do A2 ao C1: pronomes, gerúndios, infinitivos, condicionais, orações de particípio, perguntas de confirmação e mais',
   // The 0.9.0 release note (What's new)
   'The progress bar on the roadmap sits beside the level badge, in the space that was empty':
     'A barra de progresso da trilha fica ao lado do selo de nível, no espaço que estava vazio',
