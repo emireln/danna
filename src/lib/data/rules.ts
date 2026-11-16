@@ -109,6 +109,7 @@ const PROFILE_FIELDS = [
   'goal',
   'target_score',
   'exam_date',
+  'exam_name',
   'daily_minutes',
   'level',
   'xp',
@@ -118,6 +119,12 @@ const PROFILE_FIELDS = [
 ] as const;
 
 type ProfileField = (typeof PROFILE_FIELDS)[number];
+
+/** The name of the exam as the learner typed it: trimmed, at most 80 characters, and null when empty. */
+export function cleanExamName(value: unknown): string | null {
+  const text = typeof value === 'string' ? value.trim().slice(0, 80) : '';
+  return text || null;
+}
 
 function cleanProfileValue(key: ProfileField, value: unknown, current: ProfileRow): unknown {
   switch (key) {
@@ -144,6 +151,8 @@ function cleanProfileValue(key: ProfileField, value: unknown, current: ProfileRo
     case 'exam_date':
     case 'last_active':
       return DATE_PATTERN.test(String(value ?? '')) ? String(value) : null;
+    case 'exam_name':
+      return cleanExamName(value);
     case 'onboarding_done':
       return Boolean(value);
   }

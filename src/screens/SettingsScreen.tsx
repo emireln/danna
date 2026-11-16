@@ -101,6 +101,16 @@ export function SettingsScreen() {
     }
   }
 
+  // The loudness shows at once while the learner drags, and is saved after. The next passage is read with it.
+  function saveVolume(value: number) {
+    if (!bridge) return;
+    setSettings((current) => (current ? { ...current, voiceVolume: value } : current));
+    bridge.settings
+      .set({ voiceVolume: value })
+      .then(setSettings)
+      .catch((error) => notify(t(errorText(error)), 'error'));
+  }
+
   // The sample is read with the voice on this screen, so the learner can hear it before a passage uses it.
   function playSample() {
     if (sample.current) {
@@ -459,6 +469,19 @@ export function SettingsScreen() {
               onChange={(value) => void saveVoice(value)}
               options={VOICE_OPTIONS.map((option) => ({ value: option.value, label: t(option.label) }))}
             />
+            <label className="volume">
+              <span className="volume__label">{t('Volume')}</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={settings.voiceVolume}
+                onChange={(event) => saveVolume(Number(event.target.value))}
+                aria-valuetext={`${settings.voiceVolume}%`}
+              />
+              <output className="volume__value">{settings.voiceVolume}%</output>
+            </label>
             <div>
               <button className="btn btn--ghost btn--sm" onClick={playSample}>
                 {sampling ? <Volume2 aria-hidden="true" /> : <Play aria-hidden="true" />} {sampling ? t('Stop the sample') : t('Play a sample')}

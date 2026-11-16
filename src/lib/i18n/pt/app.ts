@@ -191,16 +191,8 @@ export const APP_PT: Record<string, string> = {
   'Start {level} level test': 'Começar o teste de nível {level}',
   '{label}, {count} to do': '{label}, {count} a fazer',
   'Daily review': 'Revisão diária',
-  'Days until exam': 'Dias até a prova',
-  'Set exam date': 'Definir data da prova',
-  'Change exam date': 'Alterar data da prova',
-  'D-{days}': 'D-{days}',
-  'Exam passed': 'Prova realizada',
   'Connect an AI key in Settings to unlock generated practice sets and coach feedback.':
     'Conecte uma chave de IA em Configurações para liberar os exercícios gerados e o feedback do coach.',
-  'Exam date saved.': 'Data da prova salva.',
-  'Exam date removed.': 'Data da prova removida.',
-  'Save date': 'Salvar data',
   'Leave it empty to hide the countdown.': 'Deixe em branco para ocultar a contagem regressiva.',
   'App language': 'Idioma do app',
 
@@ -872,6 +864,7 @@ export const APP_PT: Record<string, string> = {
     'Lê os textos de escuta em voz alta. Uma voz natural usa a chave que você adicionou para esse provedor, e o texto é enviado a esse provedor.',
   'Play a sample': 'Ouvir um exemplo',
   'Stop the sample': 'Parar o exemplo',
+  'Volume': 'Volume',
   'Preparing the voice…': 'Preparando a voz…',
   'Using the device voice. Add an OpenAI or Google Gemini key in Settings for a more natural voice.':
     'Usando a voz do aparelho. Adicione uma chave da OpenAI ou do Google Gemini em Configurações para uma voz mais natural.',
@@ -958,4 +951,73 @@ export const APP_PT: Record<string, string> = {
     'Algumas chaves salvas na sua conta não puderam ser abertas com esta senha. Adicione-as de novo para substituí-las.',
   '{count} AI key saved to your account.': '{count} chave de IA salva na sua conta.',
   '{count} AI keys saved to your account.': '{count} chaves de IA salvas na sua conta.',
+
+  // The 1.0.0 release note (What's new)
+  'Listening voices have a volume control in Settings, from silent to full': 'A voz para escutar tem controle de volume em Configurações, de silenciosa a máxima',
+  'Your exam has its own page: its name, date and target score, the days left, and a test for each skill':
+    'Sua prova tem uma página própria: nome, data e nota-alvo, os dias que faltam e um teste para cada habilidade',
+  'Today links to your exam, in place of the countdown': 'A tela Hoje leva à sua prova, no lugar da contagem regressiva',
+  'Lessons and tests keep your answers when you leave them. Come back and carry on from the same question':
+    'Aulas e testes guardam suas respostas quando você sai. Volte e continue da mesma questão',
+  'The coach gives exercises with buttons and blanks to fill in. Check your answers and see your score':
+    'O coach traz exercícios com botões e lacunas para preencher. Confira suas respostas e veja sua pontuação',
+  'Under each coach answer: quick replies, a read-aloud button, and an explanation of your mistakes':
+    'Abaixo de cada resposta do coach: respostas rápidas, um botão para ouvir em voz alta e uma explicação dos seus erros',
+
+  // The exam page
+  'Your exam': 'Sua prova',
+  'Save the date, see how many days are left, and test the skills the exam asks for.':
+    'Salve a data, veja quantos dias faltam e teste as habilidades que a prova pede.',
+  'Save the date, and test the skills the exam asks for': 'Salve a data e teste as habilidades que a prova pede',
+  'Save your exam date and test your skills.': 'Salve a data da sua prova e teste suas habilidades.',
+  'Days left': 'Dias restantes',
+  'No exam named yet': 'Nenhuma prova com nome ainda',
+  'No exam date yet': 'Ainda sem data da prova',
+  'Save the date below to see how many days are left.': 'Salve a data abaixo para ver quantos dias faltam.',
+  '{count} day left': '{count} dia restante',
+  '{count} days left': '{count} dias restantes',
+  'The exam is today.': 'A prova é hoje.',
+  'The date has passed.': 'A data já passou.',
+  'Save the next date below when you are ready.': 'Quando quiser, salve a próxima data abaixo.',
+  'Exam details': 'Detalhes da prova',
+  'Exam name': 'Nome da prova',
+  'For example TOEFL iBT, IELTS, or a school exam.': 'Por exemplo: TOEFL iBT, IELTS ou uma prova da escola.',
+  'Name of the exam': 'Nome da prova',
+  'TOEFL iBT scores go from 60 to 120.': 'As notas do TOEFL iBT vão de 60 a 120.',
+  'Save the exam': 'Salvar a prova',
+  'Your exam is saved.': 'Sua prova foi salva.',
+  'Test your skills': 'Teste suas habilidades',
+  'Not tested yet': 'Ainda não testada',
+  'Last result: {score}%': 'Último resultado: {score}%',
+  'Checks and tests': 'Verificações e testes',
+  'Your last level check': 'Seu último teste de nível',
+  'Questions from every lesson of your level': 'Perguntas de todas as aulas do seu nível',
+  'Reading, lectures, and speaking and writing tasks in one sitting': 'Leitura, palestras e tarefas de fala e escrita em uma só sessão',
+  'All mock tests': 'Todos os simulados',
+  'Shown on your exam page, with the days left.': 'Aparece na página da sua prova, com os dias que faltam.',
+
+  // Lessons and tests kept on this device
+  'You picked up where you left off.': 'Você continuou de onde parou.',
+  'Start again': 'Começar de novo',
+  'Your answers stay on this device, so you can carry on later. Finish the session to save your progress.':
+    'Suas respostas ficam neste aparelho, para você continuar depois. Termine a sessão para salvar seu progresso.',
+
+  // The coach's exercises, quick replies and read aloud
+  'Practice': 'Prática',
+  'no answer': 'sem resposta',
+  '“{prompt}” I wrote “{given}”; the answer is “{right}”.': '“{prompt}” Eu escrevi “{given}”; a resposta é “{right}”.',
+  'I got {correct} of {total} right in “{title}”. Explain my mistakes, one at a time: {details}':
+    'Acertei {correct} de {total} em “{title}”. Explique meus erros, um de cada vez: {details}',
+  'Word {number} of the sentence': 'Palavra {number} da frase',
+  'Hint': 'Dica',
+  'Answer: {answer}': 'Resposta: {answer}',
+  'Write your answer': 'Escreva sua resposta',
+  'Please check my answer to “{prompt}”: {answer}': 'Por favor, confira minha resposta para “{prompt}”: {answer}',
+  'Send to the coach': 'Enviar ao coach',
+  '{correct} of {total} correct': '{correct} de {total} corretas',
+  'Ask the coach about my mistakes': 'Pedir ao coach que explique meus erros',
+  'Check answers': 'Conferir respostas',
+  'Stop reading': 'Parar leitura',
+  'Read aloud': 'Ler em voz alta',
+  'Quick replies': 'Respostas rápidas',
 };

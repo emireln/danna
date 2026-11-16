@@ -57,6 +57,8 @@ export interface AppSettings {
   language: 'en' | 'pt' | null;
   /** The voice for listening: 'auto', 'device', or a named voice such as 'openai:coral'. */
   voice: string;
+  /** How loud the listening voice is, from 0 to 100. */
+  voiceVolume: number;
 }
 
 export interface DannaBridge {

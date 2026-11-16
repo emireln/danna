@@ -106,6 +106,8 @@ export interface ProfileRow {
   goal: Goal;
   target_score: number;
   exam_date: string | null;
+  /** The exam the learner is preparing for, named as they wrote it. Null when they have not named one. */
+  exam_name: string | null;
   daily_minutes: number;
   level: Level;
   xp: number;

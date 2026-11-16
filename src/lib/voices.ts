@@ -23,6 +23,15 @@ export const VOICE_OPTIONS: readonly VoiceOption[] = [
 
 export const DEFAULT_VOICE = 'auto';
 
+/** The loudness of the listening voice when the learner has not chosen one: full. */
+export const DEFAULT_VOLUME = 100;
+
+/** A volume from 0 to 100, as a whole number. Anything that is not a number becomes the default. */
+export function volumeLevel(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return DEFAULT_VOLUME;
+  return Math.min(100, Math.max(0, Math.round(value)));
+}
+
 /** The device voice that sounds most natural: a "natural", "neural" or "online" voice first, then an American one. */
 export function pickDeviceVoice<T extends { name: string; lang: string }>(voices: readonly T[]): T | null {
   const english = voices.filter((voice) => /^en([-_]|$)/i.test(voice.lang));

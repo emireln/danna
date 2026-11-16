@@ -1,5 +1,5 @@
 // Resolves the bundled lessons, unit checks, level tests, the TOEFL warm-up test and the placement test.
-import { LEVELS, type Level, type Passage, type Question, type TestDef } from '../lib/types';
+import { LEVELS, type Level, type Passage, type Question, type Skill, type TestDef } from '../lib/types';
 import { diagnosticTest, DIAGNOSTIC_ID } from './diagnostic';
 import { TOEFL_UNITS, UNITS, type LessonDef, type UnitDef } from './roadmap';
 
@@ -177,6 +177,17 @@ export function skillTests(): TestDef[] {
 }
 
 /** Resolves any bundled test id. Returns null for ids that are stored in Supabase. */
+/**
+ * The mock test that practises a skill: the two-skill test that holds it, for the learner's level or for the TOEFL
+ * track. Language is practised by the vocabulary test of the level. Null when no test covers the skill on that track.
+ */
+export function skillTestId(skill: Skill, level: Level, toefl: boolean): string | null {
+  if (skill === 'language') return toefl ? null : wordsTestId(level);
+  const pair = SKILL_PAIRS.find((item) => (item.skills as readonly string[]).includes(skill));
+  if (!pair) return null;
+  return `${toefl ? 'mock-toefl' : `mock-${level.toLowerCase()}`}-${pair.key}`;
+}
+
 export function bundledTest(id: string): TestDef | null {
   if (id === DIAGNOSTIC_ID) return diagnosticTest();
   if (id === TOEFL_TEST_ID) return toeflTest();

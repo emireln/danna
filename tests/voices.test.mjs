@@ -83,6 +83,17 @@ test('the device voice is the most natural English voice on the device', () => {
   assert.equal(voices.pickDeviceVoice([{ name: 'Voz', lang: 'pt-BR' }]), null);
 });
 
+test('the listening volume is a whole number from 0 to 100; full when nothing valid is given', () => {
+  assert.equal(voices.DEFAULT_VOLUME, 100);
+  assert.equal(voices.volumeLevel(55.4), 55);
+  assert.equal(voices.volumeLevel(-5), 0);
+  assert.equal(voices.volumeLevel(180), 100);
+  assert.equal(voices.volumeLevel(0), 0);
+  assert.equal(voices.volumeLevel('loud'), 100);
+  assert.equal(voices.volumeLevel(Number.NaN), 100);
+  assert.equal(voices.volumeLevel(undefined), 100);
+});
+
 test('reading aloud sends the text to OpenAI and returns its audio', async () => {
   const calls = [];
   const original = globalThis.fetch;

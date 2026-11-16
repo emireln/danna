@@ -7,6 +7,7 @@ import { CountUp } from '../components/charts';
 import { ConfirmSheet, Notice, ProgressBar, Spinner, formatClock } from '../components/ui';
 import { bundledTest, diagnosticTest } from '../content';
 import { errorText } from '../lib/bridge';
+import { clearDraft, draftKey, localDrafts, readSessionDraft, writeSessionDraft } from '../lib/drafts';
 import { gradeChoice, gradeCloze, gradeReorder, shuffleWords } from '../lib/grading';
 import { nextStreak, localDate } from '../lib/progress';
 import { tn } from '../lib/i18n';
@@ -101,6 +102,17 @@ function recordFor(question: Question, state: ItemState, words: string[]): { rec
   }
 }
 
+// A recording's address only works in the page that made it, so a kept session keeps the words and the scores only.
+function withoutRecordings(items: Record<string, ItemState>): Record<string, ItemState> {
+  const kept: Record<string, ItemState> = {};
+  for (const [id, state] of Object.entries(items)) {
+    const copy: ItemState = { ...state };
+    delete copy.audioUrl;
+    kept[id] = copy;
+  }
+  return kept;
+}
+
 function exitPath(kind: TestDef['kind'] | undefined, isReview: boolean): string {
   if (isReview || kind === 'review') return '/review';
   if (kind === 'lesson' || kind === 'checkpoint') return '/roadmap';
@@ -131,10 +143,17 @@ export function RunnerScreen() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [confirmLeave, setConfirmLeave] = useState(false);
+  // True when this session was picked up from the draft kept on this device.
+  const [resumed, setResumed] = useState(false);
   const startedAt = useRef(Date.now());
   // The steps of one session's save, and the id its attempt gets, so a retry after a failure never writes twice.
   const steps = useRef<Steps>(createSteps());
   const attemptRef = useRef<string | null>(null);
+  // The page whose test is loaded. Until the test of this page is in, the session is not kept, so an old session
+  // cannot overwrite the draft of the page that is opening.
+  const loadedFor = useRef<string | null>(null);
+  const drafts = useMemo(() => localDrafts(), []);
+  const profileId = profile?.id ?? null;
 
   useEffect(() => {
     let active = true;
@@ -146,9 +165,11 @@ export function RunnerScreen() {
     setResults({});
     setRevealed({});
     setBlankMarks({});
+    setResumed(false);
     startedAt.current = Date.now();
     steps.current.reset();
     attemptRef.current = null;
+    loadedFor.current = null;
 
     const load = async (): Promise<TestDef> => {
       if (!backend) throw new Error('Sign in to start a session.');
@@ -190,9 +211,22 @@ export function RunnerScreen() {
       throw new Error('This lesson could not be found.');
     };
 
+    const page = location.pathname;
     load()
       .then((loaded) => {
-        if (active) setTest(loaded);
+        if (!active) return;
+        setTest(loaded);
+        loadedFor.current = page;
+        // A session left on this page is picked up where the learner stopped, when it is the same test.
+        const saved = profileId ? readSessionDraft(drafts, draftKey(profileId, page), loaded.id, loaded.questions.length) : null;
+        if (!saved) return;
+        setIndex(saved.index);
+        setItems(saved.items as Record<string, ItemState>);
+        setResults(saved.results as Record<string, AnswerRecord>);
+        setRevealed(saved.revealed);
+        setBlankMarks(saved.blankMarks);
+        startedAt.current = saved.startedAt;
+        setResumed(true);
       })
       .catch((error: unknown) => {
         if (active) setLoadError(errorText(error));
@@ -200,7 +234,28 @@ export function RunnerScreen() {
     return () => {
       active = false;
     };
-  }, [backend, isReview, isDiagnostic, params.kind, params.id]);
+  }, [backend, isReview, isDiagnostic, params.kind, params.id, location.pathname, profileId, drafts]);
+
+  // Keeps the session on this device as the learner goes, so leaving the page does not lose it. A finished session
+  // removes its draft, and a session with nothing answered keeps none.
+  useEffect(() => {
+    if (!test || !profileId || loadedFor.current !== location.pathname) return;
+    const key = draftKey(profileId, location.pathname);
+    const answered = index > 0 || Object.keys(results).length > 0 || Object.keys(items).length > 0;
+    if (summary || !answered) {
+      clearDraft(drafts, key);
+      return;
+    }
+    writeSessionDraft(drafts, key, {
+      testId: test.id,
+      index,
+      startedAt: startedAt.current,
+      items: withoutRecordings(items),
+      results,
+      revealed,
+      blankMarks,
+    });
+  }, [test, profileId, drafts, location.pathname, summary, index, items, results, revealed, blankMarks]);
 
   const learn = test !== null && (test.kind === 'lesson' || test.kind === 'checkpoint' || test.kind === 'review' || test.kind === 'practice');
   const questions = test?.questions ?? [];
@@ -359,6 +414,7 @@ export function RunnerScreen() {
 
   const primary = () => {
     if (!question || !test || !answerable || saving) return;
+    setResumed(false);
     if (!results[question.id]) {
       const { record, blanks } = recordFor(question, state, words);
       setResults((previous) => ({ ...previous, [question.id]: record }));
@@ -399,6 +455,17 @@ export function RunnerScreen() {
       return;
     }
     navigate(exitPath(test?.kind, isReview));
+  };
+
+  // Starts the session again from its first question. The kept session is forgotten with it.
+  const startAgain = () => {
+    setIndex(0);
+    setItems({});
+    setResults({});
+    setRevealed({});
+    setBlankMarks({});
+    startedAt.current = Date.now();
+    setResumed(false);
   };
 
   if (loadError) {
@@ -477,6 +544,16 @@ export function RunnerScreen() {
       </div>
 
       <div className="runner__body">
+        {resumed && (
+          <div className="runner__inner">
+            <Notice tone="info">
+              {t('You picked up where you left off.')}{' '}
+              <button className="btn btn--text btn--sm" onClick={startAgain}>
+                {t('Start again')}
+              </button>
+            </Notice>
+          </div>
+        )}
         <AnimatePresence mode="wait" initial={false}>
           {question && (
             <motion.div
@@ -534,7 +611,7 @@ export function RunnerScreen() {
           onConfirm={() => navigate(exitPath(test?.kind, isReview))}
           onClose={() => setConfirmLeave(false)}
         >
-          {t('Answers you have not finished will not be saved.')}
+          {t('Your answers stay on this device, so you can carry on later. Finish the session to save your progress.')}
         </ConfirmSheet>
       )}
     </div>

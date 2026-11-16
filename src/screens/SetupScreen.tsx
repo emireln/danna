@@ -212,7 +212,7 @@ export function SetupScreen() {
                           </button>
                         ))}
                       </div>
-                      <Field label={t('Exam date (optional)')} hint={t('Shown as a countdown on the Today page.')}>
+                      <Field label={t('Exam date (optional)')} hint={t('Shown on your exam page, with the days left.')}>
                         <DateField label={t('Exam date')} value={shownDate} onChange={setExamDate} min={todayIso()} />
                       </Field>
                     </>

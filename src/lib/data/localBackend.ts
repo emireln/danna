@@ -118,6 +118,7 @@ function defaultProfile(): ProfileRow {
     goal: 'english',
     target_score: 100,
     exam_date: null,
+    exam_name: null,
     daily_minutes: 15,
     level: 'B1',
     xp: 0,

@@ -4,12 +4,15 @@ import { useCallback, useEffect, useRef, useState, type DragEvent, type Keyboard
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AtSign, ArrowUp, BookOpen, FileText, History, Image as ImageIcon, Paperclip, Plus, Sparkles, X } from 'lucide-react';
 import { ChatHistory } from '../components/ChatHistory';
+import { CoachReply } from '../components/CoachReply';
 import { MentionSheet } from '../components/MentionSheet';
 import { Notice, PageHeader, Skeleton, Spinner } from '../components/ui';
 import { readAttachment } from '../lib/attachments';
 import { chatHistory, coachSystem } from '../lib/ai';
 import { errorText } from '../lib/bridge';
 import { MAX_FILES, STARTERS, STARTER_COUNT, TITLE_SYSTEM, attachmentsOf, cleanTitle, fallbackTitle, pickStarters, type PendingFile } from '../lib/coach';
+import { draftKey } from '../lib/drafts';
+import { parseCoachReply } from '../lib/coachReply';
 import { useT } from '../lib/i18n/react';
 import { indexFor, retrieve, type LibraryDocument } from '../lib/retrieval';
 import type { ChatImage, LibraryFileRow, TutorChatRow, TutorRow } from '../lib/types';
@@ -201,14 +204,17 @@ export function CoachScreen() {
     return { docs: fresh, images };
   };
 
-  const send = async (rawText: string) => {
+  // A quick reply or an exercise answer is sent as text alone. The draft and the files waiting for a message stay as they are.
+  const send = async (rawText: string, asText = false) => {
     const text = rawText.trim();
-    const files = pending;
+    const files = asText ? [] : pending;
     if ((!text && files.length === 0) || sending || reading || messages === null || !backend || !profile || !ready) return;
     setSending(true);
     setFailure(null);
-    setDraft('');
-    setPending([]);
+    if (!asText) {
+      setDraft('');
+      setPending([]);
+    }
     try {
       let chatId = activeRef.current;
       if (!chatId) {
@@ -377,6 +383,9 @@ export function CoachScreen() {
   const canAttach = Boolean(ready && backend && !busy && pending.length < MAX_FILES);
   const canSend = Boolean(ready && backend && !busy && messages !== null && (draft.trim() || pending.length > 0));
   const mentioned = pending.filter((file) => file.kind !== 'library').length;
+  // The quick replies show under the newest reply only, and only while it is still the last message in the chat.
+  const lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : null;
+  const latestReplyId = lastMessage?.role === 'assistant' ? lastMessage.id : null;
 
   return (
     <div className="page page--coach">
@@ -429,8 +438,12 @@ export function CoachScreen() {
                 </div>
               </div>
             )}
-            {messages.map((message) => (
-              <div key={message.id} className={`message ${message.role === 'user' ? 'message--user' : 'message--coach'}`}>
+            {messages.map((message) => {
+              const isUser = message.role === 'user';
+              // A reply with an exercise is wider, so its buttons and fields have room.
+              const wide = !isUser && parseCoachReply(message.content).some((part) => part.kind === 'exercise');
+              return (
+              <div key={message.id} className={`message ${isUser ? 'message--user' : 'message--coach'}${wide ? ' message--wide' : ''}`}>
                 {message.attachments.length > 0 && (
                   <div className="message__files">
                     {message.attachments.map((file, index) => (
@@ -447,9 +460,22 @@ export function CoachScreen() {
                     ))}
                   </div>
                 )}
-                {message.content && <div className={`bubble ${message.role === 'user' ? 'bubble--user' : 'bubble--coach'}`}>{message.content}</div>}
+                {message.content &&
+                  (isUser ? (
+                    <div className="bubble bubble--user">{message.content}</div>
+                  ) : (
+                    <CoachReply
+                      id={message.id}
+                      text={message.content}
+                      latest={message.id === latestReplyId}
+                      busy={sending}
+                      draftPrefix={profile ? draftKey(profile.id, `coach-exercise:${message.id}`) : null}
+                      onSend={(text) => void send(text, true)}
+                    />
+                  ))}
               </div>
-            ))}
+              );
+            })}
             {sending && (
               <div className="bubble bubble--coach muted" aria-label={t('Coach is typing')}>
                 {t('Thinking…')}

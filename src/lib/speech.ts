@@ -3,7 +3,7 @@
 // that was made is kept for a while, so the same passage does not ask the provider again.
 import { bridge, errorText } from './bridge';
 import { t } from './i18n';
-import { DEFAULT_VOICE, pickDeviceVoice } from './voices';
+import { DEFAULT_VOICE, DEFAULT_VOLUME, pickDeviceVoice, volumeLevel } from './voices';
 
 export interface Narration {
   stop: () => void;
@@ -61,12 +61,14 @@ async function makeVoice(text: string, voice: string): Promise<string | null> {
   return URL.createObjectURL(new Blob([bytes.buffer as ArrayBuffer], { type: reply.mime ?? 'audio/mpeg' }));
 }
 
-async function savedVoice(): Promise<string> {
-  if (!bridge) return 'device';
+/** The voice and the loudness the learner chose in Settings. */
+async function savedSettings(): Promise<{ voice: string; volume: number }> {
+  if (!bridge) return { voice: 'device', volume: DEFAULT_VOLUME };
   try {
-    return (await bridge.settings.get()).voice || DEFAULT_VOICE;
+    const settings = await bridge.settings.get();
+    return { voice: settings.voice || DEFAULT_VOICE, volume: volumeLevel(settings.voiceVolume) };
   } catch {
-    return DEFAULT_VOICE;
+    return { voice: DEFAULT_VOICE, volume: DEFAULT_VOLUME };
   }
 }
 
@@ -74,6 +76,8 @@ async function savedVoice(): Promise<string> {
 export function narrate(text: string, options: NarrationOptions): Narration {
   let finished = false;
   let audio: HTMLAudioElement | null = null;
+  // The loudness from 0 to 1, read from Settings before the voice starts.
+  let loudness = DEFAULT_VOLUME / 100;
 
   const finish = () => {
     if (finished) return;
@@ -93,6 +97,7 @@ export function narrate(text: string, options: NarrationOptions): Narration {
     if (voice) utterance.voice = voice;
     utterance.lang = 'en-US';
     utterance.rate = 0.95;
+    utterance.volume = loudness;
     utterance.onstart = () => {
       if (!finished) options.onStart();
     };
@@ -114,6 +119,7 @@ export function narrate(text: string, options: NarrationOptions): Narration {
       return false;
     }
     audio = new Audio(url);
+    audio.volume = loudness;
     audio.onplaying = () => {
       if (!finished) options.onStart();
     };
@@ -127,7 +133,9 @@ export function narrate(text: string, options: NarrationOptions): Narration {
   };
 
   void (async () => {
-    const voice = options.voice ?? (await savedVoice());
+    const saved = await savedSettings();
+    loudness = saved.volume / 100;
+    const voice = options.voice ?? saved.voice;
     if (finished) return;
     if (voice !== 'device' && bridge) {
       try {

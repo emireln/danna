@@ -6,13 +6,15 @@ const path = require('node:path');
 const speech = require('./speech.cjs');
 
 // The voice is one of the choices in speech.cjs: automatic, the device voice, or one named natural voice.
-const DEFAULTS = { closeToTray: true, language: null, voice: 'auto' };
+const DEFAULTS = { closeToTray: true, language: null, voice: 'auto', voiceVolume: 100 };
 
 // Each setting has its own check, so a bad value in the file is ignored. A null language follows the system.
+// The volume is a whole number from 0 to 100, where 100 is the full volume of the voice.
 const VALID = {
   closeToTray: (value) => typeof value === 'boolean',
   language: (value) => value === null || value === 'en' || value === 'pt',
   voice: (value) => speech.isVoiceChoice(value),
+  voiceVolume: (value) => Number.isInteger(value) && value >= 0 && value <= 100,
 };
 
 function file() {

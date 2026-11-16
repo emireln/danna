@@ -19,6 +19,7 @@ import { TodayScreen } from './screens/TodayScreen';
 import { RoadmapScreen } from './screens/RoadmapScreen';
 import { StudyScreen, StudySectionScreen } from './screens/StudyScreen';
 import { ReviewScreen } from './screens/ReviewScreen';
+import { ExamScreen } from './screens/ExamScreen';
 import { CoachScreen } from './screens/CoachScreen';
 import { RunnerScreen } from './screens/RunnerScreen';
 import { ReportScreen } from './screens/ReportScreen';
@@ -136,6 +137,7 @@ function AppRoutes() {
         <Route path="study" element={<StudyScreen />} />
         <Route path="study/:skill" element={<StudySectionScreen />} />
         <Route path="review" element={<ReviewScreen />} />
+        <Route path="exam" element={<ExamScreen />} />
         <Route path="coach" element={<CoachScreen />} />
         <Route path="report/:id" element={<ReportScreen />} />
         <Route path="friends" element={<FriendsScreen />} />

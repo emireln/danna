@@ -20,6 +20,7 @@ const legacySql = (await readFile(join(here, 'legacy', 'schema-v1.sql'), 'utf8')
 const migrationSql = await readFile(join(here, '..', 'migrations', '0006_release_0_7_0.sql'), 'utf8');
 const migration0007Sql = await readFile(join(here, '..', 'migrations', '0007_account_ai_keys.sql'), 'utf8');
 const migration0009Sql = await readFile(join(here, '..', 'migrations', '0009_feedback.sql'), 'utf8');
+const migration0011Sql = await readFile(join(here, '..', 'migrations', '0011_release_1_0_0.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -677,6 +678,32 @@ test('feedback: an account sends up to 50 messages, and the limit holds', async 
   const over = await refused(as(db, ALICE, 'insert into public.feedback (user_id, rating) values ($1, 4)', [ALICE]));
   assert.equal(over.code, QUOTA_REACHED);
   assert.equal((await db.query('select count(*)::int as n from public.feedback where user_id = $1', [ALICE])).rows[0].n, 50);
+});
+
+test('the exam name is the learner’s: up to 80 characters, and nobody else can change it', async () => {
+  await as(db, ALICE, 'update public.profiles set exam_name = $2 where id = $1', [ALICE, 'IELTS']);
+  assert.equal((await as(db, ALICE, 'select exam_name from public.profiles where id = $1', [ALICE])).rows[0].exam_name, 'IELTS');
+  await as(db, ALICE, 'update public.profiles set exam_name = $2 where id = $1', [ALICE, 'x'.repeat(80)]);
+  const tooLong = await refused(as(db, ALICE, 'update public.profiles set exam_name = $2 where id = $1', [ALICE, 'x'.repeat(81)]));
+  assert.equal(tooLong.code, CHECK_FAILED);
+  await as(db, BOB, 'update public.profiles set exam_name = $2 where id = $1', [ALICE, 'Changed by someone else']);
+  assert.equal(
+    (await as(db, ALICE, 'select exam_name from public.profiles where id = $1', [ALICE])).rows[0].exam_name,
+    'x'.repeat(80),
+    'another person cannot change the exam name',
+  );
+});
+
+test('migration 0011 runs on a current database, and again, without changing the exam name or the 1.0.0 note', async () => {
+  await db.exec(migration0011Sql);
+  await db.exec(migration0011Sql);
+  assert.equal((await as(db, ALICE, 'select exam_name from public.profiles where id = $1', [ALICE])).rows[0].exam_name, 'x'.repeat(80));
+  const notes = await db.query("select title from public.announcements where version = '1.0.0' and kind = 'release_note'");
+  assert.deepEqual(
+    notes.rows.map((row) => row.title),
+    ['danna 1.0.0'],
+    'the note is there once',
+  );
 });
 
 test('migration 0009 runs on a current database, and again, without changing the feedback already sent', async () => {

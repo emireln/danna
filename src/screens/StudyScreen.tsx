@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, ClipboardCheck, GraduationCap, Languages, Plus, Sparkles, Star } from 'lucide-react';
+import { ArrowRight, CalendarDays, ClipboardCheck, GraduationCap, Languages, Plus, Sparkles, Star } from 'lucide-react';
 import { GenerateSheet } from '../components/GenerateSheet';
 import { BackLink, Empty, FeatureCard, Notice, PageHeader, ProgressBar, SectionTitle, Skeleton, Tabs } from '../components/ui';
 import { TOEFL_TEST_ID, levelSkillTests, levelTest, lessonsForSkill, toeflLessons, toeflSkillTests, toeflTest, wordsTest } from '../content';
@@ -99,6 +99,13 @@ export function StudyScreen() {
           title={t('TOEFL warm-up')}
           meta={t('Optional. Academic reading, lectures, and speaking and writing tasks in the style of the test.')}
           onClick={() => navigate('/study/toefl')}
+        />
+
+        <FeatureCard
+          icon={<CalendarDays />}
+          title={t('Your exam')}
+          meta={t('Save the date, and test the skills the exam asks for')}
+          onClick={() => navigate('/exam')}
         />
 
         <Tabs

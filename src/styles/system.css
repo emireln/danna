@@ -320,6 +320,37 @@
     color: var(--muted);
   }
 
+  /* The send arrow is white on the blue button. The icon button rule sets a dark colour, so this one is more specific. */
+  .chat-input .btn--primary {
+    color: #fff;
+  }
+
+  /* ---------- The volume of the listening voice ---------- */
+  .volume {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .volume__label,
+  .volume__value {
+    flex: 0 0 auto;
+    color: var(--ink-2);
+    font-size: 14px;
+  }
+
+  .volume__value {
+    min-width: 3.25em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .volume input[type='range'] {
+    flex: 1;
+    min-width: 0;
+    accent-color: var(--primary);
+  }
+
   /* ---------- Coach messages, their files, and the files waiting to be sent ---------- */
   .message {
     display: flex;
@@ -350,6 +381,248 @@
 
   .message--user .message__files {
     justify-content: flex-end;
+  }
+
+  /* ---------- Coach replies: the text as Markdown, exercises, quick replies and read aloud ---------- */
+  .message--wide {
+    max-width: min(94%, 680px);
+  }
+
+  .bubble--rich {
+    white-space: normal;
+  }
+
+  .bubble--rich > :first-child {
+    margin-top: 0;
+  }
+
+  .bubble--rich > :last-child {
+    margin-bottom: 0;
+  }
+
+  .bubble--rich p {
+    margin: 0 0 8px;
+  }
+
+  .bubble--rich ul,
+  .bubble--rich ol {
+    margin: 0 0 8px;
+    padding-left: 20px;
+  }
+
+  .bubble--rich strong {
+    font-weight: 600;
+  }
+
+  .exercise {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .exercise__title {
+    margin: 0 0 10px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .exercise__list {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .exercise__item {
+    display: grid;
+    gap: 8px;
+  }
+
+  .exercise__prompt {
+    margin: 0;
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .exercise__options {
+    display: grid;
+    gap: 6px;
+  }
+
+  .exercise__option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    background: var(--canvas);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .exercise__option:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: var(--surface-2);
+  }
+
+  .exercise__option:disabled {
+    cursor: default;
+  }
+
+  .exercise__option.is-selected {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-50);
+  }
+
+  .exercise__option.is-right {
+    border-color: var(--green);
+    background: rgba(22, 163, 116, 0.1);
+  }
+
+  .exercise__option.is-wrong {
+    border-color: var(--red);
+    background: rgba(229, 72, 77, 0.08);
+  }
+
+  .exercise__option svg {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    margin-left: auto;
+  }
+
+  .exercise__option.is-right svg {
+    color: var(--green);
+  }
+
+  .exercise__option.is-wrong svg {
+    color: var(--red);
+  }
+
+  .exercise__letter {
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .exercise__blank {
+    min-width: 4ch;
+    margin: 0 4px;
+    padding: 2px 8px;
+    border: 0;
+    border-bottom: 2px solid var(--primary);
+    border-radius: 4px 4px 0 0;
+    background: var(--surface-2);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    outline: 0;
+  }
+
+  .exercise__blank:focus {
+    background: var(--primary-50);
+  }
+
+  .exercise__blank:disabled {
+    opacity: 1;
+  }
+
+  .exercise__blank.is-right {
+    border-bottom-color: var(--green);
+    background: rgba(22, 163, 116, 0.12);
+    color: #0b7a55;
+  }
+
+  .exercise__blank.is-wrong {
+    border-bottom-color: var(--red);
+    background: rgba(229, 72, 77, 0.08);
+    color: var(--red);
+  }
+
+  .exercise__hint summary {
+    color: var(--primary);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .exercise__hint p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .exercise__answer,
+  .exercise__explain {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 13px;
+  }
+
+  .exercise__text {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--radius);
+    background: var(--canvas);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+
+  .exercise__text:focus {
+    outline: 0;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-50);
+  }
+
+  .exercise__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .exercise__score {
+    margin: 0;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .exercise__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .suggest--replies {
+    margin-top: 2px;
+  }
+
+  .read-aloud {
+    margin-top: -2px;
   }
 
   .file-chip {

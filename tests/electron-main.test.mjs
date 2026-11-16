@@ -210,16 +210,23 @@ test('a saved key is never sent to the interface, only its ending', async () => 
 
 test('settings keep only the known preferences, and the file is written in one piece', async () => {
   const saved = await invoke('settings:set', { closeToTray: false, evil: 'x' });
-  assert.deepEqual(saved, { closeToTray: false, language: null, voice: 'auto' });
+  assert.deepEqual(saved, { closeToTray: false, language: null, voice: 'auto', voiceVolume: 100 });
   const onDisk = JSON.parse(readFileSync(join(folder, 'danna-settings.json'), 'utf8'));
-  assert.deepEqual(onDisk, { closeToTray: false, language: null, voice: 'auto' });
+  assert.deepEqual(onDisk, { closeToTray: false, language: null, voice: 'auto', voiceVolume: 100 });
   assert.equal(existsSync(join(folder, 'danna-settings.json.tmp')), false, 'no temporary file is left behind');
-  assert.deepEqual(await invoke('settings:get'), { closeToTray: false, language: null, voice: 'auto' });
+  assert.deepEqual(await invoke('settings:get'), { closeToTray: false, language: null, voice: 'auto', voiceVolume: 100 });
 
   // A voice that is not one of the choices is ignored, and the one kept before stays.
   const kept = await invoke('settings:set', { voice: 'openai:coral' });
   assert.equal(kept.voice, 'openai:coral');
   assert.equal((await invoke('settings:set', { voice: 'robot' })).voice, 'openai:coral');
+
+  // The volume is a whole number from 0 to 100. Silence is allowed; anything else keeps the volume before.
+  assert.equal((await invoke('settings:set', { voiceVolume: 40 })).voiceVolume, 40);
+  assert.equal((await invoke('settings:set', { voiceVolume: 140 })).voiceVolume, 40);
+  assert.equal((await invoke('settings:set', { voiceVolume: 12.5 })).voiceVolume, 40);
+  assert.equal((await invoke('settings:set', { voiceVolume: '50' })).voiceVolume, 40);
+  assert.equal((await invoke('settings:set', { voiceVolume: 0 })).voiceVolume, 0);
 });
 
 test('the app language is saved as English or Portuguese, or follows the system', async () => {

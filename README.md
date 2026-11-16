@@ -11,19 +11,20 @@ Your profile picture works in both modes. Pictures are converted to a small WebP
 
 ## What is inside
 
-- **Today**: your next lesson, the level check, banners, and an optional exam countdown.
-- **Roadmap**: General English from A1 to C1. Each unit has lessons, a unit check, stars and unlocking. Your level decides where you start.
+- **Today**: your next lesson, the level check, banners, and a card that opens your exam.
+- **Your exam**: save the exam's name, its date and, for the TOEFL, the target score. The page shows how many days are left, your latest result in each skill, and a test for each one.
+- **Roadmap**: General English from A1 to C1. Each unit has lessons, a unit check, stars and unlocking. Your level decides where you start. An unfinished lesson or test is kept on this device, so you carry on from the same question.
 - **Self study**: sections for Reading, Listening, Speaking, Writing and Language, a level test for each level, and the optional TOEFL warm-up.
 - **Level check and report**: your level, a five-skill radar, skill cards with tips, and a study plan. With the TOEFL warm-up, the report also shows an estimated score out of 120.
 - **Review**: spaced repetition for every missed question.
-- **Coach**: an AI tutor chat.
+- **Coach**: an AI tutor chat. Its exercises have choices, blanks and free answers that you answer with a tap or by typing, then check for a score. Quick replies come under each answer, a button reads it aloud, and you can ask it to explain your mistakes.
 - **My library** (from your profile): keep PDF, TXT and Markdown files and read them in the app. Edit TXT and Markdown files there and save them, and find text in any file with Ctrl+F. Save learning links from YouTube, Coursera, Khan Academy and other platforms, with the platform's logo, and sort them into categories. Ask the tutor questions about the files you choose; it answers only from them and names the file.
 - **Friends** (online only): search by username from three letters, requests, a ranking, shared results and sets, and an inbox. Open a friend to see their banner, picture, day streak and what they shared with you.
 - **Profile**: a banner that covers the profile and the stat cards (optional, private to you and your friends), the picture on the right, and the day streak, which turns red above 200 days, blue above 500 and purple from 1000.
 - **Support and feedback**: buy me a coffee from the profile menu or Settings. In Settings you can also rate danna from 1 to 5 stars and leave a comment. An online account sends it to the developer.
 - **What's new**: release notes and banners. Settings has Check for updates.
 - **Search**: the search button in the title bar, or Ctrl+K, finds lessons, tests, coach chats, library files and links, results and pages.
-- **AI, bring your own key**: OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is selected by default, and you can choose another in Settings. DeepSeek's live model list is read from its API, and the newest version is chosen. Listening passages are read aloud in a natural voice from your OpenAI or Google Gemini key (Settings, Listening voice). The text is sent to that provider.
+- **AI, bring your own key**: OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is selected by default, and you can choose another in Settings. DeepSeek's live model list is read from its API, and the newest version is chosen. Listening passages are read aloud in a natural voice from your OpenAI or Google Gemini key (Settings, Listening voice, with a volume control). The text is sent to that provider.
 
 ## Run it
 
@@ -76,7 +77,7 @@ The installer is written to `release/danna-setup-<version>-x64.exe`. Delete the 
 ## Online accounts (Supabase)
 
 1. For a new project: in the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket, the library and the release notes.
-2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note), then `supabase/migrations/0006_release_0_7_0.sql` (profile banners, a friend's profile, and the 0.7.0 release note). Then `supabase/migrations/0007_account_ai_keys.sql` (AI keys saved to the account, sealed with the password), then `supabase/migrations/0008_release_0_8_0.sql` (the 0.8.0 release note), then `supabase/migrations/0009_feedback.sql` (feedback from the account, for the developer to read), then `supabase/migrations/0010_release_0_9_0.sql` (the 0.9.0 release note). All nine are safe to run again.
+2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note), then `supabase/migrations/0006_release_0_7_0.sql` (profile banners, a friend's profile, and the 0.7.0 release note). Then `supabase/migrations/0007_account_ai_keys.sql` (AI keys saved to the account, sealed with the password), then `supabase/migrations/0008_release_0_8_0.sql` (the 0.8.0 release note), then `supabase/migrations/0009_feedback.sql` (feedback from the account, for the developer to read), then `supabase/migrations/0010_release_0_9_0.sql` (the 0.9.0 release note), then `supabase/migrations/0011_release_1_0_0.sql` (the name of the exam, and the 1.0.0 release note). All ten are safe to run again.
 3. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
 4. Never add a service-role or secret key to the app. Only the publishable key is bundled.
 

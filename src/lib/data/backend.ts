@@ -59,6 +59,7 @@ export type ProfilePatch = Partial<
     | 'goal'
     | 'target_score'
     | 'exam_date'
+    | 'exam_name'
     | 'daily_minutes'
     | 'level'
     | 'xp'

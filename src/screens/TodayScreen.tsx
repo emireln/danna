@@ -3,15 +3,14 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, GraduationCap, Languages, Map as MapIcon, RotateCw, ScanSearch } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
-import { Badge, Field, FeatureCard, Notice, PageHeader, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
-import { DateField, Select, todayIso } from '../components/Pickers';
+import { Badge, FeatureCard, Notice, PageHeader, SectionTitle, Skeleton } from '../components/ui';
+import { Select } from '../components/Pickers';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { nodeStates, progressMap as indexProgress } from '../lib/roadmap';
-import { daysUntil } from '../lib/progress';
+import { examDateText } from '../lib/exam';
 import { bandFor, toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, type Skill } from '../lib/types';
-import { useToast } from '../state/toast';
 import { useAI } from '../state/ai';
 import { errorText } from '../lib/bridge';
 import { useLanguage, useT } from '../lib/i18n/react';
@@ -37,16 +36,12 @@ export function TodayScreen() {
   const t = useT();
   const { lang } = useLanguage();
   const { backend } = useAuth();
-  const { profile, banners, patchProfile } = useAppData();
-  const { notify } = useToast();
+  const { profile, banners } = useAppData();
   const { ready: aiReady } = useAI();
   const [focus, setFocus] = useState<'all' | Skill>('all');
   const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [diagnostic, setDiagnostic] = useState<AttemptRow | null>(null);
-  const [dateOpen, setDateOpen] = useState(false);
-  const [dateDraft, setDateDraft] = useState('');
-  const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,22 +75,8 @@ export function TodayScreen() {
 
   const unitNodes = focusNode ? nodes.filter((node) => node.item.unit.id === focusNode.item.unit.id) : [];
   const unitDone = unitNodes.filter((node) => node.state === 'done').length;
-  const daysLeft = daysUntil(profile?.exam_date ?? null);
   const skillTasks = (skill: Skill) =>
     nodes.filter((node) => !node.item.checkpoint && node.item.lesson.skill === skill && node.state !== 'done').length;
-
-  const saveDate = async () => {
-    setSaving(true);
-    try {
-      await patchProfile({ exam_date: dateDraft || null });
-      setDateOpen(false);
-      notify(dateDraft ? t('Exam date saved.') : t('Exam date removed.'), 'ok');
-    } catch (error) {
-      notify(t(errorText(error)), 'error');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const tiles: Array<{ key: string; label: string; count: number; color: string; letter?: string; icon?: 'lang' | 'review'; to: string }> = [
     ...(['reading', 'listening', 'speaking', 'writing'] as Skill[]).map((skill) => ({
@@ -118,6 +99,10 @@ export function TodayScreen() {
   ];
 
   const goalText = profile?.goal === 'toefl' ? t('TOEFL warm-up, target {score}', { score: profile.target_score }) : t('General English');
+  // The exam card names the exam and its date. The countdown lives on the exam page.
+  const examMeta = profile?.exam_date
+    ? [profile.exam_name, examDateText(profile.exam_date)].filter(Boolean).join(' · ')
+    : t('Save your exam date and test your skills.');
 
   return (
     <div className="page">
@@ -288,56 +273,11 @@ export function TodayScreen() {
           })}
         </div>
 
-        <div className="strip">
-          <CalendarDays aria-hidden="true" />
-          <span>{t('Days until exam')}</span>
-          {daysLeft === null ? (
-            <button
-              className="btn btn--text strip__value"
-              onClick={() => {
-                setDateDraft('');
-                setDateOpen(true);
-              }}
-            >
-              {t('Set exam date')}
-            </button>
-          ) : (
-            <button
-              className="btn btn--text strip__value"
-              onClick={() => {
-                setDateDraft(profile?.exam_date ?? '');
-                setDateOpen(true);
-              }}
-              aria-label={t('Change exam date')}
-            >
-              {daysLeft >= 0 ? t('D-{days}', { days: daysLeft }) : t('Exam passed')}
-            </button>
-          )}
-        </div>
+        <FeatureCard icon={<CalendarDays />} title={t('Your exam')} meta={examMeta} onClick={() => navigate('/exam')} />
 
         {!aiReady && <Notice tone="info">{t('Connect an AI key in Settings to unlock generated practice sets and coach feedback.')}</Notice>}
       </div>
 
-      {dateOpen && (
-        <Sheet
-          title={t('Exam date')}
-          onClose={() => setDateOpen(false)}
-          footer={
-            <>
-              <button className="btn btn--ghost" onClick={() => setDateOpen(false)}>
-                {t('Cancel')}
-              </button>
-              <button className="btn btn--primary" onClick={saveDate} disabled={saving}>
-                {saving ? <Spinner /> : t('Save date')}
-              </button>
-            </>
-          }
-        >
-          <Field label={t('Exam date')} hint={t('Leave it empty to hide the countdown.')}>
-            <DateField label={t('Exam date')} value={dateDraft} onChange={setDateDraft} min={todayIso()} />
-          </Field>
-        </Sheet>
-      )}
     </div>
   );
 }
