@@ -3,7 +3,7 @@ import { getSupabase, requireSupabase } from '../lib/supabase';
 import { backendFor, readStoredMode, storeMode } from '../lib/session';
 import type { BackendMode, DataBackend } from '../lib/data/backend';
 import { copyProgress } from '../lib/migrate';
-import { bridge } from '../lib/bridge';
+import { bridge, errorText } from '../lib/bridge';
 import { deriveVault, exportVault, fromBase64, importVault, newSalt, toBase64, VAULT_STORAGE_KEY } from '../lib/vault';
 
 type Status = 'loading' | 'out' | 'in';
@@ -15,6 +15,10 @@ interface AuthApi {
   email: string | null;
   /** The key that seals this account's AI keys. Null until the account is signed in on this device. */
   vault: CryptoKey | null;
+  /** Why the vault could not be opened on this device, or null. Signing in still works. */
+  vaultError: string | null;
+  /** Opens the vault with the account password, so this device can save and read the AI keys. Throws if it cannot. */
+  unlockAccountKeys: (password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ confirmEmail: boolean }>;
   useOffline: () => void;
@@ -31,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [backend, setBackend] = useState<DataBackend | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [vault, setVault] = useState<CryptoKey | null>(null);
+  const [vaultError, setVaultError] = useState<string | null>(null);
 
   const enter = useCallback((next: BackendMode, who: string | null) => {
     setBackend(backendFor(next));
@@ -55,30 +60,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Signing in is the moment the password is known, so the vault is made here and kept on this device.
+  // It throws when the vault cannot be opened, so the caller can say why.
   const unlockVault = useCallback(async (password: string) => {
-    try {
-      const account = backendFor('supabase');
-      const profile = await account.getProfile();
-      let salt = profile?.ai_salt ? fromBase64(profile.ai_salt) : null;
-      if (!salt) {
-        salt = newSalt();
-        await account.updateProfile({ ai_salt: toBase64(salt) });
-      }
-      const key = await deriveVault(password, salt);
-      setVault(key);
-      if (bridge) await bridge.session.set(VAULT_STORAGE_KEY, await exportVault(key));
-    } catch (error) {
-      // The account still works. Its AI keys wait for the next sign-in.
-      console.error('Could not open the account vault', error);
-      setVault(null);
+    const account = backendFor('supabase');
+    const profile = await account.getProfile();
+    // Without a profile there is no salt to read. Making a new one here would replace the salt the keys need.
+    if (!profile) throw new Error('Your account profile could not be found. Try again in a moment.');
+    let salt = profile.ai_salt ? fromBase64(profile.ai_salt) : null;
+    if (!salt) {
+      salt = newSalt();
+      await account.updateProfile({ ai_salt: toBase64(salt) });
     }
+    const key = await deriveVault(password, salt);
+    if (bridge) await bridge.session.set(VAULT_STORAGE_KEY, await exportVault(key));
+    setVault(key);
+    setVaultError(null);
   }, []);
+
+  // Sign-in has worked by now, so a vault problem is kept for the Settings screen instead of being thrown.
+  const openVault = useCallback(
+    async (password: string) => {
+      try {
+        await unlockVault(password);
+      } catch (error) {
+        console.error('Could not open the account vault', error);
+        setVault(null);
+        setVaultError(errorText(error));
+      }
+    },
+    [unlockVault],
+  );
 
   const leave = useCallback(() => {
     setBackend(null);
     setMode(null);
     setEmail(null);
     setVault(null);
+    setVaultError(null);
     setStatus('out');
     // The keys stay saved in the account. This device forgets its copies of them.
     if (bridge) {
@@ -132,9 +150,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       storeMode('supabase');
       enter('supabase', data.user?.email ?? address.trim());
-      await unlockVault(password);
+      await openVault(password);
     },
-    [enter, unlockVault],
+    [enter, openVault],
   );
 
   const signUp = useCallback(
@@ -149,10 +167,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!data.session) return { confirmEmail: true };
       storeMode('supabase');
       enter('supabase', data.user?.email ?? address.trim());
-      await unlockVault(password);
+      await openVault(password);
       return { confirmEmail: false };
     },
-    [enter, unlockVault],
+    [enter, openVault],
+  );
+
+  const unlockAccountKeys = useCallback(
+    async (password: string) => {
+      await unlockVault(password);
+    },
+    [unlockVault],
   );
 
   const useOffline = useCallback(() => {
@@ -188,8 +213,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [leave]);
 
   const api = useMemo<AuthApi>(
-    () => ({ status, mode, backend, email, vault, signIn, signUp, useOffline, moveToDevice, signOut }),
-    [status, mode, backend, email, vault, signIn, signUp, useOffline, moveToDevice, signOut],
+    () => ({
+      status,
+      mode,
+      backend,
+      email,
+      vault,
+      vaultError,
+      unlockAccountKeys,
+      signIn,
+      signUp,
+      useOffline,
+      moveToDevice,
+      signOut,
+    }),
+    [status, mode, backend, email, vault, vaultError, unlockAccountKeys, signIn, signUp, useOffline, moveToDevice, signOut],
   );
 
   return <AuthContext.Provider value={api}>{children}</AuthContext.Provider>;

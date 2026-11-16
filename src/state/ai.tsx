@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { bridge, type CompletionRequest, type CompletionResult } from '../lib/bridge';
+import { bridge, errorText, type CompletionRequest, type CompletionResult } from '../lib/bridge';
 import { tn } from '../lib/i18n';
 import { syncAccountKeys, type KeySyncPort } from '../lib/keysync';
 import type { AIConnection, AISelection, Provider } from '../lib/types';
@@ -19,12 +19,19 @@ interface AIApi {
   canTranscribe: boolean;
   /** Signed in, with the vault open: keys added here are saved to the account, sealed. */
   accountKeys: boolean;
+  /** Signed in with the account, but the vault is not open on this device yet. The password opens it. */
+  keysLocked: boolean;
+  /** Why the last sync with the account failed, or null. */
+  syncError: string | null;
   /** Keys saved in the account that this device could not open. They must be added again. */
   unreadable: Provider[];
   syncing: boolean;
   refresh: () => Promise<void>;
-  /** Brings this device's keys and the account's keys into step. It also runs on its own after sign-in. */
-  syncNow: () => Promise<void>;
+  /** Opens the account vault with the password, then the keys are brought into step. Throws if it cannot. */
+  unlock: (password: string) => Promise<void>;
+  /** Brings this device's keys and the account's keys into step. It also runs on its own after sign-in.
+   *  Returns the reason it failed, or null. */
+  syncNow: () => Promise<string | null>;
   /** Removes a key from the account first, then from this device. */
   removeKey: (provider: Provider) => Promise<void>;
   complete: (request: CompletionRequest) => Promise<CompletionResult>;
@@ -37,13 +44,16 @@ const DESKTOP_ONLY = 'AI features run in the danna desktop app, where your key i
 
 export function AIProvider({ children }: { children: ReactNode }) {
   const { notify } = useToast();
-  const { status, mode, backend, vault } = useAuth();
+  const { status, mode, backend, vault, unlockAccountKeys } = useAuth();
   const [connections, setConnections] = useState<AIConnection[]>([]);
   const [selection, setSelection] = useState<AISelection | null>(null);
   const [loaded, setLoaded] = useState(!bridge);
   const [syncing, setSyncing] = useState(false);
   const [unreadable, setUnreadable] = useState<Provider[]>([]);
   const running = useRef(false);
+  const queued = useRef(false);
+  const syncRef = useRef<() => Promise<string | null>>(async () => null);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!bridge) return;
@@ -63,14 +73,21 @@ export function AIProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const accountKeys = Boolean(bridge && mode === 'supabase' && backend && vault);
+  const keysLocked = Boolean(bridge && mode === 'supabase' && backend && !vault);
 
-  const syncNow = useCallback(async () => {
+  const syncNow = useCallback(async (): Promise<string | null> => {
     const desktop = bridge;
     const account = backend;
     const vaultKey = vault;
-    if (!desktop || !account || !vaultKey || mode !== 'supabase' || running.current) return;
+    if (!desktop || !account || !vaultKey || mode !== 'supabase') return null;
+    // A sync that is already running is followed by one more, so keys added meanwhile are saved too.
+    if (running.current) {
+      queued.current = true;
+      return null;
+    }
     running.current = true;
     setSyncing(true);
+    let problem: string | null = null;
     try {
       const port: KeySyncPort = {
         listAccount: () => account.listAiKeys(),
@@ -104,12 +121,20 @@ export function AIProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Could not sync the AI keys with your account', error);
+      problem = errorText(error);
     } finally {
       running.current = false;
       setSyncing(false);
+      setSyncError(problem);
       await refresh();
+      if (queued.current) {
+        queued.current = false;
+        void syncRef.current();
+      }
     }
+    return problem;
   }, [backend, mode, vault, refresh, notify]);
+  syncRef.current = syncNow;
 
   // Signing in (or opening the app signed in) brings the account's keys to this device.
   useEffect(() => {
@@ -148,15 +173,33 @@ export function AIProvider({ children }: { children: ReactNode }) {
       ready: Boolean(selection && connections.some((connection) => connection.provider === selection.provider)),
       canTranscribe: connections.some((connection) => connection.provider === 'openai'),
       accountKeys,
+      keysLocked,
+      syncError,
       unreadable,
       syncing,
       refresh,
+      unlock: unlockAccountKeys,
       syncNow,
       removeKey,
       complete,
       transcribe,
     }),
-    [loaded, connections, selection, accountKeys, unreadable, syncing, refresh, syncNow, removeKey, complete, transcribe],
+    [
+      loaded,
+      connections,
+      selection,
+      accountKeys,
+      keysLocked,
+      syncError,
+      unreadable,
+      syncing,
+      refresh,
+      unlockAccountKeys,
+      syncNow,
+      removeKey,
+      complete,
+      transcribe,
+    ],
   );
 
   return <AIContext.Provider value={api}>{children}</AIContext.Provider>;
