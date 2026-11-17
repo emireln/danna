@@ -22,6 +22,7 @@ const migration0007Sql = await readFile(join(here, '..', 'migrations', '0007_acc
 const migration0009Sql = await readFile(join(here, '..', 'migrations', '0009_feedback.sql'), 'utf8');
 const migration0011Sql = await readFile(join(here, '..', 'migrations', '0011_release_1_0_0.sql'), 'utf8');
 const migration0013Sql = await readFile(join(here, '..', 'migrations', '0013_coach_modes.sql'), 'utf8');
+const migration0014Sql = await readFile(join(here, '..', 'migrations', '0014_release_1_2_0.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -734,6 +735,18 @@ test('migration 0013 runs on a current database, and again, without changing the
   await db.exec(migration0013Sql);
   assert.equal((await db.query("select count(*)::int as n from public.tutor_chats where mode = 'writing'")).rows[0].n, 1);
   assert.equal((await db.query("select count(*)::int as n from public.tutor_messages where char_length(content) = 24000")).rows[0].n, 0, 'the message was removed by its owner');
+});
+
+test('migration 0014 runs on a current database, and again, with one note for 1.2.0', async () => {
+  await db.exec(migration0014Sql);
+  await db.exec(migration0014Sql);
+  const notes = await db.query("select title, body from public.announcements where version = '1.2.0' and kind = 'release_note'");
+  assert.deepEqual(
+    notes.rows.map((row) => row.title),
+    ['danna 1.2.0'],
+    'one note for 1.2.0',
+  );
+  assert.equal(notes.rows[0].body.split('\n').length, 7, 'the note has its seven lines');
 });
 
 test('migration 0009 runs on a current database, and again, without changing the feedback already sent', async () => {

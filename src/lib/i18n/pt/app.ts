@@ -1114,6 +1114,22 @@ export const APP_PT: Record<string, string> = {
   'Google Gemini keys in the new AQ. format are recognised': 'As chaves do Google Gemini no formato novo, com AQ., são reconhecidas',
   'Search boxes have a clear button that matches the rest of the app': 'Os campos de busca têm um botão de limpar que combina com o resto do app',
 
+  // The 1.2.0 release note (What's new)
+  'Replies stream in as the coach writes them. Stop one with its button or Esc, write it again, edit your last question, or continue a reply that ran out of room':
+    'As respostas aparecem aos poucos, enquanto o coach escreve. Pare uma resposta com o botão ou com Esc, escreva de novo, edite a sua última pergunta ou continue uma resposta que ficou sem espaço',
+  'Nine modes on the start screen of the coach, such as Conversation practice, Fix my writing, Speaking practice, Exam practice and Vocabulary builder. A chat keeps the mode it started in':
+    'Nove modos na tela inicial do coach, como Prática de conversação, Corrigir minha escrita, Prática de fala, Treino para a prova e Ampliar vocabulário. Um chat mantém o modo em que começou',
+  'The coach knows your level, goal, exam date, skill scores and recent mistakes. No name or account details are sent':
+    'O coach conhece seu nível, sua meta, a data da prova, suas notas por habilidade e seus erros recentes. Nenhum nome nem dado da conta é enviado',
+  'Cards in the replies: feedback on your text with scores, corrections and a model version of it, vocabulary cards that save to your review, and buttons that open practice in the app':
+    'Cartões nas respostas: feedback sobre o seu texto, com notas, correções e uma versão modelo dele, cartões de vocabulário que vão para a sua revisão e botões que abrem a prática no app',
+  'Speak to the coach with the microphone (needs an OpenAI key). Read replies aloud, and save a chat as a Markdown file':
+    'Fale com o coach pelo microfone (precisa de uma chave da OpenAI). Leia as respostas em voz alta e salve um chat como arquivo Markdown',
+  'A wider coach for laptops: a slimmer header, larger text and a bigger message box':
+    'Um coach mais largo para notebooks: cabeçalho mais fino, texto maior e caixa de mensagem maior',
+  'Longer coach replies, up to 24,000 characters, so the feedback on a long text fits in one reply':
+    'Respostas do coach mais longas, de até 24.000 caracteres, para que o feedback de um texto longo caiba em uma só resposta',
+
   // The 1.1.0 release note (What's new)
   'Pictures and banners show the new one at once, even when the old one was shown a moment ago':
     'Fotos e capas mostram a nova imagem na hora, mesmo quando a anterior acabou de aparecer',
