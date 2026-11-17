@@ -41,7 +41,7 @@ function candidatesFor(key: string): Provider[] {
 export function SettingsScreen() {
   const navigate = useNavigate();
   const t = useT();
-  const { mode, email, signOut, moveToDevice, backend } = useAuth();
+  const { mode, email, signOut, moveToDevice, backend, vaultError } = useAuth();
   const ai = useAI();
   const { refresh, refreshSocial } = useAppData();
   const { notify } = useToast();
@@ -65,6 +65,9 @@ export function SettingsScreen() {
   const [comment, setComment] = useState('');
   const [sendingFeedback, setSendingFeedback] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [unlockPassword, setUnlockPassword] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
 
   // The message is saved on the account's row in the database. The app cannot read it back.
   const sendFeedbackNow = async () => {
@@ -183,14 +186,33 @@ export function SettingsScreen() {
       setKeyDraft('');
       await ai.refresh();
       // With an account open, the new key is saved to it as well, so the other devices get it.
-      await ai.syncNow();
+      const locked = ai.keysLocked;
+      const problem = await ai.syncNow();
       setModelsFor(result.provider);
       setModels(result.models);
       notify(t('{label} is connected. The newest model is selected.', { label: result.label }), 'ok');
+      if (problem) notify(t('Your AI keys could not be saved to your account: {reason}', { reason: t(problem) }), 'error');
+      else if (locked) notify(t('Your key is saved on this device. Enter your account password below to save it to your account too.'));
     } catch (caught) {
       setError(t(errorText(caught)));
     } finally {
       setBusy(false);
+    }
+  };
+
+  // Enters the account password here, which opens the vault, so the AI keys can be saved to the account.
+  const unlockNow = async () => {
+    if (!unlockPassword || unlocking) return;
+    setUnlocking(true);
+    setUnlockError(null);
+    try {
+      await ai.unlock(unlockPassword);
+      setUnlockPassword('');
+      notify(t('Done. This device can now save and read your AI keys in your account.'), 'ok');
+    } catch (caught) {
+      setUnlockError(errorText(caught));
+    } finally {
+      setUnlocking(false);
     }
   };
 
@@ -435,6 +457,38 @@ export function SettingsScreen() {
           <Notice tone="warn">
             {t('Some keys saved in your account could not be opened with this password. Add them again to replace them.')}
           </Notice>
+        )}
+        {ai.keysLocked && (
+          <div className="account-box">
+            <p className="settings-row__text">
+              {t('Your AI keys can be saved to your account, sealed with your password. Enter it once on this device.')}
+            </p>
+            {vaultError && <Notice tone="error">{t('Your AI keys could not be saved to your account: {reason}', { reason: vaultError })}</Notice>}
+            <div className="row row--wrap">
+              <input
+                className="input"
+                type="password"
+                autoComplete="current-password"
+                value={unlockPassword}
+                onChange={(event) => setUnlockPassword(event.target.value)}
+                placeholder={t('Account password')}
+                aria-label={t('Account password')}
+                style={{ flex: 1, minWidth: 220 }}
+              />
+              <button className="btn btn--primary" onClick={() => void unlockNow()} disabled={!unlockPassword || unlocking}>
+                {unlocking ? <Spinner /> : null} {t('Save my keys to my account')}
+              </button>
+            </div>
+            {unlockError && <Notice tone="error">{t(unlockError)}</Notice>}
+          </div>
+        )}
+        {ai.syncError && (
+          <div className="stack--tight">
+            <Notice tone="error">{t('Your AI keys could not be saved to your account: {reason}', { reason: t(ai.syncError) })}</Notice>
+            <button className="btn btn--ghost btn--sm self-start" onClick={() => void ai.syncNow()}>
+              {t('Try again')}
+            </button>
+          </div>
         )}
 
         {modelsFor && models.length > 0 && (

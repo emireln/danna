@@ -498,7 +498,8 @@
   }
 
   /* ---------- Feedback in Settings: a row of stars and a comment ---------- */
-  .feedback-box {
+  .feedback-box,
+  .account-box {
     display: grid;
     gap: 12px;
     padding: 16px 18px;
