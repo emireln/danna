@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Field, Sheet, Spinner, Empty } from './ui';
 import { errorText } from '../lib/bridge';
 import { tn } from '../lib/i18n';
@@ -6,9 +6,14 @@ import { useT } from '../lib/i18n/react';
 import { formatDate } from '../lib/progress';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
-import type { AttemptRow, FriendRow, TestRow } from '../lib/types';
+import type { AttemptRow, FriendRow, ShareRow, TestRow } from '../lib/types';
 
 export type ShareItem = { kind: 'result'; id: string } | { kind: 'test'; id: string };
+
+/** How many friends the sheet lists before the person searches or asks for all of them. */
+const RECENT_FRIENDS = 6;
+
+const nameOf = (friend: FriendRow) => friend.display_name || friend.username;
 
 interface ShareSheetProps {
   friends: FriendRow[];
@@ -30,6 +35,9 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
   const [item, setItem] = useState<ShareItem | null>(preferredItem ?? null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState('');
+  const [showAllFriends, setShowAllFriends] = useState(false);
+  const [shares, setShares] = useState<ShareRow[]>([]);
 
   // The result that was picked before the sheet opened, so it is listed even when it is older than the newest ones.
   const pickedResultId = preferredItem?.kind === 'result' ? preferredItem.id : null;
@@ -56,6 +64,21 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
     };
   }, [backend, notify, pickedResultId]);
 
+  // The shares show who the person talked with last, so the friends they share with most come first.
+  useEffect(() => {
+    if (!backend || backend.mode !== 'supabase') return undefined;
+    let active = true;
+    backend
+      .listShares()
+      .then((rows) => {
+        if (active) setShares(rows);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [backend]);
+
   const send = async () => {
     if (!backend || !recipient || !item) return;
     setBusy(true);
@@ -77,11 +100,36 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
     }
   };
 
+  // A friend chosen before the sheet opened: the recipient is already decided, so the sheet names them and lists no friends.
+  const lockedFriend = preferredFriendId ? (friends.find((friend) => friend.id === preferredFriendId) ?? null) : null;
+  const needle = query.trim().toLowerCase();
+  const lastShared = useMemo(() => {
+    const times = new Map<string, number>();
+    for (const share of shares) {
+      const time = Date.parse(share.created_at);
+      if (Number.isFinite(time) && time > (times.get(share.other_id) ?? 0)) times.set(share.other_id, time);
+    }
+    return times;
+  }, [shares]);
+  const ordered = useMemo(
+    () =>
+      [...friends].sort(
+        (a, b) => (lastShared.get(b.id) ?? 0) - (lastShared.get(a.id) ?? 0) || nameOf(a).localeCompare(nameOf(b)),
+      ),
+    [friends, lastShared],
+  );
+  const matchingFriends = ordered.filter(
+    (friend) => !needle || nameOf(friend).toLowerCase().includes(needle) || friend.username.toLowerCase().includes(needle),
+  );
+  const visibleFriends = needle || showAllFriends ? matchingFriends : matchingFriends.slice(0, RECENT_FRIENDS);
+  const shownAttempts = attempts.filter((attempt) => !needle || t(attempt.title).toLowerCase().includes(needle));
+  const shownTests = tests.filter((test) => !needle || t(test.title).toLowerCase().includes(needle));
+
   const pressed = (candidate: ShareItem) => item?.kind === candidate.kind && item.id === candidate.id;
 
   return (
     <Sheet
-      title={t('Share with a friend')}
+      title={lockedFriend ? t('Share with {name}', { name: nameOf(lockedFriend) }) : t('Share with a friend')}
       onClose={onClose}
       footer={
         <>
@@ -99,20 +147,38 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
       ) : (
         <>
           <div className="field">
-            <span className="field__label">{t('Send to')}</span>
-            <div className="row row--wrap">
-              {friends.map((friend) => (
-                <button
-                  key={friend.id}
-                  className={`chip ${recipient === friend.id ? 'chip--blue' : ''}`}
-                  aria-pressed={recipient === friend.id}
-                  onClick={() => setRecipient(friend.id)}
-                >
-                  {friend.display_name || friend.username}
-                </button>
-              ))}
-            </div>
+            <input
+              className="input"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={lockedFriend ? t('Search your results and sets') : t('Search friends and results')}
+              aria-label={lockedFriend ? t('Search your results and sets') : t('Search friends and results')}
+            />
           </div>
+
+          {!lockedFriend && (
+            <div className="field">
+              <span className="field__label">{t('Send to')}</span>
+              <div className="row row--wrap">
+                {visibleFriends.map((friend) => (
+                  <button
+                    key={friend.id}
+                    className={`chip ${recipient === friend.id ? 'chip--blue' : ''}`}
+                    aria-pressed={recipient === friend.id}
+                    onClick={() => setRecipient(friend.id)}
+                  >
+                    {nameOf(friend)}
+                  </button>
+                ))}
+              </div>
+              {!needle && !showAllFriends && matchingFriends.length > RECENT_FRIENDS && (
+                <button type="button" className="btn btn--text btn--sm" onClick={() => setShowAllFriends(true)}>
+                  {t('Show all {count} friends', { count: matchingFriends.length })}
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="field">
             <span className="field__label">{t('What to send')}</span>
@@ -122,7 +188,7 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
               </span>
             ) : (
               <div className="set-list">
-                {attempts.map((attempt) => {
+                {shownAttempts.map((attempt) => {
                   const candidate: ShareItem = { kind: 'result', id: attempt.id };
                   return (
                     <button
@@ -143,7 +209,7 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
                     </button>
                   );
                 })}
-                {tests.map((test) => {
+                {shownTests.map((test) => {
                   const candidate: ShareItem = { kind: 'test', id: test.id };
                   return (
                     <button
@@ -165,8 +231,10 @@ export function ShareSheet({ friends, preferredFriendId, preferredItem, onClose,
                     </button>
                   );
                 })}
-                {attempts.length === 0 && tests.length === 0 && (
-                  <span className="small muted">{t('Finish a session or create a set first.')}</span>
+                {shownAttempts.length === 0 && shownTests.length === 0 && (
+                  <span className="small muted">
+                    {needle ? t('Nothing matches your search.') : t('Finish a session or create a set first.')}
+                  </span>
                 )}
               </div>
             )}

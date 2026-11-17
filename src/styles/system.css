@@ -246,6 +246,14 @@
     gap: 14px;
   }
 
+  .report-skill__name {
+    overflow: hidden;
+    color: var(--ink);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .report-skill__bar {
     height: 10px;
     border-radius: 999px;
