@@ -521,18 +521,19 @@
     height: 16px;
   }
 
-  .listen {
+  /* The read-aloud button of a coach message. Its own names keep the lesson's listen button style away from it. */
+  .coach-listen {
     display: inline-flex;
     align-items: center;
     gap: 6px;
   }
 
-  .listen--compact .btn {
+  .coach-listen--compact .btn {
     width: 28px;
     height: 28px;
   }
 
-  .listen__notice {
+  .coach-listen__notice {
     font-size: 13px;
   }
 

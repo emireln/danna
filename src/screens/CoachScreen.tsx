@@ -13,7 +13,7 @@ import { Notice, Skeleton, Spinner } from '../components/ui';
 import { readAttachment } from '../lib/attachments';
 import { chatHistory, coachSystem } from '../lib/ai';
 import { errorText } from '../lib/bridge';
-import { attachmentsOf, fallbackTitle, cleanTitle, MAX_FILES, pickStarters, STARTERS, STARTER_COUNT, TITLE_SYSTEM, type PendingFile } from '../lib/coach';
+import { attachmentsOf, titleFromQuestion, MAX_FILES, pickStarters, STARTERS, STARTER_COUNT, type PendingFile } from '../lib/coach';
 import { learnerContext } from '../lib/coachContext';
 import { coachMode, type CoachModeId } from '../lib/coachModes';
 import { parseCoachReply, spokenText, type VocabItem } from '../lib/coachReply';
@@ -86,7 +86,7 @@ export function CoachScreen() {
   const t = useT();
   const { backend } = useAuth();
   const { profile, skills } = useAppData();
-  const { ready, selection, connections, desktop, canTranscribe, complete, startReply, transcribe } = useAI();
+  const { ready, selection, connections, desktop, canTranscribe, startReply, transcribe } = useAI();
   const { notify } = useToast();
 
   const [chats, setChats] = useState<TutorChatRow[]>([]);
@@ -273,20 +273,10 @@ export function CoachScreen() {
 
   const replaceChat = (row: TutorChatRow) => setChats((list) => list.map((chat) => (chat.id === row.id ? row : chat)));
 
-  // Names a new chat from its first question. The first words of the question stand in when the model cannot.
+  // Names a new chat from the learner's own first question. No model writes the name, so it is in their language.
   const nameChat = async (id: string, question: string) => {
     if (!backend) return;
-    let title = fallbackTitle(question);
-    try {
-      const named = await complete({
-        system: TITLE_SYSTEM,
-        messages: [{ role: 'user', content: question.slice(0, 600) }],
-        maxTokens: 40,
-      });
-      title = cleanTitle(named.text, question);
-    } catch {
-      // The chat keeps the first words of its question as its name.
-    }
+    const title = titleFromQuestion(question);
     if (!title) return;
     try {
       replaceChat(await backend.renameTutorChat(id, title));

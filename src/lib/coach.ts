@@ -11,34 +11,23 @@ export const DOCUMENT_TEXT_LIMIT = 200_000;
 /** The longest side of a picture after it is made smaller for sending. */
 export const IMAGE_MAX_SIDE = 1600;
 
-/** Asks the model for a short name for a chat. The name is written in the language of the first message. */
-export const TITLE_SYSTEM = [
-  'You name a chat. Write a title of four or five words for a conversation that starts with the message you receive.',
-  'Write the title in the language of that message. Reply with the title only: no quotes, no full stop, no emoji.',
-].join(' ');
+/** Words that read badly as the last word of a chat's name. They are left off the end. */
+const WEAK_ENDINGS = new Set([
+  'a', 'an', 'the', 'of', 'to', 'for', 'with', 'and', 'or', 'in', 'on', 'at', 'by', 'from', 'about', 'is', 'are', 'was',
+  'be', 'it', 'this', 'that', 'my', 'your', 'me', 'do', 'does', 'did', 'can', 'could', 'would', 'should', 'will', 'please',
+]);
 
-/** The first words of the first question, used when the model cannot name the chat. Empty when there are no words. */
-export function fallbackTitle(question: string): string {
-  return question
-    .replace(/\s+/g, ' ')
-    .trim()
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 5)
-    .join(' ')
-    .replace(/[.?!…:;,]+$/g, '')
-    .slice(0, 60);
-}
-
-/** The name the model wrote, cleaned to one line of two to five words. Falls back to the question's first words. */
-export function cleanTitle(raw: string, question: string): string {
-  const words = raw
-    .replace(/[\r\n]+/g, ' ')
-    .replace(/^[\s"'“”‘’`*#]+|[\s"'“”‘’`*#.!?:;]+$/g, '')
-    .split(/\s+/)
-    .filter(Boolean);
-  if (words.length < 2) return fallbackTitle(question);
-  return words.slice(0, 5).join(' ').slice(0, 60);
+/**
+ * A chat's name, taken from the learner's own first question: its first sentence, at most five words, in the same
+ * language. No model writes the name, so it never comes out in another language. Empty when there are no words.
+ */
+export function titleFromQuestion(question: string): string {
+  const sentence = question.replace(/\s+/g, ' ').trim().split(/[.?!…](?=\s|$)/)[0] ?? '';
+  const words = sentence.replace(/[*_`#"“”‘’]/g, '').split(' ').filter(Boolean).slice(0, 5);
+  while (words.length > 1 && WEAK_ENDINGS.has(words[words.length - 1].toLowerCase().replace(/[^\p{L}]/gu, ''))) words.pop();
+  const name = words.join(' ').replace(/[\s,;:]+$/g, '');
+  if (!/[\p{L}\p{N}]/u.test(name)) return '';
+  return (name.charAt(0).toUpperCase() + name.slice(1)).slice(0, 60);
 }
 
 export type FileKind = 'image' | 'pdf' | 'text';

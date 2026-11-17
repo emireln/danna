@@ -102,12 +102,12 @@ export function ListenButton({ text, label, compact = false }: { text: string; l
 
   const name = label ?? (playing ? t('Stop reading') : t('Read aloud'));
   return (
-    <span className={compact ? 'listen listen--compact' : 'listen'}>
+    <span className={compact ? 'coach-listen coach-listen--compact' : 'coach-listen'}>
       <button type="button" className={compact ? 'btn btn--ghost btn--icon btn--sm' : 'turn__tool'} onClick={toggle} aria-pressed={playing} aria-label={name} title={name}>
         {playing ? <Square aria-hidden="true" /> : <Volume2 aria-hidden="true" />}
         {!compact && <span>{playing ? t('Stop reading') : t('Read aloud')}</span>}
       </button>
-      {notice && <span className="listen__notice small muted">{notice}</span>}
+      {notice && <span className="coach-listen__notice small muted">{notice}</span>}
     </span>
   );
 }

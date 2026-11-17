@@ -3,7 +3,7 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
-import { MAX_FILES, TITLE_SYSTEM, attachmentsOf, cleanTitle, fallbackTitle, fileKind } from '../src/lib/coach.ts';
+import { MAX_FILES, attachmentsOf, fileKind, titleFromQuestion } from '../src/lib/coach.ts';
 import { fileURLToPath } from 'node:url';
 
 // The chat rules are loaded through Vite, as the app loads them: they import the bridge without a file extension.
@@ -21,14 +21,14 @@ after(async () => {
   await server?.close();
 });
 
-test('a chat is named in four or five words, from the model when it writes a name, else from the question', () => {
-  assert.equal(cleanTitle('"Present perfect for past events."', 'Why do we use it?'), 'Present perfect for past events');
-  assert.equal(cleanTitle('Verb tenses: a short guide to use', 'q'), 'Verb tenses: a short guide');
-  assert.equal(cleanTitle('', 'How do I use the present perfect with ever and never?'), 'How do I use the');
-  assert.equal(cleanTitle('Hi', 'Hello there'), 'Hello there', 'a one-word answer is not a name');
-  assert.equal(fallbackTitle('  Explain   the   past  simple, please. '), 'Explain the past simple, please');
-  assert.equal(fallbackTitle('?!'), '', 'a question with no words gives no name');
-  assert.match(TITLE_SYSTEM, /four or five words/);
+test('a chat is named from its first question: the first sentence, at most five words, in the same language', () => {
+  assert.equal(titleFromQuestion('  Explain   the   past  simple, please. '), 'Explain the past simple');
+  assert.equal(titleFromQuestion('How do I use the present perfect with ever and never?'), 'How do I use');
+  assert.equal(titleFromQuestion('wassup mate'), 'Wassup mate', 'the first letter is a capital');
+  assert.equal(titleFromQuestion('Hello there'), 'Hello there');
+  assert.equal(titleFromQuestion('notes.pdf, chapter-2.pdf'), 'Notes.pdf, chapter-2.pdf', 'a file name keeps its dot');
+  assert.equal(titleFromQuestion('?!'), '', 'a question with no words gives no name');
+  assert.equal(titleFromQuestion(''), '');
 });
 
 test('a chat name is one clean line of at most 120 characters, and an empty name clears it', () => {
