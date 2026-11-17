@@ -21,7 +21,7 @@ const migrationSql = await readFile(join(here, '..', 'migrations', '0006_release
 const migration0007Sql = await readFile(join(here, '..', 'migrations', '0007_account_ai_keys.sql'), 'utf8');
 const migration0009Sql = await readFile(join(here, '..', 'migrations', '0009_feedback.sql'), 'utf8');
 const migration0011Sql = await readFile(join(here, '..', 'migrations', '0011_release_1_0_0.sql'), 'utf8');
-const migration0012Sql = await readFile(join(here, '..', 'migrations', '0012_coach_modes.sql'), 'utf8');
+const migration0013Sql = await readFile(join(here, '..', 'migrations', '0013_coach_modes.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -729,9 +729,9 @@ test('coach messages: up to 24000 characters are kept, and only the owner can re
   assert.equal((await as(db, ALICE, 'select count(*)::int as n from public.tutor_messages where id = $1', [kept])).rows[0].n, 0, 'the owner can');
 });
 
-test('migration 0012 runs on a current database, and again, without changing the chats or messages', async () => {
-  await db.exec(migration0012Sql);
-  await db.exec(migration0012Sql);
+test('migration 0013 runs on a current database, and again, without changing the chats or messages', async () => {
+  await db.exec(migration0013Sql);
+  await db.exec(migration0013Sql);
   assert.equal((await db.query("select count(*)::int as n from public.tutor_chats where mode = 'writing'")).rows[0].n, 1);
   assert.equal((await db.query("select count(*)::int as n from public.tutor_messages where char_length(content) = 24000")).rows[0].n, 0, 'the message was removed by its owner');
 });

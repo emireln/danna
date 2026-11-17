@@ -831,6 +831,13 @@
     stroke: #fff;
   }
 
+  /* An empty message disables the send button. It keeps its blue, and its hover does not turn it pale (the fix on main). */
+  .coach-send.btn--primary:disabled,
+  .coach-send.btn--primary:disabled:hover {
+    background: var(--primary);
+    color: #fff;
+  }
+
   .coach-voice.is-recording {
     color: var(--red);
     background: rgba(229, 72, 77, 0.1);

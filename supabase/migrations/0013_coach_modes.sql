@@ -1,9 +1,9 @@
 -- =============================================================================
--- danna migration 0012: the coach's modes, and longer coach messages.
+-- danna migration 0013: the coach's modes, and longer coach messages.
 --
 -- Run it in the Supabase dashboard: SQL Editor -> New query -> paste this whole file -> Run.
 -- It is safe to run again: a column that is there is left as it is, and the limits are set again to the same values.
--- The same change ends supabase/schema.sql for new projects. Run migration 0011 first.
+-- The same change ends supabase/schema.sql for new projects. Run migration 0012 first.
 -- =============================================================================
 
 -- [coach modes]
