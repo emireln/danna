@@ -34,6 +34,7 @@ const PROFILE_FIELDS = new Set([
   'target_score',
   'exam_date',
   'exam_name',
+  'exam_paused',
   'daily_minutes',
   'level',
   'xp',
@@ -51,6 +52,7 @@ CREATE TABLE IF NOT EXISTS profile (
   target_score INTEGER NOT NULL DEFAULT 100,
   exam_date TEXT,
   exam_name TEXT,
+  exam_paused INTEGER NOT NULL DEFAULT 0,
   daily_minutes INTEGER NOT NULL DEFAULT 15,
   level TEXT NOT NULL DEFAULT 'B1',
   goal TEXT NOT NULL DEFAULT 'english',
@@ -174,6 +176,8 @@ function db() {
   }
   // The name of the exam came with the 1.0.0 release. Older profiles have no name until the learner writes one.
   if (!profileColumns.includes('exam_name')) connection.exec('ALTER TABLE profile ADD COLUMN exam_name TEXT');
+  // The pause of the exam came later: a profile from before it has no pause, so its exam is kept as it was.
+  if (!profileColumns.includes('exam_paused')) connection.exec('ALTER TABLE profile ADD COLUMN exam_paused INTEGER NOT NULL DEFAULT 0');
   // Databases from before 0.4.0 do not have the learning goal yet. Their learners were all practicing for the
   // TOEFL, so they keep the TOEFL track. New profiles default to General English (see the CREATE TABLE above).
   if (!profileColumns.includes('goal')) {
@@ -265,6 +269,8 @@ function cleanProfileValue(key, value, current) {
       return DATE_PATTERN.test(String(value ?? '')) ? String(value) : null;
     case 'exam_name':
       return cleanExamName(value);
+    case 'exam_paused':
+      return value ? 1 : 0;
     case 'onboarding_done':
       return value ? 1 : 0;
     default:
@@ -276,6 +282,7 @@ function toProfile(row) {
   return {
     ...row,
     onboarding_done: Boolean(row.onboarding_done),
+    exam_paused: Boolean(row.exam_paused),
     avatar_path: null,
     avatar_updated_at: row.avatar_updated_at ?? null,
     banner_path: null,

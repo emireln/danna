@@ -29,6 +29,7 @@ create table if not exists public.profiles (
   target_score int not null default 100 check (target_score between 60 and 120),
   exam_date date,
   exam_name text,
+  exam_paused boolean not null default false,
   daily_minutes int not null default 15 check (daily_minutes between 5 and 180),
   level text not null default 'B1' check (level in ('A2', 'B1', 'B2', 'C1')),
   xp int not null default 0 check (xp >= 0),
@@ -1529,3 +1530,20 @@ begin
   end if;
 end $$;
 -- [/release note]
+
+-- Migration 0015: pausing the exam (the same SQL as supabase/migrations/0015_exam_paused.sql).
+-- =============================================================================
+-- danna migration 0015: pausing the exam.
+--
+-- Run it in the Supabase dashboard: SQL Editor -> New query -> paste this whole file -> Run.
+-- It is safe to run again: a column that is there is left as it is. The same change ends supabase/schema.sql for new
+-- projects. Run migration 0014 first.
+-- =============================================================================
+
+-- [exam paused]
+-- The learner is not planning an exam for now. The exam's name and date are kept, and the app hides the exam until it is
+-- planned again. Each person can change only their own profile, as before.
+alter table public.profiles add column if not exists exam_paused boolean not null default false;
+
+grant update (exam_paused) on public.profiles to authenticated;
+-- [/exam paused]

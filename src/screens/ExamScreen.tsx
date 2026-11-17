@@ -63,6 +63,19 @@ export function ExamScreen() {
           ? { title: t('The exam is today.'), text: examDateText(savedDate) }
           : { title: t('The date has passed.'), text: t('Save the next date below when you are ready.') };
 
+  const paused = Boolean(profile?.exam_paused);
+  const setPaused = async (next: boolean) => {
+    setSaving(true);
+    try {
+      await patchProfile({ exam_paused: next });
+      notify(next ? t('Exam paused. Your name and date are kept.') : t('Your exam is planned again.'), 'ok');
+    } catch (error) {
+      notify(t(errorText(error)), 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -92,9 +105,15 @@ export function ExamScreen() {
 
         <section className="hero" aria-label={t('Days left')}>
           <p className="eyebrow">{profile?.exam_name || t('No exam named yet')}</p>
-          <h2 className="hero__title">{summary.title}</h2>
-          <p className="hero__text">{summary.text}</p>
+          <h2 className="hero__title">{paused ? t('Exam paused') : summary.title}</h2>
+          <p className="hero__text">{paused ? t('You are not planning an exam for now. Your name and date are kept.') : summary.text}</p>
         </section>
+
+        <div>
+          <button className="btn btn--ghost" onClick={() => void setPaused(!paused)} disabled={saving}>
+            {paused ? t('Plan the exam again') : t('Not planning an exam for now')}
+          </button>
+        </div>
 
         <SectionTitle title={t('Exam details')} />
         <Field label={t('Exam name')} hint={t('For example TOEFL iBT, IELTS, or a school exam.')}>

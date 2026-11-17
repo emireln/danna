@@ -100,7 +100,9 @@ export function TodayScreen() {
 
   const goalText = profile?.goal === 'toefl' ? t('TOEFL warm-up, target {score}', { score: profile.target_score }) : t('General English');
   // The exam card names the exam and its date. The countdown lives on the exam page.
-  const examMeta = profile?.exam_date
+  const examMeta = profile?.exam_paused
+    ? t('Paused. Not planning an exam for now.')
+    : profile?.exam_date
     ? [profile.exam_name, examDateText(profile.exam_date)].filter(Boolean).join(' · ')
     : t('Save your exam date and test your skills.');
 

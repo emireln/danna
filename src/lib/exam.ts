@@ -20,6 +20,12 @@ export function latestSkillScore(attempts: readonly AttemptRow[], skill: Skill):
   return null;
 }
 
+/** The exam date the app shows: none while the learner has paused the exam. The date itself is kept. */
+export function activeExamDate(profile: { exam_date: string | null; exam_paused?: boolean } | null | undefined): string | null {
+  if (!profile || profile.exam_paused) return null;
+  return profile.exam_date;
+}
+
 /** The exam's date written out in the app's language. It is read as a local day, so the date never shifts. */
 export function examDateText(iso: string): string {
   const [year, month, day] = iso.split('-').map(Number);

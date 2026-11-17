@@ -110,6 +110,7 @@ const PROFILE_FIELDS = [
   'target_score',
   'exam_date',
   'exam_name',
+  'exam_paused',
   'daily_minutes',
   'level',
   'xp',
@@ -153,6 +154,8 @@ function cleanProfileValue(key: ProfileField, value: unknown, current: ProfileRo
       return DATE_PATTERN.test(String(value ?? '')) ? String(value) : null;
     case 'exam_name':
       return cleanExamName(value);
+    case 'exam_paused':
+      return Boolean(value);
     case 'onboarding_done':
       return Boolean(value);
   }

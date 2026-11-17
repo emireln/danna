@@ -65,6 +65,13 @@ test('the exam name is trimmed, at most 80 characters, and empty means no name',
   assert.equal(rules.cleanExamName('x'.repeat(120)).length, 80);
 });
 
+test('a paused exam shows no date, and the date itself is kept', () => {
+  assert.equal(exam.activeExamDate({ exam_date: '2026-12-01', exam_paused: false }), '2026-12-01');
+  assert.equal(exam.activeExamDate({ exam_date: '2026-12-01', exam_paused: true }), null);
+  assert.equal(exam.activeExamDate({ exam_date: null, exam_paused: false }), null);
+  assert.equal(exam.activeExamDate(null), null);
+});
+
 test('the exam date reads as the day it is, whatever the time zone', () => {
   const text = exam.examDateText('2026-12-01');
   assert.match(text, /2026/);

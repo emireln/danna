@@ -20,6 +20,7 @@ import { parseCoachReply, spokenText, type VocabItem } from '../lib/coachReply';
 import { vocabReview } from '../lib/coachVocab';
 import { draftKey } from '../lib/drafts';
 import { indexFor, retrieve, type LibraryDocument } from '../lib/retrieval';
+import { activeExamDate } from '../lib/exam';
 import { localDate } from '../lib/progress';
 import { useT } from '../lib/i18n/react';
 import { narrate, type Narration } from '../lib/speech';
@@ -327,7 +328,7 @@ export function CoachScreen() {
             level: profile.level,
             goal: profile.goal,
             target_score: profile.target_score,
-            exam_date: profile.exam_date,
+            exam_date: activeExamDate(profile),
             exam_name: profile.exam_name,
           },
           skills,
@@ -810,7 +811,7 @@ export function CoachScreen() {
               level={profile?.level ?? 'B1'}
               goal={profile?.goal ?? 'english'}
               targetScore={profile?.target_score ?? 100}
-              examDate={profile?.exam_date ?? null}
+              examDate={activeExamDate(profile)}
               examName={profile?.exam_name ?? null}
               skills={skills}
               reviewCount={reviews.length}

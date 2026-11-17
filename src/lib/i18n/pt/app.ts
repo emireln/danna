@@ -1179,6 +1179,16 @@ export const APP_PT: Record<string, string> = {
   'Under each coach answer: quick replies, a read-aloud button, and an explanation of your mistakes':
     'Abaixo de cada resposta do coach: respostas rápidas, um botão para ouvir em voz alta e uma explicação dos seus erros',
 
+  // Pausing the exam
+  'Exam paused': 'Prova pausada',
+  'You are not planning an exam for now. Your name and date are kept.':
+    'Você não está planejando uma prova por enquanto. O nome e a data continuam salvos.',
+  'Not planning an exam for now': 'Não estou planejando uma prova por enquanto',
+  'Plan the exam again': 'Planejar a prova de novo',
+  'Exam paused. Your name and date are kept.': 'Prova pausada. O nome e a data continuam salvos.',
+  'Your exam is planned again.': 'Sua prova está planejada de novo.',
+  'Paused. Not planning an exam for now.': 'Pausada. Não estou planejando uma prova por enquanto.',
+
   // The exam page
   'Your exam': 'Sua prova',
   'Save the date, see how many days are left, and test the skills the exam asks for.':

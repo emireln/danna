@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { BookOpen, Camera, Image as ImageIcon, Pencil, Settings2, Trash2 } from 'lucide-react';
 import { Avatar, Empty, Field, FeatureCard, ProgressBar, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { activeExamDate } from '../lib/exam';
 import { PictureError, prepareAvatar } from '../lib/avatar';
 import { prepareBanner } from '../lib/banner';
 import { tn } from '../lib/i18n';
@@ -81,7 +82,7 @@ export function ProfileScreen() {
   const diagnostics = checks?.rows ?? [];
   const best = diagnostics.reduce((max, attempt) => Math.max(max, attempt.predicted ?? 0), 0);
   const bestPercent = diagnostics.reduce((max, attempt) => Math.max(max, attempt.score_pct), 0);
-  const daysLeft = daysUntil(profile.exam_date);
+  const daysLeft = daysUntil(activeExamDate(profile));
   const libraryTotal = (libraryCounts?.files ?? 0) + (libraryCounts?.links ?? 0);
 
   const saveName = async () => {

@@ -108,6 +108,8 @@ export interface ProfileRow {
   exam_date: string | null;
   /** The exam the learner is preparing for, named as they wrote it. Null when they have not named one. */
   exam_name: string | null;
+  /** True while the learner is not planning an exam for now. The name and date are kept, and the exam is hidden. */
+  exam_paused: boolean;
   daily_minutes: number;
   level: Level;
   xp: number;
