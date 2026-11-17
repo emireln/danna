@@ -221,6 +221,8 @@ export function LibraryScreen() {
   const categoriesInUse = [...new Set((links ?? []).map((link) => link.category))].sort();
   // The search looks at the names of the files, and at the titles, addresses and notes of the links.
   const needle = query.trim().toLowerCase();
+  // While something is typed in the search, the forms that add files and links step aside: the results are the view.
+  const searching = needle !== '';
   const shownFiles = (files ?? []).filter((file) => !needle || file.name.toLowerCase().includes(needle));
   const shownLinks = (links ?? []).filter(
     (link) =>
@@ -266,6 +268,7 @@ export function LibraryScreen() {
             <Notice tone="info">{t('Files are kept in the desktop app or in an online account. Links work everywhere.')}</Notice>
           )}
 
+          {!searching && (
           <label
             className={`drop-zone ${dragOver ? 'is-over' : ''}`}
             aria-disabled={!filesAvailable}
@@ -294,6 +297,7 @@ export function LibraryScreen() {
             </strong>
             <span className="small muted">{t('or choose files · up to 20 MB each · only you can see them')}</span>
           </label>
+          )}
 
           {files === null ? (
             <Skeleton height={120} />
@@ -341,6 +345,7 @@ export function LibraryScreen() {
 
       {tab === 'links' && (
         <div className="stack mt-4">
+          {!searching && (
           <form className="card library-add" onSubmit={addLink}>
             <label className="field">
               <span className="field__label">{t('Link')}</span>
@@ -402,6 +407,7 @@ export function LibraryScreen() {
               </button>
             </div>
           </form>
+          )}
 
           {links && links.length > 0 && (
             <div className="library-filters">
