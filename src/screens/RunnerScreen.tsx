@@ -267,6 +267,8 @@ export function RunnerScreen() {
   const checked = question ? Boolean(revealed[question.id]) : false;
   const answerable = question ? isAnswered(question, state, words) : false;
   const isLast = index >= total - 1;
+  // A word order that was wrong stays open for another check: the words are moved, and the first try is the one that counts.
+  const retrying = Boolean(question && learn && question.type === 'reorder' && results[question.id] && !revealed[question.id]);
 
   useEffect(() => {
     if (summary) return undefined;
@@ -415,11 +417,18 @@ export function RunnerScreen() {
   const primary = () => {
     if (!question || !test || !answerable || saving) return;
     setResumed(false);
+    if (retrying) {
+      // The words were moved after a wrong check: a right order opens the answer.
+      if (recordFor(question, state, words).record.fraction >= 1) setRevealed((previous) => ({ ...previous, [question.id]: true }));
+      return;
+    }
     if (!results[question.id]) {
       const { record, blanks } = recordFor(question, state, words);
       setResults((previous) => ({ ...previous, [question.id]: record }));
       if (blanks) setBlankMarks((previous) => ({ ...previous, [question.id]: blanks }));
       if (learn && isObjective(question)) {
+        // A wrong word order stays open, so the words can be moved and checked again.
+        if (question.type === 'reorder' && record.fraction < 1) return;
         setRevealed((previous) => ({ ...previous, [question.id]: true }));
         return;
       }
@@ -506,29 +515,44 @@ export function RunnerScreen() {
 
   const correctBlanks = question && checked ? blankMarks[question.id] : undefined;
   const correctNow = question && results[question.id] ? results[question.id].fraction : null;
+  // A word order solved on a later check: the first try was wrong, so the answer is partly right.
+  const solvedLater = Boolean(question && checked && learn && question.type === 'reorder' && correctNow !== null && correctNow < 1);
   const feedbackText =
-    question && checked && correctNow !== null
-      ? correctNow >= 1
-        ? t('Correct. Nice work.')
-        : correctNow > 0
-          ? t('Partly right. Look at the explanation.')
-          : t('Not quite. Read the explanation, then continue.')
-      : question && results[question.id] && !checked
-        ? t('Answer saved.')
-        : null;
-  const feedbackTone =
-    correctNow !== null && correctNow >= 1 ? 'good' : correctNow !== null && correctNow > 0 ? 'partial' : checked ? 'bad' : 'idle';
+    question && retrying
+      ? t('Not quite. Change the order, then check again.')
+      : question && checked && correctNow !== null
+        ? correctNow >= 1
+          ? t('Correct. Nice work.')
+          : solvedLater
+            ? t('Correct now. Keep this order in mind.')
+            : correctNow > 0
+              ? t('Partly right. Look at the explanation.')
+              : t('Not quite. Read the explanation, then continue.')
+        : question && results[question.id] && !checked
+          ? t('Answer saved.')
+          : null;
+  const feedbackTone = retrying
+    ? 'bad'
+    : correctNow !== null && correctNow >= 1
+      ? 'good'
+      : solvedLater || (correctNow !== null && correctNow > 0)
+        ? 'partial'
+        : checked
+          ? 'bad'
+          : 'idle';
   const label = !question
     ? t('Finish')
-    : results[question.id]
-      ? isLast
-        ? t('Finish')
-        : t('Continue')
-      : learn && isObjective(question)
-        ? t('Check')
-        : isLast
+    : retrying
+      ? t('Check again')
+      : results[question.id]
+        ? isLast
           ? t('Finish')
-          : t('Next');
+          : t('Continue')
+        : learn && isObjective(question)
+          ? t('Check')
+          : isLast
+            ? t('Finish')
+            : t('Next');
 
   return (
     <div className="runner">
@@ -601,7 +625,7 @@ export function RunnerScreen() {
         <button className="btn btn--primary" onClick={primary} disabled={!answerable || saving}>
           {saving ? <Spinner /> : null}
           {label}
-          {!saving && (label === t('Check') ? <Check /> : <ArrowRight />)}
+          {!saving && (label === t('Check') || label === t('Check again') ? <Check /> : <ArrowRight />)}
         </button>
       </div>
       {confirmLeave && (

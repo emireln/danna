@@ -2081,6 +2081,20 @@
     cursor: default;
   }
 
+  .word[draggable='true'] {
+    cursor: grab;
+  }
+
+  .word.is-dragging {
+    opacity: 0.45;
+  }
+
+  .answer-line.is-over,
+  .word-bank.is-over {
+    background: var(--primary-50);
+    border-radius: 10px;
+  }
+
   .word-bank {
     display: flex;
     flex-wrap: wrap;

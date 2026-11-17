@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { motion } from 'framer-motion';
 import { CircleCheck, Mic, Play, Sparkles, Square, Volume2, XCircle } from 'lucide-react';
 import { errorText } from '../lib/bridge';
@@ -199,38 +199,120 @@ function ClozeBody({ question, state, reveal, locked, correctBlanks, onChange }:
   );
 }
 
+type WordDrag = { from: 'bank' | 'line'; wordIndex: number; position: number };
+
 function ReorderBody({ question, state, reveal, locked, words, onChange }: SharedProps & { question: ReorderQuestion }) {
   const t = useT();
   const order = state.order ?? [];
   const placed = new Set(order);
+  // A word can be dragged from the bank into the sentence, moved to another place in it, or dragged back to the bank.
+  // A tap works as well: a word of the bank is added, and a word of the sentence goes back to the bank.
+  const [drag, setDrag] = useState<WordDrag | null>(null);
+  const [over, setOver] = useState<'line' | 'bank' | null>(null);
+
+  const startDrag = (event: DragEvent<HTMLElement>, next: WordDrag) => {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(next.wordIndex));
+    setDrag(next);
+  };
+  const endDrag = () => {
+    setDrag(null);
+    setOver(null);
+  };
+  // The place in the sentence under the pointer: before the word on its left half, after it on the right half.
+  const placeOf = (event: DragEvent<HTMLElement>, position: number) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return event.clientX < rect.left + rect.width / 2 ? position : position + 1;
+  };
+  // Puts the dragged word before the word at `at`; at the end of the sentence when `at` is its length.
+  const dropAt = (at: number) => {
+    if (!drag) return;
+    if (drag.from === 'bank') {
+      onChange({ order: [...order.slice(0, at), drag.wordIndex, ...order.slice(at)] });
+    } else {
+      const rest = order.filter((_, index) => index !== drag.position);
+      rest.splice(at > drag.position ? at - 1 : at, 0, drag.wordIndex);
+      onChange({ order: rest });
+    }
+    endDrag();
+  };
+  const backToBank = () => {
+    if (drag?.from !== 'line') return;
+    onChange({ order: order.filter((_, index) => index !== drag.position) });
+    endDrag();
+  };
+
   return (
     <div className="stack--tight">
-      <div className="answer-line" aria-label={t('Your sentence')}>
-        {order.length === 0 && <span className="muted small">{t('Tap the words in the right order.')}</span>}
+      <div
+        className={`answer-line${over === 'line' ? ' is-over' : ''}`}
+        aria-label={t('Your sentence')}
+        onDragOver={(event) => {
+          if (locked || !drag) return;
+          event.preventDefault();
+          setOver('line');
+        }}
+        onDrop={(event) => {
+          if (locked) return;
+          event.preventDefault();
+          dropAt(order.length);
+        }}
+      >
+        {order.length === 0 && <span className="muted small">{t('Drag the words into the right order, or tap them.')}</span>}
         {order.map((wordIndex, position) => (
-          <motion.button
-            layout
+          <button
+            type="button"
             key={`placed-${wordIndex}`}
-            className="word"
+            className={`word${drag?.from === 'line' && drag.position === position ? ' is-dragging' : ''}`}
             disabled={locked}
+            draggable={!locked}
+            onDragStart={(event) => startDrag(event, { from: 'line', wordIndex, position })}
+            onDragEnd={endDrag}
+            onDragOver={(event) => {
+              if (locked || !drag) return;
+              event.preventDefault();
+              event.stopPropagation();
+              setOver('line');
+            }}
+            onDrop={(event) => {
+              if (locked) return;
+              event.preventDefault();
+              event.stopPropagation();
+              dropAt(placeOf(event, position));
+            }}
             onClick={() => onChange({ order: order.filter((_, i) => i !== position) })}
           >
             {words[wordIndex]}
-          </motion.button>
+          </button>
         ))}
       </div>
-      <div className="word-bank">
+      <div
+        className={`word-bank${over === 'bank' ? ' is-over' : ''}`}
+        onDragOver={(event) => {
+          if (locked || drag?.from !== 'line') return;
+          event.preventDefault();
+          setOver('bank');
+        }}
+        onDrop={(event) => {
+          if (locked) return;
+          event.preventDefault();
+          backToBank();
+        }}
+      >
         {words.map((word, wordIndex) =>
           placed.has(wordIndex) ? null : (
-            <motion.button
-              layout
+            <button
+              type="button"
               key={`bank-${wordIndex}`}
-              className="word"
+              className={`word${drag?.from === 'bank' && drag.wordIndex === wordIndex ? ' is-dragging' : ''}`}
               disabled={locked}
+              draggable={!locked}
+              onDragStart={(event) => startDrag(event, { from: 'bank', wordIndex, position: -1 })}
+              onDragEnd={endDrag}
               onClick={() => onChange({ order: [...order, wordIndex] })}
             >
               {word}
-            </motion.button>
+            </button>
           ),
         )}
       </div>
