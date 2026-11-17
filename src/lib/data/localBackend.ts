@@ -380,6 +380,10 @@ export function createLocalBackend(): DataBackend {
     },
     async deleteAiKey() {},
 
+    async feedbackWaitSeconds() {
+      return 0;
+    },
+
     async sendFeedback() {
       throw userError(ONLINE_ONLY);
     },

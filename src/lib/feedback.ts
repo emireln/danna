@@ -1,6 +1,17 @@
 // A feedback message is checked here before it is sent. The database holds the same limits.
 export const FEEDBACK_COMMENT_LIMIT = 1000;
 
+/** A feedback message was refused: the account sent one within the hour. `seconds` is how long to wait. */
+export class FeedbackLimitError extends Error {
+  readonly seconds: number;
+
+  constructor(seconds: number) {
+    super('You can send one feedback an hour.');
+    this.name = 'FeedbackLimitError';
+    this.seconds = seconds;
+  }
+}
+
 export interface FeedbackDraft {
   rating: number;
   comment: string;

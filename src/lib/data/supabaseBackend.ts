@@ -21,6 +21,7 @@ import type {
 import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
 import { userError } from '../bridge';
+import { FeedbackLimitError } from '../feedback';
 import { cleanAttachments, cleanChatMode, cleanChatTitle, MAX_TUTOR_CONTENT } from './rules';
 
 const LIBRARY_BUCKET = 'library';
@@ -38,6 +39,12 @@ function unwrap<T>(result: Result<T>): T {
 
 export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
   // getSession reads the cached session, so every call does not hit the network.
+  // Seconds the account must still wait before its next feedback message (0 when it may send now).
+  async function feedbackWait(): Promise<number> {
+    const seconds = unwrap(await sb.rpc('feedback_wait_seconds'));
+    return Math.max(0, Math.ceil(Number(seconds) || 0));
+  }
+
   async function me(): Promise<string> {
     const { data } = await sb.auth.getSession();
     const id = data.session?.user.id;
@@ -481,17 +488,28 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
     },
 
     // A feedback message is written, never read back: the table has no read policy for the app. The insert
-    // asks for no row in return, so nothing needs to be read.
+    // asks for no row in return, so nothing needs to be read. One message an hour is allowed for each account:
+    // the app asks first, so the notice can say how long to wait, and the database refuses a message sent too soon.
+    async feedbackWaitSeconds() {
+      await me();
+      return feedbackWait();
+    },
+
     async sendFeedback(input) {
       const userId = await me();
-      unwrap(
-        await sb.from('feedback').insert({
-          user_id: userId,
-          rating: input.rating,
-          comment: input.comment,
-          app_version: input.app_version,
-        }),
-      );
+      const wait = await feedbackWait();
+      if (wait > 0) throw new FeedbackLimitError(wait);
+      const result = await sb.from('feedback').insert({
+        user_id: userId,
+        rating: input.rating,
+        comment: input.comment,
+        app_version: input.app_version,
+      });
+      if (result.error) {
+        // The database refused the message: another one was sent within the hour, perhaps from another device.
+        if (result.error.code === '42501') throw new FeedbackLimitError(await feedbackWait().catch(() => 3600));
+        throw new Error(result.error.message);
+      }
     },
 
     async listTutorChats() {

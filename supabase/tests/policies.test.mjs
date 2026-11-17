@@ -25,6 +25,7 @@ const migration0013Sql = await readFile(join(here, '..', 'migrations', '0013_coa
 const migration0014Sql = await readFile(join(here, '..', 'migrations', '0014_release_1_2_0.sql'), 'utf8');
 const migration0015Sql = await readFile(join(here, '..', 'migrations', '0015_exam_paused.sql'), 'utf8');
 const migration0016Sql = await readFile(join(here, '..', 'migrations', '0016_release_1_3_0.sql'), 'utf8');
+const migration0017Sql = await readFile(join(here, '..', 'migrations', '0017_feedback_limit.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -659,9 +660,10 @@ test('migration 0007 runs on a current database, and again, without changing the
 
 test('feedback: a signed-in person sends their own message, with a rating from 1 to 5 and a comment of up to 1000 characters', async () => {
   await as(db, ALICE, 'insert into public.feedback (user_id, rating, comment, app_version) values ($1, 5, $2, $3)', [ALICE, 'Clear lessons', '0.9.0']);
-  const rating = await refused(as(db, ALICE, 'insert into public.feedback (user_id, rating) values ($1, 6)', [ALICE]));
+  // Bob has no message yet, so these checks are about the values, not about the hourly limit.
+  const rating = await refused(as(db, BOB, 'insert into public.feedback (user_id, rating) values ($1, 6)', [BOB]));
   assert.equal(rating.code, CHECK_FAILED);
-  const comment = await refused(as(db, ALICE, 'insert into public.feedback (user_id, rating, comment) values ($1, 3, $2)', [ALICE, 'x'.repeat(1001)]));
+  const comment = await refused(as(db, BOB, 'insert into public.feedback (user_id, rating, comment) values ($1, 3, $2)', [BOB, 'x'.repeat(1001)]));
   assert.equal(comment.code, CHECK_FAILED);
 });
 
@@ -675,14 +677,25 @@ test('feedback: nobody reads it through the app, changes it, or sends it for som
   assert.equal((await refused(as(db, ALICE, 'delete from public.feedback'))).code, PERMISSION_DENIED);
 });
 
-test('feedback: an account sends up to 50 messages, and the limit holds', async () => {
-  // Alice has one message from the test above. The refused messages were never written.
+test('feedback: an account keeps up to 50 messages, and the limit holds', async () => {
+  // Alice has one message from the test above, sent a moment ago. The others are older, so the hourly limit does not stop them.
   for (let sent = 1; sent < 50; sent += 1) {
-    await as(db, ALICE, 'insert into public.feedback (user_id, rating) values ($1, 4)', [ALICE]);
+    await db.query("insert into public.feedback (user_id, rating, created_at) values ($1, 4, now() - interval '2 hours')", [ALICE]);
   }
-  const over = await refused(as(db, ALICE, 'insert into public.feedback (user_id, rating) values ($1, 4)', [ALICE]));
+  const over = await refused(db.query("insert into public.feedback (user_id, rating, created_at) values ($1, 4, now() - interval '2 hours')", [ALICE]));
   assert.equal(over.code, QUOTA_REACHED);
   assert.equal((await db.query('select count(*)::int as n from public.feedback where user_id = $1', [ALICE])).rows[0].n, 50);
+});
+
+test('feedback: one message an hour for each account, and the wait is counted in seconds', async () => {
+  // Alice sent her first message a moment ago, so she must wait about an hour. Her account is also at its 50 messages.
+  const wait = (await as(db, ALICE, 'select public.feedback_wait_seconds() as seconds')).rows[0].seconds;
+  assert.ok(wait > 3500 && wait <= 3600, `about an hour: ${wait}`);
+  // Bob has sent nothing yet: he can send one now, a second one within the hour is refused, and he must wait.
+  assert.equal((await as(db, BOB, 'select public.feedback_wait_seconds() as seconds')).rows[0].seconds, 0);
+  await as(db, BOB, 'insert into public.feedback (user_id, rating) values ($1, 4)', [BOB]);
+  assert.ok((await as(db, BOB, 'select public.feedback_wait_seconds() as seconds')).rows[0].seconds > 0);
+  assert.equal((await refused(as(db, BOB, 'insert into public.feedback (user_id, rating) values ($1, 4)', [BOB]))).code, PERMISSION_DENIED);
 });
 
 test('the exam name is the learner’s: up to 80 characters, and nobody else can change it', async () => {
@@ -758,6 +771,14 @@ test('migration 0015 runs on a current database, and again, and the owner can pa
   assert.equal((await as(db, ALICE, 'select exam_paused from public.profiles where id = $1', [ALICE])).rows[0].exam_paused, true);
   await as(db, ALICE, 'update public.profiles set exam_paused = false where id = $1', [ALICE]);
   assert.equal((await as(db, ALICE, 'select exam_paused from public.profiles where id = $1', [ALICE])).rows[0].exam_paused, false);
+});
+
+test('migration 0017 runs on a current database, and again, and the one-an-hour limit holds', async () => {
+  // Migration 0009 was run again above, which puts back a feedback policy without the limit. This one puts the limit back.
+  await db.exec(migration0017Sql);
+  await db.exec(migration0017Sql);
+  assert.ok((await as(db, ALICE, 'select public.feedback_wait_seconds() as seconds')).rows[0].seconds > 0);
+  assert.equal((await refused(as(db, BOB, 'insert into public.feedback (user_id, rating) values ($1, 4)', [BOB]))).code, PERMISSION_DENIED);
 });
 
 test('migration 0016 runs on a current database, and again, with one note for 1.3.0', async () => {

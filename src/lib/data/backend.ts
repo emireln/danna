@@ -133,6 +133,8 @@ export interface DataBackend {
   deleteAiKey(provider: Provider): Promise<void>;
   /** Sends a feedback message from the signed-in account. Online accounts only. */
   sendFeedback(input: NewFeedback): Promise<void>;
+  /** Seconds the account must still wait before its next feedback message: 0 when it may send now. Online accounts only. */
+  feedbackWaitSeconds(): Promise<number>;
   getProfile(): Promise<ProfileRow | null>;
   updateProfile(patch: ProfilePatch): Promise<ProfileRow>;
 

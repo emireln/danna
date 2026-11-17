@@ -5,7 +5,7 @@ import { LanguageSwitch } from '../components/LanguageSwitch';
 import { Select } from '../components/Pickers';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
-import { checkFeedback } from '../lib/feedback';
+import { checkFeedback, FeedbackLimitError } from '../lib/feedback';
 import { openSupport } from '../lib/support';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
@@ -65,9 +65,29 @@ export function SettingsScreen() {
   const [comment, setComment] = useState('');
   const [sendingFeedback, setSendingFeedback] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  // Seconds until the account may send its next feedback message (0 when it may send now).
+  const [feedbackWait, setFeedbackWait] = useState(0);
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlocking, setUnlocking] = useState(false);
   const [unlockError, setUnlockError] = useState<string | null>(null);
+
+  // Asks the account how long it must wait before its next message, so the notice shows before anyone presses Send.
+  useEffect(() => {
+    if (!backend || backend.mode !== 'supabase') return undefined;
+    let active = true;
+    backend
+      .feedbackWaitSeconds()
+      .then((seconds) => {
+        if (active) setFeedbackWait(seconds);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [backend]);
+
+  const waitMinutes = Math.max(1, Math.ceil(feedbackWait / 60));
+  const waitText = tn('{count} minute', '{count} minutes', waitMinutes, { count: waitMinutes });
 
   // The message is saved on the account's row in the database. The app cannot read it back.
   const sendFeedbackNow = async () => {
@@ -80,9 +100,11 @@ export function SettingsScreen() {
       setRating(0);
       setHoverRating(0);
       setComment('');
+      setFeedbackWait(60 * 60);
       notify(t('Thank you. Your feedback was sent.'), 'ok');
     } catch (caught) {
-      setFeedbackError(errorText(caught));
+      if (caught instanceof FeedbackLimitError) setFeedbackWait(caught.seconds);
+      else setFeedbackError(errorText(caught));
     } finally {
       setSendingFeedback(false);
     }
@@ -674,12 +696,15 @@ export function SettingsScreen() {
             aria-label={t('Your comment')}
           />
           {feedbackError && <Notice tone="error">{t(feedbackError)}</Notice>}
+          {feedbackWait > 0 && (
+            <Notice tone="info">{t('You can send one feedback an hour. You can send another in {time}.', { time: waitText })}</Notice>
+          )}
           <div className="row row--between">
             <span className="small muted">{rating ? '' : t('Choose a rating to send.')}</span>
             <button
               className="btn btn--primary"
               onClick={() => void sendFeedbackNow()}
-              disabled={!rating || sendingFeedback || !backend}
+              disabled={!rating || sendingFeedback || !backend || feedbackWait > 0}
             >
               {sendingFeedback ? <Spinner /> : null} {t('Send feedback')}
             </button>
