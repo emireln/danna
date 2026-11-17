@@ -519,11 +519,28 @@ export function CoachScreen() {
   };
 
   const copyText = (text: string) => {
-    if (!navigator.clipboard) return;
-    navigator.clipboard
-      .writeText(text)
-      .then(() => notify(t('Copied.'), 'ok'))
-      .catch(() => notify(t('The text could not be copied.'), 'error'));
+    const copied = () => notify(t('Copied.'), 'ok');
+    const failed = () => notify(t('The text could not be copied.'), 'error');
+    // Some windows refuse the clipboard API, and then the button did nothing. A hidden field copies the text instead:
+    // the copy follows the learner's click, so the browser allows it.
+    const copyByField = () => {
+      const field = document.createElement('textarea');
+      field.value = text;
+      field.setAttribute('readonly', '');
+      field.style.position = 'fixed';
+      field.style.opacity = '0';
+      document.body.appendChild(field);
+      field.select();
+      const ok = document.execCommand('copy');
+      field.remove();
+      if (ok) copied();
+      else failed();
+    };
+    if (!navigator.clipboard) {
+      copyByField();
+      return;
+    }
+    navigator.clipboard.writeText(text).then(copied, copyByField);
   };
 
   const saveWord = async (item: VocabItem): Promise<boolean> => {

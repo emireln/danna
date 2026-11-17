@@ -112,6 +112,8 @@
     display: flex;
     gap: 12px;
     align-items: flex-start;
+    /* The app selects no text by default. A coach message is opened for selection, so it can be copied with the mouse or Ctrl+C. */
+    user-select: text;
   }
 
   .turn--user {
