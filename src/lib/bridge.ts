@@ -46,8 +46,8 @@ export interface WindowState {
 }
 
 export interface UpdateStatus {
-  /** idle: nothing newer; downloading: a newer version is on its way; ready: it installs when danna closes. */
-  state: 'idle' | 'downloading' | 'ready';
+  /** idle: nothing newer; available: a newer version can be downloaded; downloading: it is on its way; ready: it installs when danna restarts or closes. */
+  state: 'idle' | 'available' | 'downloading' | 'ready';
   version: string | null;
 }
 
@@ -61,7 +61,7 @@ export interface SpeechReply {
 
 /** What a check for updates found: a newer version downloading or ready, none (idle), or the check could not be made. */
 export interface UpdateCheck {
-  state: 'idle' | 'downloading' | 'ready' | 'unavailable' | 'failed';
+  state: 'idle' | 'available' | 'downloading' | 'ready' | 'unavailable' | 'failed';
   version: string | null;
 }
 
@@ -126,6 +126,7 @@ export interface DannaBridge {
   update: {
     status: () => Promise<UpdateStatus>;
     check: () => Promise<UpdateCheck>;
+    download: () => Promise<void>;
     install: () => Promise<void>;
     onStatus: (callback: (status: UpdateStatus) => void) => () => void;
   };

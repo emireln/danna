@@ -56,6 +56,7 @@ contextBridge.exposeInMainWorld(
     update: Object.freeze({
       status: () => call('update:status'),
       check: () => call('update:check'),
+      download: () => call('update:download'),
       install: () => call('update:install'),
       onStatus: (callback) => listen('update:status', callback),
     }),

@@ -436,6 +436,7 @@ function registerIpc() {
 
   handle('update:status', () => updates.status());
   handle('update:check', () => updates.check());
+  handle('update:download', () => updates.download());
   handle('update:install', () => updates.install());
   handle('settings:get', () => settings.get());
   handle('settings:set', (patch) => {

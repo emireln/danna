@@ -22,14 +22,24 @@ function createUpdates({ app, updater, send, log = () => {} }) {
   };
 
   if (updater) {
-    updater.autoDownload = true;
+    // A newer version is announced first. It is downloaded only when the person asks for it, and it is installed
+    // when they ask to restart, or when danna closes.
+    updater.autoDownload = false;
     updater.autoInstallOnAppQuit = true;
     updater.logger = { info: log, warn: log, error: log, debug: () => {} };
-    updater.on('update-available', (info) => publish({ state: 'downloading', version: info.version }));
+    // A check that finds a version already downloaded, or being downloaded, keeps that state, so the restart button stays.
+    updater.on('update-available', (info) => {
+      if ((current.state === 'ready' || current.state === 'downloading') && current.version === info.version) return;
+      publish({ state: 'available', version: info.version });
+    });
     updater.on('update-downloaded', (info) => publish({ state: 'ready', version: info.version }));
     updater.on('update-not-available', () => publish({ state: 'idle', version: null }));
-    // A failed check is not shown as an error: the next check tries again, and the last state stays.
-    updater.on('error', (error) => log(error));
+    // A failed check is not shown as an error: the next check tries again, and the last state stays. A failed
+    // download goes back to offering the version, so the person can try again.
+    updater.on('error', (error) => {
+      log(error);
+      if (current.state === 'downloading') publish({ state: 'available', version: current.version });
+    });
   }
 
   // Checks now and says what was found: 'downloading' or 'ready' for a newer version (it is fetched in the
@@ -47,6 +57,20 @@ function createUpdates({ app, updater, send, log = () => {} }) {
 
   return {
     status: () => current,
+    /** Downloads the newer version, when the person asks for it. Restart is offered once it is ready. */
+    async download() {
+      if (current.state !== 'available' || !updater) return current;
+      const { version } = current;
+      publish({ state: 'downloading', version });
+      try {
+        await updater.downloadUpdate();
+      } catch (error) {
+        log(error);
+      }
+      // A download that ends without a ready version is offered again.
+      if (current.state === 'downloading') publish({ state: 'available', version });
+      return current;
+    },
     check,
     /** Restarts now, with the new version, when one is ready. */
     install() {

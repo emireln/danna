@@ -282,6 +282,18 @@
     padding-left: 18px;
   }
 
+  /* The update in the title bar: offered, downloading, or ready to restart into. */
+  .update-control {
+    white-space: nowrap;
+  }
+
+  .update-control--busy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+  }
+
   /* The level report on Today, with a small button in its corner that removes it for good. */
   .level-report {
     position: relative;

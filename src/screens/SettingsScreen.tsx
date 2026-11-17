@@ -161,6 +161,7 @@ export function SettingsScreen() {
       if (result.state === 'unavailable') notify(t('Updates are checked in the installed danna app.'));
       else if (result.state === 'failed') notify(t('Could not check for updates. Try again later.'), 'error');
       else if (result.state === 'idle') notify(t('danna is up to date.'), 'ok');
+      else if (result.state === 'available') notify(t('danna {version} is available. Download it when you like.', { version: result.version ?? '' }), 'ok');
       else if (result.state === 'ready') notify(t('danna {version} is ready. It installs when you close danna.', { version: result.version ?? '' }), 'ok');
       else notify(t('Downloading danna {version} in the background.', { version: result.version ?? '' }), 'ok');
     } catch (error) {
@@ -630,10 +631,18 @@ export function SettingsScreen() {
           {update.state === 'downloading' && update.version && (
             <div className="settings-row__text">{t('Downloading danna {version} in the background.', { version: update.version })}</div>
           )}
+          {update.state === 'available' && update.version && (
+            <div className="settings-row__text">{t('danna {version} is available. Download it when you like.', { version: update.version })}</div>
+          )}
           {update.state === 'ready' && update.version && (
             <div className="settings-row__text">{t('danna {version} is ready. It installs when you close danna.', { version: update.version })}</div>
           )}
         </div>
+        {update.state === 'available' && (
+          <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.download()}>
+            {t('Download update')}
+          </button>
+        )}
         {update.state === 'ready' && (
           <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.install()}>
             {t('Restart to update')}
