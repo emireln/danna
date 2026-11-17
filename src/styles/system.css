@@ -208,6 +208,72 @@
     box-shadow: none;
   }
 
+  /* The overall report in the profile: its stats, its skill bars, and its strengths and weaknesses. */
+  .report-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .report-stat {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--surface-2);
+  }
+
+  .report-stat__label {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .report-stat__value {
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .report-skills {
+    display: grid;
+    gap: 12px;
+  }
+
+  .report-skill {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .report-skill__bar {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+
+  .report-skill__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+  }
+
+  .report-skill__score {
+    min-width: 110px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+
+  .report-list {
+    display: grid;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding-left: 18px;
+  }
+
   /* The level report on Today, with a small button in its corner that removes it for good. */
   .level-report {
     position: relative;

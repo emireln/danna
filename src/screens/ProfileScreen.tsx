@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Camera, Image as ImageIcon, Pencil, Settings2, Trash2 } from 'lucide-react';
+import { BookOpen, Camera, ChartColumn, Image as ImageIcon, Pencil, Settings2, Trash2 } from 'lucide-react';
 import { Avatar, Empty, Field, FeatureCard, ProgressBar, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { activeExamDate } from '../lib/exam';
@@ -261,6 +261,16 @@ export function ProfileScreen() {
       </section>
 
       <div className="stack mt-6">
+        <FeatureCard
+          icon={<ChartColumn />}
+          title={t('My report')}
+          meta={t('Your strengths, weaknesses and progress, to save as an image.')}
+          action={
+            <button className="btn btn--ghost btn--sm" onClick={() => navigate('/profile/report')}>
+              {t('Open report')}
+            </button>
+          }
+        />
         <FeatureCard
           icon={<Settings2 />}
           title={t('Learning setup')}
