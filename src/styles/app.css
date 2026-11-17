@@ -867,6 +867,11 @@
     font-size: 11px;
   }
 
+  /* A picture fills the circle, and no colour sits behind it: a coloured edge would show as a thin line round it. */
+  .avatar--picture {
+    background: none;
+  }
+
   /* ---------- Sheets, toasts, menus ---------- */
   .scrim {
     position: fixed;

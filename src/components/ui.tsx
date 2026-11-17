@@ -65,8 +65,9 @@ export function Avatar({
   src?: string | null;
 }) {
   const sizeClass = size === 'lg' ? 'avatar--lg' : size === 'sm' ? 'avatar--sm' : '';
+  const pictureClass = src ? 'avatar--picture' : '';
   return (
-    <span className={`avatar ${sizeClass}`} style={color && !src ? { background: color } : undefined} aria-hidden="true">
+    <span className={`avatar ${sizeClass} ${pictureClass}`} style={color && !src ? { background: color } : undefined} aria-hidden="true">
       {src ? (
         <img className="avatar__img" src={src} alt="" draggable={false} />
       ) : (
