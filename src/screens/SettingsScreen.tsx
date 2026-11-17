@@ -657,7 +657,7 @@ export function SettingsScreen() {
             {t('If danna helps you learn, you can support its work with a coffee. It opens in your browser.')}
           </div>
         </div>
-        <button className="btn btn--primary btn--sm" onClick={openSupport}>
+        <button className="btn btn--coffee btn--sm" onClick={openSupport}>
           <Coffee /> {t('Buy me a coffee')}
         </button>
       </div>

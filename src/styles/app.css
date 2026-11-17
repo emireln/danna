@@ -577,6 +577,17 @@
     background: var(--primary-600);
   }
 
+  /* The coffee button: yellow, with dark text, so it stands apart from the blue buttons. */
+  .btn--coffee {
+    background: #facc15;
+    border-color: #eab308;
+    color: #0f1b33;
+  }
+
+  .btn--coffee:hover:not(:disabled) {
+    background: #eab308;
+  }
+
   .btn--ghost {
     background: var(--canvas);
     color: var(--ink);
