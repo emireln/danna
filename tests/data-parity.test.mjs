@@ -226,6 +226,17 @@ async function scenario(backend) {
     };
   });
 
+  await step('a coach chat keeps the mode it was started in, and one message can be removed', async () => {
+    await backend.createTutorChat({ id: 'c3', created_at: '2026-03-03T08:57:00.000Z', mode: 'writing' });
+    await backend.addTutor('c3', 'user', 'a draft', { id: 'm5', created_at: '2026-03-03T09:02:00.000Z' });
+    await backend.addTutor('c3', 'assistant', 'feedback', { id: 'm6', created_at: '2026-03-03T09:03:00.000Z' });
+    await backend.deleteTutorMessage('m6');
+    return {
+      mode: (await backend.listTutorChats()).find((chat) => chat.id === 'c3')?.mode,
+      messages: await backend.listTutor('c3', 40),
+    };
+  });
+
   await step('a practice set is saved within its limits', async () => {
     await backend.insertTest({
       id: 't1',

@@ -206,6 +206,27 @@ test('coach chats keep their name and archive state, and their messages stay in 
   });
 });
 
+test('a coach chat keeps the mode it was started in, and one message can be removed', () => {
+  withDatabase((local) => {
+    assert.equal(local.call('createTutorChat', ['mode-chat', '2026-03-02T09:00:00.000Z', 'writing']).mode, 'writing');
+    assert.equal(local.call('createTutorChat', ['plain-chat', '2026-03-02T09:01:00.000Z']).mode, null, 'a chat without a mode is a free chat');
+    assert.equal(local.call('createTutorChat', ['odd-chat', '2026-03-02T09:02:00.000Z', 'Not A Mode!']).mode, null, 'a name that is not a mode is no mode');
+    local.call('addTutor', ['mode-chat', 'user', 'a draft', 'mode-m1', '2026-03-02T09:03:00.000Z', []]);
+    local.call('addTutor', ['mode-chat', 'assistant', 'a reply', 'mode-m2', '2026-03-02T09:04:00.000Z', []]);
+    local.call('deleteTutorMessage', ['mode-m2']);
+    assert.deepEqual(local.call('listTutor', ['mode-chat', 40]).map((message) => message.id), ['mode-m1']);
+    assert.throws(() => local.call('deleteTutorMessage', ['mode-m2']), /could not be found/);
+  });
+});
+
+test('a coach message keeps up to 24000 characters, so a long piece of feedback is kept whole', () => {
+  withDatabase((local) => {
+    local.call('createTutorChat', ['long-chat', '2026-03-02T10:00:00.000Z']);
+    const kept = local.call('addTutor', ['long-chat', 'assistant', 'z'.repeat(30000), 'long-m1', '2026-03-02T10:01:00.000Z', []]);
+    assert.equal(kept.content.length, 24000);
+  });
+});
+
 test('messages kept before chats existed move into one chat, and none is lost', () => {
   const folder = mkdtempSync(join(tmpdir(), 'danna-legacy-'));
   try {

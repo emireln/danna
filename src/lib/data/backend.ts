@@ -200,7 +200,7 @@ export interface DataBackend {
   /** The coach's chats, newest first. Archived chats are included. */
   listTutorChats(): Promise<TutorChatRow[]>;
   /** A new empty chat. record keeps an existing id and time, used when progress is copied between devices and accounts. */
-  createTutorChat(record?: { id?: string; created_at?: string }): Promise<TutorChatRow>;
+  createTutorChat(record?: { id?: string; created_at?: string; mode?: string | null }): Promise<TutorChatRow>;
   /** Renames a chat. An empty title clears its name. */
   renameTutorChat(id: string, title: string): Promise<TutorChatRow>;
   setTutorChatArchived(id: string, archived: boolean): Promise<TutorChatRow>;
@@ -210,6 +210,8 @@ export interface DataBackend {
   searchTutorChats(query: string): Promise<string[]>;
   /** The newest messages of one chat, in order. */
   listTutor(chatId: string, limit?: number): Promise<TutorRow[]>;
+  /** Removes one message, when a reply is written again or a message is edited and sent again. */
+  deleteTutorMessage(id: string): Promise<void>;
   /** record keeps an existing id and time, used when progress is copied between devices and accounts. */
   addTutor(
     chatId: string,

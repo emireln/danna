@@ -28,6 +28,9 @@ contextBridge.exposeInMainWorld(
     }),
     ai: Object.freeze({
       complete: (request) => call('ai:complete', request),
+      stream: (id, request) => call('ai:stream', { ...request, id }),
+      stop: (id) => call('ai:stop', { id }),
+      onChunk: (callback) => listen('ai:chunk', callback),
       transcribe: (audio, mime) => call('ai:transcribe', { audio, mime }),
       speak: (text, voice) => call('ai:speak', { text, voice }),
     }),

@@ -130,6 +130,7 @@ create table if not exists public.tutor_chats (
   user_id uuid not null references public.profiles (id) on delete cascade,
   title text check (title is null or char_length(title) <= 120),
   archived boolean not null default false,
+  mode text check (mode is null or mode ~ '^[a-z-]{1,40}$'),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -139,7 +140,7 @@ create table if not exists public.tutor_messages (
   user_id uuid not null references public.profiles (id) on delete cascade,
   chat_id uuid references public.tutor_chats (id) on delete cascade,
   role text not null check (role in ('user', 'assistant')),
-  content text not null check (char_length(content) <= 8000),
+  content text not null check (char_length(content) <= 24000),
   attachments jsonb not null default '[]'::jsonb check (jsonb_typeof(attachments) = 'array' and octet_length(attachments::text) <= 4000),
   created_at timestamptz not null default now()
 );
@@ -1442,3 +1443,28 @@ begin
   end if;
 end $$;
 -- [/release note]
+
+-- Migration 0012: the coach modes, and longer coach messages (the same SQL as supabase/migrations/0012_coach_modes.sql).
+-- =============================================================================
+-- danna migration 0012: the coach's modes, and longer coach messages.
+--
+-- Run it in the Supabase dashboard: SQL Editor -> New query -> paste this whole file -> Run.
+-- It is safe to run again: a column that is there is left as it is, and the limits are set again to the same values.
+-- The same change ends supabase/schema.sql for new projects. Run migration 0011 first.
+-- =============================================================================
+
+-- [coach modes]
+-- The mode a chat was started in, such as "writing". Chats from before modes have none, and keep working as free chats.
+alter table public.tutor_chats add column if not exists mode text;
+
+alter table public.tutor_chats
+  drop constraint if exists tutor_chats_mode_format,
+  add constraint tutor_chats_mode_format check (mode is null or mode ~ '^[a-z-]{1,40}$');
+-- [/coach modes]
+
+-- [longer messages]
+-- A message of the coach may hold up to 24000 characters, so the feedback on a long text fits in one reply.
+alter table public.tutor_messages
+  drop constraint if exists tutor_messages_content_check,
+  add constraint tutor_messages_content_check check (char_length(content) <= 24000);
+-- [/longer messages]

@@ -21,6 +21,7 @@ const migrationSql = await readFile(join(here, '..', 'migrations', '0006_release
 const migration0007Sql = await readFile(join(here, '..', 'migrations', '0007_account_ai_keys.sql'), 'utf8');
 const migration0009Sql = await readFile(join(here, '..', 'migrations', '0009_feedback.sql'), 'utf8');
 const migration0011Sql = await readFile(join(here, '..', 'migrations', '0011_release_1_0_0.sql'), 'utf8');
+const migration0012Sql = await readFile(join(here, '..', 'migrations', '0012_coach_modes.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -336,7 +337,8 @@ test('sizes and formats are limited', async () => {
   );
   assert.equal(bigAnswers.code, CHECK_FAILED);
 
-  const longTutor = await refused(as(db, ALICE, "insert into public.tutor_messages (user_id, role, content) values ($1, 'user', $2)", [ALICE, 'x'.repeat(8001)]));
+  // A coach message keeps up to 24000 characters (migration 0012), so one character more is refused.
+  const longTutor = await refused(as(db, ALICE, "insert into public.tutor_messages (user_id, role, content) values ($1, 'user', $2)", [ALICE, 'x'.repeat(24001)]));
   assert.equal(longTutor.code, CHECK_FAILED);
 
   const notAnObject = await refused(as(db, ALICE, "insert into public.tests (owner_id, title, content) values ($1, 'T', '[]')", [ALICE]));
@@ -704,6 +706,34 @@ test('migration 0011 runs on a current database, and again, without changing the
     ['danna 1.0.0'],
     'the note is there once',
   );
+});
+
+test('coach modes: a chat keeps the mode it was started in, and a mode is a short lower-case name', async () => {
+  const chat = await as(db, ALICE, "insert into public.tutor_chats (user_id, title, mode) values ($1, 'Essay', 'writing') returning id, mode", [ALICE]);
+  assert.equal(chat.rows[0].mode, 'writing');
+  const odd = await refused(as(db, ALICE, "insert into public.tutor_chats (user_id, title, mode) values ($1, 'Essay', 'Not A Mode')", [ALICE]));
+  assert.equal(odd.code, CHECK_FAILED);
+});
+
+test('coach messages: up to 24000 characters are kept, and only the owner can remove one', async () => {
+  const chatId = (await as(db, ALICE, "select id from public.tutor_chats where mode = 'writing' limit 1")).rows[0].id;
+  await as(db, ALICE, "insert into public.tutor_messages (user_id, chat_id, role, content) values ($1, $2, 'assistant', $3)", [ALICE, chatId, 'x'.repeat(24000)]);
+  const tooLong = await refused(
+    as(db, ALICE, "insert into public.tutor_messages (user_id, chat_id, role, content) values ($1, $2, 'assistant', $3)", [ALICE, chatId, 'x'.repeat(24001)]),
+  );
+  assert.equal(tooLong.code, CHECK_FAILED);
+  const kept = (await as(db, ALICE, 'select id from public.tutor_messages where chat_id = $1 and char_length(content) = 24000', [chatId])).rows[0].id;
+  await as(db, BOB, 'delete from public.tutor_messages where id = $1', [kept]);
+  assert.equal((await as(db, ALICE, 'select count(*)::int as n from public.tutor_messages where id = $1', [kept])).rows[0].n, 1, 'another person cannot remove it');
+  await as(db, ALICE, 'delete from public.tutor_messages where id = $1', [kept]);
+  assert.equal((await as(db, ALICE, 'select count(*)::int as n from public.tutor_messages where id = $1', [kept])).rows[0].n, 0, 'the owner can');
+});
+
+test('migration 0012 runs on a current database, and again, without changing the chats or messages', async () => {
+  await db.exec(migration0012Sql);
+  await db.exec(migration0012Sql);
+  assert.equal((await db.query("select count(*)::int as n from public.tutor_chats where mode = 'writing'")).rows[0].n, 1);
+  assert.equal((await db.query("select count(*)::int as n from public.tutor_messages where char_length(content) = 24000")).rows[0].n, 0, 'the message was removed by its owner');
 });
 
 test('migration 0009 runs on a current database, and again, without changing the feedback already sent', async () => {

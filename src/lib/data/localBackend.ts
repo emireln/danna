@@ -15,12 +15,14 @@ import {
   cleanSkills,
   cleanTestInput,
   cleanAttachments,
+  cleanChatMode,
   cleanChatTitle,
   cleanTutorRole,
   clampNumber,
   isWebpBytes,
   isoTime,
   MAX_CHATS,
+  MAX_TUTOR_CONTENT,
 } from './rules';
 
 const STORE_KEY = 'danna.local.v1';
@@ -72,11 +74,18 @@ function read(): LocalStore {
 
 /** Messages kept before chats existed go into one chat, so nothing is lost. */
 function upgradeChats(store: LocalStore): LocalStore {
-  store.tutorChats = Array.isArray(store.tutorChats) ? store.tutorChats : [];
+  store.tutorChats = (Array.isArray(store.tutorChats) ? store.tutorChats : []).map((chat) => ({ ...chat, mode: chat.mode ?? null }));
   const orphans = (Array.isArray(store.tutor) ? store.tutor : []).filter((message) => !message.chat_id);
   if (orphans.length > 0) {
     const times = orphans.map((message) => message.created_at).sort();
-    const chat: TutorChatRow = { id: crypto.randomUUID(), title: null, archived: false, created_at: times[0], updated_at: times[times.length - 1] };
+    const chat: TutorChatRow = {
+      id: crypto.randomUUID(),
+      title: null,
+      archived: false,
+      mode: null,
+      created_at: times[0],
+      updated_at: times[times.length - 1],
+    };
     store.tutorChats = [...store.tutorChats, chat];
     store.tutor = store.tutor.map((message) => ({ ...message, chat_id: message.chat_id ?? chat.id, attachments: message.attachments ?? [] }));
   }
@@ -460,7 +469,14 @@ export function createLocalBackend(): DataBackend {
         const existing = record?.id ? store.tutorChats.find((chat) => chat.id === record.id) : undefined;
         if (existing) return { ...existing };
         const time = isoTime(record?.created_at, nowIso());
-        const chat: TutorChatRow = { id: record?.id || newId(), title: null, archived: false, created_at: time, updated_at: time };
+        const chat: TutorChatRow = {
+          id: record?.id || newId(),
+          title: null,
+          archived: false,
+          mode: cleanChatMode(record?.mode),
+          created_at: time,
+          updated_at: time,
+        };
         if (store.tutorChats.length >= MAX_CHATS) throw userError('You have reached the limit for chats. Delete some chats and try again.');
         store.tutorChats = [chat, ...store.tutorChats];
         return { ...chat };
@@ -480,6 +496,13 @@ export function createLocalBackend(): DataBackend {
         const chat = findChat(store, id);
         chat.archived = Boolean(archived);
         return { ...chat };
+      });
+    },
+
+    async deleteTutorMessage(id) {
+      withStore((store) => {
+        if (!store.tutor.some((message) => message.id === id)) throw userError('This message could not be found.');
+        store.tutor = store.tutor.filter((message) => message.id !== id);
       });
     },
 
@@ -527,7 +550,7 @@ export function createLocalBackend(): DataBackend {
           id: record?.id || newId(),
           chat_id: chatId,
           role: cleanTutorRole(role),
-          content: String(content ?? '').slice(0, 8000),
+          content: String(content ?? '').slice(0, MAX_TUTOR_CONTENT),
           attachments: cleanAttachments(record?.attachments),
           created_at: isoTime(record?.created_at, nowIso()),
         };

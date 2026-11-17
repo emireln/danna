@@ -21,12 +21,12 @@ import type {
 import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
 import { userError } from '../bridge';
-import { cleanAttachments, cleanChatTitle } from './rules';
+import { cleanAttachments, cleanChatMode, cleanChatTitle, MAX_TUTOR_CONTENT } from './rules';
 
 const LIBRARY_BUCKET = 'library';
 const FILE_COLUMNS = 'id,name,kind,mime_type,size_bytes,pages,created_at,updated_at';
 const LINK_COLUMNS = 'id,url,title,platform,category,note,created_at,updated_at';
-const CHAT_COLUMNS = 'id,title,archived,created_at,updated_at';
+const CHAT_COLUMNS = 'id,title,archived,mode,created_at,updated_at';
 const MESSAGE_COLUMNS = 'id,chat_id,role,content,attachments,created_at';
 
 type Result<T> = { data: T; error: { message: string; code?: string } | null };
@@ -498,6 +498,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
           .from('tutor_chats')
           .insert({
             user_id: userId,
+            mode: cleanChatMode(record?.mode),
             ...(record?.id ? { id: record.id } : {}),
             ...(record?.created_at ? { created_at: record.created_at, updated_at: record.created_at } : {}),
           })
@@ -550,6 +551,11 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       return rows.reverse();
     },
 
+    async deleteTutorMessage(messageId) {
+      // Only the owner's messages are reached: the database's row rules check each delete.
+      unwrap(await sb.from('tutor_messages').delete().eq('id', messageId));
+    },
+
     async addTutor(chatId, role, content, record) {
       const userId = await me();
       return unwrap(
@@ -559,7 +565,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
             user_id: userId,
             chat_id: chatId,
             role,
-            content: content.slice(0, 8000),
+            content: content.slice(0, MAX_TUTOR_CONTENT),
             attachments: cleanAttachments(record?.attachments),
             ...(record?.id ? { id: record.id } : {}),
             ...(record?.created_at ? { created_at: record.created_at } : {}),

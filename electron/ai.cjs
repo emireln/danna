@@ -6,6 +6,8 @@ const speech = require('./speech.cjs');
 
 const TIMEOUT_MS = 60_000;
 const COMPLETION_TIMEOUT_MS = 180_000;
+// A streamed reply that goes quiet for this long is cut short. The text written so far is kept.
+const STREAM_IDLE_MS = 60_000;
 // The most text one request carries, counted in characters across all turns. Older turns go first.
 const MAX_CONVERSATION_CHARS = 40_000;
 // Pictures sent with one message: at most ten, each about 5 MB once encoded as base64.
@@ -48,6 +50,19 @@ class ProviderError extends Error {
   }
 }
 
+// The message a provider sent back, read from its error body.
+async function responseError(response) {
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { message: text.slice(0, 300) };
+  }
+  const detail = (data && data.error && data.error.message) || (data && data.error) || (data && data.message) || `HTTP ${response.status}`;
+  return new ProviderError(typeof detail === 'string' ? detail : JSON.stringify(detail).slice(0, 300), response.status);
+}
+
 async function request(url, { method = 'GET', headers = {}, body, timeoutMs = TIMEOUT_MS } = {}) {
   let response;
   try {
@@ -62,19 +77,13 @@ async function request(url, { method = 'GET', headers = {}, body, timeoutMs = TI
     throw new ProviderError(`Network error: ${reason}.`);
   }
 
+  if (!response.ok) throw await responseError(response);
   const text = await response.text();
-  let data;
   try {
-    data = text ? JSON.parse(text) : {};
+    return text ? JSON.parse(text) : {};
   } catch {
-    data = { message: text.slice(0, 300) };
+    return { message: text.slice(0, 300) };
   }
-
-  if (!response.ok) {
-    const detail = (data && data.error && data.error.message) || (data && data.error) || (data && data.message) || `HTTP ${response.status}`;
-    throw new ProviderError(typeof detail === 'string' ? detail : JSON.stringify(detail).slice(0, 300), response.status);
-  }
-  return data;
 }
 
 // A provider's message is quoted to the person only after anything that looks like a key is hidden.
@@ -304,41 +313,36 @@ function geminiParts(message) {
 const firstChoice = (data) => (data && Array.isArray(data.choices) && data.choices[0]) || {};
 const choiceText = (choice) => String((choice.message && choice.message.content) || '');
 
-// Each completer returns the reply text and whether the provider stopped because it ran out of room.
-const COMPLETERS = {
-  async openai(key, model, system, messages, json, maxTokens) {
+// The request for a reply, for each provider. The same request is sent whole, or with `stream` set, when the
+// reply comes in pieces as it is written.
+const REQUESTS = {
+  openai(key, model, system, messages, json, maxTokens, stream) {
     const body = {
       model,
       messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages.map(openAIMessage)],
       max_completion_tokens: maxTokens,
     };
     if (json) body.response_format = { type: 'json_object' };
-    const data = await request('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
+    if (stream) body.stream = true;
+    return {
+      url: 'https://api.openai.com/v1/chat/completions',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body,
-      timeoutMs: COMPLETION_TIMEOUT_MS,
-    });
-    const choice = firstChoice(data);
-    return { text: choiceText(choice), cut: choice.finish_reason === 'length' };
-  },
-
-  async anthropic(key, model, system, messages, _json, maxTokens) {
-    const body = { model, max_tokens: maxTokens, messages: messages.map(anthropicMessage) };
-    if (system) body.system = system;
-    const data = await request('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
-      body,
-      timeoutMs: COMPLETION_TIMEOUT_MS,
-    });
-    return {
-      text: (data.content || []).filter((block) => block.type === 'text').map((block) => block.text).join(''),
-      cut: data.stop_reason === 'max_tokens',
     };
   },
 
-  async gemini(key, model, system, messages, json, maxTokens) {
+  anthropic(key, model, system, messages, _json, maxTokens, stream) {
+    const body = { model, max_tokens: maxTokens, messages: messages.map(anthropicMessage) };
+    if (system) body.system = system;
+    if (stream) body.stream = true;
+    return {
+      url: 'https://api.anthropic.com/v1/messages',
+      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+      body,
+    };
+  },
+
+  gemini(key, model, system, messages, json, maxTokens, stream) {
     const id = model.replace(/^models\//, '');
     const body = {
       contents: messages.map((message) => ({
@@ -352,36 +356,29 @@ const COMPLETERS = {
       },
     };
     if (system) body.systemInstruction = { parts: [{ text: system }] };
-    const data = await request(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(id)}:generateContent`, {
-      method: 'POST',
+    const action = stream ? 'streamGenerateContent?alt=sse' : 'generateContent';
+    return {
+      url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(id)}:${action}`,
       headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
       body,
-      timeoutMs: COMPLETION_TIMEOUT_MS,
-    });
-    const candidate = (data.candidates && data.candidates[0]) || {};
-    return {
-      text: ((candidate.content && candidate.content.parts) || []).map((part) => part.text || '').join(''),
-      cut: candidate.finishReason === 'MAX_TOKENS',
     };
   },
 
-  async openrouter(key, model, system, messages, _json, maxTokens) {
+  openrouter(key, model, system, messages, _json, maxTokens, stream) {
     const body = {
       model,
       messages: [...(system ? [{ role: 'system', content: system }] : []), ...messages.map(openAIMessage)],
       max_tokens: maxTokens,
     };
-    const data = await request('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
+    if (stream) body.stream = true;
+    return {
+      url: 'https://openrouter.ai/api/v1/chat/completions',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'danna' },
       body,
-      timeoutMs: COMPLETION_TIMEOUT_MS,
-    });
-    const choice = firstChoice(data);
-    return { text: choiceText(choice), cut: choice.finish_reason === 'length' };
+    };
   },
 
-  async deepseek(key, model, system, messages, json, maxTokens) {
+  deepseek(key, model, system, messages, json, maxTokens, stream) {
     if (messages.some(hasPictures)) {
       throw userError('DeepSeek cannot read pictures yet. Remove the pictures, or choose another provider in Settings.');
     }
@@ -394,31 +391,212 @@ const COMPLETERS = {
       thinking: { type: 'disabled' },
     };
     if (json) body.response_format = { type: 'json_object' };
-    const data = await request('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
+    if (stream) body.stream = true;
+    return {
+      url: 'https://api.deepseek.com/chat/completions',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body,
-      timeoutMs: COMPLETION_TIMEOUT_MS,
-    });
-    const choice = firstChoice(data);
-    return { text: choiceText(choice), cut: choice.finish_reason === 'length' };
+    };
   },
 };
 
-async function complete(provider, key, model, { system = '', messages = [], json = false, maxTokens = 2048 } = {}) {
-  if (!COMPLETERS[provider]) throw new Error('Unknown AI provider.');
-  const cleanMessages = normalizeMessages(messages);
-  const limit = Math.min(Math.max(Number(maxTokens) || 2048, 256), 8192);
-  try {
-    const { text, cut } = await COMPLETERS[provider](key, model, String(system || '').slice(0, 24000), cleanMessages, Boolean(json), limit);
-    if (!text.trim()) {
-      throw userError(
-        cut
-          ? 'The reply ran out of room before it was written. Try a shorter question.'
-          : 'The assistant did not reply this time. Please try again.',
-      );
+// A reply that is not streamed: its text, and whether the provider stopped because it ran out of room.
+const READ = {
+  openai(data) {
+    const choice = firstChoice(data);
+    return { text: choiceText(choice), cut: choice.finish_reason === 'length' };
+  },
+  anthropic(data) {
+    return {
+      text: (data.content || []).filter((block) => block.type === 'text').map((block) => block.text).join(''),
+      cut: data.stop_reason === 'max_tokens',
+    };
+  },
+  gemini(data) {
+    const candidate = (data.candidates && data.candidates[0]) || {};
+    return {
+      text: ((candidate.content && candidate.content.parts) || []).map((part) => part.text || '').join(''),
+      cut: candidate.finishReason === 'MAX_TOKENS',
+    };
+  },
+  openrouter(data) {
+    return READ.openai(data);
+  },
+  deepseek(data) {
+    return READ.openai(data);
+  },
+};
+
+// One event of a streamed reply: the text it adds, and whether the reply has stopped at the length limit.
+const eventError = (data) => new ProviderError(String((data.error && data.error.message) || 'The reply stopped with an error.'));
+
+const PIECE = {
+  openai(data) {
+    if (data.error) throw eventError(data);
+    const choice = firstChoice(data);
+    return { text: String((choice.delta && choice.delta.content) || ''), cut: choice.finish_reason === 'length' };
+  },
+  anthropic(data) {
+    if (data.type === 'error') throw eventError(data);
+    if (data.type === 'content_block_delta' && data.delta && data.delta.type === 'text_delta') {
+      return { text: String(data.delta.text || ''), cut: false };
     }
+    if (data.type === 'message_delta') return { text: '', cut: Boolean(data.delta && data.delta.stop_reason === 'max_tokens') };
+    return { text: '', cut: false };
+  },
+  gemini(data) {
+    if (data.error) throw eventError(data);
+    const candidate = (data.candidates && data.candidates[0]) || {};
+    return {
+      text: ((candidate.content && candidate.content.parts) || []).map((part) => part.text || '').join(''),
+      cut: candidate.finishReason === 'MAX_TOKENS',
+    };
+  },
+  openrouter(data) {
+    return PIECE.openai(data);
+  },
+  deepseek(data) {
+    return PIECE.openai(data);
+  },
+};
+
+const clampTokens = (value) => Math.min(Math.max(Number(value) || 2048, 256), 8192);
+const clampSystem = (value) => String(value || '').slice(0, 24000);
+const emptyReply = (cut) =>
+  userError(cut ? 'The reply ran out of room before it was written. Try a shorter question.' : 'The assistant did not reply this time. Please try again.');
+
+async function complete(provider, key, model, { system = '', messages = [], json = false, maxTokens = 2048 } = {}) {
+  if (!REQUESTS[provider]) throw new Error('Unknown AI provider.');
+  const cleanMessages = normalizeMessages(messages);
+  try {
+    const spec = REQUESTS[provider](key, model, clampSystem(system), cleanMessages, Boolean(json), clampTokens(maxTokens), false);
+    const data = await request(spec.url, { method: 'POST', headers: spec.headers, body: spec.body, timeoutMs: COMPLETION_TIMEOUT_MS });
+    const { text, cut } = READ[provider](data);
+    if (!text.trim()) throw emptyReply(cut);
     return text;
+  } catch (error) {
+    throw asProviderError(provider, error);
+  }
+}
+
+// Reads a stream of server-sent events. Each event's data is one JSON object, and the stream ends with [DONE].
+async function readEvents(body, onEvent) {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let pending = '';
+  let fields = [];
+  // Hands on the event that is complete. Returns false when the stream has ended.
+  const dispatch = () => {
+    if (fields.length === 0) return true;
+    const payload = fields.join('\n');
+    fields = [];
+    if (payload === '[DONE]') return false;
+    let event;
+    try {
+      event = JSON.parse(payload);
+    } catch {
+      // A broken event is skipped. The events after it still count.
+      return true;
+    }
+    onEvent(event);
+    return true;
+  };
+  const line = (text) => {
+    if (text === '') return dispatch();
+    if (text.startsWith('data:')) fields.push(text.slice(5).replace(/^ /, ''));
+    return true;
+  };
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    pending += decoder.decode(value, { stream: true });
+    let end = pending.indexOf('\n');
+    while (end !== -1) {
+      const text = pending.slice(0, end).replace(/\r$/, '');
+      pending = pending.slice(end + 1);
+      if (!line(text)) {
+        await reader.cancel();
+        return;
+      }
+      end = pending.indexOf('\n');
+    }
+  }
+  pending += decoder.decode();
+  if (pending) line(pending.replace(/\r$/, ''));
+  dispatch();
+}
+
+// Sends a request whose reply is streamed. Each piece of text goes to onDelta as it arrives, and the whole reply is
+// returned at the end. Stopping (the signal) keeps the text written so far, and so does a reply that goes quiet.
+async function streamReply(provider, spec, { signal, onDelta }) {
+  const controller = new AbortController();
+  const stop = () => controller.abort();
+  if (signal) {
+    if (signal.aborted) controller.abort();
+    else signal.addEventListener('abort', stop, { once: true });
+  }
+  let stalled = false;
+  let timer = null;
+  // Waits for the next piece. The first piece may take a while, as a model thinks first; later ones should come quickly.
+  const wait = (ms) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      stalled = true;
+      controller.abort();
+    }, ms);
+  };
+  let text = '';
+  let cut = false;
+  try {
+    wait(COMPLETION_TIMEOUT_MS);
+    let response;
+    try {
+      response = await fetch(spec.url, {
+        method: 'POST',
+        headers: { Accept: 'text/event-stream', ...spec.headers },
+        body: JSON.stringify(spec.body),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (signal && signal.aborted) return { text, cut, aborted: true };
+      if (stalled) throw userError('The reply took too long to start. Please try again.');
+      throw new ProviderError('Network error: could not reach the server.');
+    }
+    if (!response.ok) throw await responseError(response);
+    await readEvents(response.body, (event) => {
+      wait(STREAM_IDLE_MS);
+      const piece = PIECE[provider](event);
+      if (piece.text) {
+        text += piece.text;
+        if (onDelta) onDelta(piece.text);
+      }
+      if (piece.cut) cut = true;
+    });
+  } catch (error) {
+    if (signal && signal.aborted) return { text, cut, aborted: true };
+    if (!stalled) throw error;
+    // The reply went quiet: what arrived is kept, and the rest is not waited for.
+  } finally {
+    clearTimeout(timer);
+    if (signal) signal.removeEventListener('abort', stop);
+  }
+  if (!text.trim()) {
+    if (stalled) throw userError('The reply stopped coming. Please try again.');
+    throw emptyReply(cut);
+  }
+  return { text, cut: cut || stalled, aborted: false };
+}
+
+/**
+ * Streams a reply. Returns the whole text, whether the provider ran out of room (`cut`), and whether the learner
+ * stopped it (`aborted`). `onDelta` receives each piece of text as it comes.
+ */
+async function streamComplete(provider, key, model, { system = '', messages = [], json = false, maxTokens = 2048 } = {}, { signal, onDelta } = {}) {
+  if (!REQUESTS[provider]) throw new Error('Unknown AI provider.');
+  const cleanMessages = normalizeMessages(messages);
+  try {
+    const spec = REQUESTS[provider](key, model, clampSystem(system), cleanMessages, Boolean(json), clampTokens(maxTokens), true);
+    return await streamReply(provider, spec, { signal, onDelta });
   } catch (error) {
     throw asProviderError(provider, error);
   }
@@ -466,17 +644,7 @@ async function requestBytes(url, { headers = {}, body, timeoutMs = COMPLETION_TI
     const reason = error && error.name === 'TimeoutError' ? 'the request timed out' : 'could not reach the server';
     throw new ProviderError(`Network error: ${reason}.`);
   }
-  if (!response.ok) {
-    const text = await response.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { message: text.slice(0, 300) };
-    }
-    const detail = (data && data.error && data.error.message) || (data && data.error) || (data && data.message) || `HTTP ${response.status}`;
-    throw new ProviderError(typeof detail === 'string' ? detail : JSON.stringify(detail).slice(0, 300), response.status);
-  }
+  if (!response.ok) throw await responseError(response);
   return Buffer.from(await response.arrayBuffer());
 }
 
@@ -539,4 +707,4 @@ async function speak(provider, key, text, voice) {
   }
 }
 
-module.exports = { PROVIDERS, detectProvider, detectCandidates, deepseekRank, listModels, complete, transcribe, speak };
+module.exports = { PROVIDERS, detectProvider, detectCandidates, deepseekRank, listModels, complete, streamComplete, transcribe, speak };

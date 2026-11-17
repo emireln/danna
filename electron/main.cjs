@@ -209,10 +209,13 @@ function assertTrustedSender(event) {
   if (!isAppUrl(url)) throw new Error('Blocked a request from an untrusted page.');
 }
 
+// The replies being streamed now, by their ids. A reply can be stopped while it is written.
+const replyStreams = new Map();
+
 function handle(channel, handler) {
   ipcMain.handle(channel, async (event, payload) => {
     assertTrustedSender(event);
-    return handler(payload && typeof payload === 'object' ? payload : {});
+    return handler(payload && typeof payload === 'object' ? payload : {}, event);
   });
 }
 
@@ -228,7 +231,7 @@ function cleanMessages(list) {
   }
   return list.map((item) => ({
     role: item && item.role === 'assistant' ? 'assistant' : 'user',
-    content: item && typeof item.content === 'string' ? item.content.slice(0, 12000) : '',
+    content: item && typeof item.content === 'string' ? item.content.slice(0, 24000) : '',
     // The pictures themselves are checked in electron/ai.cjs, where each provider's request is built.
     images: item && Array.isArray(item.images) ? item.images.slice(0, 10) : [],
   }));
@@ -360,6 +363,46 @@ function registerIpc() {
       maxTokens,
     });
     return { text, provider: selection.provider, model: selection.model };
+  });
+
+  // A reply written piece by piece to the interface. The pieces go to the window that asked, and the interface can
+  // stop the reply: the text written so far is kept, and the reply is returned as it stands.
+  handle('ai:stream', async ({ id, system, messages, json, maxTokens }, event) => {
+    if (typeof id !== 'string' || !/^[\w-]{8,64}$/.test(id)) throw userError('That reply could not be started. Try again.');
+    const selection = keystore.getSelection();
+    if (!selection) throw userError('Add an AI key in Settings to use this feature.');
+    const key = keystore.getKey(selection.provider);
+    if (!key) throw userError('Your AI key is missing. Add it again in Settings.');
+    const controller = new AbortController();
+    replyStreams.set(id, controller);
+    try {
+      const result = await ai.streamComplete(
+        selection.provider,
+        key,
+        selection.model,
+        {
+          system: typeof system === 'string' ? system : '',
+          messages: cleanMessages(messages),
+          json: Boolean(json),
+          maxTokens,
+        },
+        {
+          signal: controller.signal,
+          onDelta: (text) => {
+            if (!event.sender.isDestroyed()) event.sender.send('ai:chunk', { id, text });
+          },
+        },
+      );
+      return { ...result, provider: selection.provider, model: selection.model };
+    } finally {
+      replyStreams.delete(id);
+    }
+  });
+
+  handle('ai:stop', ({ id }) => {
+    const controller = typeof id === 'string' ? replyStreams.get(id) : undefined;
+    if (controller) controller.abort();
+    return { stopped: Boolean(controller) };
   });
 
   // Reads a text aloud with the natural voice the learner chose. Without a key for it, the device voice is used.

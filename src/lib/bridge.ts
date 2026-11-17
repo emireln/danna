@@ -27,6 +27,20 @@ export interface CompletionResult {
   model: string;
 }
 
+/** A reply that was streamed. `text` is the whole reply, or what was written before the learner stopped it. */
+export interface StreamedReply extends CompletionResult {
+  /** The provider stopped because the reply ran out of room. */
+  cut: boolean;
+  /** The learner stopped the reply while it was written. */
+  aborted: boolean;
+}
+
+/** One piece of a streamed reply, for the reply with this id. */
+export interface ReplyChunk {
+  id: string;
+  text: string;
+}
+
 export interface WindowState {
   maximized: boolean;
 }
@@ -81,6 +95,11 @@ export interface DannaBridge {
   };
   ai: {
     complete: (request: CompletionRequest) => Promise<CompletionResult>;
+    /** Streams a reply with this id. The pieces arrive through onChunk while it is written. */
+    stream: (id: string, request: CompletionRequest) => Promise<StreamedReply>;
+    /** Stops the reply with this id. The text written so far is kept. */
+    stop: (id: string) => Promise<{ stopped: boolean }>;
+    onChunk: (callback: (chunk: ReplyChunk) => void) => () => void;
     transcribe: (audio: ArrayBuffer, mime: string) => Promise<{ text: string }>;
     speak: (text: string, voice: string) => Promise<SpeechReply>;
   };

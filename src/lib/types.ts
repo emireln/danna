@@ -251,6 +251,8 @@ export interface TutorChatRow {
   /** Null until the chat has a name. The first question gives it one. */
   title: string | null;
   archived: boolean;
+  /** The coach mode the chat was started in, such as "writing". Null for a free chat and for chats from before modes. */
+  mode: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -117,6 +117,7 @@ CREATE TABLE IF NOT EXISTS tutor_chats (
   id TEXT PRIMARY KEY,
   title TEXT,
   archived INTEGER NOT NULL DEFAULT 0,
+  mode TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -179,6 +180,9 @@ function db() {
     connection.exec("ALTER TABLE profile ADD COLUMN goal TEXT NOT NULL DEFAULT 'english'");
     connection.exec("UPDATE profile SET goal = 'toefl'");
   }
+  // The coach's modes came after the 1.0.0 release. Chats kept before them have no mode, and keep working as free chats.
+  const chatColumns = connection.prepare('PRAGMA table_info(tutor_chats)').all().map((column) => column.name);
+  if (!chatColumns.includes('mode')) connection.exec('ALTER TABLE tutor_chats ADD COLUMN mode TEXT');
   // Coach chats came with the 0.6.0 release. Messages kept before them move into one chat, so none is lost.
   const messageColumns = connection.prepare('PRAGMA table_info(tutor_messages)').all().map((column) => column.name);
   if (!messageColumns.includes('chat_id')) connection.exec('ALTER TABLE tutor_messages ADD COLUMN chat_id TEXT');
@@ -521,6 +525,11 @@ function insertTest(input = {}) {
 // Coach chats and their messages ---------------------------------------------------
 
 // A chat's name: one line of plain text, at most 120 characters. An empty name clears it.
+// A chat's mode is a short lower-case name, such as "writing". Anything else is no mode.
+function cleanChatMode(mode) {
+  return typeof mode === 'string' && /^[a-z-]{1,40}$/.test(mode) ? mode : null;
+}
+
 function cleanChatTitle(title) {
   const text = String(title ?? '')
     .replace(/\s+/g, ' ')
@@ -547,6 +556,7 @@ function cleanAttachments(value) {
 
 const toChat = (row) => ({
   id: row.id,
+  mode: row.mode ?? null,
   title: row.title ?? null,
   archived: Boolean(row.archived),
   created_at: row.created_at,
@@ -572,7 +582,7 @@ function listTutorChats() {
   return db().prepare('SELECT * FROM tutor_chats ORDER BY updated_at DESC').all().map(toChat);
 }
 
-function createTutorChat(id, createdAt) {
+function createTutorChat(id, createdAt, mode) {
   const wanted = typeof id === 'string' && id ? id : null;
   if (wanted) {
     const existing = db().prepare('SELECT * FROM tutor_chats WHERE id = ?').get(wanted);
@@ -583,7 +593,7 @@ function createTutorChat(id, createdAt) {
   }
   const time = isoTime(createdAt, now());
   const chatId = wanted || randomUUID();
-  db().prepare('INSERT INTO tutor_chats (id, title, archived, created_at, updated_at) VALUES (?, NULL, 0, ?, ?)').run(chatId, time, time);
+  db().prepare('INSERT INTO tutor_chats (id, title, archived, mode, created_at, updated_at) VALUES (?, NULL, 0, ?, ?, ?)').run(chatId, cleanChatMode(mode), time, time);
   return getChat(chatId);
 }
 
@@ -597,6 +607,13 @@ function setTutorChatArchived(id, archived) {
   getChat(id);
   db().prepare('UPDATE tutor_chats SET archived = ? WHERE id = ?').run(archived ? 1 : 0, String(id));
   return getChat(id);
+}
+
+// Removes one message: a reply that is written again, or a message that is edited and sent again.
+function deleteTutorMessage(id) {
+  const row = db().prepare('SELECT id FROM tutor_messages WHERE id = ?').get(String(id));
+  if (!row) throw userError('This message could not be found.');
+  db().prepare('DELETE FROM tutor_messages WHERE id = ?').run(String(id));
 }
 
 function deleteTutorChat(id) {
@@ -639,7 +656,7 @@ function addTutor(chatId, role, content, id, createdAt, attachments) {
     id: messageId,
     chat_id: String(chatId),
     role: role === 'assistant' ? 'assistant' : 'user',
-    content: String(content ?? '').slice(0, 8000),
+    content: String(content ?? '').slice(0, 24000),
     attachments: JSON.stringify(cleanAttachments(attachments)),
     created_at: isoTime(createdAt, now()),
   };
@@ -855,6 +872,7 @@ const METHODS = {
   renameTutorChat,
   setTutorChatArchived,
   deleteTutorChat,
+  deleteTutorMessage,
   searchTutorChats,
   listTutor,
   addTutor,

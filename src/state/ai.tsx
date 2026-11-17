@@ -1,11 +1,18 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { bridge, type CompletionRequest, type CompletionResult } from '../lib/bridge';
+import { bridge, type CompletionRequest, type CompletionResult, type StreamedReply } from '../lib/bridge';
 import { tn } from '../lib/i18n';
 import { syncAccountKeys, type KeySyncPort } from '../lib/keysync';
 import type { AIConnection, AISelection, Provider } from '../lib/types';
 import { openKey, sealKey } from '../lib/vault';
 import { useAuth } from './auth';
 import { useToast } from './toast';
+
+/** A reply that is being written. Its pieces go to onDelta; `stop` ends it, and `done` resolves with the whole reply. */
+export interface ReplyStream {
+  id: string;
+  stop: () => void;
+  done: Promise<StreamedReply>;
+}
 
 interface AIApi {
   /** True inside the Electron app, where keys can be stored and used. */
@@ -28,6 +35,8 @@ interface AIApi {
   /** Removes a key from the account first, then from this device. */
   removeKey: (provider: Provider) => Promise<void>;
   complete: (request: CompletionRequest) => Promise<CompletionResult>;
+  /** Starts a reply that is written as it comes. onDelta receives each piece of text. */
+  startReply: (request: CompletionRequest, onDelta: (piece: string) => void) => ReplyStream;
   transcribe: (audio: Blob) => Promise<string>;
 }
 
@@ -133,6 +142,24 @@ export function AIProvider({ children }: { children: ReactNode }) {
     return bridge.ai.complete(request);
   }, []);
 
+  // The pieces of each reply go to the caller that started it. A reply ends by taking its listener away.
+  const replyListeners = useRef(new Map<string, (piece: string) => void>());
+  useEffect(() => {
+    if (!bridge) return undefined;
+    return bridge.ai.onChunk(({ id, text }) => replyListeners.current.get(id)?.(text));
+  }, []);
+
+  const startReply = useCallback((request: CompletionRequest, onDelta: (piece: string) => void): ReplyStream => {
+    const id = crypto.randomUUID();
+    const channel = bridge;
+    if (!channel) return { id, stop: () => undefined, done: Promise.reject(new Error(DESKTOP_ONLY)) };
+    replyListeners.current.set(id, onDelta);
+    const done = channel.ai.stream(id, request).finally(() => {
+      replyListeners.current.delete(id);
+    });
+    return { id, stop: () => void channel.ai.stop(id), done };
+  }, []);
+
   const transcribe = useCallback(async (audio: Blob) => {
     if (!bridge) throw new Error(DESKTOP_ONLY);
     const { text } = await bridge.ai.transcribe(await audio.arrayBuffer(), audio.type || 'audio/webm');
@@ -154,9 +181,10 @@ export function AIProvider({ children }: { children: ReactNode }) {
       syncNow,
       removeKey,
       complete,
+      startReply,
       transcribe,
     }),
-    [loaded, connections, selection, accountKeys, unreadable, syncing, refresh, syncNow, removeKey, complete, transcribe],
+    [loaded, connections, selection, accountKeys, unreadable, syncing, refresh, syncNow, removeKey, complete, startReply, transcribe],
   );
 
   return <AIContext.Provider value={api}>{children}</AIContext.Provider>;

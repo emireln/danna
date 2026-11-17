@@ -277,9 +277,10 @@ test('shared notes are at most 280 characters, and coach messages at most 8000',
   await backend.sendShare({ recipientId: OTHER, kind: 'result', attemptId: 'a1', note: 'x'.repeat(400) });
   const share = stand.calls.find((record) => record.target.name === 'shares').ops.find((op) => op.op === 'insert');
   assert.equal(share.args[0].note.length, 280);
-  await backend.addTutor('c1', 'user', 'y'.repeat(9000));
+  // A message keeps up to 24000 characters, so the feedback on a long text is kept whole.
+  await backend.addTutor('c1', 'user', 'y'.repeat(30000));
   const message = stand.calls.findLast((record) => record.target.name === 'tutor_messages').ops.find((op) => op.op === 'insert');
-  assert.equal(message.args[0].content.length, 8000);
+  assert.equal(message.args[0].content.length, 24000);
 });
 
 test('deleting a library file also removes its bytes from storage', async () => {

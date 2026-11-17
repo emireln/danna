@@ -217,6 +217,14 @@ export function cleanTutorRole(role: unknown): 'user' | 'assistant' {
   return role === 'assistant' ? 'assistant' : 'user';
 }
 
+/** A message of the coach keeps at most this many characters. Long writing feedback fits within it. */
+export const MAX_TUTOR_CONTENT = 24000;
+
+/** A chat's mode: a short lower-case name, such as "writing". Anything else is no mode. */
+export function cleanChatMode(value: unknown): string | null {
+  return typeof value === 'string' && /^[a-z-]{1,40}$/.test(value) ? value : null;
+}
+
 export const CHAT_TITLE_MAX = 120;
 export const MAX_CHATS = 500;
 export const MAX_ATTACHMENTS = 10;

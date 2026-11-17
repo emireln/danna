@@ -112,12 +112,13 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
     listAnnouncements: async () => LOCAL_ANNOUNCEMENTS.slice(),
 
     listTutorChats: () => call<TutorChatRow[]>('listTutorChats'),
-    createTutorChat: (record) => call<TutorChatRow>('createTutorChat', [record?.id, record?.created_at]),
+    createTutorChat: (record) => call<TutorChatRow>('createTutorChat', [record?.id, record?.created_at, record?.mode ?? null]),
     renameTutorChat: (id, title) => call<TutorChatRow>('renameTutorChat', [id, title]),
     setTutorChatArchived: (id, archived) => call<TutorChatRow>('setTutorChatArchived', [id, archived]),
     deleteTutorChat: (id) => call<void>('deleteTutorChat', [id]),
     searchTutorChats: (query) => call<string[]>('searchTutorChats', [query]),
     listTutor: (chatId, limit = 40) => call<TutorRow[]>('listTutor', [chatId, limit]),
+    deleteTutorMessage: (id) => call<void>('deleteTutorMessage', [id]),
     addTutor: (chatId, role, content, record) =>
       call<TutorRow>('addTutor', [chatId, role, content, record?.id, record?.created_at, record?.attachments ?? []]),
   };
