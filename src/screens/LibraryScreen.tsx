@@ -353,7 +353,7 @@ export function LibraryScreen() {
                 <input
                   className="input"
                   value={url}
-                  placeholder={t('Paste a link, for example a YouTube video')}
+                  placeholder={t('Paste a link, for example a YouTube or TikTok video')}
                   disabled={savingLink}
                   onChange={(event) => setUrl(event.target.value)}
                 />

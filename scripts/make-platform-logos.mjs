@@ -34,6 +34,19 @@ const OPEN_SET = {
   applepodcasts: 'siApplepodcasts',
   soundcloud: 'siSoundcloud',
   vimeo: 'siVimeo',
+  instagram: 'siInstagram',
+  tiktok: 'siTiktok',
+  facebook: 'siFacebook',
+  x: 'siX',
+  threads: 'siThreads',
+  reddit: 'siReddit',
+  pinterest: 'siPinterest',
+  twitch: 'siTwitch',
+  dailymotion: 'siDailymotion',
+  wikipedia: 'siWikipedia',
+  medium: 'siMedium',
+  quora: 'siQuora',
+  deezer: 'siDeezer',
 };
 
 function openSetSvg(icon) {

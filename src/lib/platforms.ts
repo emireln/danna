@@ -31,6 +31,19 @@ export const PLATFORMS: readonly Platform[] = [
   { id: 'applepodcasts', name: 'Apple Podcasts', hosts: ['podcasts.apple.com'] },
   { id: 'soundcloud', name: 'SoundCloud', hosts: ['soundcloud.com'] },
   { id: 'vimeo', name: 'Vimeo', hosts: ['vimeo.com'] },
+  { id: 'instagram', name: 'Instagram', hosts: ['instagram.com', 'instagr.am'] },
+  { id: 'tiktok', name: 'TikTok', hosts: ['tiktok.com'] },
+  { id: 'facebook', name: 'Facebook', hosts: ['facebook.com', 'fb.watch', 'fb.com'] },
+  { id: 'x', name: 'X (Twitter)', hosts: ['x.com', 'twitter.com'] },
+  { id: 'threads', name: 'Threads', hosts: ['threads.net'] },
+  { id: 'reddit', name: 'Reddit', hosts: ['reddit.com', 'redd.it'] },
+  { id: 'pinterest', name: 'Pinterest', hosts: ['pinterest.com', 'pin.it'] },
+  { id: 'twitch', name: 'Twitch', hosts: ['twitch.tv'] },
+  { id: 'dailymotion', name: 'Dailymotion', hosts: ['dailymotion.com', 'dai.ly'] },
+  { id: 'wikipedia', name: 'Wikipedia', hosts: ['wikipedia.org'] },
+  { id: 'medium', name: 'Medium', hosts: ['medium.com'] },
+  { id: 'quora', name: 'Quora', hosts: ['quora.com'] },
+  { id: 'deezer', name: 'Deezer', hosts: ['deezer.com'] },
 ];
 
 export const OTHER_PLATFORM: Platform = { id: 'other', name: 'Web link', hosts: [] };
