@@ -35,6 +35,8 @@ interface AppDataApi {
 const AppDataContext = createContext<AppDataApi | null>(null);
 
 const SEEN_KEY = 'danna.seenRelease';
+// The friend badge is checked again this often while the window is in view: requests and shares arrive while the app is open.
+const SOCIAL_CHECK_MS = 60_000;
 
 function readSeenRelease(): string | null {
   try {
@@ -102,6 +104,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setSkills({});
     }
   }, [status, refresh, refreshSocial]);
+
+  // Requests and shares arrive while the app is open, so the friend badge is checked again every minute, and again
+  // whenever the window comes back into view. Only online accounts have friends.
+  useEffect(() => {
+    if (status !== 'in' || backend?.mode !== 'supabase') return undefined;
+    const check = () => {
+      if (!document.hidden) void refreshSocial();
+    };
+    const timer = window.setInterval(check, SOCIAL_CHECK_MS);
+    document.addEventListener('visibilitychange', check);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', check);
+    };
+  }, [status, backend, refreshSocial]);
 
   const patchProfile = useCallback(
     async (patch: ProfilePatch) => {
