@@ -26,6 +26,7 @@ const migration0014Sql = await readFile(join(here, '..', 'migrations', '0014_rel
 const migration0015Sql = await readFile(join(here, '..', 'migrations', '0015_exam_paused.sql'), 'utf8');
 const migration0016Sql = await readFile(join(here, '..', 'migrations', '0016_release_1_3_0.sql'), 'utf8');
 const migration0017Sql = await readFile(join(here, '..', 'migrations', '0017_feedback_limit.sql'), 'utf8');
+const migration0018Sql = await readFile(join(here, '..', 'migrations', '0018_release_1_4_0.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -779,6 +780,18 @@ test('migration 0017 runs on a current database, and again, and the one-an-hour 
   await db.exec(migration0017Sql);
   assert.ok((await as(db, ALICE, 'select public.feedback_wait_seconds() as seconds')).rows[0].seconds > 0);
   assert.equal((await refused(as(db, BOB, 'insert into public.feedback (user_id, rating) values ($1, 4)', [BOB]))).code, PERMISSION_DENIED);
+});
+
+test('migration 0018 runs on a current database, and again, with one note for 1.4.0', async () => {
+  await db.exec(migration0018Sql);
+  await db.exec(migration0018Sql);
+  const notes = await db.query("select title, body from public.announcements where version = '1.4.0' and kind = 'release_note'");
+  assert.deepEqual(
+    notes.rows.map((row) => row.title),
+    ['danna 1.4.0'],
+    'one note for 1.4.0',
+  );
+  assert.equal(notes.rows[0].body.split('\n').length, 6, 'the note has its six lines');
 });
 
 test('migration 0016 runs on a current database, and again, with one note for 1.3.0', async () => {

@@ -1217,6 +1217,19 @@ export const APP_PT: Record<string, string> = {
   'Under each coach answer: quick replies, a read-aloud button, and an explanation of your mistakes':
     'Abaixo de cada resposta do coach: respostas rápidas, um botão para ouvir em voz alta e uma explicação dos seus erros',
 
+  // The 1.4.0 release note (What's new)
+  'Feedback: one message an hour. If you try again sooner, danna tells you how long to wait':
+    'Opinião: uma mensagem por hora. Se você tentar de novo antes, o danna mostra quanto tempo falta para enviar outra',
+  'Today: a finished learning setup leaves the screen, and the level report can be removed from Today for good':
+    'Hoje: as preferências de estudo saem da tela quando já estão concluídas, e o relatório de nível pode ser tirado do Hoje para sempre',
+  'My report in the profile: your strengths, your weaknesses and your progress across the app. Save it as an image, with your name on it':
+    'Meu relatório no perfil: seus pontos fortes, seus pontos fracos e seu progresso no app. Salve como imagem, com o seu nome',
+  'Share: a search bar finds your friends, results and sets, and the friends you shared with most recently come first. Share with a friend names that friend, with no Send to list':
+    'Compartilhar: uma busca encontra seus amigos, resultados e conjuntos, e os amigos com quem você compartilhou mais recentemente aparecem primeiro. Compartilhar com um amigo mostra o nome da pessoa, sem a lista Enviar para',
+  'The Buy me a coffee button is yellow, with dark text': 'O botão Me pague um café está amarelo, com texto escuro',
+  'Updates: danna tells you when a newer version is ready. Click the update button in the title bar to download it, then click Restart to update':
+    'Atualizações: o danna avisa quando uma versão nova está pronta. Clique no botão de atualização na barra de título para baixar, depois clique em Reiniciar para atualizar',
+
   // The 1.3.0 release note (What's new)
   'Word-order lessons: drag the words into the right order, or tap them. A wrong order stays open, so you can move the words and check again':
     'Aulas de ordem das palavras: arraste as palavras para a ordem certa, ou toque nelas. Uma ordem errada continua aberta, então você pode mover as palavras e verificar de novo',
