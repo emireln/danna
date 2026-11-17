@@ -115,7 +115,7 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
   };
 
   return (
-    <section className="library-coach">
+    <section className="library-coach mt-4">
       {!bridge && <Notice tone="info">{t('The coach runs in the danna desktop app, where your AI key is kept.')}</Notice>}
       {bridge && !ai.ready && (
         <Notice tone="info">

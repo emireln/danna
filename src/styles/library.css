@@ -302,6 +302,12 @@ mark.find-hit.is-current {
   color: #111827;
 }
 
+/* The Ask the coach tab fills the page under its tabs. The page's flex gap is taken away there, so the header and the
+   tabs keep the places they have on the other tabs. The coach starts with the same space as the other tabs (mt-4). */
+.page.library-page--ask {
+  gap: 0;
+}
+
 /* ---------- The library coach: the files card, the conversation, and each answer formatted as text ---------- */
 .library-coach {
   flex: 1;

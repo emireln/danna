@@ -237,7 +237,7 @@ export function LibraryScreen() {
   for (const link of linksPage.shown) groups.set(link.category, [...(groups.get(link.category) ?? []), link]);
 
   return (
-    <div className={tab === 'ask' ? 'page page--coach' : 'page'}>
+    <div className={tab === 'ask' ? 'page page--coach library-page--ask' : 'page'}>
       <PageHeader eyebrow={t('Private to you')} title={t('My library')} />
 
       <Tabs
