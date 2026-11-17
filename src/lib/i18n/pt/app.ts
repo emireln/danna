@@ -231,6 +231,7 @@ export const APP_PT: Record<string, string> = {
   'You can send one feedback an hour. You can send another in {time}.': 'Você pode enviar um feedback por hora. Você pode enviar outro em {time}.',
   '{count} minute': '{count} minuto',
   '{count} minutes': '{count} minutos',
+  'Remove it from Today for good': 'Tirar do Hoje para sempre',
   'Choose a rating from 1 to 5 stars.': 'Escolha de 1 a 5 estrelas.',
   'Keep the comment to 1000 characters or fewer.': 'Use no máximo 1000 caracteres no comentário.',
   'What would make danna better? (optional)': 'O que tornaria o danna melhor? (opcional)',

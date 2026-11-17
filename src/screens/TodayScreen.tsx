@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { CalendarDays, GraduationCap, Languages, Map as MapIcon, RotateCw, ScanSearch } from 'lucide-react';
+import { CalendarDays, Languages, Map as MapIcon, RotateCw, ScanSearch, X } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
 import { Badge, FeatureCard, Notice, PageHeader, SectionTitle, Skeleton } from '../components/ui';
 import { Select } from '../components/Pickers';
@@ -9,6 +9,7 @@ import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { nodeStates, progressMap as indexProgress } from '../lib/roadmap';
 import { examDateText } from '../lib/exam';
+import { isLevelReportRemoved, rememberLevelReportRemoved } from '../lib/levelReport';
 import { bandFor, toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, type Skill } from '../lib/types';
 import { useAI } from '../state/ai';
@@ -42,6 +43,16 @@ export function TodayScreen() {
   const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [diagnostic, setDiagnostic] = useState<AttemptRow | null>(null);
+  // The level report can be removed from Today for good. The choice is kept on this device, for this account.
+  const [reportHidden, setReportHidden] = useState(false);
+  useEffect(() => {
+    setReportHidden(profile?.id ? isLevelReportRemoved(profile.id) : false);
+  }, [profile?.id]);
+  const removeReport = () => {
+    if (!profile?.id) return;
+    rememberLevelReportRemoved(profile.id);
+    setReportHidden(true);
+  };
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -98,7 +109,6 @@ export function TodayScreen() {
     { key: 'review', label: t('Daily review'), count: dueNow, color: '#4b5a7a', icon: 'review', to: '/review' },
   ];
 
-  const goalText = profile?.goal === 'toefl' ? t('TOEFL warm-up, target {score}', { score: profile.target_score }) : t('General English');
   // The exam card names the exam and its date. The countdown lives on the exam page.
   const examMeta = profile?.exam_paused
     ? t('Paused. Not planning an exam for now.')
@@ -154,33 +164,33 @@ export function TodayScreen() {
           </div>
         ) : (
           <div className="grid-2">
-            <FeatureCard
-              muted
-              icon={<GraduationCap />}
-              title={t('Learning setup')}
-              badge={<Badge tone="done">{t('Done')}</Badge>}
-              meta={t('{goal} · {level} · {minutes} min a day', {
-                goal: goalText,
-                level: profile?.level ?? 'B1',
-                minutes: profile?.daily_minutes ?? 15,
-              })}
-              onClick={() => navigate('/setup')}
-            />
-            {diagnostic ? (
-              <FeatureCard
-                icon={<ScanSearch />}
-                title={t('Level report')}
-                meta={
-                  profile?.goal === 'toefl' && diagnostic.predicted
-                    ? t('Estimated TOEFL {score} of 120, range {range}', {
-                        score: diagnostic.predicted,
-                        range: toeflRange(diagnostic.predicted).join('–'),
-                      })
-                    : t('Your level is {level}', { level: bandFor(diagnostic.score_pct) })
-                }
-                onClick={() => navigate(`/report/${diagnostic.id}`)}
-              />
-            ) : (
+            {diagnostic && !reportHidden && (
+              <div className="level-report">
+                <FeatureCard
+                  icon={<ScanSearch />}
+                  title={t('Level report')}
+                  meta={
+                    profile?.goal === 'toefl' && diagnostic.predicted
+                      ? t('Estimated TOEFL {score} of 120, range {range}', {
+                          score: diagnostic.predicted,
+                          range: toeflRange(diagnostic.predicted).join('–'),
+                        })
+                      : t('Your level is {level}', { level: bandFor(diagnostic.score_pct) })
+                  }
+                  onClick={() => navigate(`/report/${diagnostic.id}`)}
+                />
+                <button
+                  type="button"
+                  className="level-report__remove"
+                  onClick={removeReport}
+                  aria-label={t('Remove it from Today for good')}
+                  title={t('Remove it from Today for good')}
+                >
+                  <X aria-hidden="true" />
+                </button>
+              </div>
+            )}
+            {!diagnostic && (
               <FeatureCard
                 icon={<ScanSearch />}
                 title={t('Level check')}

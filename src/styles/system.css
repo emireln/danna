@@ -208,6 +208,37 @@
     box-shadow: none;
   }
 
+  /* The level report on Today, with a small button in its corner that removes it for good. */
+  .level-report {
+    position: relative;
+  }
+
+  .level-report .feature-card {
+    padding-right: 44px;
+  }
+
+  .level-report__remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    color: var(--muted);
+  }
+
+  .level-report__remove:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .level-report__remove svg {
+    width: 16px;
+    height: 16px;
+  }
+
   .feature-card--link {
     cursor: pointer;
   }
