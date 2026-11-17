@@ -1184,6 +1184,23 @@ export const APP_PT: Record<string, string> = {
   'Under each coach answer: quick replies, a read-aloud button, and an explanation of your mistakes':
     'Abaixo de cada resposta do coach: respostas rápidas, um botão para ouvir em voz alta e uma explicação dos seus erros',
 
+  // The 1.3.0 release note (What's new)
+  'Word-order lessons: drag the words into the right order, or tap them. A wrong order stays open, so you can move the words and check again':
+    'Aulas de ordem das palavras: arraste as palavras para a ordem certa, ou toque nelas. Uma ordem errada continua aberta, então você pode mover as palavras e verificar de novo',
+  'Links from Instagram, TikTok, X, Facebook, Threads, Reddit, Pinterest, Twitch, Dailymotion, Wikipedia, Medium, Quora and Deezer are recognised, with their logos':
+    'Links do Instagram, TikTok, X, Facebook, Threads, Reddit, Pinterest, Twitch, Dailymotion, Wikipedia, Medium, Quora e Deezer são reconhecidos, com os seus logos',
+  'The coach names a new chat from your own first question, in your language. Chats keep the names they have':
+    'O coach dá nome a um novo chat com a sua primeira pergunta, na sua língua. Os chats mantêm os nomes que já têm',
+  'Coach messages can be selected and copied with the mouse or Ctrl+C. The Copy button works even when the clipboard refuses':
+    'As mensagens do coach podem ser selecionadas e copiadas com o mouse ou com Ctrl+C. O botão Copiar funciona mesmo quando a área de transferência recusa',
+  'Read aloud in the coach has the same look as Copy': 'Ler em voz alta no coach tem o mesmo visual de Copiar',
+  'Your exam can be paused while you are not planning to take it. Your name and date are kept, and you can plan it again any time':
+    'Sua prova pode ser pausada enquanto você não está planejando fazê-la. O nome e a data continuam salvos, e você pode planejá-la de novo a qualquer momento',
+  'Friend requests and shares show on the friend icon while the app is open, and the count updates every minute':
+    'Pedidos de amizade e compartilhamentos aparecem no ícone de amigos enquanto o app está aberto, e a contagem é atualizada a cada minuto',
+  'In My library, the drop area and the add-link form step aside while you search, and Ask the coach no longer moves the tabs':
+    'Em Minha biblioteca, a área para soltar arquivos e o formulário de link saem de cena enquanto você pesquisa, e Perguntar ao coach não move mais as abas',
+
   // Pausing the exam
   'Exam paused': 'Prova pausada',
   'You are not planning an exam for now. Your name and date are kept.':

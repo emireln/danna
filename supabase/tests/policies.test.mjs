@@ -24,6 +24,7 @@ const migration0011Sql = await readFile(join(here, '..', 'migrations', '0011_rel
 const migration0013Sql = await readFile(join(here, '..', 'migrations', '0013_coach_modes.sql'), 'utf8');
 const migration0014Sql = await readFile(join(here, '..', 'migrations', '0014_release_1_2_0.sql'), 'utf8');
 const migration0015Sql = await readFile(join(here, '..', 'migrations', '0015_exam_paused.sql'), 'utf8');
+const migration0016Sql = await readFile(join(here, '..', 'migrations', '0016_release_1_3_0.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -757,6 +758,18 @@ test('migration 0015 runs on a current database, and again, and the owner can pa
   assert.equal((await as(db, ALICE, 'select exam_paused from public.profiles where id = $1', [ALICE])).rows[0].exam_paused, true);
   await as(db, ALICE, 'update public.profiles set exam_paused = false where id = $1', [ALICE]);
   assert.equal((await as(db, ALICE, 'select exam_paused from public.profiles where id = $1', [ALICE])).rows[0].exam_paused, false);
+});
+
+test('migration 0016 runs on a current database, and again, with one note for 1.3.0', async () => {
+  await db.exec(migration0016Sql);
+  await db.exec(migration0016Sql);
+  const notes = await db.query("select title, body from public.announcements where version = '1.3.0' and kind = 'release_note'");
+  assert.deepEqual(
+    notes.rows.map((row) => row.title),
+    ['danna 1.3.0'],
+    'one note for 1.3.0',
+  );
+  assert.equal(notes.rows[0].body.split('\n').length, 8, 'the note has its eight lines');
 });
 
 test('migration 0009 runs on a current database, and again, without changing the feedback already sent', async () => {
