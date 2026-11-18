@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Languages, Map as MapIcon, RotateCw, ScanSearch, X } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
-import { Badge, FeatureCard, Notice, PageHeader, SectionTitle, Skeleton } from '../components/ui';
+import { Badge, FeatureCard, Notice, PageHeader, Skeleton } from '../components/ui';
 import { Select } from '../components/Pickers';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -118,15 +118,7 @@ export function TodayScreen() {
 
   return (
     <div className="page">
-      <PageHeader
-        eyebrow={t('Your plan')}
-        title={t("Today's learning")}
-        aside={
-          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/roadmap')}>
-            <MapIcon /> {t('Roadmap')}
-          </button>
-        }
-      >
+      <PageHeader eyebrow={t('Your plan')} title={t("Today's learning")}>
         <p className="small muted">{t('Your plan updates after every session.')}</p>
       </PageHeader>
 
@@ -134,28 +126,28 @@ export function TodayScreen() {
         {loadError && <Notice tone="error">{t(loadError)}</Notice>}
         {banners.length > 0 && <BannerCarousel items={banners} />}
 
-        <SectionTitle
-          title={t('Your next step')}
-          aside={
-            <>
-              <Select<'all' | Skill>
-                id="focus-select"
-                label={t('Focus')}
-                variant="line"
-                value={focus}
-                onChange={setFocus}
-                options={[
-                  { value: 'all', label: t('Recommended for you') },
-                  { value: 'reading', label: t('Reading focus') },
-                  { value: 'listening', label: t('Listening focus') },
-                  { value: 'speaking', label: t('Speaking focus') },
-                  { value: 'writing', label: t('Writing focus') },
-                  { value: 'language', label: t('Language focus') },
-                ]}
-              />
-            </>
-          }
-        />
+        <div className="section-title">
+          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/roadmap')}>
+            <MapIcon /> {t('Roadmap')}
+          </button>
+          <div className="section-title__aside">
+            <Select<'all' | Skill>
+              id="focus-select"
+              label={t('Focus')}
+              variant="line"
+              value={focus}
+              onChange={setFocus}
+              options={[
+                { value: 'all', label: t('Recommended for you') },
+                { value: 'reading', label: t('Reading focus') },
+                { value: 'listening', label: t('Listening focus') },
+                { value: 'speaking', label: t('Speaking focus') },
+                { value: 'writing', label: t('Writing focus') },
+                { value: 'language', label: t('Language focus') },
+              ]}
+            />
+          </div>
+        </div>
 
         {progress === null ? (
           <div className="grid-2">

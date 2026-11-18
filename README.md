@@ -1,70 +1,98 @@
 # danna
 
-An English learning app for Windows, from A1 to C1, with an optional TOEFL warm-up. It has its own window bar and a tray icon, so practice stays one click away.
+**Learn English one lesson at a time.** danna is an English learning app for Windows. It takes you from A1 to C1, with an optional TOEFL warm-up, and it lives in its own window with a tray icon, so practice is always one click away.
 
-## Two ways to use danna
+<p align="center">
+  <img src="docs/gifs/tour.gif" alt="A quick tour of danna: Today, the roadmap, self study, the coach and the profile" width="720">
+</p>
 
-- **On this device**: no account needed. Everything is stored in a local SQLite database in the app's data folder. Friends and sharing are not part of this mode.
-- **Online account**: sync across devices, and connect with friends. Switch between the two at any time in Settings. When you switch, you choose whether to copy your progress along. Progress saved on a device can also be added to your account later, from Settings.
+## Take a look
 
-Your profile picture works in both modes. Pictures are converted to a small WebP file (256 px, under 300 KB).
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/today.jpg" alt="The Today screen, with the roadmap button and your focus">
+      <br><sub>Today: your plan for the day</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/roadmap.jpg" alt="The roadmap, with lessons unlocking one after another">
+      <br><sub>The roadmap: each lesson unlocks the next</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/self-study.jpg" alt="Self study, with practice by skill">
+      <br><sub>Self study: practise a skill on its own</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/coach.jpg" alt="The coach, ready to help">
+      <br><sub>The coach: ask anything, or pick a way to practise</sub>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center">
+      <img src="docs/screenshots/profile.jpg" alt="The profile, with the day streak and your report" width="70%">
+      <br><sub>Your profile: your streak, your XP and your report</sub>
+    </td>
+  </tr>
+</table>
 
-## What is inside
+## Two ways to use it
 
-- **Today**: your next lesson, the level check, banners, and a card that opens your exam.
-- **Your exam**: save the exam's name, its date and, for the TOEFL, the target score. The page shows how many days are left, your latest result in each skill, and a test for each one.
-- **Roadmap**: General English from A1 to C1. Each unit has lessons, a unit check, stars and unlocking. Your level decides where you start. An unfinished lesson or test is kept on this device, so you carry on from the same question.
-- **Self study**: sections for Reading, Listening, Speaking, Writing and Language, a level test for each level, and the optional TOEFL warm-up.
-- **Level check and report**: your level, a five-skill radar, skill cards with tips, and a study plan. With the TOEFL warm-up, the report also shows an estimated score out of 120.
-- **Review**: spaced repetition for every missed question.
-- **Coach**: an AI tutor that knows your level, goal, exam date, skill scores and the answers you got wrong. Pick a way to work (free chat, conversation practice, fix my writing, speaking practice, exam practice, grammar lesson, vocabulary builder, read and discuss, or practise my mistakes). Replies are written as they come, and you can stop them, write them again, edit your question or continue a reply. Text you write gets feedback with scores and corrections, new words can be saved to your review, and buttons send you to the right practice in the app. Speak to the coach with the microphone (needs an OpenAI key), have replies read aloud, and save a chat as a Markdown file.
-- **My library** (from your profile): keep PDF, TXT and Markdown files and read them in the app. Edit TXT and Markdown files there and save them, and find text in any file with Ctrl+F. Save learning links from YouTube, Coursera, Khan Academy and other platforms, with the platform's logo, and sort them into categories. Ask the tutor questions about the files you choose; it answers only from them and names the file.
-- **Friends** (online only): search by username from three letters, requests, a ranking, shared results and sets, and an inbox. Open a friend to see their banner, picture, day streak and what they shared with you.
-- **Profile**: a banner that covers the profile and the stat cards (optional, private to you and your friends), the picture on the right, and the day streak, which turns red above 200 days, blue above 500 and purple from 1000.
-- **Support and feedback**: buy me a coffee from the profile menu or Settings. In Settings you can also rate danna from 1 to 5 stars and leave a comment. An online account sends it to the developer.
-- **What's new**: release notes and banners. Settings has Check for updates.
-- **Search**: the search button in the title bar, or Ctrl+K, finds lessons, tests, coach chats, library files and links, results and pages.
-- **AI, bring your own key**: OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is selected by default, and you can choose another in Settings. DeepSeek's live model list is read from its API, and the newest version is chosen. Listening passages are read aloud in a natural voice from your OpenAI or Google Gemini key (Settings, Listening voice, with a volume control). The text is sent to that provider.
+- **On this device.** No account needed. Your progress stays on your computer. Friends and sharing aren't part of this mode.
+- **With an online account.** Your progress follows you to your other devices, and you can add friends. You can switch between the two in Settings at any time. When you switch, you choose whether to bring your progress along.
 
-## Run it
+Your picture works in both modes. Pictures are shrunk automatically, so they load quickly.
+
+## What you'll find
+
+- **Today.** Your plan for the day, the level check, and a card for your exam.
+- **Your exam.** Save the exam's name, date and target score. You'll see how many days are left and how you're doing in each skill. You can pause it until you're ready to plan again.
+- **Roadmap.** General English from A1 to C1. Each unit has lessons, a unit check, stars and unlocking. Your level decides where you start. If you leave a lesson halfway, it's saved, so you can pick up the same question later.
+- **Self study.** Practice for reading, listening, speaking, writing and language. There's a level test for each level, plus an optional TOEFL warm-up.
+- **Level check and report.** See your level on a five-skill chart, with tips and a study plan. With the TOEFL warm-up, you also get an estimated score out of 120.
+- **Review.** The questions you missed come back at the right time, so they stick.
+- **Coach.** A tutor that knows your level, your goal, your exam date and the answers you got wrong. Pick how you'd like to practise: free chat, conversation, help with writing, speaking, exam practice, grammar, vocabulary, reading, or your own mistakes. Replies appear as they're written. You can have them read aloud, speak with the microphone (this needs an OpenAI key), and save a chat as a Markdown file.
+- **My library.** Keep your PDF, TXT and Markdown files and read them in the app. You can edit the text files too. Save useful links from YouTube, Coursera, Khan Academy and more, and sort them into categories. The tutor can answer questions about the files you choose, and it only uses those files.
+- **Friends** (online only). Find people by their username, send requests, see a ranking, share results and sets, and open a friend's profile.
+- **Profile.** A banner (optional), your picture, your day streak and your report, which you can save as an image. Your streak turns red above 200 days, blue above 500, and purple from 1000.
+- **Support and feedback.** Buy me a coffee from the profile menu or from Settings. In Settings you can also rate danna from 1 to 5 stars and leave a comment. This works with an online account, and you can send one message an hour.
+- **What's new and updates.** Release notes and banners. New versions are offered in the app, and you decide when to download and restart.
+- **Search.** Press the search button in the title bar, or Ctrl+K, to find lessons, tests, chats, files, links and pages.
+- **AI, with your own key.** Use OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is picked for you, and you can change it in Settings. Listening passages can be read aloud in a natural voice with an OpenAI or Gemini key. The text is sent to the provider you connected.
+
+## Getting started
 
 ```bash
 npm install
 npm run dev
 ```
 
-The project settings for the online account are bundled in `.env.development` and `.env.production`. They hold only public values: the project URL and the publishable key. To use another Supabase project, copy `.env.example` to `.env.local` and fill it in.
+The settings for the online account are already in `.env.development` and `.env.production`. They only hold public values: the project address and the publishable key. To use your own Supabase project, copy `.env.example` to `.env.local` and fill it in.
 
-`npm run web` starts the interface in a browser for quick design checks. The desktop-only features (tray, window bar, AI keys, offline database, encrypted sign-in, library files) run in the desktop app.
+Want to tweak the design quickly? Run `npm run web` and open the app in your browser. The desktop features (tray, window bar, AI keys, the offline database, sign-in and library files) only work in the desktop app.
 
-## Tests
+## Running the tests
 
 ```bash
 npm test
 ```
 
-- `tests/migrate.test.mjs` checks how progress and library items are copied between a device and an account: nothing is lost, running the copy twice adds nothing, and the higher numbers win.
-- `tests/library.test.mjs` checks the library helpers: the file kinds it keeps, and the passages the tutor reads for a question.
-- `tests/platforms.test.mjs` checks how links are matched to platforms and how pasted links are checked.
-- `tests/content.test.mjs` checks every bundled lesson item (choices, gaps, ordering, writing and speaking), the unique and short lesson ids, the level and TOEFL tests, and the placement of a new learner.
-- `tests/ai-providers.test.mjs` checks key detection, DeepSeek's model ranking, and the model and chat requests (without the network).
-- `tests/vault.test.mjs` and `tests/keysync.test.mjs` check the sealing of AI keys, and how the keys of this device and of the account are kept in step.
-- `tests/feedback.test.mjs` checks the rating and the comment limits of a feedback message.
-- `supabase/tests/policies.test.mjs` runs the real schema on PostgreSQL (PGlite, in-process) and checks what each person can and cannot do: row-level security on every table, friend requests, sharing, private pictures and library files, limits, quotas, and an upgrade from the first schema version.
+The tests check the things that would hurt most if they broke: the lessons, copying progress between devices and accounts, how AI keys are sealed, the library, links, the coach, and the database rules. The database tests run a real PostgreSQL schema in memory, so there's nothing extra to install.
 
-## Logos, icons and the installer banner
+## Logos and icons
 
-`brand/logo.png` is the master logo. After changing it, or after adding a platform logo, run:
+`brand/logo.png` is the master logo. After you change it, or add a platform logo, run:
 
 ```bash
 npm run art
 ```
 
-This writes everything the app and the installer use:
+That makes everything the app and the installer need:
 
-- `npm run icons`: the app logo and icon. In the interface they are WebP (`src/assets/logo.webp`, `src/assets/icon.webp`, `public/favicon.webp`). The installer, the window and the tray need PNG or ICO, so those are generated too: `build/icon.ico`, `build/icon.png`, and `electron/assets/`. The app icon is the logo on a white rounded square.
-- `npm run logos`: the platform logos for learning links (`src/assets/platforms/`). Most come from the open Simple Icons set. A platform without one shows its initial until its official logo is added to `brand/platforms/` (see the README there).
-- `npm run installer-art`: the installer's side banner (`build/installerSidebar.bmp`, 164 x 314), with the letters of danna stacked on `#2f6bff`.
+- The app logo and icon, for the app, the window, the tray and the installer (`npm run icons`).
+- Logos for learning platforms like YouTube and Coursera (`npm run logos`). A platform without an official logo shows its first letter until one is added to `brand/platforms/`.
+- The side picture of the installer (`npm run installer-art`).
 
 ## Build the Windows installer
 
@@ -72,69 +100,94 @@ This writes everything the app and the installer use:
 npm run dist
 ```
 
-The installer is written to `release/danna-setup-<version>-x64.exe`. Delete the `release` folder first if an earlier build is there.
+The installer lands in `release/danna-setup-<version>-x64.exe`. If there's an older `release` folder, delete it first.
 
-## Online accounts (Supabase)
+## Set up the online account (Supabase)
 
-1. For a new project: in the Supabase dashboard, open **SQL Editor**, paste the whole of `supabase/schema.sql`, and run it. It is safe to run again. It creates the tables, the row-level security rules, the private picture bucket, the library and the release notes.
-2. For a project that already runs an earlier version, run these in the **SQL Editor**, in order, each one whole: `supabase/migrations/0002_library.sql` (My library, its private `library` bucket and the 0.3.0 release note, if not run yet), then `supabase/migrations/0003_general_english.sql` (the learning goal, the A1 level and the 0.4.0 release note), then `supabase/migrations/0004_release_0_5_0.sql` (the 0.5.0 release note), then `supabase/migrations/0005_release_0_6_0.sql` (coach chats, the files in the coach, and the 0.6.0 release note), then `supabase/migrations/0006_release_0_7_0.sql` (profile banners, a friend's profile, and the 0.7.0 release note). Then `supabase/migrations/0007_account_ai_keys.sql` (AI keys saved to the account, sealed with the password), then `supabase/migrations/0008_release_0_8_0.sql` (the 0.8.0 release note), then `supabase/migrations/0009_feedback.sql` (feedback from the account, for the developer to read), then `supabase/migrations/0010_release_0_9_0.sql` (the 0.9.0 release note), then `supabase/migrations/0011_release_1_0_0.sql` (the name of the exam, and the 1.0.0 release note), then `supabase/migrations/0012_release_1_1_0.sql` (the 1.1.0 release note), then `supabase/migrations/0013_coach_modes.sql` (the coach's modes, and longer coach messages), then `supabase/migrations/0014_release_1_2_0.sql` (the 1.2.0 release note), then `supabase/migrations/0015_exam_paused.sql` (pausing the exam), then `supabase/migrations/0016_release_1_3_0.sql` (the 1.3.0 release note), then `supabase/migrations/0017_feedback_limit.sql` (one feedback message an hour), then `supabase/migrations/0018_release_1_4_0.sql` (the 1.4.0 release note). All seventeen are safe to run again. The coach needs 0013 before it shows the chat list.
-3. In **Authentication**, keep email confirmation on. Set the Site URL and redirect URLs for the app.
-4. Never add a service-role or secret key to the app. Only the publishable key is bundled.
+You only need this if you want accounts.
 
-## Release notes and banners (online accounts)
+1. **New project.** In the Supabase dashboard, open **SQL Editor**, paste all of `supabase/schema.sql`, and run it. It's safe to run again.
+2. **Existing project.** Run the migration files below in the **SQL Editor**, one at a time, in order. Each one is safe to run again.
+
+| File | What it adds |
+| --- | --- |
+| `supabase/migrations/0002_library.sql` | My library and its private files |
+| `supabase/migrations/0003_general_english.sql` | The learning goal and the A1 level |
+| `supabase/migrations/0004_release_0_5_0.sql` | The 0.5.0 release notes |
+| `supabase/migrations/0005_release_0_6_0.sql` | Coach chats, and the 0.6.0 release notes |
+| `supabase/migrations/0006_release_0_7_0.sql` | Profile banners, friends' profiles, and the 0.7.0 release notes |
+| `supabase/migrations/0007_account_ai_keys.sql` | AI keys saved to your account, sealed with your password |
+| `supabase/migrations/0008_release_0_8_0.sql` | The 0.8.0 release notes |
+| `supabase/migrations/0009_feedback.sql` | Feedback from the account |
+| `supabase/migrations/0010_release_0_9_0.sql` | The 0.9.0 release notes |
+| `supabase/migrations/0011_release_1_0_0.sql` | The name of the exam, and the 1.0.0 release notes |
+| `supabase/migrations/0012_release_1_1_0.sql` | The 1.1.0 release notes |
+| `supabase/migrations/0013_coach_modes.sql` | The coach's modes, and longer coach messages |
+| `supabase/migrations/0014_release_1_2_0.sql` | The 1.2.0 release notes |
+| `supabase/migrations/0015_exam_paused.sql` | Pausing the exam |
+| `supabase/migrations/0016_release_1_3_0.sql` | The 1.3.0 release notes |
+| `supabase/migrations/0017_feedback_limit.sql` | One feedback message an hour |
+| `supabase/migrations/0018_release_1_4_0.sql` | The 1.4.0 release notes |
+
+The coach needs `0013` before it shows the chat list.
+
+3. In **Authentication**, keep email confirmation on, and set the Site URL and the redirect URLs for the app.
+4. Never put a service-role or secret key into the app. Only the publishable key goes in.
+
+## Release notes and banners
 
 In the Supabase Table Editor, add rows to `announcements`:
 
-- **Release note**: `kind = 'release_note'`, a `version`, a `title`, and a `body` with one feature per line starting with `- `. Set `published = true`.
-- **Banner**: `kind = 'banner'`, a `title`, a short `body`, an `accent` (`blue`, `teal`, `amber` or `ink`), an optional `image_url` (an `https://` link, for example from the `banners` bucket), and an optional button (`cta_label` and `cta_url`). `cta_url` can be an in-app path such as `/play/diagnostic` or an `https://` link.
+- **A release note.** Set `kind` to `release_note`, add a `version`, a `title` and a `body`. Put one feature per line, each starting with `- `, and set `published` to true.
+- **A banner.** Set `kind` to `banner`, add a `title` and a short `body`, pick an `accent` (`blue`, `teal`, `amber` or `ink`), and optionally add a picture (`image_url`) and a button (`cta_label` and `cta_url`). The button can open a page in the app, like `/play/diagnostic`, or any `https://` link.
 
-People on this device see the release notes and banner bundled in `src/content/announcements.ts`.
+People on this device see the release notes and banners bundled in `src/content/announcements.ts`.
 
-## Where data lives
+## Where your data lives
 
-- **On this device**: `danna.db` (SQLite: progress, the profile picture, library files and links) and `danna-settings.json` in the app's data folder. Nothing is sent anywhere.
-- **Sign-in session**: `danna-session.bin`, encrypted by Windows and readable only by this app for this Windows user.
-- **Online**: your account, stored in Supabase with row-level security, so only you can read your own rows. Shared results and sets are visible to the friend they were shared with, and only while you are still friends. Your picture and your banner are private: only you and your friends can download them. Your library files are private to you, not even friends can open them. Feedback you send from Settings is kept in the database, where only the project owner can read it.
-- **AI keys**: encrypted by Windows on this device, and used only by the app's main process. With an online account, each key is also saved to your account, sealed with a key that only your password makes (PBKDF2 and AES-GCM), so the database holds only sealed text and you add a key once. The tutor sends only the excerpts of the files you chose to the AI provider you connected.
+- **On this device.** Your progress, your picture, and your library files and links are kept in a small database (`danna.db`) in the app's data folder. Nothing is sent anywhere.
+- **Sign-in.** The session is saved in `danna-session.bin`, encrypted by Windows, so only this app and this Windows user can read it.
+- **Online.** Your account lives in Supabase, and each person can only see their own rows. Friends see the results and sets you share with them, for as long as you stay friends. Your picture, your banner and your library files are private: friends can see your picture and banner, but never your files. Feedback you send is kept in the database, where only the project owner can read it.
+- **AI keys.** On your device, Windows encrypts each key, and only the app's main process can use it. With an online account, each key is also saved to your account, sealed with your password. The database only ever sees scrambled text, so you add a key once. When the tutor reads your files, it sends only the parts you picked, to the provider you connected.
 
-## Security
+## How it's kept safe
 
-- The desktop window has no Node access, runs sandboxed with context isolation, and opens links only over `https`.
-- The page can contact only the project's own address. Images, scripts and frames are restricted by a content security policy.
-- The packaged app turns off Electron features that allow running as Node, loading code from outside the app package, and debugging through command-line switches.
-- Friend requests cannot be forged or accepted on someone else's behalf. XP never goes down online.
-- Limits on text, data and rows per person keep one account from filling the database (library: 300 files of up to 20 MB, 2000 links).
-- The XP and streak are calculated on the device. The database keeps them from going down, but cannot check how they were earned.
-- AI keys saved to an account are sealed in the app before they leave the device, so the database cannot read them, the project owner included. A password reset from the email link cannot open them: those keys are added again once.
+- The desktop window runs sandboxed, with no direct access to Node, and it only opens `https` links.
+- The app can only talk to its own project address, and a content security policy limits what images, scripts and frames can load.
+- The packaged app turns off the Electron features that would let code run from outside, or be debugged from the command line.
+- Friend requests can't be forged or accepted for someone else. Your XP never goes down online.
+- Everyone has limits on how much they can store, so one account can't fill the database. For example, the library allows 300 files of up to 20 MB each, and 2,000 links.
+- XP and streaks are worked out on your device. The database stops them from going down, but it can't check how you earned them.
+- Keys saved to an account are sealed before they leave your device. A password reset from the email link can't open them, so you'll add those keys again once.
 
 ## Project structure
 
 ```
-brand/         Master logo, and platform logos (brand/platforms)
-electron/      Desktop shell: window, tray, offline database, sign-in session, AI key store, provider adapters
-scripts/       Logo, icon, platform and installer art generators; version bump and release
-src/           Interface (React and TypeScript)
-  assets/      Logo, icon and platform logos (WebP)
-  components/  Title bar, shared UI, file viewer, tutor, platform logos, charts, question renderer
-  content/     Bundled lessons for A1 to C1 and the TOEFL warm-up (units/), passages, the level check, level tests and release notes
-  lib/         Scoring, grading, review scheduling, AI prompts, data backends, progress copying,
-               library, platforms and PDF support
+brand/         The master logo, and the platform logos (brand/platforms)
+docs/          Screenshots and the tour GIF for this page
+electron/      The desktop shell: window, tray, offline database, sign-in, AI keys and providers
+scripts/       Logo, icon and installer art, plus the version bump and the release
+src/           The interface (React and TypeScript)
+  assets/      Logo, icon and platform logos
+  components/  Title bar, shared pieces, file viewer, tutor, charts, question renderer
+  content/     Lessons for A1 to C1 and the TOEFL warm-up (units/), passages, tests and release notes
+  lib/         Scoring, grading, review, AI prompts, data backends, progress copying, library and platforms
   screens/     One file per screen
-  state/       Auth, AI, app data and toast providers
-supabase/      Online database schema (schema.sql), the migration for existing projects, and the database tests
-tests/         Tests for copying, the library, platforms and AI providers
+  state/       Auth, AI, app data and toasts
+supabase/      The database schema, the migrations for existing projects, and the database tests
+tests/         Tests for lessons, copying, the library, platforms and AI providers
 ```
 
 ## Limits in this version
 
-- TOEFL scores are estimates for practice, not official ETS scores.
+- TOEFL scores are estimates for practice, not official scores.
 - Speaking answers are transcribed with an OpenAI key. Without one, you rate your own answer.
-- The tutor needs an AI key. A scanned PDF has no text to read until it is converted with OCR.
-- Platform logos come from the open Simple Icons set. Some platforms (for example Alura, BBC Learning English, Cambridge and ETS) have no open logo: they show their initial until their official logo is added to `brand/platforms/`.
-- Automatic updates and Google sign-in are not included yet.
+- The tutor needs an AI key. A scanned PDF has no text until it's converted with OCR.
+- Platform logos come from the open Simple Icons set. Some platforms (Alura, BBC Learning English, Cambridge and ETS) don't have an open logo yet, so they show their first letter.
+- Google sign-in isn't included yet.
 
 ## Versions and releases
 
-Every commit bumps the patch number automatically (a pre-commit hook in `.husky/`). To start a new feature release, run `npm run bump -- minor` and commit it: a version changed by hand in a commit is kept as it is.
+Each commit adds 1 to the patch number, automatically, with a pre-commit hook in `.husky/`. When you start a new feature release, run `npm run bump -- minor` and commit it. A version you set by hand in a commit stays as it is.
 
-To publish the current version to GitHub with its Windows installer: push the commit, run `npm run dist` to build the installer, then run `npm run release`. The release is named after the version (tag `v<version>`), and the commit messages since the previous release become its notes.
+To publish the current version: push the commit, run `npm run dist` to build the installer, and then run `npm run release`. The release is named after the version (tag `v<version>`), and the commit messages since the last release become its notes.
