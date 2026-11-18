@@ -441,6 +441,7 @@ export function FeatureCard({
   meta,
   action,
   muted = false,
+  arrow = true,
   onClick,
 }: {
   icon: ReactNode;
@@ -449,6 +450,8 @@ export function FeatureCard({
   meta?: ReactNode;
   action?: ReactNode;
   muted?: boolean;
+  /** Set to false when the card has its own button, so only that button shows in the corner. */
+  arrow?: boolean;
   onClick?: () => void;
 }) {
   const content = (
@@ -463,7 +466,7 @@ export function FeatureCard({
         </span>
         {meta && <span className="feature-card__meta">{meta}</span>}
       </span>
-      {action ?? (onClick ? <ChevronRight className="feature-card__arrow" aria-hidden="true" /> : null)}
+      {action ?? (onClick && arrow ? <ChevronRight className="feature-card__arrow" aria-hidden="true" /> : null)}
     </>
   );
   const className = `feature-card${muted ? ' feature-card--muted' : ''}`;

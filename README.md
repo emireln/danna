@@ -128,6 +128,7 @@ You only need this if you want accounts.
 | `supabase/migrations/0016_release_1_3_0.sql` | The 1.3.0 release notes |
 | `supabase/migrations/0017_feedback_limit.sql` | One feedback message an hour |
 | `supabase/migrations/0018_release_1_4_0.sql` | The 1.4.0 release notes |
+| `supabase/migrations/0019_release_1_4_3.sql` | The 1.4.1, 1.4.2 and 1.4.3 release notes |
 
 The coach needs `0013` before it shows the chat list.
 

@@ -170,6 +170,7 @@ export function TodayScreen() {
                       : t('Your level is {level}', { level: bandFor(diagnostic.score_pct) })
                   }
                   onClick={() => navigate(`/report/${diagnostic.id}`)}
+                  arrow={false}
                 />
                 <button
                   type="button"
@@ -191,6 +192,7 @@ export function TodayScreen() {
                 onClick={() => navigate('/play/diagnostic')}
               />
             )}
+            <FeatureCard icon={<CalendarDays />} title={t('Your exam')} meta={examMeta} onClick={() => navigate('/exam')} />
           </div>
         )}
 
@@ -276,8 +278,6 @@ export function TodayScreen() {
             );
           })}
         </div>
-
-        <FeatureCard icon={<CalendarDays />} title={t('Your exam')} meta={examMeta} onClick={() => navigate('/exam')} />
 
         {!aiReady && <Notice tone="info">{t('Connect an AI key in Settings to unlock generated practice sets and coach feedback.')}</Notice>}
       </div>

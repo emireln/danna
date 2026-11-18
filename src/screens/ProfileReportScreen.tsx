@@ -1,20 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Download } from 'lucide-react';
-import { BackLink, Notice, PageHeader, SectionTitle, Spinner } from '../components/ui';
+import { ScoreReport, type ReportCard, type ReportPlanSlice, type ReportStat } from '../components/ScoreReport';
+import { BackLink, Notice, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { activeStreak, formatLongDate, levelInfo } from '../lib/progress';
 import { overallReport, type SkillLine } from '../lib/overallReport';
+import { PLAN_COLORS, TIPS, adviceFor } from '../lib/reportText';
+import { studyPlan } from '../lib/scoring';
 import { downloadBlob, drawReportPicture, reportFileName } from '../lib/reportImage';
-import { SKILL_LABEL, type AttemptRow, type LessonProgressRow } from '../lib/types';
+import { SKILLS, SKILL_LABEL, type AttemptRow, type LessonProgressRow } from '../lib/types';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
 
-/** The overall report: the strengths, the weaknesses and the progress across the whole app, saved as an image. */
+/** The profile report: the same score report as the level check, built from every skill across the whole app. */
 export function ProfileReportScreen() {
   const t = useT();
+  const navigate = useNavigate();
   const { backend } = useAuth();
   const { profile, skills } = useAppData();
   const { notify } = useToast();
@@ -49,14 +54,66 @@ export function ProfileReportScreen() {
   );
 
   if (!profile) return null;
+  if (attempts === null) {
+    return (
+      <div className="page">
+        <BackLink to="/profile">{t('Profile')}</BackLink>
+        <Skeleton height={420} />
+      </div>
+    );
+  }
+
   const name = profile.display_name || profile.username;
   const streak = activeStreak(profile);
-  const skillName = (line: SkillLine) => t(SKILL_LABEL[line.skill]);
-  const notPractised = t('Not practised yet');
   const minutes = report.practiceMinutes;
+  const notPractised = t('Not practised yet');
+  const skillName = (line: SkillLine) => t(SKILL_LABEL[line.skill]);
   const scoreText = (line: SkillLine) => (line.score === null ? notPractised : `${line.score}%`);
+  const strengths = report.strengths.map((line) => `${skillName(line)} · ${scoreText(line)}`);
+  const weaknesses = report.weaknesses.map((line) => `${skillName(line)} · ${scoreText(line)}`);
 
-  const stats = [
+  // The overall score is the average of the skills practised so far, as on the level check report.
+  const values = SKILLS.map((skill) => skills[skill]).filter((value): value is number => typeof value === 'number');
+  const overall = values.length ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length) : 0;
+
+  const stats: ReportStat[] = [
+    { label: t('Day streak'), value: tn('{count} day', '{count} days', streak, { count: streak }) },
+    { label: t('Total XP'), value: String(profile.xp) },
+    { label: t('Sessions'), value: String(report.sessions) },
+    { label: t('Practice time'), value: tn('{count} minute', '{count} minutes', minutes, { count: minutes }) },
+  ];
+
+  // The advice needs a practised skill. Until then, the report says how to begin.
+  const written = values.length ? adviceFor(skills, overall, profile.level, null, t) : null;
+  const advice = written
+    ? { label: t('Your advice'), title: written.title, body: written.body }
+    : {
+        label: t('Your advice'),
+        title: t('Start with one skill'),
+        body: t('Practise any skill for a few minutes. Your advice and your plan appear here after your first session.'),
+      };
+
+  const cards: ReportCard[] = [...SKILLS]
+    .sort((a, b) => (skills[a] ?? -1) - (skills[b] ?? -1))
+    .map((skill) => ({ key: skill, name: t(SKILL_LABEL[skill]), score: skills[skill] ?? null, tip: t(TIPS[skill]) }));
+
+  const planSlices = values.length ? studyPlan(skills) : [];
+  const plan = planSlices.length
+    ? {
+        title: t("Today's learning plan"),
+        description: t('Boost your skills in {minutes} minutes a day with questions picked for your weakest areas.', {
+          minutes: profile.daily_minutes,
+        }),
+        slices: planSlices.map(
+          (slice, index): ReportPlanSlice => ({ key: slice.key, label: t(slice.label), percent: slice.percent, color: PLAN_COLORS[index] }),
+        ),
+        startLabel: t("Start today's plan"),
+        onStart: () => navigate(planSlices[0].key === 'other' ? '/study' : `/study/${planSlices[0].key}`),
+      }
+    : null;
+
+  // The picture saved from this report keeps the older list of numbers, with the strengths and the weaknesses.
+  const imageStats = [
     { label: t('Level'), value: profile.level },
     { label: t('XP level'), value: String(levelInfo(profile.xp).level) },
     { label: t('Streak'), value: tn('{count} day', '{count} days', streak, { count: streak }) },
@@ -67,9 +124,6 @@ export function ProfileReportScreen() {
     { label: t('Stars'), value: String(report.stars) },
   ];
 
-  const strengths = report.strengths.map((line) => `${skillName(line)} · ${scoreText(line)}`);
-  const weaknesses = report.weaknesses.map((line) => `${skillName(line)} · ${scoreText(line)}`);
-
   const saveImage = async () => {
     setSaving(true);
     try {
@@ -77,7 +131,7 @@ export function ProfileReportScreen() {
         name,
         eyebrow: t('My report'),
         date: formatLongDate(new Date().toISOString()),
-        stats,
+        stats: imageStats,
         skillsTitle: t('Skills'),
         skills: report.skills.map((line) => ({ label: skillName(line), score: line.score, notPractised })),
         strengthsTitle: t('Strengths'),
@@ -98,70 +152,37 @@ export function ProfileReportScreen() {
   };
 
   return (
-    <div className="page">
-      <BackLink to="/profile">{t('Profile')}</BackLink>
-      <PageHeader eyebrow={t('Your report')} title={name}>
-        <p className="muted">{t('Your strengths, weaknesses and progress, across the whole app.')}</p>
-      </PageHeader>
-
-      <div className="stack">
+    <div>
+      <div className="page">
+        <BackLink to="/profile">{t('Profile')}</BackLink>
         {loadError && <Notice tone="error">{t(loadError)}</Notice>}
-
-        <div className="report-stats">
-          {stats.map((stat) => (
-            <div key={stat.label} className="report-stat">
-              <span className="report-stat__label">{stat.label}</span>
-              <span className="report-stat__value">{stat.value}</span>
-            </div>
-          ))}
-        </div>
-
-        <SectionTitle title={t('Skills')} />
-        <div className="report-skills">
-          {report.skills.map((line) => (
-            <div key={line.skill} className="report-skill">
-              <span className="report-skill__name">{skillName(line)}</span>
-              <span className="report-skill__bar" aria-hidden="true">
-                <span style={{ width: `${line.score ?? 0}%` }} />
-              </span>
-              <span className="report-skill__score">{scoreText(line)}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid-2">
-          <div className="card">
-            <h3>{t('Strengths')}</h3>
-            {strengths.length === 0 ? (
-              <p className="muted small">{t('Keep practising to find your strengths.')}</p>
-            ) : (
-              <ul className="report-list">
-                {strengths.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="card">
-            <h3>{t('Weaknesses')}</h3>
-            {weaknesses.length === 0 ? (
-              <p className="muted small">{t('No weak skill right now.')}</p>
-            ) : (
-              <ul className="report-list">
-                {weaknesses.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <div>
-          <button className="btn btn--primary" onClick={() => void saveImage()} disabled={saving || attempts === null}>
+      </div>
+      <ScoreReport
+        eyebrow={formatLongDate(new Date().toISOString())}
+        title={t('Score report')}
+        sub={t('Your level is {level}', { level: profile.level })}
+        pill={t('Overall')}
+        gauge={{
+          value: overall,
+          max: 100,
+          range: values.length ? t('{percent}% on average', { percent: overall }) : t('No score yet'),
+        }}
+        stats={stats}
+        advice={advice}
+        radar={{
+          title: t('Your skill profile'),
+          axes: SKILLS.map((skill) => ({ label: t(SKILL_LABEL[skill]), value: skills[skill] ?? 0 })),
+          youLabel: t('You'),
+        }}
+        cardsTitle={t('Skills to improve your score')}
+        cards={cards}
+        plan={plan}
+        actions={
+          <button className="btn btn--ghost" onClick={() => void saveImage()} disabled={saving}>
             {saving ? <Spinner /> : <Download />} {t('Save as image')}
           </button>
-        </div>
-      </div>
+        }
+      />
     </div>
   );
 }

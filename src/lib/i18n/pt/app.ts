@@ -253,6 +253,11 @@ export const APP_PT: Record<string, string> = {
   'Skills': 'Habilidades',
   'Weaknesses': 'Pontos a melhorar',
   'Not practised yet': 'Ainda não praticada',
+  'Start with one skill': 'Comece com uma habilidade',
+  '{percent}% on average': '{percent}% em média',
+  'No score yet': 'Ainda sem pontuação',
+  'Practise any skill for a few minutes. Your advice and your plan appear here after your first session.':
+    'Pratique qualquer habilidade por alguns minutos. Sua análise e seu plano aparecem aqui depois da primeira sessão.',
   'Keep practising to find your strengths.': 'Continue praticando para descobrir seus pontos fortes.',
   'No weak skill right now.': 'Nenhuma habilidade fraca agora.',
   'Your report was saved as an image.': 'Seu relatório foi salvo como imagem.',
@@ -1216,6 +1221,15 @@ export const APP_PT: Record<string, string> = {
     'O coach traz exercícios com botões e lacunas para preencher. Confira suas respostas e veja sua pontuação',
   'Under each coach answer: quick replies, a read-aloud button, and an explanation of your mistakes':
     'Abaixo de cada resposta do coach: respostas rápidas, um botão para ouvir em voz alta e uma explicação dos seus erros',
+
+  // The 1.4.1, 1.4.2 and 1.4.3 release notes (What's new)
+  'Profile: no blue line round your picture, in the profile and the title bar':
+    'Perfil: sem linha azul em volta da sua foto, no perfil e na barra de título',
+  'Today: the Roadmap button takes the place of Your next step': 'Hoje: o botão Trilha ocupa o lugar de Seu próximo passo',
+  'My report: the same score report as the level check, with your advice, skill profile, skills to improve and study plan':
+    'Meu relatório: o mesmo relatório de pontuação do teste de nível, com sua análise, seu perfil de habilidades, as habilidades para melhorar e seu plano de estudo',
+  'Today: the level report sits beside your exam card, and its arrow is gone. The X still removes it from Today for good':
+    'Hoje: o relatório de nível fica ao lado do cartão da sua prova, e a seta sumiu. O X ainda o tira do Hoje para sempre',
 
   // The 1.4.0 release note (What's new)
   'Feedback: one message an hour. If you try again sooner, danna tells you how long to wait':

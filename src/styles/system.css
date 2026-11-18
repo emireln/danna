@@ -300,6 +300,7 @@
   }
 
   .level-report .feature-card {
+    height: 100%;
     padding-right: 44px;
   }
 

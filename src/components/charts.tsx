@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { animate, motion } from 'framer-motion';
 import { useT } from '../lib/i18n/react';
 
+/** The colours of the score report's legend: the learner's line and the goal line, as on the radar chart. */
+export const REPORT_YOU = '#2f6bff';
+export const REPORT_GOAL = '#a4adbf';
+
 /** Counts from 0 to `to`. */
 export function CountUp({ to, duration = 1.1, decimals = 0 }: { to: number; duration?: number; decimals?: number }) {
   const [value, setValue] = useState(0);
