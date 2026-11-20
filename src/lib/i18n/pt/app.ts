@@ -1411,6 +1411,22 @@ export const APP_PT: Record<string, string> = {
   // The title bar (2.0.0)
   'XP': 'XP',
 
+  // The weekly league (2.0.0)
+  'League': 'Liga',
+  'Your week: {xp} XP': 'Sua semana: {xp} XP',
+  '{xp} XP to {tier}': '{xp} XP para {tier}',
+  'Top of the league': 'No topo da liga',
+  'You are #{place} of {total} this week': 'Você é o nº {place} de {total} nesta semana',
+  'Friends see your league when you use an online account.': 'Os amigos veem sua liga quando você usa uma conta online.',
+  'Last seven days': 'Últimos sete dias',
+  'Bronze': 'Bronze',
+  'Silver': 'Prata',
+  'Gold': 'Ouro',
+  'Sapphire': 'Safira',
+  'Ruby': 'Rubi',
+  'Emerald': 'Esmeralda',
+  'Diamond': 'Diamante',
+
   // Today: the daily goal and the quests (2.0.0)
   'Daily goal': 'Meta do dia',
   '{minutes} of {goal} minutes today': '{minutes} de {goal} minutos hoje',

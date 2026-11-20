@@ -16,6 +16,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const localdbPath = join(root, 'electron', 'localdb.cjs');
 const electronPath = require.resolve('electron');
+// One moment for the whole run, so both backends store the same time for the run of today.
+const SCENARIO_NOW = new Date().toISOString();
 
 let server;
 let createSqliteBackend;
@@ -165,6 +167,10 @@ async function scenario(backend) {
   await step('an unknown kind becomes practice', () =>
     backend.insertAttempt({ ...attempt, id: 'attempt-2', kind: 'surprise', created_at: '2026-03-02T10:00:00.000Z' }),
   );
+  await step('a run of today counts in the league', () =>
+    backend.insertAttempt({ id: 'attempt-today', kind: 'practice', ref_id: 'today', title: 'Today', score_pct: 70, predicted: null, skills: {}, answers: [], duration_s: 60, xp: 25, created_at: SCENARIO_NOW }),
+  );
+  await step('the league counts the last seven days', () => backend.listLeague(7));
   await step('attempts can be listed', () => backend.listAttempts(10));
   await step('attempts of one kind are listed', () => backend.listAttempts(10, 'diagnostic'));
   await step('attempts of one kind are counted', () => backend.countAttempts('diagnostic'));
@@ -339,5 +345,6 @@ test('the scenario really reaches the rules: the refusals and the clamps are in 
   assert.equal(find('xp grows').value.xp, 50);
   assert.equal(find('the look is kept, and an unknown look is refused').value.ui_style, 'playful');
   assert.equal(find('an attempt is saved').value.xp, 37);
+  assert.equal(find('the league counts the last seven days').value[0].week_xp, 25);
   assert.equal(find('a WebP picture is saved').value.pictureBytes, 2048);
 });

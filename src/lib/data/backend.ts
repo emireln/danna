@@ -20,6 +20,7 @@ import type {
   LibraryKind,
   LibraryLinkRow,
   AiKeyRow,
+  LeagueRow,
   Provider,
 } from '../types';
 
@@ -185,6 +186,9 @@ export interface DataBackend {
   listShares(): Promise<ShareRow[]>;
   sendShare(payload: SharePayload): Promise<void>;
   markSharesSeen(): Promise<void>;
+
+  /** The XP of the last days for the caller and, online, for their accepted friends. Offline it is the caller alone. */
+  listLeague(days: number): Promise<LeagueRow[]>;
 
   listAnnouncements(): Promise<AnnouncementRow[]>;
 

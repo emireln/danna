@@ -276,6 +276,160 @@
     color: var(--primary);
   }
 
+  /* The weekly league on the profile: the tier, the week's XP, the way to the next tier, and the ranking. */
+  .league {
+    display: grid;
+    gap: 12px;
+  }
+
+  .league__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .league__title {
+    font-weight: 800;
+  }
+
+  .league__tier {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .league__week {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .league__next {
+    display: grid;
+    gap: 6px;
+  }
+
+  .league__bar {
+    display: block;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .league__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+    transition: width 0.5s var(--ease);
+  }
+
+  .league__hint {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .league__place {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .league__list {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .league__row {
+    display: grid;
+    grid-template-columns: 24px 30px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 10px;
+  }
+
+  .league__row--me {
+    background: var(--primary-50);
+  }
+
+  .league__position {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .league__who {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .league__name {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .league__xp {
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .league__days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    align-items: end;
+    gap: 8px;
+    height: 110px;
+  }
+
+  .league__day {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 6px;
+    height: 100%;
+    justify-items: center;
+  }
+
+  .league__column {
+    align-self: end;
+    width: 100%;
+    max-width: 28px;
+    border-radius: 8px 8px 4px 4px;
+    background: var(--primary);
+  }
+
+  .league__date {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .league__note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
   /* The Beta tag beside the wordmark: a small square with a thin border. It is never a pill. */
   .beta-tag {
     display: inline-flex;

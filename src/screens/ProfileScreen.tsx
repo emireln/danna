@@ -10,7 +10,9 @@ import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { daysUntil, formatDate, levelInfo, timeAgo } from '../lib/progress';
 import { bandFor, toeflRange } from '../lib/scoring';
-import { SKILL_LABEL, type AttemptRow } from '../lib/types';
+import { SKILL_LABEL, type AttemptRow, type LeagueRow } from '../lib/types';
+import { LeagueCard } from '../components/LeagueCard';
+import { LEAGUE_DAYS } from '../lib/league';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
@@ -19,6 +21,25 @@ export function ProfileScreen() {
   const navigate = useNavigate();
   const t = useT();
   const { backend, mode, email, signOut } = useAuth();
+  // The weekly league: the members with their XP for the last seven days, and today's runs for the bars without friends.
+  const [league, setLeague] = useState<LeagueRow[] | null>(null);
+  const [recentRuns, setRecentRuns] = useState<AttemptRow[]>([]);
+  useEffect(() => {
+    if (!backend) return undefined;
+    let active = true;
+    Promise.all([backend.listLeague(LEAGUE_DAYS), backend.listAttempts(200)])
+      .then(([rows, runs]) => {
+        if (!active) return;
+        setLeague(rows);
+        setRecentRuns(runs);
+      })
+      .catch(() => {
+        if (active) setLeague([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [backend]);
   const { profile, patchProfile, pictureUrl, changePicture, bannerUrl, changeBanner } = useAppData();
   const { notify } = useToast();
   const [attempts, setAttempts] = useState<AttemptRow[] | null>(null);
@@ -261,6 +282,12 @@ export function ProfileScreen() {
       </section>
 
       <div className="stack mt-6">
+        <LeagueCard
+          rows={league}
+          online={mode === 'supabase'}
+          runs={recentRuns}
+          userId={profile.id}
+        />
         <FeatureCard
           icon={<ChartColumn />}
           title={t('My report')}

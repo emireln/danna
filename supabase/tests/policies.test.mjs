@@ -28,6 +28,7 @@ const migration0016Sql = await readFile(join(here, '..', 'migrations', '0016_rel
 const migration0017Sql = await readFile(join(here, '..', 'migrations', '0017_feedback_limit.sql'), 'utf8');
 const migration0018Sql = await readFile(join(here, '..', 'migrations', '0018_release_1_4_0.sql'), 'utf8');
 const migration0020Sql = await readFile(join(here, '..', 'migrations', '0020_v2_schema.sql'), 'utf8');
+const migration0021Sql = await readFile(join(here, '..', 'migrations', '0021_v2_league.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -217,6 +218,47 @@ test('migration 0020 runs on a current database, and again, without changing wha
   await db.exec(migration0020Sql);
   const kept = await as(db, ALICE, 'select ui_style from public.profiles where id = $1', [ALICE]);
   assert.equal(kept.rows[0].ui_style, 'playful');
+});
+
+test('the league shows the caller and accepted friends, with their week of XP and nothing else', async () => {
+  const OWNER = '88888888-8888-4888-8888-888888888888';
+  const FRIEND = '99999999-9999-4999-8999-999999999999';
+  const PENDING = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+  const STRANGER = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  await addUser(db, OWNER, 'owner@example.test', { username: 'league_owner', display_name: 'Owner' });
+  await addUser(db, FRIEND, 'friend@example.test', { username: 'league_friend', display_name: 'Friend' });
+  await addUser(db, PENDING, 'pending@example.test', { username: 'league_pending', display_name: 'Pending' });
+  await addUser(db, STRANGER, 'stranger@example.test', { username: 'league_stranger', display_name: 'Stranger' });
+  await db.query("insert into public.friendships (requester_id, addressee_id, status) values ($1, $2, 'accepted')", [OWNER, FRIEND]);
+  await db.query('insert into public.friendships (requester_id, addressee_id) values ($1, $2)', [OWNER, PENDING]);
+  const run = (user, xp, when) =>
+    db.query(
+      `insert into public.attempts (user_id, kind, ref_id, title, score_pct, xp, duration_s, created_at)
+       values ($1, 'practice', 'x', 'X', 50, $2, 60, ${when})`,
+      [user, xp],
+    );
+  await run(OWNER, 30, 'now()');
+  await run(OWNER, 20, "now() - interval '20 days'");
+  await run(FRIEND, 45, 'now()');
+  await run(PENDING, 99, 'now()');
+  await run(STRANGER, 99, 'now()');
+
+  const rows = (await as(db, OWNER, 'select user_id, week_xp from public.friends_week_xp(7)')).rows;
+  const ids = rows.map((row) => row.user_id);
+  assert.ok(ids.includes(OWNER) && ids.includes(FRIEND), 'the caller and the accepted friend are listed');
+  assert.ok(!ids.includes(PENDING) && !ids.includes(STRANGER), 'a pending request and a stranger are not listed');
+  assert.equal(rows.find((row) => row.user_id === OWNER).week_xp, 30, 'runs older than the window are left out');
+  assert.equal(rows.find((row) => row.user_id === FRIEND).week_xp, 45);
+
+  const signedOut = await refused(as(db, null, 'select * from public.friends_week_xp(7)'));
+  assert.equal(signedOut.code, PERMISSION_DENIED, 'the league cannot be read without signing in');
+});
+
+test('migration 0021 runs on a current database, and again, without changing what is there', async () => {
+  await db.exec(migration0021Sql);
+  await db.exec(migration0021Sql);
+  const rows = (await as(db, ALICE, 'select user_id from public.friends_week_xp(7)')).rows;
+  assert.ok(rows.some((row) => row.user_id === ALICE), 'the caller is still listed');
 });
 
 test('XP never goes down, and streak stays in range', async () => {

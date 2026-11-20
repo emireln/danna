@@ -373,6 +373,62 @@
     background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px);
   }
 
+  /* The league: each tier has its colour, the bar is thick and striped, and the bars of the week are green. */
+  :root[data-look='playful'] .league__tier--bronze {
+    background: #f3e2d2;
+    color: #6b3d12;
+  }
+
+  :root[data-look='playful'] .league__tier--silver {
+    background: #e6eaf2;
+    color: #3d4860;
+  }
+
+  :root[data-look='playful'] .league__tier--gold {
+    background: var(--sun);
+    color: var(--sun-ink);
+  }
+
+  :root[data-look='playful'] .league__tier--sapphire {
+    background: var(--blue-50);
+    color: var(--blue);
+  }
+
+  :root[data-look='playful'] .league__tier--ruby {
+    background: var(--red-50);
+    color: var(--red-ink);
+  }
+
+  :root[data-look='playful'] .league__tier--emerald {
+    background: var(--primary-50);
+    color: var(--primary-700);
+  }
+
+  :root[data-look='playful'] .league__tier--diamond {
+    background: var(--violet-50);
+    color: var(--violet);
+  }
+
+  :root[data-look='playful'] .league__bar {
+    height: 14px;
+    background: #dfe5fa;
+  }
+
+  :root[data-look='playful'] .league__bar > span {
+    background-color: var(--primary);
+    background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px);
+  }
+
+  :root[data-look='playful'] .league__who {
+    background-color: var(--violet);
+    box-shadow: 0 2px 0 var(--violet-edge);
+  }
+
+  :root[data-look='playful'] .league__column {
+    background: var(--primary);
+    box-shadow: 0 3px 0 var(--primary-700);
+  }
+
   /* The Beta tag takes the violet of the look. It stays a square. */
   :root[data-look='playful'] .beta-tag {
     border-color: var(--violet);

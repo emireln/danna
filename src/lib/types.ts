@@ -151,6 +151,17 @@ export interface AttemptRow {
   created_at: string;
 }
 
+/** One person in the weekly league: the caller, or an accepted friend, with the XP of the last days. */
+export interface LeagueRow {
+  user_id: string;
+  username: string;
+  display_name: string;
+  avatar_color: string;
+  avatar_path: string | null;
+  avatar_updated_at: string | null;
+  week_xp: number;
+}
+
 export interface TestRow {
   id: string;
   owner_id: string;

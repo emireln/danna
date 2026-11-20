@@ -83,7 +83,7 @@ What we deliberately do not copy: brand names, logos, mascots, exact colour pale
 
 **F10. Role-play scenarios (Talkpal-like).** The coach gets a role-play mode with twelve scenarios (for example ordering at a café, a job interview, airport check-in, a doctor's visit, asking for directions, a complaint at a shop). A scenario is a chat with mode `roleplay-<id>`, which the existing mode format allows. The coach plays a character, gives one goal to the learner, and at the end a summary gives a fluency score, the main mistakes and the new words. Voice works where the existing voice tools work. Accept: every scenario has an English and a Portuguese title, a goal and a character; the catalogue test checks them.
 
-**F11. Release 2.0.0.** Release notes in the app (bundled, and migration `0021_release_2_0_0.sql`), the README, this plan, the design file and the migrations table are updated. Screenshots of both looks are added to the README.
+**F11. Release 2.0.0.** Release notes in the app (bundled, and migration `0023_release_2_0_0.sql`), the README, this plan, the design file and the migrations table are updated. Screenshots of both looks are added to the README.
 
 **F12. Portuguese (Brazil) for everything.** Every new string has a Portuguese translation. A test scans the source for every `t('...')` and fails on a missing translation, so this cannot be forgotten.
 
@@ -97,7 +97,7 @@ Cloud (`supabase/migrations/0020_v2_schema.sql`, also appended to `supabase/sche
 
 Device (`electron/localdb.cjs`, guarded `ALTER TABLE` like the earlier upgrades): the same profile column, the same `attempts.xp` column, and the `decks` and `cards` tables. The browser preview keeps the same shapes in its store.
 
-Release notes: `0021_release_2_0_0.sql`, the same upsert pattern as 0018 and 0019.
+Migration files, in order: `0020_v2_schema.sql` (the look and the XP of each run), `0021_v2_league.sql` (the `friends_week_xp` function), `0022_v2_decks.sql` (decks and cards), and `0023_release_2_0_0.sql` (the release notes). Each one is safe to run again. The release notes use the same upsert pattern as 0018 and 0019.
 
 No new coach table: chat modes are free text matched by `^[a-z-]{1,40}$`, so `roleplay-cafe` is valid.
 
@@ -137,7 +137,7 @@ Every feature is finished when all of these hold:
 - Each commit during the work bumps the patch number through the existing hook. Nothing else changes the version.
 - The release commit runs `npm run bump -- major` (1.x becomes 2.0.0) and says so in its message: "chore(release): the release is 2.0.0, with its release note". The hook keeps a version that was set by hand.
 - Then: push to `origin/main`, run `npm run dist` (about ten minutes), then `npm run release`. The release notes come from the commits since v1.4.3.
-- The owner must run `0020_v2_schema.sql` and then `0021_release_2_0_0.sql` in the Supabase SQL Editor before the online features work. The app keeps working without them: the look falls back to Classic, and the online-only parts say so.
+- The owner must run `0020_v2_schema.sql`, `0021_v2_league.sql`, `0022_v2_decks.sql` and `0023_release_2_0_0.sql`, in that order, in the Supabase SQL Editor before the online features work. The app keeps working without them: the look falls back to Classic, and the online-only parts say so.
 
 ## 10. Decisions and risks
 
@@ -158,7 +158,7 @@ Every feature is finished when all of these hold:
 - [x] M4. Playful design system: tokens, 3D buttons, cards, navigation, font; contrast test (F2). The reference brief from the screenshots (Talkpal, Duolingo, Fluency, FluentU) is in DESIGN.md, section 2. Still to restyle in M16: roadmap nodes, coach bubbles, the score reports and the skill cards.
 - [x] M5. Title bar: Beta tag (both looks) and XP chip (Playful), tested (F3)
 - [x] M6. Today: daily goal and quests (F4). Quest 2 counts flashcards once M10 saves them.
-- [ ] M7. League: attempts XP, weekly ranking, friends function, tiers (F5)
+- [x] M7. League: attempts XP, weekly ranking, friends function, tiers (F5)
 - [ ] M8. Achievements on the profile (F6)
 - [ ] M9. Decks: data, parity, policies (F7 data)
 - [ ] M10. Decks: screens, study session, import, summary (F7 UI)

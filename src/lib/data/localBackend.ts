@@ -270,6 +270,28 @@ export function createLocalBackend(): DataBackend {
       });
     },
 
+    async listLeague(days: number) {
+      return withStore((store) => {
+        const profile = store.profile ?? defaultProfile();
+        const size = Math.min(31, Math.max(1, Math.round(Number(days) || 7)));
+        const since = Date.now() - size * 86400000;
+        const weekXp = store.attempts
+          .filter((attempt) => new Date(attempt.created_at).getTime() >= since)
+          .reduce((sum, attempt) => sum + Math.max(0, attempt.xp || 0), 0);
+        return [
+          {
+            user_id: profile.id,
+            username: profile.username,
+            display_name: profile.display_name,
+            avatar_color: profile.avatar_color,
+            avatar_path: null,
+            avatar_updated_at: null,
+            week_xp: weekXp,
+          },
+        ];
+      });
+    },
+
     async getSkillScores() {
       return withStore((store) => ({ ...store.skills }));
     },

@@ -870,10 +870,30 @@ function deleteLibraryLink(id) {
   return true;
 }
 
+// The weekly league on this device: the XP of the caller's runs in the last days. Friends need an online account.
+function listLeague(days = 7) {
+  const size = clamp(days, 1, 31, 7);
+  const profile = getProfile();
+  const since = new Date(Date.now() - size * 86400000).toISOString();
+  const row = db().prepare('SELECT COALESCE(SUM(xp), 0) AS xp FROM attempts WHERE created_at >= ?').get(since);
+  return [
+    {
+      user_id: profile.id,
+      username: profile.username,
+      display_name: profile.display_name,
+      avatar_color: profile.avatar_color,
+      avatar_path: null,
+      avatar_updated_at: null,
+      week_xp: Math.max(0, Number(row.xp) || 0),
+    },
+  ];
+}
+
 // Only these actions can be called from the interface.
 const METHODS = {
   getProfile,
   updateProfile,
+  listLeague,
   listAttempts,
   countAttempts,
   getAttempt,

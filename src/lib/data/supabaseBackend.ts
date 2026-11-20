@@ -17,6 +17,7 @@ import type {
   LibraryKind,
   LibraryLinkRow,
   AiKeyRow,
+  LeagueRow,
 } from '../types';
 import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
@@ -304,6 +305,10 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       } else {
         unwrap(await sb.from('friendships').delete().eq('id', friendshipId));
       }
+    },
+
+    async listLeague(days: number) {
+      return unwrap(await sb.rpc('friends_week_xp', { days })) as LeagueRow[];
     },
 
     async listShares() {
