@@ -1420,15 +1420,16 @@ export const APP_PT: Record<string, string> = {
   'Make your first deck': 'Crie seu primeiro baralho',
   'A deck holds cards with a front and a back. Each card comes back when it is due, so the words stick.':
     'Um baralho guarda cartões com frente e verso. Cada cartão volta quando vence, para as palavras ficarem.',
-  '{total} cards': '{total} cartões',
-  '{due} due now': '{due} vencem agora',
+  '{count} card': '{count} cartão',
+  '{count} cards': '{count} cartões',
+  '{count} is due now': '{count} vence agora',
+  '{count} are due now': '{count} vencem agora',
   'Study': 'Estudar',
   'Deck': 'Baralho',
   'Add a card': 'Adicionar cartão',
   'Import cards': 'Importar cartões',
   'Edit the deck': 'Editar o baralho',
   'Delete the deck': 'Excluir o baralho',
-  '{total} cards · {due} due now': '{total} cartões · {due} vencem agora',
   'This deck could not be found': 'Não encontramos este baralho',
   'Back to flashcards': 'Voltar aos cartões',
   'No cards yet': 'Nenhum cartão ainda',
@@ -1441,10 +1442,13 @@ export const APP_PT: Record<string, string> = {
   'Due in {count} days': 'Vence em {count} dias',
   'Learning': 'Aprendendo',
   'Delete this deck?': 'Excluir este baralho?',
-  'The deck and its {count} cards are removed for good. This cannot be undone.':
-    'O baralho e seus {count} cartões serão excluídos para sempre. Isso não pode ser desfeito.',
+  'Deleting this deck also removes its {count} card for good. This cannot be undone.':
+    'Apagar este baralho também remove o seu {count} cartão para sempre. Isso não pode ser desfeito.',
+  'Deleting this deck also removes its {count} cards for good. This cannot be undone.':
+    'Apagar este baralho também remove os seus {count} cartões para sempre. Isso não pode ser desfeito.',
   'Delete this card?': 'Excluir este cartão?',
   'The card is removed for good. This cannot be undone.': 'O cartão será excluído para sempre. Isso não pode ser desfeito.',
+  '{count} card added.': '{count} cartão adicionado.',
   '{count} cards added.': '{count} cartões adicionados.',
   'What is it for?': 'Para que serve?',
   'Colour': 'Cor',
@@ -1611,6 +1615,24 @@ export const APP_PT: Record<string, string> = {
   'Small talk at a party': 'Papo numa festa',
   'a guest at a party': 'um convidado de uma festa',
   'Keep the conversation going with at least two questions.': 'Mantenha a conversa com pelo menos duas perguntas.',
+
+  // The 2.0.0 release notes (the bullets of the What's new page, in the same words as src/content/announcements.ts)
+  'Two looks: Classic, the one you know, and Playful, with chunky 3D buttons, bright colours and a friendlier feel. Choose one in Settings. The choice is saved to your account, or to this device without one.':
+    'Dois visuais: o Clássico, que você já conhece, e o Divertido, com botões 3D, cores vivas e um jeito mais amigável. Escolha um em Configurações. A escolha fica salva na sua conta, ou neste dispositivo se você não tiver conta.',
+  'Decks and flashcards: make decks, add cards or import a list, and study with spaced repetition. Again, Hard, Good and Easy set the next interval, and each button shows its interval first.':
+    'Baralhos e cartões: crie baralhos, adicione cartões ou importe uma lista, e estude com repetição espaçada. De novo, Difícil, Bom e Fácil definem o próximo intervalo, e cada botão mostra o seu intervalo antes de você tocar nele.',
+  'Writing check: write up to 1500 words and get a score, a tone and the fixes, each with its reason. With an AI key a model checks the text. Without one, the basics are checked on this device.':
+    'Revisão de texto: escreva até 1.500 palavras e receba uma nota, um tom e as correções, cada uma com o seu motivo. Com uma chave de IA, um modelo revisa o texto. Sem ela, o básico é revisado neste dispositivo.',
+  'Tap to define: in a text or Markdown file, tap a word to see its meaning and the sentence it came from. Save it to Saved words.':
+    'Toque para definir: num arquivo de texto ou Markdown, toque numa palavra para ver o significado e a frase de onde ela vem. Salve-a em Palavras salvas.',
+  'Role-play scenes: twelve scenes in the coach, such as ordering at a café or a job interview. Finish and score gives your fluency, the main mistakes and the new words.':
+    'Cenas de conversa: doze cenas no coach, como pedir num café ou fazer uma entrevista de emprego. Encerrar e pontuar mostra a sua fluência, os principais erros e as palavras novas.',
+  'Today and your profile: a daily goal, quests, a weekly league with your friends, and ten achievements. The league with friends needs an online account.':
+    'Hoje e seu perfil: meta do dia, missões, uma liga semanal com os seus amigos e dez conquistas. A liga com amigos precisa de uma conta online.',
+  'XP: practice earns XP. It counts toward your league week from 2.0.0 on, and the XP you earned before stays in your total.':
+    'XP: a prática rende XP. Ele conta para a semana da liga a partir da 2.0.0, e o XP que você já tinha continua no seu total.',
+  'Beta: this release carries a Beta badge in the title bar while the new look and features settle. Tell us what you find.':
+    'Beta: esta versão tem um selo Beta na barra de título enquanto o novo visual e os recursos se estabilizam. Conte-nos o que você encontrar.',
   'This word is repeated.': 'Esta palavra está repetida.',
   'Write “I” as a capital letter.': 'Escreva “I” com letra maiúscula.',
   'A new sentence starts with a capital letter.': 'Uma frase nova começa com letra maiúscula.',

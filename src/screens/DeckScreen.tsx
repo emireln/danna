@@ -5,6 +5,7 @@ import { Pencil, Play, Plus, Trash2, Upload } from 'lucide-react';
 import { CardFormSheet, DeckFormSheet, ImportSheet } from '../components/DeckSheets';
 import { BackLink, ConfirmSheet, Empty, Notice, PageHeader, Skeleton } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { tn } from '../lib/i18n';
 import { useT, type Translate } from '../lib/i18n/react';
 import type { CardRow, CardState, DeckRow } from '../lib/types';
 import { useAuth } from '../state/auth';
@@ -117,7 +118,9 @@ export function DeckScreen() {
       <BackLink to="/decks">{t('Flashcards')}</BackLink>
       <PageHeader eyebrow={t('Deck')} title={deck.title}>
         {deck.description && <p className="muted">{deck.description}</p>}
-        <p className="small muted">{t('{total} cards · {due} due now', { total: cards.length, due })}</p>
+        <p className="small muted">
+          {tn('{count} card', '{count} cards', cards.length, { count: cards.length })} · {tn('{count} is due now', '{count} are due now', due, { count: due })}
+        </p>
       </PageHeader>
 
       <div className="stack">
@@ -207,7 +210,7 @@ export function DeckScreen() {
           onClose={() => setImporting(false)}
           onImported={(count) => {
             setImporting(false);
-            notify(t('{count} cards added.', { count }), 'ok');
+            notify(tn('{count} card added.', '{count} cards added.', count, { count }), 'ok');
             void load();
           }}
         />
@@ -231,7 +234,14 @@ export function DeckScreen() {
           onConfirm={() => void removeDeck()}
           onClose={() => setDeletingDeck(false)}
         >
-          <p>{t('The deck and its {count} cards are removed for good. This cannot be undone.', { count: cards.length })}</p>
+          <p>
+            {tn(
+              'Deleting this deck also removes its {count} card for good. This cannot be undone.',
+              'Deleting this deck also removes its {count} cards for good. This cannot be undone.',
+              cards.length,
+              { count: cards.length },
+            )}
+          </p>
         </ConfirmSheet>
       )}
     </div>

@@ -115,7 +115,7 @@ New or changed methods, implemented in all three backends (`sqliteBackend`, `loc
 ## 7. Architecture
 
 - `state/look.tsx`: a provider that reads `profile.ui_style` and sets `data-look` on the root element. Playful styles live in `src/styles/playful.css`, in a `looks` layer after `app.css`. Classic is the default and has no extra file.
-- Pure logic in `src/lib/`: `look.ts`, `quests.ts`, `league.ts`, `achievements.ts`, `deck.ts` (import parsing, grading, intervals), `writingCheck.ts` (prompt, JSON parsing and validation), `writingLocal.ts` (basic checks), `define.ts` (the tap card's logic), `scenarios.ts` (the role-play catalogue).
+- Pure logic in `src/lib/`: `look.ts`, `quests.ts`, `league.ts`, `achievements.ts`, `deck.ts` (import parsing, grading, intervals), `writingCheck.ts` (prompt, JSON parsing and validation, and the local basic checks), `define.ts` (the tap card's logic), `wordTap.ts` (finds the word under a tap in the reader), `scenarios.ts` (the role-play catalogue and the fluency score).
 - Screens: `DecksScreen` (`/decks`), `DeckScreen` (`/decks/:id`), `StudyDeckScreen` (`/decks/:id/study`), `WriteScreen` (`/write`). The study page links from Self study and the title bar search. The role-play picker lives in the coach.
 - Components: `DailyGoal`, `QuestList`, `LeagueCard`, `AchievementGrid`, `XpChip`, `BetaTag`, `FlipCard`, `GradeBar`, `Celebrate` (confetti, Playful only), `WordCard` (tap to define).
 
@@ -166,7 +166,7 @@ Every feature is finished when all of these hold:
 - [x] M12. Tap to define and "Saved words" (F9). Works in text and Markdown files; PDF pages are pictures, so their words cannot be tapped (a PDF saved as text can be).
 - [x] M13. Role-play scenarios in the coach (F10). Twelve scenes with English and Portuguese titles, characters and goals; "Finish and score" gives a summary whose first score is the fluency, with the main mistakes and the new words. The summary counts once, as a practice run.
 - [x] M14. Portuguese coverage test and every translation (F12). `tests/i18n.test.mjs` checks the literal `t('...')` calls; `tests/i18n-dynamic.test.mjs` checks the error messages, the coach's modes and starters, the writing labels and the league tiers, which reach `t()` through variables.
-- [ ] M15. Release notes, migration 0021, README, screenshots (F11)
+- [x] M15. Release notes, migration 0023, README and screenshots of both looks (F11). The 2.0.0 notes are in the app (`src/content/announcements.ts`) and in migration 0023, with the same words.
 - [ ] M16. QA pass in both looks; fixes
 - [ ] M17. Release commit 2.0.0, push, build, publish
 

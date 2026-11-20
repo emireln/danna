@@ -5,6 +5,7 @@ import { Layers, Play } from 'lucide-react';
 import { DeckFormSheet } from '../components/DeckSheets';
 import { Empty, Notice, PageHeader, Skeleton } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import type { DeckRow } from '../lib/types';
 import { useAuth } from '../state/auth';
@@ -85,7 +86,8 @@ export function DecksScreen() {
                   <span className="deck-card__title">{item.deck.title}</span>
                   {item.deck.description && <span className="deck-card__text">{item.deck.description}</span>}
                   <span className="deck-card__meta">
-                    {t('{total} cards', { total: item.total })} · {t('{due} due now', { due: item.due })}
+                    {tn('{count} card', '{count} cards', item.total, { count: item.total })} ·{' '}
+                    {tn('{count} is due now', '{count} are due now', item.due, { count: item.due })}
                   </span>
                 </button>
                 {item.due > 0 && (

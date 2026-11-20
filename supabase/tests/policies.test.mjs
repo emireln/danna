@@ -30,6 +30,7 @@ const migration0018Sql = await readFile(join(here, '..', 'migrations', '0018_rel
 const migration0020Sql = await readFile(join(here, '..', 'migrations', '0020_v2_schema.sql'), 'utf8');
 const migration0021Sql = await readFile(join(here, '..', 'migrations', '0021_v2_league.sql'), 'utf8');
 const migration0022Sql = await readFile(join(here, '..', 'migrations', '0022_v2_decks.sql'), 'utf8');
+const migration0023Sql = await readFile(join(here, '..', 'migrations', '0023_release_2_0_0.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -932,6 +933,18 @@ test('migration 0016 runs on a current database, and again, with one note for 1.
     notes.rows.map((row) => row.title),
     ['danna 1.3.0'],
     'one note for 1.3.0',
+  );
+  assert.equal(notes.rows[0].body.split('\n').length, 8, 'the note has its eight lines');
+});
+
+test('migration 0023 runs on a current database, and again, with one note for 2.0.0', async () => {
+  await db.exec(migration0023Sql);
+  await db.exec(migration0023Sql);
+  const notes = await db.query("select title, body from public.announcements where version = '2.0.0' and kind = 'release_note'");
+  assert.deepEqual(
+    notes.rows.map((row) => row.title),
+    ['danna 2.0.0'],
+    'one note for 2.0.0',
   );
   assert.equal(notes.rows[0].body.split('\n').length, 8, 'the note has its eight lines');
 });

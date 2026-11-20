@@ -2,6 +2,8 @@
 
 **Learn English one lesson at a time.** danna is an English learning app for Windows. It takes you from A1 to C1, with an optional TOEFL warm-up, and it lives in its own window with a tray icon, so practice is always one click away.
 
+**New in 2.0.0 (Beta):** two looks, decks with spaced repetition, a writing check, tap to define in your library, role-play scenes in the coach, a weekly league and achievements. See [what's new](#whats-new-in-200).
+
 <p align="center">
   <img src="docs/gifs/tour.gif" alt="A quick tour of danna: Today, the roadmap, self study, the coach and the profile" width="720">
 </p>
@@ -37,6 +39,33 @@
   </tr>
 </table>
 
+## Two looks
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/v2-classic-decks.jpg" alt="The Classic look: flashcard decks">
+      <br><sub>Classic: your decks and their cards</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/v2-playful-today.jpg" alt="The Playful look: today's plan, quests and the XP chip">
+      <br><sub>Playful: today's plan, quests and your XP</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/v2-playful-study.jpg" alt="The Playful look: a flashcard study session">
+      <br><sub>Playful: study a deck with spaced repetition</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/v2-classic-write.jpg" alt="The Classic look: the writing check, with its issues marked">
+      <br><sub>Classic: the writing check marks what to fix</sub>
+    </td>
+  </tr>
+</table>
+
+Choose the look in **Settings**. **Classic** is the professional look you know. **Playful** is friendlier, with chunky 3D buttons, bright colours and quests. The choice is saved to your account, or to this device without one.
+
 ## Two ways to use it
 
 - **On this device.** No account needed. Your progress stays on your computer. Friends and sharing aren't part of this mode.
@@ -52,14 +81,28 @@ Your picture works in both modes. Pictures are shrunk automatically, so they loa
 - **Self study.** Practice for reading, listening, speaking, writing and language. There's a level test for each level, plus an optional TOEFL warm-up.
 - **Level check and report.** See your level on a five-skill chart, with tips and a study plan. With the TOEFL warm-up, you also get an estimated score out of 120.
 - **Review.** The questions you missed come back at the right time, so they stick.
-- **Coach.** A tutor that knows your level, your goal, your exam date and the answers you got wrong. Pick how you'd like to practise: free chat, conversation, help with writing, speaking, exam practice, grammar, vocabulary, reading, or your own mistakes. Replies appear as they're written. You can have them read aloud, speak with the microphone (this needs an OpenAI key), and save a chat as a Markdown file.
-- **My library.** Keep your PDF, TXT and Markdown files and read them in the app. You can edit the text files too. Save useful links from YouTube, Coursera, Khan Academy and more, and sort them into categories. The tutor can answer questions about the files you choose, and it only uses those files.
+- **Decks and flashcards.** Make decks, add cards or import a list, and study with spaced repetition. Again, Hard, Good and Easy set the next interval, and each button shows its interval first.
+- **Writing check.** Write up to 1500 words and get a score, a tone and the fixes, each with its reason. Take a fix, ignore it, or save it as a card in "My corrections".
+- **Coach.** A tutor that knows your level, your goal, your exam date and the answers you got wrong. Pick how you'd like to practise: free chat, conversation, help with writing, speaking, exam practice, grammar, vocabulary, reading, or your own mistakes. Replies appear as they're written. You can have them read aloud, speak with the microphone (this needs an OpenAI key), and save a chat as a Markdown file. Twelve role-play scenes, such as a job interview or a visit to the doctor, end with a fluency score, your main mistakes and the new words.
+- **My library.** Keep your PDF, TXT and Markdown files and read them in the app. You can edit the text files too. Tap a word in a text or Markdown file to see its meaning and the sentence it came from, and save it to your "Saved words" deck. Save useful links from YouTube, Coursera, Khan Academy and more, and sort them into categories. The tutor can answer questions about the files you choose, and it only uses those files.
 - **Friends** (online only). Find people by their username, send requests, see a ranking, share results and sets, and open a friend's profile.
 - **Profile.** A banner (optional), your picture, your day streak and your report, which you can save as an image. Your streak turns red above 200 days, blue above 500, and purple from 1000.
 - **Support and feedback.** Buy me a coffee from the profile menu or from Settings. In Settings you can also rate danna from 1 to 5 stars and leave a comment. This works with an online account, and you can send one message an hour.
 - **What's new and updates.** Release notes and banners. New versions are offered in the app, and you decide when to download and restart.
 - **Search.** Press the search button in the title bar, or Ctrl+K, to find lessons, tests, chats, files, links and pages.
 - **AI, with your own key.** Use OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is picked for you, and you can change it in Settings. Listening passages can be read aloud in a natural voice with an OpenAI or Gemini key. The text is sent to the provider you connected.
+
+## What's new in 2.0.0
+
+danna 2.0.0 is a Beta release. The same notes are in the app, on the What's new page.
+
+- **Two looks.** Classic, and Playful with chunky 3D buttons, quests and bright colours. Choose one in Settings.
+- **Decks and flashcards.** Make decks, add cards or import a list, and study with spaced repetition.
+- **Writing check.** Write up to 1500 words and get a score, a tone and the fixes, each with its reason.
+- **Tap to define.** In a text or Markdown file, tap a word to see its meaning and the sentence it came from, and save it.
+- **Role-play scenes.** Twelve scenes in the coach, with a fluency score at the end.
+- **Today and your profile.** A daily goal, quests, a weekly league with your friends, and ten achievements.
+- **Portuguese (Brazil)** for every new string, the release notes included.
 
 ## Getting started
 
@@ -78,7 +121,7 @@ Want to tweak the design quickly? Run `npm run web` and open the app in your bro
 npm test
 ```
 
-The tests check the things that would hurt most if they broke: the lessons, copying progress between devices and accounts, how AI keys are sealed, the library, links, the coach, and the database rules. The database tests run a real PostgreSQL schema in memory, so there's nothing extra to install.
+The tests check the things that would hurt most if they broke: the lessons, copying progress between devices and accounts, how AI keys are sealed, the library, links, the coach, the decks, the Portuguese translations, and the database rules. The database tests run a real PostgreSQL schema in memory, so there's nothing extra to install.
 
 ## Logos and icons
 
@@ -129,8 +172,12 @@ You only need this if you want accounts.
 | `supabase/migrations/0017_feedback_limit.sql` | One feedback message an hour |
 | `supabase/migrations/0018_release_1_4_0.sql` | The 1.4.0 release notes |
 | `supabase/migrations/0019_release_1_4_3.sql` | The 1.4.1, 1.4.2 and 1.4.3 release notes |
+| `supabase/migrations/0020_v2_schema.sql` | The look you chose, and the XP of each practice run (2.0.0) |
+| `supabase/migrations/0021_v2_league.sql` | The weekly league with your friends (2.0.0) |
+| `supabase/migrations/0022_v2_decks.sql` | Decks and flashcards (2.0.0) |
+| `supabase/migrations/0023_release_2_0_0.sql` | The 2.0.0 release notes |
 
-The coach needs `0013` before it shows the chat list.
+The coach needs `0013` before it shows the chat list. Version 2.0.0 needs `0020` to `0023`, in that order: they add the look, the XP, the league, the decks and the 2.0.0 release notes.
 
 3. In **Authentication**, keep email confirmation on, and set the Site URL and the redirect URLs for the app.
 4. Never put a service-role or secret key into the app. Only the publishable key goes in.
@@ -146,9 +193,9 @@ People on this device see the release notes and banners bundled in `src/content/
 
 ## Where your data lives
 
-- **On this device.** Your progress, your picture, and your library files and links are kept in a small database (`danna.db`) in the app's data folder. Nothing is sent anywhere.
+- **On this device.** Your progress, your decks and cards, your picture, and your library files and links are kept in a small database (`danna.db`) in the app's data folder. Nothing is sent anywhere.
 - **Sign-in.** The session is saved in `danna-session.bin`, encrypted by Windows, so only this app and this Windows user can read it.
-- **Online.** Your account lives in Supabase, and each person can only see their own rows. Friends see the results and sets you share with them, for as long as you stay friends. Your picture, your banner and your library files are private: friends can see your picture and banner, but never your files. Feedback you send is kept in the database, where only the project owner can read it.
+- **Online.** Your account lives in Supabase, and each person can only see their own rows. Friends see the results and sets you share with them, for as long as you stay friends. Your picture, your banner and your library files are private: friends can see your picture and banner, but never your files. Your decks and cards are private too. Feedback you send is kept in the database, where only the project owner can read it.
 - **AI keys.** On your device, Windows encrypts each key, and only the app's main process can use it. With an online account, each key is also saved to your account, sealed with your password. The database only ever sees scrambled text, so you add a key once. When the tutor reads your files, it sends only the parts you picked, to the provider you connected.
 
 ## How it's kept safe
@@ -175,6 +222,7 @@ src/           The interface (React and TypeScript)
   lib/         Scoring, grading, review, AI prompts, data backends, progress copying, library and platforms
   screens/     One file per screen
   state/       Auth, AI, app data and toasts
+  styles/      The two looks: Classic in the app styles, and Playful in playful.css
 supabase/      The database schema, the migrations for existing projects, and the database tests
 tests/         Tests for lessons, copying, the library, platforms and AI providers
 ```
@@ -185,6 +233,10 @@ tests/         Tests for lessons, copying, the library, platforms and AI provide
 - Speaking answers are transcribed with an OpenAI key. Without one, you rate your own answer.
 - The tutor needs an AI key. A scanned PDF has no text until it's converted with OCR.
 - Platform logos come from the open Simple Icons set. Some platforms (Alura, BBC Learning English, Cambridge and ETS) don't have an open logo yet, so they show their first letter.
+- Tap to define works in text and Markdown files. PDF pages are pictures, so their words can't be tapped. Save a PDF's text as a Markdown file to tap its words.
+- The writing check and tap to define give their full answers with an AI key. Without one, the basics are checked on the device, and you type the meaning of a word yourself.
+- The weekly league shows your friends with an online account. It counts the XP earned from 2.0.0 on.
+- A role-play summary is scored from the coach's reply when the reply follows the format the app reads. A reply that leaves the format out still shows, but it isn't scored.
 - Google sign-in isn't included yet.
 
 ## Versions and releases
