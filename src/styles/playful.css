@@ -587,6 +587,11 @@
     font-weight: 900;
   }
 
+  /* The score report's hero is a blue band, so its date line stays light in the Playful look. */
+  :root[data-look='playful'] .report-hero .eyebrow {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
   @media (prefers-reduced-motion: reduce) {
     :root[data-look='playful'] .btn,
