@@ -1407,4 +1407,7 @@ export const APP_PT: Record<string, string> = {
   'The calm, clear look you know. Flat buttons, quiet colours.': 'O visual calmo e claro que você já conhece. Botões lisos e cores discretas.',
   'Friendlier and bright: 3D buttons, quests and celebrations.': 'Mais amigável e colorido: botões 3D, missões e comemorações.',
   'Your look is saved.': 'Seu visual foi salvo.',
+
+  // The title bar (2.0.0)
+  'XP': 'XP',
 };

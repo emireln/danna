@@ -6,6 +6,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeftRight, BookOpen, Coffee, LogOut, Search, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
 import { StreakFire } from './StreakFire';
+import { XpChip } from './XpChip';
+import { lookOf } from '../lib/look';
 import { UpdateButton } from './UpdateButton';
 import { GlobalSearch } from './GlobalSearch';
 import { bridge, type WindowState } from '../lib/bridge';
@@ -68,6 +70,7 @@ export function TitleBar() {
   const name = profile?.display_name || profile?.username || t('You');
   const friendBadge = incomingRequests + unseenShares;
   const streak = profile ? activeStreak(profile) : 0;
+  const look = lookOf(profile);
   const go = (path: string) => {
     setMenuOpen(false);
     navigate(path);
@@ -91,6 +94,7 @@ export function TitleBar() {
       <Link to="/" className="wordmark" aria-label={t('danna home')}>
         danna
       </Link>
+      <span className="beta-tag">{t('Beta')}</span>
 
       <div className="titlebar__spacer" onDoubleClick={() => windows.desktop && windows.toggle()} />
 
@@ -112,6 +116,7 @@ export function TitleBar() {
           <Link to="/library" className="btn btn--icon icon-wrap" aria-label={t('My library')}>
             <BookOpen />
           </Link>
+          {look === 'playful' && profile && <XpChip xp={profile.xp} />}
           <StreakFire days={streak} />
 
           <div className="menu-anchor" ref={anchor}>

@@ -339,6 +339,37 @@
     box-shadow: 0 6px 0 var(--line-2);
   }
 
+  /* The Beta tag takes the violet of the look. It stays a square. */
+  :root[data-look='playful'] .beta-tag {
+    border-color: var(--violet);
+    color: var(--violet);
+  }
+
+  /* The XP chip in the title bar: a sun-coloured block with its edge, next to the streak. */
+  :root[data-look='playful'] .xp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 12px;
+    background: var(--sun);
+    box-shadow: 0 3px 0 var(--sun-edge);
+    color: var(--sun-ink);
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  :root[data-look='playful'] .xp-chip svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  :root[data-look='playful'] .xp-chip b {
+    font-weight: 900;
+  }
+
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
   @media (prefers-reduced-motion: reduce) {
     :root[data-look='playful'] .btn,

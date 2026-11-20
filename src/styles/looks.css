@@ -131,6 +131,23 @@
     height: 14px;
   }
 
+  /* The Beta tag beside the wordmark: a small square with a thin border. It is never a pill. */
+  .beta-tag {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 6px;
+    border: 1px solid var(--ink-2);
+    border-radius: 4px;
+    color: var(--ink-2);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+    user-select: none;
+  }
+
   @media (max-width: 640px) {
     .look-grid {
       grid-template-columns: 1fr;
