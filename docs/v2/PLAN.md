@@ -162,7 +162,7 @@ Every feature is finished when all of these hold:
 - [x] M8. Achievements on the profile (F6). Two of them (first deck, 10 saved words) count once M9 and M10 save decks.
 - [x] M9. Decks: data, parity, policies, the four grades and the import (F7 data). Migration 0022.
 - [x] M10. Decks: screens, study session, import, summary (F7 UI). The flashcards quest counts from here on.
-- [ ] M11. Writing check and local checks (F8)
+- [x] M11. Writing check: model check with validated replies, local rules, accept, ignore, save as a card (F8)
 - [ ] M12. Tap to define and "Saved words" (F9)
 - [ ] M13. Role-play scenarios in the coach (F10)
 - [ ] M14. Portuguese coverage test and every translation (F12)

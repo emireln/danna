@@ -1,0 +1,192 @@
+/* The writing check (2.0.0): the text box, the score, the highlighted preview and the list of issues. The Playful
+   versions are in playful.css. */
+@layer looks {
+  .write-area {
+    font: inherit;
+    line-height: 1.55;
+    resize: vertical;
+  }
+
+  .write-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .write-count {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .write-count--over {
+    color: var(--red-ink);
+  }
+
+  .write-result {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+  }
+
+  .write-result__head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .write-result__score {
+    display: grid;
+    justify-items: start;
+  }
+
+  .write-result__value {
+    font-size: 40px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--primary-700);
+  }
+
+  .write-result__meta {
+    display: grid;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .write-tone {
+    justify-self: start;
+  }
+
+  .write-result__summary {
+    margin: 0;
+    color: var(--ink-2);
+  }
+
+  .write-preview {
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    color: var(--ink);
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .write-mark {
+    padding: 0 2px;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    text-decoration: underline wavy;
+    text-decoration-thickness: 2px;
+  }
+
+  .write-mark--spelling {
+    text-decoration-color: var(--red);
+  }
+
+  .write-mark--grammar {
+    text-decoration-color: var(--blue);
+  }
+
+  .write-mark--word_choice,
+  .write-mark--clarity {
+    text-decoration-color: var(--violet);
+  }
+
+  .write-mark--punctuation,
+  .write-mark--tone {
+    text-decoration-color: var(--amber-ink);
+  }
+
+  .write-clean {
+    margin: 0;
+    font-weight: 700;
+    color: var(--primary-700);
+  }
+
+  .issue-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .issue {
+    display: grid;
+    gap: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #ffffff;
+  }
+
+  .issue__category {
+    justify-self: start;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .issue__category--spelling {
+    background: var(--red-50);
+    color: var(--red-ink);
+  }
+
+  .issue__category--grammar {
+    background: var(--blue-50);
+    color: var(--blue);
+  }
+
+  .issue__category--word_choice,
+  .issue__category--clarity {
+    background: var(--violet-50);
+    color: var(--violet);
+  }
+
+  .issue__category--punctuation,
+  .issue__category--tone {
+    background: var(--amber);
+    color: var(--amber-ink);
+  }
+
+  .issue__change {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .issue__reason {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .issue__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .write-result__pen {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+
+  .write-result__pen svg {
+    width: 14px;
+    height: 14px;
+  }
+}
