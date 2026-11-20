@@ -725,18 +725,6 @@
     box-shadow: 0 3px 0 var(--primary-700);
   }
 
-  /* The V2 badge in the Playful look is chunky: rounder, with a darker bottom edge like the buttons. */
-  :root[data-look='playful'] .beta-badge {
-    border-radius: 10px;
-    box-shadow: 0 3px 0 #163a9c;
-  }
-
-  :root[data-look='playful'] .beta-badge:hover,
-  :root[data-look='playful'] .beta-badge:focus-visible {
-    box-shadow: 0 4px 0 #163a9c;
-    transform: translateY(-1px);
-  }
-
   /* The tour in the Playful look: a white card with a chunky edge, and a lit button with a rounder frame. */
   :root[data-look='playful'] .tour__card,
   :root[data-look='playful'] .tour-offer__card {

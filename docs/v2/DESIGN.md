@@ -61,7 +61,7 @@ Defined on `:root[data-look="playful"]` in `src/styles/playful.css`. The contras
 | `--radius-sm` | `10px` | Chips and inputs |
 | `--radius` | `16px` | Buttons and cards |
 | `--radius-lg` | `22px` | Heroes, sheets and banners |
-| `--radius-pill` | `999px` | Only for chips and segment controls. Never for buttons or the Beta tag |
+| `--radius-pill` | `999px` | Only for chips and segment controls. Never for buttons |
 
 Text pairs must meet WCAG AA: 4.5 to 1 for normal text and 3 to 1 for large text (18.66 px bold or larger). `tests/look-contrast.test.mjs` checks the pairs listed in its own file against these values, so a palette change that breaks contrast fails the test.
 
@@ -97,7 +97,7 @@ Classic keeps its flat buttons. The same class names carry both looks, so no scr
 ## 6. Navigation and title bar
 
 - **Bottom navigation** keeps its four tabs (Today, Self study, Review, Coach) and their labels, which are always visible. In Playful the active tab shows its icon inside a 44 by 32 px square with a 12 px radius, filled with `--primary-50`, and its label in `--primary`. The top line of the old design is removed.
-- **Title bar:** the wordmark, then the **Beta** tag. The Beta tag is a small square with a 4 px radius and a 1 px `--ink-2` border, uppercase, 10 px, letter spacing 0.08 em. It is not a pill. In Playful, an XP chip (sun, with its edge) and the streak flame sit before the account picture. A league tier chip (violet) may follow in later milestones.
+- **Title bar:** the wordmark, then the streak flame and the account picture. The title bar has no Beta tag and no XP chip.
 - The account menu, the search and the window controls keep their places in both looks.
 
 ## 7. Motion and celebration

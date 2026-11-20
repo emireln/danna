@@ -77,11 +77,6 @@ export function GuidedTour() {
       title: t('Your account'),
       text: t('Your profile and Settings are in this menu. Settings holds the language, the look and your AI keys.'),
     },
-    {
-      target: 'whats-new',
-      title: t("What's new"),
-      text: t('This badge opens the release notes, with everything new in V2.'),
-    },
   ];
 
   const close = () => {

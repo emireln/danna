@@ -18,7 +18,12 @@ interface Anchor {
   above: boolean;
 }
 
-/** Where a floating panel goes: under its trigger, or above it when the window has no room below. */
+/** The bottom edge of the room a panel can use: the top of the bottom tabs when they are on screen, else the window. */
+function roomBottom(): number {
+  return document.querySelector<HTMLElement>('nav.nav')?.getBoundingClientRect().top ?? window.innerHeight;
+}
+
+/** Where a floating panel goes: under its trigger, or above it when there is no room below, so it never opens under the tabs. */
 function useAnchor(open: boolean, trigger: RefObject<HTMLElement | null>, panelHeight: number): Anchor | null {
   const [anchor, setAnchor] = useState<Anchor | null>(null);
 
@@ -28,7 +33,7 @@ function useAnchor(open: boolean, trigger: RefObject<HTMLElement | null>, panelH
       const element = trigger.current;
       if (!element) return;
       const box = element.getBoundingClientRect();
-      const above = window.innerHeight - box.bottom < panelHeight + 12 && box.top > panelHeight + 12;
+      const above = roomBottom() - box.bottom < panelHeight + 12 && box.top > panelHeight + 12;
       setAnchor({ top: above ? box.top - 6 : box.bottom + 6, left: box.left, width: box.width, above });
     };
     place();

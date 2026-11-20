@@ -24,11 +24,6 @@ export const ONBOARDING_PT: Record<string, string> = {
   'Your account': 'Sua conta',
   'Your profile and Settings are in this menu. Settings holds the language, the look and your AI keys.':
     'Seu perfil e as Configurações ficam neste menu. Em Configurações estão o idioma, o visual e as suas chaves de IA.',
-  'This badge opens the release notes, with everything new in V2.':
-    'Este selo abre as notas de versão, com tudo o que há de novo na V2.',
-  'V2 BETA. Open the release notes.': 'V2 BETA. Abrir as notas de versão.',
-  "What's new in V2": 'Novidades da V2',
-  News: 'Novidades',
   'Guided tour': 'Tour guiado',
   'Show the main buttons of danna again.': 'Mostrar de novo os botões principais do danna.',
   'Take the tour': 'Fazer o tour',

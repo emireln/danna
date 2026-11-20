@@ -91,19 +91,6 @@ export function TitleBar() {
       <Link to="/" className="wordmark" aria-label={t('danna home')}>
         danna
       </Link>
-      <Link
-        to="/whats-new"
-        className="beta-badge"
-        data-tour="whats-new"
-        aria-label={t('V2 BETA. Open the release notes.')}
-        title={t("What's new in V2")}
-      >
-        <span className="beta-badge__tag">{t('V2 BETA')}</span>
-        <span className="beta-badge__more" aria-hidden="true">
-          {t('News')}
-        </span>
-      </Link>
-
       <div className="titlebar__spacer" onDoubleClick={() => windows.desktop && windows.toggle()} />
 
       {showActions && (

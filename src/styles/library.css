@@ -124,7 +124,7 @@
   position: fixed;
   top: var(--titlebar-h, 46px);
   right: 0;
-  bottom: 0;
+  bottom: var(--nav-h, 64px);
   left: 0;
   z-index: 60;
   display: flex;

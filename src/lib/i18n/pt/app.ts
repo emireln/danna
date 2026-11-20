@@ -400,7 +400,6 @@ export const APP_PT: Record<string, string> = {
   'Your level is {level}': 'Seu nível é {level}',
   'Level check': 'Teste de nível',
   'Beta': 'Beta',
-  'V2 BETA': 'V2 BETA',
   'Find your level and the skills to work on, in about 15 minutes.': 'Descubra seu nível e as habilidades para trabalhar, em cerca de 15 minutos.',
   'Continue learning': 'Continuar estudando',
   'Unit {number} · {title}': 'Unidade {number} · {title}',

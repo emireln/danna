@@ -372,16 +372,6 @@
     color: var(--primary);
   }
 
-  .beta {
-    font-size: 12px;
-    color: var(--muted);
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    padding: 1px 8px;
-    font-style: italic;
-  }
-
   .tag {
     font-size: 11px;
     font-weight: 650;
@@ -901,9 +891,15 @@
   }
 
   /* ---------- Sheets, toasts, menus ---------- */
+  /* The dim covers the page between the title bar and the bottom tabs, and the sheet sits in that room, so neither bar
+     can cover it. Inside the shell the dim stops at the tabs; elsewhere it runs to the bottom of the window. */
   .scrim {
+    --scrim-bottom: 0px;
     position: fixed;
-    inset: 0;
+    top: var(--titlebar-h, 46px);
+    right: 0;
+    bottom: var(--scrim-bottom);
+    left: 0;
     z-index: 40;
     background: rgba(15, 27, 51, 0.32);
     display: grid;
@@ -911,9 +907,13 @@
     padding: 24px;
   }
 
+  .shell .scrim {
+    --scrim-bottom: var(--nav-h);
+  }
+
   .sheet {
     width: min(520px, 100%);
-    max-height: calc(100vh - 48px);
+    max-height: calc(100vh - var(--titlebar-h, 46px) - var(--scrim-bottom) - 48px);
     display: flex;
     flex-direction: column;
     background: var(--canvas);
