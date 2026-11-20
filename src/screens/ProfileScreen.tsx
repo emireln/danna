@@ -10,9 +10,11 @@ import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { daysUntil, formatDate, levelInfo, timeAgo } from '../lib/progress';
 import { bandFor, toeflRange } from '../lib/scoring';
-import { SKILL_LABEL, type AttemptRow, type LeagueRow } from '../lib/types';
+import { SKILL_LABEL, type AttemptRow, type LeagueRow, type LessonProgressRow } from '../lib/types';
 import { LeagueCard } from '../components/LeagueCard';
+import { AchievementGrid } from '../components/AchievementGrid';
 import { LEAGUE_DAYS } from '../lib/league';
+import { achievementsOf, statsOf } from '../lib/achievements';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
@@ -24,14 +26,16 @@ export function ProfileScreen() {
   // The weekly league: the members with their XP for the last seven days, and today's runs for the bars without friends.
   const [league, setLeague] = useState<LeagueRow[] | null>(null);
   const [recentRuns, setRecentRuns] = useState<AttemptRow[]>([]);
+  const [lessons, setLessons] = useState<LessonProgressRow[]>([]);
   useEffect(() => {
     if (!backend) return undefined;
     let active = true;
-    Promise.all([backend.listLeague(LEAGUE_DAYS), backend.listAttempts(200)])
-      .then(([rows, runs]) => {
+    Promise.all([backend.listLeague(LEAGUE_DAYS), backend.listAttempts(500), backend.listLessonProgress()])
+      .then(([rows, runs, progress]) => {
         if (!active) return;
         setLeague(rows);
         setRecentRuns(runs);
+        setLessons(progress);
       })
       .catch(() => {
         if (active) setLeague([]);
@@ -287,6 +291,9 @@ export function ProfileScreen() {
           online={mode === 'supabase'}
           runs={recentRuns}
           userId={profile.id}
+        />
+        <AchievementGrid
+          items={achievementsOf(statsOf({ profile, lessons, runs: recentRuns, decks: 0, savedWords: 0 }))}
         />
         <FeatureCard
           icon={<ChartColumn />}

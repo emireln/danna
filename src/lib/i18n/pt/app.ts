@@ -1411,6 +1411,32 @@ export const APP_PT: Record<string, string> = {
   // The title bar (2.0.0)
   'XP': 'XP',
 
+  // The achievements (2.0.0)
+  'Achievements': 'Conquistas',
+  '{done} of {total} unlocked': '{done} de {total} conquistadas',
+  'Unlocked': 'Conquistada',
+  '{value} of {need}': '{value} de {need}',
+  'First steps': 'Primeiros passos',
+  'Finish one lesson or test.': 'Termine uma aula ou um teste.',
+  'On a roll': 'Em ritmo',
+  'Practise seven days in a row.': 'Pratique sete dias seguidos.',
+  'Unstoppable': 'Imparável',
+  'Practise thirty days in a row.': 'Pratique trinta dias seguidos.',
+  'Thousand club': 'Clube dos mil',
+  'Earn 1000 XP.': 'Ganhe 1000 XP.',
+  'Lesson master': 'Mestre das aulas',
+  'Complete 25 lessons.': 'Complete 25 aulas.',
+  'Deck builder': 'Criador de baralhos',
+  'Make your first deck.': 'Crie seu primeiro baralho.',
+  'Card shark': 'Craque dos cartões',
+  'Study 100 flashcards.': 'Estude 100 cartões.',
+  'Careful writer': 'Escritor cuidadoso',
+  'Run five writing checks.': 'Faça cinco revisões de texto.',
+  'Word collector': 'Colecionador de palavras',
+  'Save ten words to review.': 'Salve dez palavras para revisar.',
+  'Conversationalist': 'Conversador',
+  'Finish three role-play scenarios.': 'Termine três simulações de conversa.',
+
   // The weekly league (2.0.0)
   'League': 'Liga',
   'Your week: {xp} XP': 'Sua semana: {xp} XP',

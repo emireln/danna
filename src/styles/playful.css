@@ -373,6 +373,33 @@
     background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px);
   }
 
+  /* The achievements: an unlocked badge is a violet 3D tile; a locked one is grey and flat. */
+  :root[data-look='playful'] .achievement {
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    background: #ffffff;
+    box-shadow: var(--shadow);
+  }
+
+  :root[data-look='playful'] .achievement__badge {
+    border-radius: 14px;
+  }
+
+  :root[data-look='playful'] .achievement--on .achievement__badge {
+    background: var(--violet);
+    box-shadow: 0 4px 0 var(--violet-edge);
+  }
+
+  :root[data-look='playful'] .achievement__bar {
+    height: 10px;
+    background: #dfe5fa;
+  }
+
+  :root[data-look='playful'] .achievement__bar > span {
+    background-color: var(--violet);
+    background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px);
+  }
+
   /* The league: each tier has its colour, the bar is thick and striped, and the bars of the week are green. */
   :root[data-look='playful'] .league__tier--bronze {
     background: #f3e2d2;
