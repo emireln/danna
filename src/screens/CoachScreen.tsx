@@ -581,7 +581,7 @@ export function CoachScreen() {
     try {
       await backend.upsertReviewItems([row]);
       setReviewKeys((keys) => new Set(keys).add(row.item_key));
-      notify(t('Saved to your review.'), 'ok');
+      notify(t('Saved to your review. It comes back in about 10 minutes.'), 'ok');
       return true;
     } catch (error) {
       notify(t(errorText(error)), 'error');

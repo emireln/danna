@@ -17,7 +17,8 @@ export function vocabKey(word: string): string {
  * does not use the word itself, so the card cannot be kept (a longer word that contains it does not count).
  */
 export function vocabCloze(item: VocabItem): string | null {
-  const match = new RegExp(`(^|[^A-Za-z])(${escapeForPattern(item.word)})(?![A-Za-z])`, 'i').exec(item.example);
+  // Letters include the accented ones, so a word is never found inside a longer word such as "café".
+  const match = new RegExp(`(^|[^\\p{L}\\p{N}])(${escapeForPattern(item.word)})(?![\\p{L}\\p{N}])`, 'iu').exec(item.example);
   if (!match) return null;
   const start = match.index + match[1].length;
   const word = match[2];

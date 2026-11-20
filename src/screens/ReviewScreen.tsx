@@ -13,6 +13,8 @@ import { useAuth } from '../state/auth';
 function dueText(iso: string, now: number, t: Translate): string {
   const diff = new Date(iso).getTime() - now;
   if (diff <= 0) return t('Due now');
+  // A new or a missed question comes back in ten minutes: say minutes when it is less than an hour away.
+  if (diff < 3_600_000) return t('In {minutes} min', { minutes: Math.max(1, Math.round(diff / 60_000)) });
   const hours = Math.round(diff / 3_600_000);
   if (hours < 24) return t('In {hours} h', { hours: Math.max(1, hours) });
   const days = Math.round(hours / 24);

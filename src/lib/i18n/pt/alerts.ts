@@ -45,6 +45,9 @@ export const ALERTS_PT: Record<string, string> = {
     'Sons curtos e agradáveis para as suas respostas, o coach e as lições concluídas.',
   'Play {sound}': 'Ouvir {sound}',
   'Listen': 'Ouvir',
+  // Review and the coach
+  'In {minutes} min': 'Em {minutes} min',
+  'Saved to your review. It comes back in about 10 minutes.': 'Salvo na sua revisão. Ela volta em cerca de 10 minutos.',
   'Correct answer': 'Resposta certa',
   'Wrong answer': 'Resposta errada',
   'Lesson finished': 'Lição concluída',

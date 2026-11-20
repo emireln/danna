@@ -749,11 +749,12 @@
     border-radius: 16px;
   }
 
-  /* The XP chip in the title bar: a sun-coloured block with its edge, next to the streak. */
-  :root[data-look='playful'] .xp-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+  /* The streak in the title bar takes the look of the XP badge it has replaced: a sun-coloured block with its edge. The
+     flame keeps its colour, which tells the tier of the streak. */
+  :root[data-look='playful'] .streak,
+  :root[data-look='playful'] .streak--ruby,
+  :root[data-look='playful'] .streak--sapphire,
+  :root[data-look='playful'] .streak--amethyst {
     height: 30px;
     padding: 0 9px;
     border-radius: 10px;
@@ -761,17 +762,22 @@
     box-shadow: 0 2px 0 var(--sun-edge);
     color: var(--sun-ink);
     font-size: 12px;
-    font-weight: 800;
-    white-space: nowrap;
-  }
-
-  :root[data-look='playful'] .xp-chip svg {
-    width: 13px;
-    height: 13px;
-  }
-
-  :root[data-look='playful'] .xp-chip b {
     font-weight: 900;
+  }
+
+  /* An empty message disables the send button. In the Playful look it keeps the accent and its white arrow, as in the
+     Classic look, so the arrow stays visible. */
+  :root[data-look='playful'] .coach-send.btn--primary:disabled,
+  :root[data-look='playful'] .coach-send.btn--primary:disabled:hover {
+    background: var(--primary);
+    border-color: transparent;
+    box-shadow: 0 4px 0 var(--primary-700);
+    color: #ffffff;
+  }
+
+  :root[data-look='playful'] .coach-send.btn--primary:disabled svg {
+    color: #ffffff;
+    stroke: #ffffff;
   }
 
   /* The word card of the reader (tap to define): a rounded card with its edge, and the tapped word lifted by a line. */
