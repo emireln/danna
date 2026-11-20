@@ -1268,6 +1268,25 @@
     box-shadow: 0 3px 0 var(--sun-edge);
   }
 
+  /* The question progress bar: a clean, thick bar with a smooth gloss and no stripes. The stripes aliased into a pixel
+     pattern at this height. The bar sits inside the margins of the screen, and its wrapper takes the bar's height. */
+  :root[data-look='playful'] .runner__progress {
+    height: auto;
+    background: transparent;
+  }
+
+  :root[data-look='playful'] .runner__progress .progress {
+    height: 14px;
+    margin: 8px 20px;
+    background: #dfe5fa;
+  }
+
+  :root[data-look='playful'] .runner__progress .progress__bar {
+    border-radius: 999px;
+    background-color: var(--primary);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 60%);
+  }
+
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
   @media (prefers-reduced-motion: reduce) {
     :root[data-look='playful'] .btn,
