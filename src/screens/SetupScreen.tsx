@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { Field, FeatureCard, Notice, Spinner } from '../components/ui';
+import { LookPicker } from '../components/LookPicker';
 import { DateField, todayIso } from '../components/Pickers';
 import { errorText } from '../lib/bridge';
 import { placementRows } from '../lib/roadmap';
@@ -10,7 +11,9 @@ import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
-import { LEVELS, type Goal, type Level } from '../lib/types';
+import { lookOf } from '../lib/look';
+import { LEVELS, type Goal, type Level, type LookId } from '../lib/types';
+import { setTourStatus } from '../lib/tour';
 
 const TARGETS = [80, 90, 100, 110];
 const MINUTES = [10, 15, 25, 40];
@@ -22,7 +25,7 @@ const LEVEL_TEXT: Record<Level, string> = {
   C1: 'Complex structures and academic writing. Lessons from A1 to B2 are marked complete.',
 };
 
-const STEPS = ['Name', 'Goal', 'Time', 'Level', 'AI'];
+const STEPS = ['Look', 'Name', 'Goal', 'Time', 'Level', 'AI'];
 
 /** The heading block every step uses: a short eyebrow, the question, and one line of help. */
 function StepHead({ eyebrow, title, text }: { eyebrow: string; title: string; text?: string }) {
@@ -51,6 +54,7 @@ export function SetupScreen() {
   const [daily, setDaily] = useState<number | null>(null);
   const [level, setLevel] = useState<Level | null>(null);
   const [busy, setBusy] = useState(false);
+  const [savingLook, setSavingLook] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!ready) {
@@ -76,10 +80,25 @@ export function SetupScreen() {
   const shownDate = examDate ?? profile.exam_date ?? '';
   const shownDaily = daily ?? profile.daily_minutes;
   const shownLevel = level ?? profile.level;
+  const look = lookOf(profile);
+
+  // The look is saved to the profile, as it is in Settings: to the account, or to this device without one.
+  const chooseLook = async (next: LookId) => {
+    if (next === look) return;
+    setSavingLook(true);
+    try {
+      await patchProfile({ ui_style: next });
+      notify(t('Your look is saved.'), 'ok');
+    } catch (caught) {
+      notify(t(errorText(caught)), 'error');
+    } finally {
+      setSavingLook(false);
+    }
+  };
 
   const next = () => {
     setError(null);
-    if (step === 0) {
+    if (step === 1) {
       if (!shownName.trim()) return setError(t('Add the name you want danna to use.'));
       if (mode === 'supabase' && !/^[a-z0-9_]{3,20}$/.test(shownUsername)) {
         return setError(t('Usernames use 3 to 20 lowercase letters, numbers or underscores.'));
@@ -113,6 +132,8 @@ export function SetupScreen() {
         level: shownLevel,
         onboarding_done: true,
       });
+      // Today offers the guided tour once, after the setup.
+      setTourStatus('offer');
       notify(t('Your plan is ready.'), 'ok');
       navigate('/', { replace: true });
     } catch (caught) {
@@ -158,6 +179,17 @@ export function SetupScreen() {
               {step === 0 && (
                 <>
                   <StepHead
+                    eyebrow={t('Look')}
+                    title={t('Pick the look you like')}
+                    text={t('Both looks have every feature. You can change it later in Settings.')}
+                  />
+                  <LookPicker value={look} disabled={savingLook} onChange={(next) => void chooseLook(next)} />
+                </>
+              )}
+
+              {step === 1 && (
+                <>
+                  <StepHead
                     eyebrow={t('Learning setup')}
                     title={t('What should danna call you?')}
                     text={
@@ -182,7 +214,7 @@ export function SetupScreen() {
                 </>
               )}
 
-              {step === 1 && (
+              {step === 2 && (
                 <>
                   <StepHead
                     eyebrow={t('Your goal')}
@@ -220,7 +252,7 @@ export function SetupScreen() {
                 </>
               )}
 
-              {step === 2 && (
+              {step === 3 && (
                 <>
                   <StepHead
                     eyebrow={t('Daily time')}
@@ -246,7 +278,7 @@ export function SetupScreen() {
                 </>
               )}
 
-              {step === 3 && (
+              {step === 4 && (
                 <>
                   <StepHead
                     eyebrow={t('Current level')}
@@ -264,7 +296,7 @@ export function SetupScreen() {
                 </>
               )}
 
-              {step === 4 && (
+              {step === 5 && (
                 <>
                   <StepHead
                     eyebrow={t('Optional')}

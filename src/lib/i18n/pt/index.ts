@@ -6,6 +6,7 @@ import { MOCKS_PT } from './mocks';
 import { PRACTICE_PT_A } from './practice-a';
 import { PRACTICE_PT_B } from './practice-b';
 import { PRACTICE_PT_C } from './practice-c';
+import { ONBOARDING_PT } from './onboarding';
 
 export const PT: Record<string, string> = {
   ...CONTENT_PT,
@@ -15,4 +16,5 @@ export const PT: Record<string, string> = {
   ...MOCKS_PT,
   ...APP_PT,
   ...MESSAGES_PT,
+  ...ONBOARDING_PT,
 };

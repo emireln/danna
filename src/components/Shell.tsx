@@ -3,12 +3,14 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Bot, Home, Layers, LibraryBig } from 'lucide-react';
 import { useT } from '../lib/i18n/react';
+import { GuidedTour } from './Tour';
 
-const TABS: Array<{ to: string; label: string; icon: ComponentType<{ 'aria-hidden'?: boolean }>; end: boolean; ai?: boolean }> = [
-  { to: '/', label: 'Today', icon: Home, end: true },
-  { to: '/study', label: 'Self study', icon: LibraryBig, end: false },
-  { to: '/review', label: 'Review', icon: Layers, end: false },
-  { to: '/coach', label: 'Coach', icon: Bot, end: false, ai: true },
+// tour names the button for the guided tour (see Tour.tsx).
+const TABS: Array<{ to: string; label: string; icon: ComponentType<{ 'aria-hidden'?: boolean }>; end: boolean; ai?: boolean; tour: string }> = [
+  { to: '/', label: 'Today', icon: Home, end: true, tour: 'today' },
+  { to: '/study', label: 'Self study', icon: LibraryBig, end: false, tour: 'study' },
+  { to: '/review', label: 'Review', icon: Layers, end: false, tour: 'review' },
+  { to: '/coach', label: 'Coach', icon: Bot, end: false, ai: true, tour: 'coach' },
 ];
 
 function BottomNav() {
@@ -22,6 +24,7 @@ function BottomNav() {
             key={tab.to}
             to={tab.to}
             end={tab.end}
+            data-tour={tab.tour}
             className={({ isActive }) => `nav__item ${isActive ? 'is-active' : ''}`}
           >
             <Icon aria-hidden={true} />
@@ -62,6 +65,7 @@ export function AppShell() {
         </AnimatePresence>
       </main>
       <BottomNav />
+      <GuidedTour />
     </div>
   );
 }

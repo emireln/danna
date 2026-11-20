@@ -1,5 +1,5 @@
-// The title bar of 2.0.0: the Beta tag is a small square (never a pill), it sits beside the wordmark in both looks,
-// and the XP chip is shown only in the Playful look, so the Classic title bar is unchanged.
+// The title bar: the V2 BETA badge is a gradient link to the release notes, and the word News opens beside it on hover or
+// keyboard focus. The XP chip is shown only in the Playful look.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -11,19 +11,26 @@ const read = (...parts) => readFileSync(join(here, '..', ...parts), 'utf8');
 const looks = read('src', 'styles', 'looks.css').replace(/\/\*[\s\S]*?\*\//g, '');
 const titlebar = read('src', 'components', 'TitleBar.tsx');
 
-test('the Beta tag is a small square with a thin border, not a pill', () => {
-  const block = looks.match(/\.beta-tag \{([\s\S]*?)\}/);
-  assert.ok(block, 'looks.css styles .beta-tag');
+test('the V2 BETA badge is a gradient with a small radius', () => {
+  const block = looks.match(/\.beta-badge \{([\s\S]*?)\}/);
+  assert.ok(block, 'looks.css styles .beta-badge');
+  assert.match(block[1], /background: linear-gradient\(/, 'the badge has a gradient background');
   const radius = block[1].match(/border-radius:\s*(\d+)px/);
-  assert.ok(radius, 'the Beta tag sets a radius in pixels');
-  assert.ok(Number(radius[1]) > 0 && Number(radius[1]) <= 4, `the Beta tag radius is ${radius[1]}px: it must be a square, 4px at most`);
-  assert.doesNotMatch(block[1], /999px|pill/i);
+  assert.ok(radius && Number(radius[1]) > 0 && Number(radius[1]) <= 10, 'the badge radius is 10px at most');
 });
 
-test('the Beta tag sits beside the wordmark in the title bar', () => {
+test('the V2 BETA badge opens the release notes, beside the wordmark', () => {
   const wordmark = titlebar.indexOf('className="wordmark"');
-  const tag = titlebar.indexOf('className="beta-tag"');
-  assert.ok(wordmark > 0 && tag > wordmark, 'the Beta tag follows the wordmark');
+  const badge = titlebar.indexOf('className="beta-badge"');
+  assert.ok(wordmark > 0 && badge > wordmark, 'the badge follows the wordmark');
+  assert.match(titlebar, /<Link\s+to="\/whats-new"\s+className="beta-badge"/, 'the badge links to the release notes');
+});
+
+test('the word News opens on hover and on keyboard focus, and its width changes smoothly', () => {
+  assert.match(looks, /\.beta-badge:hover \.beta-badge__more,\s*\.beta-badge:focus-visible \.beta-badge__more \{/);
+  const closed = looks.match(/\.beta-badge__more \{([\s\S]*?)\}/);
+  assert.ok(closed && /max-width: 0;/.test(closed[1]), 'the word starts with no width');
+  assert.ok(closed && /transition:[\s\S]*max-width/.test(closed[1]), 'the width is transitioned');
 });
 
 test('the XP chip is shown only in the Playful look', () => {

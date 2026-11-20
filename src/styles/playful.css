@@ -694,10 +694,28 @@
     box-shadow: 0 3px 0 var(--primary-700);
   }
 
-  /* The Beta tag takes the violet of the look. It stays a square. */
-  :root[data-look='playful'] .beta-tag {
-    border-color: var(--violet);
-    color: var(--violet);
+  /* The V2 badge in the Playful look is chunky: rounder, with a darker bottom edge like the buttons. */
+  :root[data-look='playful'] .beta-badge {
+    border-radius: 10px;
+    box-shadow: 0 3px 0 #163a9c;
+  }
+
+  :root[data-look='playful'] .beta-badge:hover,
+  :root[data-look='playful'] .beta-badge:focus-visible {
+    box-shadow: 0 4px 0 #163a9c;
+    transform: translateY(-1px);
+  }
+
+  /* The tour in the Playful look: a white card with a chunky edge, and a lit button with a rounder frame. */
+  :root[data-look='playful'] .tour__card,
+  :root[data-look='playful'] .tour-offer__card {
+    border: 2px solid var(--line-2);
+    border-radius: 20px;
+    box-shadow: 0 5px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .tour__spot {
+    border-radius: 16px;
   }
 
   /* The XP chip in the title bar: a sun-coloured block with its edge, next to the streak. */

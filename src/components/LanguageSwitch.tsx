@@ -6,7 +6,7 @@ import usFlag from '../assets/flags/us.svg';
 import { Tabs, type TabItem } from './ui';
 
 // Each language is shown by its country's flag. The name stays on the tab for screen readers and as a tooltip.
-const FLAGS: Record<Lang, string> = { en: usFlag, pt: brFlag };
+export const FLAGS: Record<Lang, string> = { en: usFlag, pt: brFlag };
 
 export function LanguageSwitch({ block = false }: { block?: boolean }) {
   const { lang, setLang, t } = useLanguage();

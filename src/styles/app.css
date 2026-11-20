@@ -786,6 +786,20 @@
     box-shadow: var(--shadow-sm);
   }
 
+  /* The flag on a language card in the welcome: a little bigger than on a tab, with the same hairline edge. */
+  .lang-card {
+    align-items: flex-start;
+  }
+
+  .lang-card__flag {
+    display: block;
+    height: 30px;
+    width: auto;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
   /* The flag on a language tab: the country's own picture, with a hairline edge so a white stripe stays visible. */
   .lang-flag {
     display: block;
@@ -2904,6 +2918,52 @@
     color: var(--primary-700);
     background: var(--primary-100);
     margin-bottom: 8px;
+  }
+
+  /* The V2 notes are highlighted: a heading with the badge's gradient, and each note sits on a tinted card. */
+  .release-group {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 28px;
+  }
+
+  .release-group__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .release-group__badge {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 9px;
+    border-radius: 8px;
+    background: linear-gradient(120deg, #2456e0 0%, #6b3fd6 100%);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .release-group__title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .release-group__text {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .release--v2 {
+    margin-top: 10px;
+    padding: 18px;
+    border: 1px solid #d6e0f7;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(36, 86, 224, 0.07), rgba(107, 63, 214, 0.03));
   }
 
   .auth-hero {

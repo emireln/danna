@@ -94,13 +94,24 @@ export function TitleBar() {
       <Link to="/" className="wordmark" aria-label={t('danna home')}>
         danna
       </Link>
-      <span className="beta-tag">{t('V2 BETA')}</span>
+      <Link
+        to="/whats-new"
+        className="beta-badge"
+        data-tour="whats-new"
+        aria-label={t('V2 BETA. Open the release notes.')}
+        title={t("What's new in V2")}
+      >
+        <span className="beta-badge__tag">{t('V2 BETA')}</span>
+        <span className="beta-badge__more" aria-hidden="true">
+          {t('News')}
+        </span>
+      </Link>
 
       <div className="titlebar__spacer" onDoubleClick={() => windows.desktop && windows.toggle()} />
 
       {showActions && (
         <div className="titlebar__actions">
-          <button className="btn btn--icon" onClick={() => setSearching(true)} aria-label={t('Search')} title={t('Search')}>
+          <button className="btn btn--icon" onClick={() => setSearching(true)} aria-label={t('Search')} title={t('Search')} data-tour="search">
             <Search />
           </button>
           {mode === 'supabase' && (
@@ -113,7 +124,7 @@ export function TitleBar() {
               {friendBadge > 0 && <span className="icon-badge">{friendBadge}</span>}
             </Link>
           )}
-          <Link to="/library" className="btn btn--icon icon-wrap" aria-label={t('My library')}>
+          <Link to="/library" className="btn btn--icon icon-wrap" aria-label={t('My library')} data-tour="library">
             <BookOpen />
           </Link>
           {look === 'playful' && profile && <XpChip xp={profile.xp} />}
@@ -122,6 +133,7 @@ export function TitleBar() {
           <div className="menu-anchor" ref={anchor}>
             <button
               className="avatar-btn"
+              data-tour="account"
               onClick={() => setMenuOpen((open) => !open)}
               aria-haspopup="menu"
               aria-expanded={menuOpen}

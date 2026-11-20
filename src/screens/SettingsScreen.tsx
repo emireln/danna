@@ -679,6 +679,16 @@ export function SettingsScreen() {
         </button>
       </div>
 
+      <div className="settings-row">
+        <div className="settings-row__body">
+          <div className="settings-row__title">{t('Guided tour')}</div>
+          <div className="settings-row__text">{t('Show the main buttons of danna again.')}</div>
+        </div>
+        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/', { state: { tour: true } })}>
+          {t('Take the tour')}
+        </button>
+      </div>
+
       <SectionTitle title={t('Support')} />
       <div className="settings-row">
         <div className="settings-row__body">

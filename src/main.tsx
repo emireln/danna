@@ -11,6 +11,7 @@ import './styles/looks.css';
 import './styles/decks.css';
 import './styles/write.css';
 import './styles/define.css';
+import './styles/tour.css';
 import './styles/playful.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
