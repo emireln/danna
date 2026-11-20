@@ -1,9 +1,9 @@
 import { useLayoutEffect, useRef, type ComponentType } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Bot, Home, Layers, LibraryBig } from 'lucide-react';
 import { useT } from '../lib/i18n/react';
 import { GuidedTour } from './Tour';
+import { ReminderSync } from './ReminderSync';
 
 // tour names the button for the guided tour (see Tour.tsx).
 const TABS: Array<{ to: string; label: string; icon: ComponentType<{ 'aria-hidden'?: boolean }>; end: boolean; ai?: boolean; tour: string }> = [
@@ -51,21 +51,15 @@ export function AppShell() {
   return (
     <div className="shell">
       <main className="main" ref={mainRef}>
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={section}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, transition: { duration: 0.1 } }}
-            transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-            className="shell__page"
-          >
-            <Outlet />
-          </motion.div>
-        </AnimatePresence>
+        {/* A section fades in with a CSS animation when it opens. Nothing waits for the old page to leave first, and
+            nothing is animated in JavaScript while the new page mounts, so the change does not stutter. */}
+        <div key={section} className="shell__page">
+          <Outlet />
+        </div>
       </main>
       <BottomNav />
       <GuidedTour />
+      <ReminderSync />
     </div>
   );
 }

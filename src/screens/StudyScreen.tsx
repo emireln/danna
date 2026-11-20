@@ -8,6 +8,7 @@ import { TOEFL_TEST_ID, levelSkillTests, levelTest, lessonsForSkill, toeflLesson
 import { LEVELS } from '../lib/types';
 import { SECTION_ART, SECTION_BASE } from '../lib/art';
 import { errorText } from '../lib/bridge';
+import { keepAnswer, lastAnswer } from '../lib/cache';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { progressMap } from '../lib/roadmap';
@@ -27,10 +28,17 @@ const SECTION_COPY: Record<Skill, { kicker: string; pills: string[] }> = {
   language: { kicker: 'Word order, tenses and vocabulary', pills: ['Instant explanations', 'Spaced review'] },
 };
 
+interface SelfStudyData {
+  progress: LessonProgressRow[];
+  tests: TestRow[];
+}
+
 function useSelfStudyData() {
   const { backend } = useAuth();
-  const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
-  const [tests, setTests] = useState<TestRow[]>([]);
+  // What Self study showed last time, so its sections are there at once while the newest progress is checked.
+  const [remembered] = useState(() => lastAnswer<SelfStudyData>('self-study', backend));
+  const [progress, setProgress] = useState<LessonProgressRow[] | null>(remembered?.progress ?? null);
+  const [tests, setTests] = useState<TestRow[]>(remembered?.tests ?? []);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,8 +47,9 @@ function useSelfStudyData() {
     Promise.all([backend.listLessonProgress(), backend.listMyTests()])
       .then(([rows, mine]) => {
         if (!active) return;
-        setProgress(rows);
-        setTests(mine);
+        const data = keepAnswer<SelfStudyData>('self-study', backend, { progress: rows, tests: mine });
+        setProgress(data.progress);
+        setTests(data.tests);
       })
       .catch((error: unknown) => {
         console.error('Could not load self study', error);
@@ -68,7 +77,7 @@ export function StudyScreen() {
   const t = useT();
   const { ready: aiReady } = useAI();
   const { profile } = useAppData();
-  const { progress, tests, map, loadError } = useSelfStudyData();
+  const { tests, map, loadError } = useSelfStudyData();
   const [tab, setTab] = useState<'sections' | 'mock'>('sections');
   const [generating, setGenerating] = useState(false);
   const aiMocks = tests.filter((test) => test.skill === 'mixed');
@@ -135,9 +144,8 @@ export function StudyScreen() {
 
         {tab === 'sections' && (
           <div className="section-grid">
-            {progress === null
-              ? CARD_SKILLS.map((skill) => <Skeleton key={skill} height={196} />)
-              : CARD_SKILLS.map((skill) => {
+            {/* The cards show at once. Until the progress arrives their counts are zero, and nothing jumps when it does. */}
+            {CARD_SKILLS.map((skill) => {
                   const lessons = lessonsForSkill(skill);
                   const completed = lessons.filter((lesson) => (map.get(lesson.id)?.stars ?? 0) >= 1).length;
                   const questions = lessons.reduce((sum, lesson) => sum + lesson.questions.length, 0);

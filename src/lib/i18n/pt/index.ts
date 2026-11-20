@@ -7,6 +7,7 @@ import { PRACTICE_PT_A } from './practice-a';
 import { PRACTICE_PT_B } from './practice-b';
 import { PRACTICE_PT_C } from './practice-c';
 import { ONBOARDING_PT } from './onboarding';
+import { ALERTS_PT } from './alerts';
 
 export const PT: Record<string, string> = {
   ...CONTENT_PT,
@@ -17,4 +18,5 @@ export const PT: Record<string, string> = {
   ...APP_PT,
   ...MESSAGES_PT,
   ...ONBOARDING_PT,
+  ...ALERTS_PT,
 };

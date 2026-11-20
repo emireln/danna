@@ -719,8 +719,10 @@
     resize: vertical;
   }
 
+  /* The field and its eye are one block, so the eye can be centred on the height of the field. */
   .input-wrap {
     position: relative;
+    display: block;
   }
 
   .input-wrap .input {
@@ -729,10 +731,12 @@
 
   .input-wrap .btn--icon {
     position: absolute;
+    top: 0;
+    bottom: 0;
     right: 4px;
-    top: 4px;
     width: 36px;
     height: 36px;
+    margin: auto 0;
   }
 
   .select-line {
@@ -1500,6 +1504,21 @@
     color: #fff;
     box-shadow: 0 6px 0 -1px rgba(15, 27, 51, 0.12);
     transition: transform 0.2s var(--ease);
+    /* Opacity only, so a unit with many nodes fades in without a burst of springs. */
+    animation: node-in 0.3s ease-out backwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  @keyframes node-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .node {
+      animation: none;
+    }
   }
 
   .node:hover:not(:disabled) {
@@ -1688,8 +1707,10 @@
   .section-card {
     position: relative;
     isolation: isolate;
+    display: flex;
+    flex-direction: column;
     min-height: 196px;
-    padding: 22px 22px 26px;
+    padding: 22px 22px 22px;
     border-radius: 6px;
     overflow: hidden;
     color: #fff;
@@ -1726,6 +1747,7 @@
 
   .section-card__pills {
     margin-top: 14px;
+    margin-bottom: 18px;
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
@@ -1746,11 +1768,10 @@
     border-radius: 4px;
   }
 
+  /* The bar is part of the card's flow, under the badges, so a badge that wraps onto a second line pushes the bar down
+     instead of sitting on top of it. Extra height (the card's minimum) goes above the bar, so the bars line up. */
   .section-card .progress {
-    position: absolute;
-    left: 22px;
-    right: 22px;
-    bottom: 18px;
+    margin-top: auto;
     background: rgba(255, 255, 255, 0.18);
   }
 

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Check, Headphones, Languages, Lock, Mic, PenLine, Star, Trophy } from 'lucide-react';
 import { UNITS, type UnitDef } from '../content';
 import { Notice, PageHeader, ProgressBar, Skeleton } from '../components/ui';
+import { keepAnswer, lastAnswer } from '../lib/cache';
 import { errorText } from '../lib/bridge';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
@@ -29,7 +29,8 @@ export function RoadmapScreen() {
   const t = useT();
   const { backend } = useAuth();
   const { profile } = useAppData();
-  const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
+  // The roadmap as it was last time, shown at once while the newest progress is checked.
+  const [progress, setProgress] = useState<LessonProgressRow[] | null>(() => lastAnswer<LessonProgressRow[]>('roadmap', backend));
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export function RoadmapScreen() {
     backend
       .listLessonProgress()
       .then((rows) => {
-        if (active) setProgress(rows);
+        if (active) setProgress(keepAnswer('roadmap', backend, rows));
       })
       .catch((error: unknown) => {
         console.error('Could not load the roadmap', error);
@@ -119,12 +120,9 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
             const finished = nodes[index].state === 'done';
             const d = `M ${from.x} ${from.y} C ${from.x} ${from.y + ROW * 0.5}, ${to.x} ${to.y - ROW * 0.5}, ${to.x} ${to.y}`;
             return (
-              <motion.path
+              <path
                 key={`seg-${index}`}
                 d={d}
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.5, delay: Math.min(index, 8) * 0.06 }}
                 style={{ stroke: finished ? 'var(--teal)' : undefined, strokeDasharray: finished ? 'none' : undefined, strokeWidth: finished ? 6 : undefined }}
               />
             );
@@ -143,13 +141,18 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
           const title = item.checkpoint ? t('Unit check') : t(item.lesson.title);
           const stateText = state === 'done' ? t('completed') : state === 'current' ? t('next up') : t('locked');
           return (
-            <motion.button
+            <button
               key={item.lesson.id}
               className={classes}
-              style={{ position: 'absolute', left: center.x - size / 2, top: center.y - size / 2 }}
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: Math.min(index, 10) * 0.04, type: 'spring', stiffness: 260, damping: 18 }}
+              style={
+                {
+                  position: 'absolute',
+                  left: center.x - size / 2,
+                  top: center.y - size / 2,
+                  // The first few nodes of a unit fade in one after another; the rest appear with them.
+                  '--d': `${Math.min(index, 8) * 30}ms`,
+                } as CSSProperties
+              }
               disabled={state === 'locked'}
               onClick={() => onOpen(item.lesson.id)}
               aria-label={t('{title}, {state}', { title, state: stateText })}
@@ -171,7 +174,7 @@ function UnitBlock({ unit, nodes, onOpen }: { unit: UnitDef; nodes: NodeInfo[]; 
                   </span>
                 )}
               </span>
-            </motion.button>
+            </button>
           );
         })}
       </div>

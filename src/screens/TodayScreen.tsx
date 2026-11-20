@@ -21,6 +21,15 @@ import { errorText } from '../lib/bridge';
 import { useLanguage, useT } from '../lib/i18n/react';
 import { tn, type Lang } from '../lib/i18n';
 import { levelTestId } from '../content';
+import { keepAnswer, lastAnswer } from '../lib/cache';
+
+// What Today loads, kept as one answer so the screen can show the last one at once.
+interface TodayData {
+  progress: LessonProgressRow[];
+  reviews: ReviewRow[];
+  diagnostic: AttemptRow | null;
+  recent: AttemptRow[];
+}
 
 const TILE_COLORS: Record<Skill, string> = {
   reading: '#17245c',
@@ -44,11 +53,13 @@ export function TodayScreen() {
   const { profile, banners } = useAppData();
   const { ready: aiReady } = useAI();
   const [focus, setFocus] = useState<'all' | Skill>('all');
-  const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
-  const [reviews, setReviews] = useState<ReviewRow[]>([]);
-  const [diagnostic, setDiagnostic] = useState<AttemptRow | null>(null);
+  // What Today showed last time, so it is there at once while the newest numbers are checked.
+  const [remembered] = useState(() => lastAnswer<TodayData>('today', backend));
+  const [progress, setProgress] = useState<LessonProgressRow[] | null>(remembered?.progress ?? null);
+  const [reviews, setReviews] = useState<ReviewRow[]>(remembered?.reviews ?? []);
+  const [diagnostic, setDiagnostic] = useState<AttemptRow | null>(remembered?.diagnostic ?? null);
   // The newest runs, for today's goal and quests.
-  const [recent, setRecent] = useState<AttemptRow[]>([]);
+  const [recent, setRecent] = useState<AttemptRow[]>(remembered?.recent ?? []);
   // The level report can be removed from Today for good. The choice is kept on this device, for this account.
   const [reportHidden, setReportHidden] = useState(false);
   useEffect(() => {
@@ -68,10 +79,16 @@ export function TodayScreen() {
     Promise.all([backend.listLessonProgress(), backend.listReviewItems(), backend.listAttempts(1, 'diagnostic'), backend.listAttempts(200)])
       .then(([rows, items, checks, runs]) => {
         if (!active) return;
-        setProgress(rows);
-        setReviews(items);
-        setDiagnostic(checks[0] ?? null);
-        setRecent(runs);
+        const data = keepAnswer<TodayData>('today', backend, {
+          progress: rows,
+          reviews: items,
+          diagnostic: checks[0] ?? null,
+          recent: runs,
+        });
+        setProgress(data.progress);
+        setReviews(data.reviews);
+        setDiagnostic(data.diagnostic);
+        setRecent(data.recent);
       })
       .catch((error: unknown) => {
         console.error('Could not load your progress', error);
@@ -220,13 +237,7 @@ export function TodayScreen() {
         )}
 
         {focusNode ? (
-          <motion.section
-            className="hero"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
-            aria-label={t('Continue learning')}
-          >
+          <section className="hero" aria-label={t('Continue learning')}>
             <p className="eyebrow">
               {t('Unit {number} · {title}', { number: focusNode.item.unit.number, title: t(focusNode.item.unit.title) })}
             </p>
@@ -268,7 +279,7 @@ export function TodayScreen() {
             <button className="btn btn--white btn--block hero__cta" onClick={() => navigate(`/play/lesson/${focusNode.item.lesson.id}`)}>
               {t('Continue learning')}
             </button>
-          </motion.section>
+          </section>
         ) : (
           <section className="hero" aria-label={t('Roadmap complete')}>
             <h2 className="hero__title">{t('Roadmap complete')}</h2>

@@ -51,13 +51,14 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     app.setAppUserModelId('app.danna.desktop');
     protocol.handle('app', serveApp);
-    // Only the microphone (speaking practice), and only for danna's own pages.
+    // Only the microphone (speaking practice) and notifications (reminders), and only for danna's own pages.
+    const allowedPermissions = new Set(['media', 'notifications']);
     session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
       const url = webContents ? webContents.getURL() : '';
-      callback(permission === 'media' && isAppUrl(url));
+      callback(allowedPermissions.has(permission) && isAppUrl(url));
     });
     session.defaultSession.setPermissionCheckHandler((webContents, permission, requestingOrigin) => {
-      return permission === 'media' && isAppUrl(requestingOrigin || (webContents ? webContents.getURL() : ''));
+      return allowedPermissions.has(permission) && isAppUrl(requestingOrigin || (webContents ? webContents.getURL() : ''));
     });
     registerIpc();
     createTray();
@@ -462,6 +463,7 @@ function registerIpc() {
   handle('window:close', () => {
     if (mainWindow) mainWindow.close();
   });
+  handle('window:show', () => showWindow());
   handle('window:state', () => ({ maximized: Boolean(mainWindow && mainWindow.isMaximized()) }));
 
   handle('shell:open', ({ url }) => {

@@ -120,6 +120,8 @@ export interface DannaBridge {
     minimize: () => Promise<void>;
     toggleMaximize: () => Promise<void>;
     close: () => Promise<void>;
+    /** Brings the window forward from the tray, for example when a reminder is clicked. */
+    show: () => Promise<void>;
     state: () => Promise<WindowState>;
     onState: (callback: (state: WindowState) => void) => () => void;
   };

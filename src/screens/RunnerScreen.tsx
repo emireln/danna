@@ -7,6 +7,7 @@ import { CountUp } from '../components/charts';
 import { ConfirmSheet, Notice, ProgressBar, Spinner, formatClock } from '../components/ui';
 import { bundledTest, diagnosticTest } from '../content';
 import { errorText } from '../lib/bridge';
+import { playSound } from '../lib/sound';
 import { clearDraft, draftKey, localDrafts, readSessionDraft, writeSessionDraft } from '../lib/drafts';
 import { gradeChoice, gradeCloze, gradeReorder, shuffleWords } from '../lib/grading';
 import { nextStreak, localDate } from '../lib/progress';
@@ -139,6 +140,10 @@ export function RunnerScreen() {
   const [revealed, setRevealed] = useState<Record<string, boolean>>({});
   const [blankMarks, setBlankMarks] = useState<Record<string, boolean[]>>({});
   const [summary, setSummary] = useState<Summary | null>(null);
+  // A finished lesson or test plays its chime once, when its summary appears.
+  useEffect(() => {
+    if (summary) playSound('complete');
+  }, [summary]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -426,6 +431,8 @@ export function RunnerScreen() {
     if (!results[question.id]) {
       const { record, blanks } = recordFor(question, state, words);
       setResults((previous) => ({ ...previous, [question.id]: record }));
+      // Learning shows the answer at once, so that is when it sounds. A test keeps its answers to itself until the end.
+      if (learn) playSound(record.fraction >= 1 ? 'correct' : 'wrong');
       if (blanks) setBlankMarks((previous) => ({ ...previous, [question.id]: blanks }));
       if (learn && isObjective(question)) {
         // A wrong word order stays open, so the words can be moved and checked again.

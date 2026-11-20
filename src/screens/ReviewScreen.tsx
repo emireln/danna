@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Layers, Play } from 'lucide-react';
 import { Empty, Notice, PageHeader, SectionTitle, Skeleton } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { keepAnswer, lastAnswer } from '../lib/cache';
 import { tn } from '../lib/i18n';
 import { useT, type Translate } from '../lib/i18n/react';
 import { questionPreview } from '../lib/srs';
@@ -22,7 +23,8 @@ export function ReviewScreen() {
   const navigate = useNavigate();
   const t = useT();
   const { backend } = useAuth();
-  const [items, setItems] = useState<ReviewRow[] | null>(null);
+  // The review queue as it was last time, shown at once while the newest items are checked.
+  const [items, setItems] = useState<ReviewRow[] | null>(() => lastAnswer<ReviewRow[]>('review', backend));
   const [loadError, setLoadError] = useState<string | null>(null);
   const now = useMemo(() => Date.now(), []);
 
@@ -32,7 +34,7 @@ export function ReviewScreen() {
     backend
       .listReviewItems()
       .then((rows) => {
-        if (active) setItems(rows);
+        if (active) setItems(keepAnswer('review', backend, rows));
       })
       .catch((error: unknown) => {
         console.error('Could not load your review queue', error);

@@ -497,6 +497,23 @@
     box-shadow: 0 0 0 4px var(--blue-50);
   }
 
+  /* The show and hide eye inside a key or password field is a flat icon in the Playful look too: no edge, centred. */
+  :root[data-look='playful'] .input-wrap .btn--icon,
+  :root[data-look='playful'] .input-wrap .btn--icon:hover:not(:disabled),
+  :root[data-look='playful'] .input-wrap .btn--icon:active:not(:disabled) {
+    border: 0;
+    box-shadow: none;
+    transform: none;
+  }
+
+  :root[data-look='playful'] .input-wrap .btn--icon {
+    background: transparent;
+  }
+
+  :root[data-look='playful'] .input-wrap .btn--icon:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
   /* Sheets and menus: rounder, with the card edge. */
   :root[data-look='playful'] .sheet {
     border-radius: var(--radius-lg);

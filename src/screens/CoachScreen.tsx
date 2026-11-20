@@ -25,6 +25,7 @@ import { activeExamDate } from '../lib/exam';
 import { localDate, nextStreak } from '../lib/progress';
 import { useT } from '../lib/i18n/react';
 import { narrate, type Narration } from '../lib/speech';
+import { playSound } from '../lib/sound';
 import type { ChatImage, ChatMessage, LibraryFileRow, ReviewRow, TutorChatRow, TutorRow } from '../lib/types';
 import { useAI, type ReplyStream } from '../state/ai';
 import { useAppData } from '../state/appData';
@@ -373,7 +374,10 @@ export function CoachScreen() {
         if (result.cut) setCutReplies((set) => new Set(set).add(row.id));
         // Only a reply to a new message counts, so writing the same summary again does not count it twice.
         if (summaryCounts && !result.aborted && isRoleplayMode(modeId)) void recordRoleplay(modeId, text);
-        if (activeRef.current === chatId) setMessages((list) => [...(list ?? []), row]);
+        if (activeRef.current === chatId) {
+          setMessages((list) => [...(list ?? []), row]);
+          if (!result.aborted) playSound('coach');
+        }
         if (autoRead && !result.aborted && activeRef.current === chatId) speak(text);
       }
     } catch (error) {

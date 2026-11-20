@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Cloud, Coffee, Eye, EyeOff, KeyRound, Laptop, Play, Star, Trash2, Volume2 } from 'lucide-react';
+import { Bell, Cloud, Coffee, Eye, EyeOff, KeyRound, Laptop, Play, Star, Trash2, Volume2 } from 'lucide-react';
 import { LanguageSwitch } from '../components/LanguageSwitch';
 import { LookPicker } from '../components/LookPicker';
 import { Select } from '../components/Pickers';
@@ -8,6 +8,17 @@ import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner }
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
 import { checkFeedback, FeedbackLimitError } from '../lib/feedback';
 import { lookOf } from '../lib/look';
+import {
+  readReminderPrefs,
+  readSoundPrefs,
+  writeReminderPrefs,
+  writeSoundPrefs,
+  type ReminderId,
+  type ReminderPrefs,
+  type SoundId,
+  type SoundPrefs,
+} from '../lib/preferences';
+import { previewSound } from '../lib/sound';
 import { openSupport } from '../lib/support';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
@@ -48,6 +59,58 @@ export function SettingsScreen() {
   const { refresh, refreshSocial, profile, patchProfile } = useAppData();
   const look = lookOf(profile);
   const [savingLook, setSavingLook] = useState(false);
+  // The device's own choices for sounds and reminders. Each change is saved on this device as it is made.
+  const [sounds, setSounds] = useState<SoundPrefs>(() => readSoundPrefs());
+  const [reminders, setReminders] = useState<ReminderPrefs>(() => readReminderPrefs());
+  const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>(() =>
+    typeof Notification === 'undefined' ? 'unsupported' : Notification.permission,
+  );
+  const changeSounds = (next: SoundPrefs) => {
+    writeSoundPrefs(next);
+    setSounds(next);
+  };
+  const changeReminders = (next: ReminderPrefs) => {
+    writeReminderPrefs(next);
+    setReminders(next);
+  };
+  // Turning reminders on asks the system for permission, once. The answer decides whether a reminder can arrive.
+  const toggleReminders = async () => {
+    const turningOn = !reminders.enabled;
+    if (turningOn && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      try {
+        setPermission(await Notification.requestPermission());
+      } catch {
+        // The choice is still kept. The notice below says what to do when notifications are blocked.
+      }
+    }
+    changeReminders({ ...reminders, enabled: turningOn });
+  };
+  const sendTestReminder = () => {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+      notify(t('Notifications are blocked for danna. Allow them in your system settings, then turn them on here.'), 'error');
+      return;
+    }
+    void new Notification(t('Reminders are on'), {
+      body: t('This is how a reminder looks. You can change them any time in Settings.'),
+      tag: 'danna-test',
+      silent: true,
+    });
+    previewSound('reminder');
+  };
+  const reminderRows: Array<{ id: ReminderId; title: string; text: string }> = [
+    { id: 'streak', title: t('Keep my streak'), text: t('A short lesson keeps the flame going.') },
+    { id: 'goal', title: t('Daily goal'), text: t('The minutes left to reach today’s goal.') },
+    { id: 'review', title: t('Review reminders'), text: t('Cards that are due, so they stick.') },
+    { id: 'exam', title: t('Your exam'), text: t('The days before your exam date.') },
+    { id: 'comeback', title: t('Come back'), text: t('When you have not practised for a few days.') },
+  ];
+  const soundRows: Array<{ id: SoundId; title: string; text: string }> = [
+    { id: 'correct', title: t('Correct answer'), text: t('A bright two-note chime.') },
+    { id: 'wrong', title: t('Wrong answer'), text: t('A soft, low note. Not a buzzer.') },
+    { id: 'complete', title: t('Lesson finished'), text: t('A rising melody when a lesson or test is finished.') },
+    { id: 'coach', title: t('Coach reply'), text: t('A gentle glide when the coach answers.') },
+    { id: 'reminder', title: t('Reminder'), text: t('A soft bell when a reminder arrives.') },
+  ];
   // The look is saved to the profile: to the account in the cloud, or to this device without one.
   const chooseLook = async (next: LookId) => {
     if (next === look) return;
@@ -398,6 +461,136 @@ export function SettingsScreen() {
         </button>
       </div>
 
+      <SectionTitle title={t('Notifications')} />
+      <div className="stack">
+        <div className="settings-row">
+          <div className="settings-row__body">
+            <div className="settings-row__title">{t('Reminders from danna')}</div>
+            <div className="settings-row__text">
+              {t('A short message when danna is in the background and a reminder helps: a streak to keep, a goal to reach, cards to review.')}
+            </div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={reminders.enabled}
+            aria-label={t('Reminders from danna')}
+            className="switch"
+            disabled={permission === 'unsupported'}
+            onClick={() => void toggleReminders()}
+          >
+            <span className="switch__thumb" />
+          </button>
+        </div>
+
+        {reminders.enabled && permission !== 'granted' && permission !== 'unsupported' && (
+          <Notice tone="info">
+            {t('Notifications are blocked for danna. Allow them in your system settings, then turn them on here.')}
+          </Notice>
+        )}
+
+        {reminders.enabled && (
+          <>
+            <div className="settings-row">
+              <div className="settings-row__body">
+                <div className="settings-row__title">{t('Remind me from')}</div>
+                <div className="settings-row__text">{t('Reminders start at this time, and none arrives after 10 pm.')}</div>
+              </div>
+              <input
+                className="input"
+                type="time"
+                value={reminders.time}
+                aria-label={t('Remind me from')}
+                style={{ width: 130 }}
+                onChange={(event) => {
+                  if (event.target.value) changeReminders({ ...reminders, time: event.target.value });
+                }}
+              />
+            </div>
+
+            {reminderRows.map((row) => (
+              <div className="settings-row" key={row.id}>
+                <div className="settings-row__body">
+                  <div className="settings-row__title">{row.title}</div>
+                  <div className="settings-row__text">{row.text}</div>
+                </div>
+                <button
+                  role="switch"
+                  aria-checked={reminders.types[row.id]}
+                  aria-label={row.title}
+                  className="switch"
+                  onClick={() => changeReminders({ ...reminders, types: { ...reminders.types, [row.id]: !reminders.types[row.id] } })}
+                >
+                  <span className="switch__thumb" />
+                </button>
+              </div>
+            ))}
+
+            <div>
+              <button className="btn btn--ghost btn--sm" onClick={sendTestReminder}>
+                <Bell aria-hidden="true" /> {t('Send a test')}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      <SectionTitle title={t('Sounds')} />
+      <div className="stack">
+        <div className="settings-row">
+          <div className="settings-row__body">
+            <div className="settings-row__title">{t('Sounds in danna')}</div>
+            <div className="settings-row__text">{t('Short, friendly sounds for your answers, the coach and finished lessons.')}</div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={sounds.enabled}
+            aria-label={t('Sounds in danna')}
+            className="switch"
+            onClick={() => changeSounds({ ...sounds, enabled: !sounds.enabled })}
+          >
+            <span className="switch__thumb" />
+          </button>
+        </div>
+
+        <div className="settings-row">
+          <div className="settings-row__body">
+            <div className="settings-row__title">{t('Volume')}</div>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={sounds.volume}
+            aria-label={t('Volume')}
+            style={{ width: 180, accentColor: 'var(--primary)' }}
+            onChange={(event) => changeSounds({ ...sounds, volume: Number(event.target.value) })}
+          />
+        </div>
+
+        {soundRows.map((row) => (
+          <div className="settings-row" key={row.id}>
+            <div className="settings-row__body">
+              <div className="settings-row__title">{row.title}</div>
+              <div className="settings-row__text">{row.text}</div>
+            </div>
+            <button className="btn btn--ghost btn--sm" onClick={() => previewSound(row.id)} aria-label={t('Play {sound}', { sound: row.title })}>
+              <Play aria-hidden="true" /> {t('Listen')}
+            </button>
+            <button
+              role="switch"
+              aria-checked={sounds.items[row.id]}
+              aria-label={row.title}
+              className="switch"
+              disabled={!sounds.enabled}
+              onClick={() => changeSounds({ ...sounds, items: { ...sounds.items, [row.id]: !sounds.items[row.id] } })}
+            >
+              <span className="switch__thumb" />
+            </button>
+          </div>
+        ))}
+      </div>
+
       <SectionTitle title={t('AI assistant')} />
       <div className="stack">
         <p className="small muted">
@@ -645,48 +838,50 @@ export function SettingsScreen() {
       )}
 
       <SectionTitle title={t('About')} />
-      <div className="settings-row">
-        <div className="settings-row__body">
-          <div className="settings-row__title">danna {version}</div>
-          <div className="settings-row__text">{t('Scores are practice estimates, not official results.')}</div>
-          {update.state === 'downloading' && update.version && (
-            <div className="settings-row__text">{t('Downloading danna {version} in the background.', { version: update.version })}</div>
+      <div className="stack">
+        <div className="settings-row">
+          <div className="settings-row__body">
+            <div className="settings-row__title">danna {version}</div>
+            <div className="settings-row__text">{t('Scores are practice estimates, not official results.')}</div>
+            {update.state === 'downloading' && update.version && (
+              <div className="settings-row__text">{t('Downloading danna {version} in the background.', { version: update.version })}</div>
+            )}
+            {update.state === 'available' && update.version && (
+              <div className="settings-row__text">{t('danna {version} is available. Download it when you like.', { version: update.version })}</div>
+            )}
+            {update.state === 'ready' && update.version && (
+              <div className="settings-row__text">{t('danna {version} is ready. It installs when you close danna.', { version: update.version })}</div>
+            )}
+          </div>
+          {update.state === 'available' && (
+            <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.download()}>
+              {t('Download update')}
+            </button>
           )}
-          {update.state === 'available' && update.version && (
-            <div className="settings-row__text">{t('danna {version} is available. Download it when you like.', { version: update.version })}</div>
+          {update.state === 'ready' && (
+            <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.install()}>
+              {t('Restart to update')}
+            </button>
           )}
-          {update.state === 'ready' && update.version && (
-            <div className="settings-row__text">{t('danna {version} is ready. It installs when you close danna.', { version: update.version })}</div>
+          {bridge && (
+            <button className="btn btn--ghost btn--sm" onClick={() => void checkUpdates()} disabled={checking}>
+              {checking ? <Spinner dark /> : null} {t('Check for updates')}
+            </button>
           )}
+          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/whats-new')}>
+            {t("What's new")}
+          </button>
         </div>
-        {update.state === 'available' && (
-          <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.download()}>
-            {t('Download update')}
-          </button>
-        )}
-        {update.state === 'ready' && (
-          <button className="btn btn--primary btn--sm" onClick={() => void bridge?.update.install()}>
-            {t('Restart to update')}
-          </button>
-        )}
-        {bridge && (
-          <button className="btn btn--ghost btn--sm" onClick={() => void checkUpdates()} disabled={checking}>
-            {checking ? <Spinner dark /> : null} {t('Check for updates')}
-          </button>
-        )}
-        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/whats-new')}>
-          {t("What's new")}
-        </button>
-      </div>
 
-      <div className="settings-row">
-        <div className="settings-row__body">
-          <div className="settings-row__title">{t('Guided tour')}</div>
-          <div className="settings-row__text">{t('Show the main buttons of danna again.')}</div>
+        <div className="settings-row">
+          <div className="settings-row__body">
+            <div className="settings-row__title">{t('Guided tour')}</div>
+            <div className="settings-row__text">{t('Show the main buttons of danna again.')}</div>
+          </div>
+          <button className="btn btn--ghost btn--sm" onClick={() => navigate('/', { state: { tour: true } })}>
+            {t('Take the tour')}
+          </button>
         </div>
-        <button className="btn btn--ghost btn--sm" onClick={() => navigate('/', { state: { tour: true } })}>
-          {t('Take the tour')}
-        </button>
       </div>
 
       <SectionTitle title={t('Support')} />

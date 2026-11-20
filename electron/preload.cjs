@@ -50,6 +50,7 @@ contextBridge.exposeInMainWorld(
       minimize: () => call('window:minimize'),
       toggleMaximize: () => call('window:toggle-maximize'),
       close: () => call('window:close'),
+      show: () => call('window:show'),
       state: () => call('window:state'),
       onState: (callback) => listen('window:state', callback),
     }),
