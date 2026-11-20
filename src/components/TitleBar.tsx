@@ -94,7 +94,7 @@ export function TitleBar() {
       <Link to="/" className="wordmark" aria-label={t('danna home')}>
         danna
       </Link>
-      <span className="beta-tag">{t('Beta')}</span>
+      <span className="beta-tag">{t('V2 BETA')}</span>
 
       <div className="titlebar__spacer" onDoubleClick={() => windows.desktop && windows.toggle()} />
 

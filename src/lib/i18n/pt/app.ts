@@ -400,6 +400,7 @@ export const APP_PT: Record<string, string> = {
   'Your level is {level}': 'Seu nível é {level}',
   'Level check': 'Teste de nível',
   'Beta': 'Beta',
+  'V2 BETA': 'V2 BETA',
   'Find your level and the skills to work on, in about 15 minutes.': 'Descubra seu nível e as habilidades para trabalhar, em cerca de 15 minutos.',
   'Continue learning': 'Continuar estudando',
   'Unit {number} · {title}': 'Unidade {number} · {title}',
@@ -1631,8 +1632,8 @@ export const APP_PT: Record<string, string> = {
     'Hoje e seu perfil: meta do dia, missões, uma liga semanal com os seus amigos e dez conquistas. A liga com amigos precisa de uma conta online.',
   'XP: practice earns XP. It counts toward your league week from 2.0.0 on, and the XP you earned before stays in your total.':
     'XP: a prática rende XP. Ele conta para a semana da liga a partir da 2.0.0, e o XP que você já tinha continua no seu total.',
-  'Beta: this release carries a Beta badge in the title bar while the new look and features settle. Tell us what you find.':
-    'Beta: esta versão tem um selo Beta na barra de título enquanto o novo visual e os recursos se estabilizam. Conte-nos o que você encontrar.',
+  'Beta: this release carries a V2 BETA badge in the title bar while the new look and features settle. Tell us what you find.':
+    'Beta: esta versão tem um selo V2 BETA na barra de título enquanto o novo visual e os recursos se estabilizam. Conte-nos o que você encontrar.',
   'This word is repeated.': 'Esta palavra está repetida.',
   'Write “I” as a capital letter.': 'Escreva “I” com letra maiúscula.',
   'A new sentence starts with a capital letter.': 'Uma frase nova começa com letra maiúscula.',

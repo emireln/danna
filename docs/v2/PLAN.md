@@ -167,7 +167,7 @@ Every feature is finished when all of these hold:
 - [x] M13. Role-play scenarios in the coach (F10). Twelve scenes with English and Portuguese titles, characters and goals; "Finish and score" gives a summary whose first score is the fluency, with the main mistakes and the new words. The summary counts once, as a practice run.
 - [x] M14. Portuguese coverage test and every translation (F12). `tests/i18n.test.mjs` checks the literal `t('...')` calls; `tests/i18n-dynamic.test.mjs` checks the error messages, the coach's modes and starters, the writing labels and the league tiers, which reach `t()` through variables.
 - [x] M15. Release notes, migration 0023, README and screenshots of both looks (F11). The 2.0.0 notes are in the app (`src/content/announcements.ts`) and in migration 0023, with the same words.
-- [ ] M16. QA pass in both looks; fixes
+- [x] M16. QA pass in both looks; fixes. Checked at 960x540 and 1280x720: decks and deck, study session, writing check and its result, Today, roadmap, self study, profile with league and achievements, the coach's summary card, the look picker, and the score report (its date line was fixed in Playful).
 - [ ] M17. Release commit 2.0.0, push, build, publish
 
 ## 12. Sources

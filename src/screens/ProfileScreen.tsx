@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Camera, ChartColumn, Image as ImageIcon, Pencil, Settings2, Trash2 } from 'lucide-react';
+import { BookOpen, Camera, ChartColumn, ClipboardCheck, Flame, Image as ImageIcon, Pencil, Settings2, Target, Trash2, Zap } from 'lucide-react';
 import { Avatar, Empty, Field, FeatureCard, ProgressBar, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { activeExamDate } from '../lib/exam';
@@ -16,6 +16,7 @@ import { AchievementGrid } from '../components/AchievementGrid';
 import { LEAGUE_DAYS } from '../lib/league';
 import { SAVED_WORDS_NAMES } from '../lib/deck';
 import { achievementsOf, statsOf } from '../lib/achievements';
+import { lookOf } from '../lib/look';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
@@ -65,6 +66,7 @@ export function ProfileScreen() {
     };
   }, [backend]);
   const { profile, patchProfile, pictureUrl, changePicture, bannerUrl, changeBanner } = useAppData();
+  const look = lookOf(profile);
   const { notify } = useToast();
   const [attempts, setAttempts] = useState<AttemptRow[] | null>(null);
   const [checks, setChecks] = useState<{ count: number; rows: AttemptRow[] } | null>(null);
@@ -276,20 +278,40 @@ export function ProfileScreen() {
 
         <div className="profile-hero__stats">
           <div className="profile-hero__stat">
+            {look === 'playful' && (
+              <span className="profile-hero__stat-icon" aria-hidden="true">
+                <Flame />
+              </span>
+            )}
             <span className="profile-hero__value">{profile.streak}</span>
             <span className="profile-hero__label">{t('Day streak')}</span>
           </div>
           <div className="profile-hero__stat">
+            {look === 'playful' && (
+              <span className="profile-hero__stat-icon" aria-hidden="true">
+                <Zap />
+              </span>
+            )}
             <span className="profile-hero__value">{profile.xp}</span>
             <span className="profile-hero__label">{t('Total XP')}</span>
           </div>
           <div className="profile-hero__stat">
+            {look === 'playful' && (
+              <span className="profile-hero__stat-icon" aria-hidden="true">
+                <ClipboardCheck />
+              </span>
+            )}
             <span className="profile-hero__value">{checks?.count ?? 0}</span>
             <span className="profile-hero__label">{t('Level checks taken')}</span>
           </div>
           <div className="profile-hero__stat">
             {profile.goal === 'toefl' ? (
               <>
+                {look === 'playful' && (
+                  <span className="profile-hero__stat-icon" aria-hidden="true">
+                    <Target />
+                  </span>
+                )}
                 <span className="profile-hero__value">{best ? best : '—'}</span>
                 <span className="profile-hero__label">
                   {best ? t('Best TOEFL estimate · {range}', { range: toeflRange(best).join('–') }) : t('Best TOEFL estimate')}
@@ -297,6 +319,11 @@ export function ProfileScreen() {
               </>
             ) : (
               <>
+                {look === 'playful' && (
+                  <span className="profile-hero__stat-icon" aria-hidden="true">
+                    <Target />
+                  </span>
+                )}
                 <span className="profile-hero__value">{diagnostics.length ? bandFor(bestPercent) : '—'}</span>
                 <span className="profile-hero__label">{t('Best level')}</span>
               </>

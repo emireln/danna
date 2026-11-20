@@ -230,10 +230,179 @@
     font-weight: 900;
   }
 
-  /* The profile is the second hero of the app: the same violet, so the look reads as one system. */
+  /* The profile hero in the Playful look: a friendly violet card with a soft shape in the corner, a big avatar with a
+     white ring, the level in a sun chip, and four stat tiles with their own icons. A banner photo still fills the card. */
   :root[data-look='playful'] .profile-hero {
-    border-radius: var(--radius-lg);
-    background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+    position: relative;
+    overflow: hidden;
+    padding: 26px 26px 24px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, var(--hero-a) 0%, var(--hero-b) 100%);
+    box-shadow: 0 6px 0 #2a1a82;
+  }
+
+  :root[data-look='playful'] .profile-hero::before,
+  :root[data-look='playful'] .profile-hero::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  :root[data-look='playful'] .profile-hero::before {
+    top: -96px;
+    right: -64px;
+    width: 280px;
+    height: 280px;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  :root[data-look='playful'] .profile-hero::after {
+    bottom: -70px;
+    left: 40%;
+    width: 170px;
+    height: 170px;
+    background: rgba(255, 198, 43, 0.14);
+  }
+
+  :root[data-look='playful'] .profile-hero:not(.profile-hero--photo) .profile-hero__backdrop {
+    display: none;
+  }
+
+  :root[data-look='playful'] .profile-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  :root[data-look='playful'] .profile-hero__title {
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+
+  :root[data-look='playful'] .profile-hero__meta {
+    display: inline-flex;
+    align-items: center;
+    height: 26px;
+    margin-top: 8px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  :root[data-look='playful'] .profile-hero__level .level-row span:first-child {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: var(--sun);
+    color: var(--sun-ink);
+    font-weight: 900;
+    box-shadow: 0 3px 0 var(--sun-edge);
+  }
+
+  :root[data-look='playful'] .profile-hero__level .level-row span:last-child {
+    color: #ffffff;
+    font-weight: 800;
+  }
+
+  :root[data-look='playful'] .profile-hero .progress {
+    height: 14px;
+    background: rgba(255, 255, 255, 0.26);
+  }
+
+  :root[data-look='playful'] .profile-hero .progress__bar {
+    background-color: var(--sun);
+    background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.28) 0 8px, transparent 8px 16px);
+  }
+
+  :root[data-look='playful'] .profile-hero__picture .avatar {
+    width: 112px;
+    height: 112px;
+    border: 5px solid #ffffff;
+    box-shadow: 0 6px 0 rgba(42, 26, 130, 0.45);
+  }
+
+  :root[data-look='playful'] .profile-hero__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  :root[data-look='playful'] .profile-hero__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    padding: 14px 14px 13px;
+    border: 2px solid rgba(255, 255, 255, 0.24);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 4px 0 rgba(20, 12, 70, 0.35);
+  }
+
+  :root[data-look='playful'] .profile-hero__stat-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 7px;
+    border-radius: 12px;
+    background: var(--sun);
+    color: var(--sun-ink);
+    box-shadow: 0 3px 0 var(--sun-edge);
+  }
+
+  :root[data-look='playful'] .profile-hero__stat-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  :root[data-look='playful'] .profile-hero__stats > :nth-child(2) .profile-hero__stat-icon {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 3px 0 var(--primary-700);
+  }
+
+  :root[data-look='playful'] .profile-hero__stats > :nth-child(3) .profile-hero__stat-icon {
+    background: var(--blue);
+    color: #ffffff;
+    box-shadow: 0 3px 0 rgba(20, 12, 70, 0.35);
+  }
+
+  :root[data-look='playful'] .profile-hero__stats > :nth-child(4) .profile-hero__stat-icon {
+    background: #ffffff;
+    color: var(--violet);
+    box-shadow: 0 3px 0 rgba(20, 12, 70, 0.35);
+  }
+
+  :root[data-look='playful'] .profile-hero__value {
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    color: #ffffff;
+  }
+
+  :root[data-look='playful'] .profile-hero__label {
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.92);
   }
 
   /* Banners: the accent names keep their meaning, with the palette's colours. */
@@ -535,21 +704,21 @@
   :root[data-look='playful'] .xp-chip {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    height: 34px;
-    padding: 0 10px;
-    border-radius: 12px;
+    gap: 4px;
+    height: 30px;
+    padding: 0 9px;
+    border-radius: 10px;
     background: var(--sun);
-    box-shadow: 0 3px 0 var(--sun-edge);
+    box-shadow: 0 2px 0 var(--sun-edge);
     color: var(--sun-ink);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 800;
     white-space: nowrap;
   }
 
   :root[data-look='playful'] .xp-chip svg {
-    width: 15px;
-    height: 15px;
+    width: 13px;
+    height: 13px;
   }
 
   :root[data-look='playful'] .xp-chip b {
@@ -590,6 +759,367 @@
   /* The score report's hero is a blue band, so its date line stays light in the Playful look. */
   :root[data-look='playful'] .report-hero .eyebrow {
     color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* ---------- Clickable things in the Playful look: every one takes the look of the Roadmap button. ---------- */
+  /* The Roadmap button is the reference: white, a 2px line, a bottom edge, the same soft tint on hover, and a press that
+     sinks it into the page. Buttons, cards, rows, choices, pickers and the profile buttons all use it. */
+  :root[data-look='playful'] .btn--icon,
+  :root[data-look='playful'] .btn--text,
+  :root[data-look='playful'] .avatar-btn,
+  :root[data-look='playful'] .icon-wrap,
+  :root[data-look='playful'] .choice,
+  :root[data-look='playful'] .set-row:not(.set-row--static),
+  :root[data-look='playful'] .mode-card,
+  :root[data-look='playful'] .roleplay-card,
+  :root[data-look='playful'] .focus-card,
+  :root[data-look='playful'] .recent-list__item,
+  :root[data-look='playful'] .suggest button,
+  :root[data-look='playful'] .feature-card,
+  :root[data-look='playful'] .deck-card,
+  :root[data-look='playful'] .look-card,
+  :root[data-look='playful'] .look-option,
+  :root[data-look='playful'] .pick__trigger,
+  :root[data-look='playful'] .profile-hero__icon,
+  :root[data-look='playful'] .profile-hero__picture-edit,
+  :root[data-look='playful'] .profile-hero__banner-edit {
+    background: #ffffff;
+    color: var(--ink);
+    border: 2px solid var(--line-2);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 0 var(--line-2);
+    transition:
+      transform 80ms ease,
+      box-shadow 80ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  :root[data-look='playful'] .btn--icon:hover:not(:disabled),
+  :root[data-look='playful'] .btn--text:hover:not(:disabled),
+  :root[data-look='playful'] .avatar-btn:hover:not(:disabled),
+  :root[data-look='playful'] .icon-wrap:hover:not(:disabled),
+  :root[data-look='playful'] .choice:hover:not(:disabled),
+  :root[data-look='playful'] .set-row:not(.set-row--static):hover:not(:disabled),
+  :root[data-look='playful'] .mode-card:hover:not(:disabled),
+  :root[data-look='playful'] .roleplay-card:hover:not(:disabled),
+  :root[data-look='playful'] .focus-card:hover:not(:disabled),
+  :root[data-look='playful'] .recent-list__item:hover:not(:disabled),
+  :root[data-look='playful'] .suggest button:hover:not(:disabled),
+  :root[data-look='playful'] .feature-card:hover:not(:disabled),
+  :root[data-look='playful'] .deck-card:hover:not(:disabled),
+  :root[data-look='playful'] .look-card:hover:not(:disabled),
+  :root[data-look='playful'] .look-option:hover:not(:disabled),
+  :root[data-look='playful'] .pick__trigger:hover:not(:disabled),
+  :root[data-look='playful'] .profile-hero__icon:hover:not(:disabled),
+  :root[data-look='playful'] .profile-hero__picture-edit:hover:not(:disabled),
+  :root[data-look='playful'] .profile-hero__banner-edit:hover:not(:disabled) {
+    background: var(--surface-2);
+    border-color: var(--line-2);
+    box-shadow: 0 4px 0 var(--line-2);
+    transform: none;
+  }
+
+  :root[data-look='playful'] .btn--icon:active:not(:disabled),
+  :root[data-look='playful'] .btn--text:active:not(:disabled),
+  :root[data-look='playful'] .avatar-btn:active:not(:disabled),
+  :root[data-look='playful'] .icon-wrap:active:not(:disabled),
+  :root[data-look='playful'] .choice:active:not(:disabled),
+  :root[data-look='playful'] .set-row:not(.set-row--static):active:not(:disabled),
+  :root[data-look='playful'] .mode-card:active:not(:disabled),
+  :root[data-look='playful'] .roleplay-card:active:not(:disabled),
+  :root[data-look='playful'] .focus-card:active:not(:disabled),
+  :root[data-look='playful'] .recent-list__item:active:not(:disabled),
+  :root[data-look='playful'] .suggest button:active:not(:disabled),
+  :root[data-look='playful'] .feature-card:active:not(:disabled),
+  :root[data-look='playful'] .deck-card:active:not(:disabled),
+  :root[data-look='playful'] .look-card:active:not(:disabled),
+  :root[data-look='playful'] .look-option:active:not(:disabled),
+  :root[data-look='playful'] .pick__trigger:active:not(:disabled),
+  :root[data-look='playful'] .profile-hero__icon:active:not(:disabled),
+  :root[data-look='playful'] .profile-hero__picture-edit:active:not(:disabled),
+  :root[data-look='playful'] .profile-hero__banner-edit:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .btn--icon:focus-visible,
+  :root[data-look='playful'] .btn--text:focus-visible,
+  :root[data-look='playful'] .avatar-btn:focus-visible,
+  :root[data-look='playful'] .icon-wrap:focus-visible,
+  :root[data-look='playful'] .choice:focus-visible,
+  :root[data-look='playful'] .set-row:not(.set-row--static):focus-visible,
+  :root[data-look='playful'] .mode-card:focus-visible,
+  :root[data-look='playful'] .roleplay-card:focus-visible,
+  :root[data-look='playful'] .focus-card:focus-visible,
+  :root[data-look='playful'] .recent-list__item:focus-visible,
+  :root[data-look='playful'] .suggest button:focus-visible,
+  :root[data-look='playful'] .feature-card:focus-visible,
+  :root[data-look='playful'] .deck-card:focus-visible,
+  :root[data-look='playful'] .look-card:focus-visible,
+  :root[data-look='playful'] .look-option:focus-visible,
+  :root[data-look='playful'] .pick__trigger:focus-visible,
+  :root[data-look='playful'] .profile-hero__icon:focus-visible,
+  :root[data-look='playful'] .profile-hero__picture-edit:focus-visible,
+  :root[data-look='playful'] .profile-hero__banner-edit:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+  }
+
+  :root[data-look='playful'] .btn--icon:disabled,
+  :root[data-look='playful'] .btn--text:disabled,
+  :root[data-look='playful'] .avatar-btn:disabled,
+  :root[data-look='playful'] .icon-wrap:disabled,
+  :root[data-look='playful'] .choice:disabled,
+  :root[data-look='playful'] .set-row:not(.set-row--static):disabled,
+  :root[data-look='playful'] .mode-card:disabled,
+  :root[data-look='playful'] .roleplay-card:disabled,
+  :root[data-look='playful'] .focus-card:disabled,
+  :root[data-look='playful'] .recent-list__item:disabled,
+  :root[data-look='playful'] .suggest button:disabled,
+  :root[data-look='playful'] .feature-card:disabled,
+  :root[data-look='playful'] .deck-card:disabled,
+  :root[data-look='playful'] .look-card:disabled,
+  :root[data-look='playful'] .look-option:disabled,
+  :root[data-look='playful'] .pick__trigger:disabled,
+  :root[data-look='playful'] .profile-hero__icon:disabled,
+  :root[data-look='playful'] .profile-hero__picture-edit:disabled,
+  :root[data-look='playful'] .profile-hero__banner-edit:disabled {
+    background: #d5dbef;
+    border-color: transparent;
+    color: #6b6f92;
+    box-shadow: 0 4px 0 #c4cbea;
+    opacity: 1;
+  }
+
+  /* The small ones are 40 pixels with the Roadmap button's corners; the avatar is round; a text button is a 40 pixel
+     bar with the same edge; a deck keeps its colour stripe on the left. */
+  :root[data-look='playful'] .btn--icon,
+  :root[data-look='playful'] .icon-wrap,
+  :root[data-look='playful'] .profile-hero__icon,
+  :root[data-look='playful'] .profile-hero__picture-edit,
+  :root[data-look='playful'] .profile-hero__banner-edit {
+    border-radius: 12px;
+  }
+
+  :root[data-look='playful'] .btn--text {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    font-weight: 800;
+  }
+
+  :root[data-look='playful'] .avatar-btn {
+    border-radius: 50%;
+  }
+
+  :root[data-look='playful'] .deck-card {
+    border-left-width: 8px;
+    border-left-color: var(--deck, var(--primary));
+  }
+
+  /* The switch, the bottom tabs and the menus take the same press and tint. */
+  :root[data-look='playful'] .switch {
+    box-shadow: 0 3px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .switch:active {
+    transform: translateY(3px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .nav__item {
+    transition:
+      transform 80ms ease,
+      background-color 150ms ease;
+  }
+
+  :root[data-look='playful'] .nav__item:hover {
+    background: var(--surface-2);
+    border-radius: 14px;
+  }
+
+  :root[data-look='playful'] .nav__item:active {
+    transform: translateY(3px);
+  }
+
+  :root[data-look='playful'] .menu__item:hover {
+    background: var(--surface-2);
+  }
+
+  :root[data-look='playful'] .menu__item:active {
+    transform: translateY(2px);
+  }
+
+  :root[data-look='playful'] .node:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+
+  :root[data-look='playful'] .node:active:not(:disabled) {
+    transform: translateY(4px);
+  }
+
+  /* The coloured section cards of Self study: the same edge and press as the buttons, and a tint on hover. Each card
+     has its own edge colour, a shade darker than its background. */
+  :root[data-look='playful'] .section-card {
+    border-radius: 22px;
+    box-shadow: 0 6px 0 var(--edge, rgba(15, 23, 42, 0.35));
+    transition:
+      transform 80ms ease,
+      box-shadow 80ms ease,
+      filter 150ms ease;
+  }
+
+  :root[data-look='playful'] .section-card:hover {
+    transform: none;
+    filter: brightness(1.06);
+  }
+
+  :root[data-look='playful'] .section-card:active {
+    transform: translateY(6px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .section-grid > :nth-child(1) {
+    --edge: #0b1450;
+  }
+
+  :root[data-look='playful'] .section-grid > :nth-child(2) {
+    --edge: #8f3006;
+  }
+
+  :root[data-look='playful'] .section-grid > :nth-child(3) {
+    --edge: #3a1278;
+  }
+
+  :root[data-look='playful'] .section-grid > :nth-child(4) {
+    --edge: #0c4a22;
+  }
+
+  :root[data-look='playful'] .section-card__title {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  :root[data-look='playful'] .section-card__kicker,
+  :root[data-look='playful'] .section-card__stats {
+    font-weight: 700;
+  }
+
+  :root[data-look='playful'] .section-card .pill-light {
+    height: 28px;
+    padding: 0 11px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  :root[data-look='playful'] .section-card .progress {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  :root[data-look='playful'] .section-card .progress__bar {
+    background-color: var(--sun);
+  }
+
+  /* The tabs (Study by section, Mock tests, and the other segment controls) are buttons too: white, with the edge. The
+     chosen tab is green, with the green edge. */
+  :root[data-look='playful'] .segmented__btn {
+    border: 2px solid var(--line-2);
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--ink);
+    box-shadow: 0 4px 0 var(--line-2);
+    transition:
+      transform 80ms ease,
+      box-shadow 80ms ease,
+      background-color 150ms ease;
+  }
+
+  :root[data-look='playful'] .segmented__btn:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
+  :root[data-look='playful'] .segmented__btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .segmented__btn[aria-selected='true'],
+  :root[data-look='playful'] .segmented__btn.is-active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 4px 0 var(--primary-700);
+  }
+
+  :root[data-look='playful'] .segmented__btn[aria-selected='true']:hover:not(:disabled),
+  :root[data-look='playful'] .segmented__btn.is-active:hover:not(:disabled) {
+    background: var(--primary-600);
+  }
+
+  /* The skill tiles on Today, the remove button of the level report and the tools under each coach reply are clickable
+     too: the same white, edge, tint and press as the Roadmap button. */
+  :root[data-look='playful'] .tile,
+  :root[data-look='playful'] .level-report__remove,
+  :root[data-look='playful'] .turn__tool {
+    background: #ffffff;
+    color: var(--ink);
+    border: 2px solid var(--line-2);
+    border-radius: 12px;
+    box-shadow: 0 4px 0 var(--line-2);
+    transition:
+      transform 80ms ease,
+      box-shadow 80ms ease,
+      background-color 150ms ease;
+  }
+
+  :root[data-look='playful'] .tile:hover:not(:disabled),
+  :root[data-look='playful'] .level-report__remove:hover:not(:disabled),
+  :root[data-look='playful'] .turn__tool:hover:not(:disabled) {
+    background: var(--surface-2);
+    box-shadow: 0 4px 0 var(--line-2);
+    transform: none;
+  }
+
+  :root[data-look='playful'] .tile:active:not(:disabled),
+  :root[data-look='playful'] .level-report__remove:active:not(:disabled),
+  :root[data-look='playful'] .turn__tool:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .tile:disabled,
+  :root[data-look='playful'] .level-report__remove:disabled,
+  :root[data-look='playful'] .turn__tool:disabled {
+    background: #d5dbef;
+    border-color: transparent;
+    color: #6b6f92;
+    box-shadow: 0 4px 0 #c4cbea;
+    opacity: 1;
+  }
+
+  /* The Roadmap nodes are circles: the edge is the circle's own, and a press sinks the circle. The translate property
+     is used for the press, because the motion library sets the transform of each node. */
+  :root[data-look='playful'] .node {
+    box-shadow: 0 5px 0 rgba(20, 12, 70, 0.28);
+    transition:
+      translate 80ms ease,
+      box-shadow 80ms ease,
+      filter 150ms ease;
+  }
+
+  :root[data-look='playful'] .node:hover:not(:disabled) {
+    filter: brightness(1.06);
+  }
+
+  :root[data-look='playful'] .node:active:not(:disabled) {
+    translate: 0 4px;
+    box-shadow: none;
   }
 
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */

@@ -127,3 +127,10 @@ Classic keeps its flat buttons. The same class names carry both looks, so no scr
 Buttons, feature cards, cards, chips, badges, the banner carousel, heroes, the title bar and its menu, the bottom navigation, inputs and selects, toggles, progress bars, skeletons, roadmap nodes, lesson cards, coach bubbles, tabs, sheets and menus, and the reports (score ring and skill cards).
 
 New in 2.0 and built for both looks from the start: the daily goal ring, quests, the league card, achievements, the deck list and study session, the writing check, and the role-play picker.
+
+Added with the last features of 2.0.0:
+
+- **The word card** (tap to define, `src/components/WordCard.tsx`): a card in the corner of the reader, with the word, its meaning, the sentence it came from, and "Save word". The tapped word is marked in the text with the CSS Custom Highlight API. Classic is a plain white card; Playful adds the rounded edge.
+- **The role-play scenes** (`src/components/CoachHome.tsx`): a grid of twelve cards under the coach's modes. Each card shows the scene, the character ("With ...") and the goal. Without an AI key the whole home is disabled, so the cards look faded, as the other modes do.
+- **The score report hero** is a blue band in both looks. Its date line is white in Playful, because the Playful eyebrow colour is too dark on the band.
+- **Plurals** use `tn()` in every count the learner reads: decks, cards, due cards, and the deletion warning. "1 card" and "2 cards" are different strings in both languages.

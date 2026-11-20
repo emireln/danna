@@ -18,7 +18,7 @@ declare
     '- Role-play scenes: twelve scenes in the coach, such as ordering at a café or a job interview. Finish and score gives your fluency, the main mistakes and the new words.' || E'\n' ||
     '- Today and your profile: a daily goal, quests, a weekly league with your friends, and ten achievements. The league with friends needs an online account.' || E'\n' ||
     '- XP: practice earns XP. It counts toward your league week from 2.0.0 on, and the XP you earned before stays in your total.' || E'\n' ||
-    '- Beta: this release carries a Beta badge in the title bar while the new look and features settle. Tell us what you find.';
+    '- Beta: this release carries a V2 BETA badge in the title bar while the new look and features settle. Tell us what you find.';
 begin
   if exists (select 1 from public.announcements where version = '2.0.0' and kind = 'release_note') then
     update public.announcements
