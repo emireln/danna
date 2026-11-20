@@ -1411,6 +1411,18 @@ export const APP_PT: Record<string, string> = {
   // The title bar (2.0.0)
   'XP': 'XP',
 
+  // Decks and flashcards (2.0.0): the messages of the data layer
+  'Give the deck a name of 1 to 80 characters.': 'Dê um nome ao baralho, com 1 a 80 caracteres.',
+  'You can have 100 decks. Delete one to make another.': 'Você pode ter 100 baralhos. Apague um para criar outro.',
+  'That deck could not be found.': 'Não encontramos esse baralho.',
+  'Add up to 500 cards at a time.': 'Adicione até 500 cartões de cada vez.',
+  'You can have 5000 cards. Delete some to add more.': 'Você pode ter 5000 cartões. Apague alguns para adicionar mais.',
+  'That card could not be found.': 'Não encontramos esse cartão.',
+  'A card needs a front and a back.': 'Um cartão precisa de frente e verso.',
+  'You have reached the limit. Delete some to add more.': 'Você atingiu o limite. Apague alguns para adicionar mais.',
+  'Check what you typed: the text is empty or too long.': 'Confira o que você escreveu: o texto está vazio ou é longo demais.',
+  'That change is not allowed for this account.': 'Esta alteração não é permitida nesta conta.',
+
   // The achievements (2.0.0)
   'Achievements': 'Conquistas',
   '{done} of {total} unlocked': '{done} de {total} conquistadas',

@@ -2,12 +2,18 @@
 // the desktop database (see ./rules.ts), so the preview and the app give the same answers.
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
 import { userError } from '../bridge';
-import type { AttemptKind, AttemptRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorChatRow, TutorRow } from '../types';
-import type { DataBackend, LibraryLinkPatch, NewAttempt, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
+import type { AttemptKind, AttemptRow, CardRow, DeckRow, FriendRow, LessonProgressRow, LibraryLinkRow, PersonRow, ProfileRow, ReviewRow, ShareRow, Skill, TestRow, TutorChatRow, TutorRow } from '../types';
+import type { CardPatch, DataBackend, DeckPatch, LibraryLinkPatch, NewAttempt, NewCard, NewDeck, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import {
   ATTEMPT_KINDS,
   AVATAR_MAX_BYTES,
   cleanAttempt,
+  cleanCardStats,
+  cleanCardText,
+  cleanDeck,
+  CARD_BATCH_LIMIT,
+  CARD_LIMIT,
+  DECK_LIMIT,
   cleanLessonRow,
   cleanLibraryLink,
   cleanProfilePatch,
@@ -45,6 +51,9 @@ interface LocalStore {
   /** The profile banner as a WebP data URL, or null. */
   banner?: { dataUrl: string } | null;
   libraryLinks?: LibraryLinkRow[];
+  /** The decks, and the cards in them (2.0.0). */
+  decks: DeckRow[];
+  cards: CardRow[];
 }
 
 // The largest banner kept on this device. Like the desktop database, a banner is a WebP picture.
@@ -61,6 +70,8 @@ const emptyStore = (): LocalStore => ({
   tutorChats: [],
   avatar: null,
   banner: null,
+  decks: [],
+  cards: [],
 });
 
 function read(): LocalStore {
@@ -290,6 +301,98 @@ export function createLocalBackend(): DataBackend {
           },
         ];
       });
+    },
+
+    async listDecks() {
+      return withStore((store) => [...store.decks].sort((a, b) => b.created_at.localeCompare(a.created_at)));
+    },
+
+    async createDeck(input: NewDeck) {
+      return withStore((store) => {
+        if (store.decks.length >= DECK_LIMIT) throw userError('You can have 100 decks. Delete one to make another.');
+        const existing = input.id ? store.decks.find((deck) => deck.id === input.id) : undefined;
+        if (existing) return existing;
+        const profile = store.profile ?? defaultProfile();
+        store.profile = profile;
+        const fields = cleanDeck(input as unknown as Record<string, unknown>);
+        const at = isoTime(input.created_at, nowIso());
+        const deck: DeckRow = { id: input.id || newId(), owner_id: profile.id, ...fields, created_at: at, updated_at: at };
+        store.decks = [deck, ...store.decks];
+        return deck;
+      });
+    },
+
+    async updateDeck(id: string, patch: DeckPatch) {
+      return withStore((store) => {
+        const current = store.decks.find((deck) => deck.id === id);
+        if (!current) throw userError('That deck could not be found.');
+        const fields = cleanDeck(patch as unknown as Record<string, unknown>, current);
+        const updated: DeckRow = { ...current, ...fields, updated_at: nowIso() };
+        store.decks = store.decks.map((deck) => (deck.id === id ? updated : deck));
+        return updated;
+      });
+    },
+
+    async deleteDeck(id: string) {
+      withStore((store) => {
+        store.decks = store.decks.filter((deck) => deck.id !== id);
+        store.cards = store.cards.filter((card) => card.deck_id !== id);
+      });
+    },
+
+    async listCards(deckId: string) {
+      return withStore((store) =>
+        store.cards.filter((card) => card.deck_id === deckId).sort((a, b) => a.created_at.localeCompare(b.created_at)),
+      );
+    },
+
+    async createCards(deckId: string, rows: NewCard[]) {
+      return withStore((store) => {
+        const deck = store.decks.find((item) => item.id === deckId);
+        if (!deck) throw userError('That deck could not be found.');
+        if (rows.length > CARD_BATCH_LIMIT) throw userError('Add up to 500 cards at a time.');
+        if (store.cards.length + rows.length > CARD_LIMIT) throw userError('You can have 5000 cards. Delete some to add more.');
+        const now = nowIso();
+        const made: CardRow[] = rows.map((row) => {
+          const at = isoTime(row.created_at, now);
+          const text = cleanCardText(row as unknown as Record<string, unknown>);
+          const stats = cleanCardStats({ due_at: row.due_at }, at);
+          return { id: row.id || newId(), deck_id: deckId, owner_id: deck.owner_id, ...text, ...stats, created_at: at, updated_at: at };
+        });
+        store.cards = [...store.cards, ...made];
+        return made;
+      });
+    },
+
+    async updateCard(id: string, patch: CardPatch) {
+      return withStore((store) => {
+        const current = store.cards.find((card) => card.id === id);
+        if (!current) throw userError('That card could not be found.');
+        const input = patch as unknown as Record<string, unknown>;
+        const text = cleanCardText(input, current);
+        const now = nowIso();
+        const stats = cleanCardStats(input, now, current);
+        const updated: CardRow = { ...current, ...text, ...stats, updated_at: now };
+        store.cards = store.cards.map((card) => (card.id === id ? updated : card));
+        return updated;
+      });
+    },
+
+    async deleteCard(id: string) {
+      withStore((store) => {
+        store.cards = store.cards.filter((card) => card.id !== id);
+      });
+    },
+
+    async listDueCards(now: string, limit: number) {
+      const cutoff = isoTime(now, nowIso());
+      const size = clampNumber(limit, 1, 500, 50);
+      return withStore((store) =>
+        store.cards
+          .filter((card) => card.due_at <= cutoff)
+          .sort((a, b) => a.due_at.localeCompare(b.due_at))
+          .slice(0, size),
+      );
     },
 
     async getSkillScores() {

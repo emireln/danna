@@ -171,6 +171,34 @@ async function scenario(backend) {
     backend.insertAttempt({ id: 'attempt-today', kind: 'practice', ref_id: 'today', title: 'Today', score_pct: 70, predicted: null, skills: {}, answers: [], duration_s: 60, xp: 25, created_at: SCENARIO_NOW }),
   );
   await step('the league counts the last seven days', () => backend.listLeague(7));
+
+  await step('a deck is made, and its name is trimmed', () =>
+    backend.createDeck({ id: 'deck-1', created_at: SCENARIO_NOW, title: '  Travel words  ', description: 'At the airport', colour: 'sun' }),
+  );
+  await step('a deck needs a name', () => backend.createDeck({ title: '   ', description: '', colour: 'green' }));
+  await step('an unknown colour becomes green', () =>
+    backend.createDeck({ id: 'deck-2', created_at: '2026-03-02T10:00:00.000Z', title: 'Colours', description: '', colour: 'pink' }),
+  );
+  await step('decks are listed, newest first', () => backend.listDecks());
+  await step('a deck is renamed, and keeps its colour', () => backend.updateDeck('deck-1', { title: 'Airport words' }));
+  await step('cards are added to a deck, due now', () =>
+    backend.createCards('deck-1', [
+      { id: 'card-1', created_at: SCENARIO_NOW, front: 'gate', back: 'porta de embarque', note: '' },
+      { id: 'card-2', created_at: '2026-03-01T10:00:00.000Z', front: 'boarding pass', back: 'cartão de embarque', note: 'Show it at the gate.' },
+    ]),
+  );
+  await step('a card needs a front and a back', () => backend.createCards('deck-1', [{ front: 'x', back: '  ', note: '' }]));
+  await step('the cards of a deck are listed, oldest first', () => backend.listCards('deck-1'));
+  await step('a card is graded and rescheduled', () =>
+    backend.updateCard('card-1', { state: 'review', ease: 2.6, interval_days: 4, reps: 1, lapses: 0, due_at: '2026-03-05T10:00:00.000Z', last_review_at: SCENARIO_NOW }),
+  );
+  await step('an out-of-range ease is kept in range', () => backend.updateCard('card-2', { ease: 9 }));
+  await step('the cards due by a moment are listed, earliest first', () => backend.listDueCards('2026-03-02T10:00:00.000Z', 10));
+  await step('a card is deleted', () => backend.deleteCard('card-2'));
+  await step('a deck is deleted with its cards', async () => {
+    await backend.deleteDeck('deck-2');
+    return backend.listCards('deck-2');
+  });
   await step('attempts can be listed', () => backend.listAttempts(10));
   await step('attempts of one kind are listed', () => backend.listAttempts(10, 'diagnostic'));
   await step('attempts of one kind are counted', () => backend.countAttempts('diagnostic'));
@@ -346,5 +374,14 @@ test('the scenario really reaches the rules: the refusals and the clamps are in 
   assert.equal(find('the look is kept, and an unknown look is refused').value.ui_style, 'playful');
   assert.equal(find('an attempt is saved').value.xp, 37);
   assert.equal(find('the league counts the last seven days').value[0].week_xp, 25);
+  assert.equal(find('a deck is made, and its name is trimmed').value.title, 'Travel words');
+  assert.equal(find('a deck needs a name').error, 'Give the deck a name of 1 to 80 characters.');
+  assert.equal(find('an unknown colour becomes green').value.colour, 'green');
+  assert.equal(find('a card needs a front and a back').error, 'A card needs a front and a back.');
+  assert.equal(find('an out-of-range ease is kept in range').value.ease, 4);
+  assert.deepEqual(
+    find('the cards due by a moment are listed, earliest first').value.map((card) => card.front),
+    ['boarding pass'],
+  );
   assert.equal(find('a WebP picture is saved').value.pictureBytes, 2048);
 });

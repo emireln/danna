@@ -29,6 +29,7 @@ const migration0017Sql = await readFile(join(here, '..', 'migrations', '0017_fee
 const migration0018Sql = await readFile(join(here, '..', 'migrations', '0018_release_1_4_0.sql'), 'utf8');
 const migration0020Sql = await readFile(join(here, '..', 'migrations', '0020_v2_schema.sql'), 'utf8');
 const migration0021Sql = await readFile(join(here, '..', 'migrations', '0021_v2_league.sql'), 'utf8');
+const migration0022Sql = await readFile(join(here, '..', 'migrations', '0022_v2_decks.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -259,6 +260,56 @@ test('migration 0021 runs on a current database, and again, without changing wha
   await db.exec(migration0021Sql);
   const rows = (await as(db, ALICE, 'select user_id from public.friends_week_xp(7)')).rows;
   assert.ok(rows.some((row) => row.user_id === ALICE), 'the caller is still listed');
+});
+
+test('decks and cards belong to their owner: nobody else sees, changes or adds to them', async () => {
+  const deck = await as(db, ALICE, "insert into public.decks (owner_id, title) values ($1, 'Travel words') returning id", [ALICE]);
+  const deckId = deck.rows[0].id;
+  await as(db, ALICE, "insert into public.cards (deck_id, owner_id, front, back) values ($1, $2, 'gate', 'porta de embarque')", [deckId, ALICE]);
+
+  const seen = await as(db, BOB, 'select id from public.decks where id = $1', [deckId]);
+  assert.equal(seen.rows.length, 0, 'another person cannot see the deck');
+  const cardsSeen = await as(db, BOB, 'select id from public.cards where deck_id = $1', [deckId]);
+  assert.equal(cardsSeen.rows.length, 0, 'another person cannot see the cards');
+
+  const edited = await as(db, BOB, "update public.decks set title = 'hacked' where id = $1", [deckId]);
+  assert.equal(edited.affectedRows, 0);
+
+  const stolen = await refused(as(db, BOB, "insert into public.decks (owner_id, title) values ($1, 'mine')", [ALICE]));
+  assert.equal(stolen.code, PERMISSION_DENIED, 'a deck cannot be made for someone else');
+  const intruder = await refused(as(db, BOB, "insert into public.cards (deck_id, owner_id, front, back) values ($1, $2, 'x', 'y')", [deckId, BOB]));
+  assert.equal(intruder.code, PERMISSION_DENIED, 'a card cannot go into a deck of another person');
+});
+
+test('a card has a front and a back, and its grades stay in range', async () => {
+  const deck = await as(db, ALICE, "select id from public.decks where owner_id = $1 limit 1", [ALICE]);
+  const deckId = deck.rows[0].id;
+  const empty = await refused(as(db, ALICE, "insert into public.cards (deck_id, owner_id, front, back) values ($1, $2, '', 'y')", [deckId, ALICE]));
+  assert.equal(empty.code, CHECK_FAILED);
+  const ease = await refused(as(db, ALICE, "insert into public.cards (deck_id, owner_id, front, back, ease) values ($1, $2, 'x', 'y', 5)", [deckId, ALICE]));
+  assert.equal(ease.code, CHECK_FAILED);
+  const state = await refused(as(db, ALICE, "insert into public.cards (deck_id, owner_id, front, back, state) values ($1, $2, 'x', 'y', 'mastered')", [deckId, ALICE]));
+  assert.equal(state.code, CHECK_FAILED);
+});
+
+test('decks are limited to 100 per person, and deleting a deck deletes its cards', async () => {
+  await as(db, CAROL, "insert into public.decks (owner_id, title) select $1, 'deck ' || g from generate_series(1, 100) g", [CAROL]);
+  const over = await refused(as(db, CAROL, "insert into public.decks (owner_id, title) values ($1, 'one too many')", [CAROL]));
+  assert.equal(over.code, QUOTA_REACHED);
+
+  const own = await as(db, CAROL, 'select id from public.decks where owner_id = $1 limit 1', [CAROL]);
+  const first = own.rows[0].id;
+  await as(db, CAROL, "insert into public.cards (deck_id, owner_id, front, back) values ($1, $2, 'a', 'b')", [first, CAROL]);
+  await as(db, CAROL, 'delete from public.decks where id = $1', [first]);
+  const left = await as(db, CAROL, 'select id from public.cards where deck_id = $1', [first]);
+  assert.equal(left.rows.length, 0, 'the cards go with their deck');
+});
+
+test('migration 0022 runs on a current database, and again, without changing what is there', async () => {
+  await db.exec(migration0022Sql);
+  await db.exec(migration0022Sql);
+  const kept = await as(db, CAROL, 'select count(*)::int as total from public.decks where owner_id = $1', [CAROL]);
+  assert.equal(kept.rows[0].total, 99, 'the decks are still there after the second run');
 });
 
 test('XP never goes down, and streak stays in range', async () => {

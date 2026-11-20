@@ -22,6 +22,10 @@ import type {
   AiKeyRow,
   LeagueRow,
   Provider,
+  DeckColour,
+  CardRow,
+  CardState,
+  DeckRow,
 } from '../types';
 
 export type BackendMode = 'supabase' | 'local';
@@ -127,6 +131,45 @@ export interface NewFeedback {
   app_version: string;
 }
 
+/** A new deck: its title, an optional description and its colour. */
+export interface NewDeck {
+  id?: string;
+  created_at?: string;
+  title: string;
+  description: string;
+  colour: DeckColour;
+}
+
+export interface DeckPatch {
+  title?: string;
+  description?: string;
+  colour?: DeckColour;
+}
+
+/** A new card. Its review state starts as new, and it is due at once unless a time is given. */
+export interface NewCard {
+  id?: string;
+  created_at?: string;
+  due_at?: string;
+  front: string;
+  back: string;
+  note: string;
+}
+
+/** A change to a card: its text, or its review state after a grade. */
+export interface CardPatch {
+  front?: string;
+  back?: string;
+  note?: string;
+  state?: CardState;
+  ease?: number;
+  interval_days?: number;
+  reps?: number;
+  lapses?: number;
+  due_at?: string;
+  last_review_at?: string | null;
+}
+
 export interface DataBackend {
   readonly mode: BackendMode;
 
@@ -189,6 +232,21 @@ export interface DataBackend {
 
   /** The XP of the last days for the caller and, online, for their accepted friends. Offline it is the caller alone. */
   listLeague(days: number): Promise<LeagueRow[]>;
+
+  /** The decks of the account, newest first. */
+  listDecks(): Promise<DeckRow[]>;
+  createDeck(input: NewDeck): Promise<DeckRow>;
+  updateDeck(id: string, patch: DeckPatch): Promise<DeckRow>;
+  /** Deletes a deck and every card in it. */
+  deleteDeck(id: string): Promise<void>;
+  /** The cards of one deck, oldest first. */
+  listCards(deckId: string): Promise<CardRow[]>;
+  /** Adds cards to a deck, all or nothing. At most 500 at a time. */
+  createCards(deckId: string, rows: NewCard[]): Promise<CardRow[]>;
+  updateCard(id: string, patch: CardPatch): Promise<CardRow>;
+  deleteCard(id: string): Promise<void>;
+  /** The cards due at or before the given time, the earliest due first. */
+  listDueCards(now: string, limit: number): Promise<CardRow[]>;
 
   listAnnouncements(): Promise<AnnouncementRow[]>;
 

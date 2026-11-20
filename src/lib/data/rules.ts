@@ -2,7 +2,7 @@
 // and tests/data-parity.test.mjs checks that both sides give the same answers, so the browser preview behaves
 // like the app. When a rule changes, change it in both places.
 import { userError } from '../bridge';
-import { GOALS, LEVELS, LOOKS, SKILLS, type AnswerRecord, type AttemptKind, type Goal, type Level, type LibraryKind, type LookId, type ProfileRow, type Skill, type TutorAttachment } from '../types';
+import { CARD_STATES, DECK_COLOURS, GOALS, LEVELS, LOOKS, SKILLS, type AnswerRecord, type AttemptKind, type CardState, type DeckColour, type Goal, type Level, type LibraryKind, type LookId, type ProfileRow, type Skill, type TutorAttachment } from '../types';
 
 export const ATTEMPT_KINDS: readonly AttemptKind[] = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice', 'review'];
 export const TEST_SKILLS: ReadonlyArray<Skill | 'mixed'> = [...SKILLS, 'mixed'];
@@ -13,6 +13,18 @@ export const MAX_ANSWERS = 300;
 export const MAX_RESPONSE_LENGTH = 2000;
 export const MAX_JSON_LENGTH = 200_000;
 export const MIME_BY_KIND: Record<LibraryKind, string> = { pdf: 'application/pdf', txt: 'text/plain', md: 'text/markdown' };
+/** Decks and cards (2.0.0). The same limits as supabase/migrations/0022_v2_decks.sql, which must change with these. */
+export const DECK_LIMIT = 100;
+export const CARD_LIMIT = 5000;
+export const CARD_BATCH_LIMIT = 500;
+export const DECK_TITLE_MAX = 80;
+export const DECK_DESCRIPTION_MAX = 300;
+export const CARD_FRONT_MAX = 300;
+export const CARD_BACK_MAX = 600;
+export const CARD_NOTE_MAX = 300;
+export const CARD_EASE_MIN = 1.3;
+export const CARD_EASE_MAX = 4;
+export const CARD_INTERVAL_MAX = 36500;
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -175,6 +187,68 @@ export function cleanProfilePatch(current: ProfileRow, patch: unknown): Partial<
     if (Object.prototype.hasOwnProperty.call(source, key)) out[key] = cleanProfileValue(key, source[key], current);
   }
   return out as Partial<ProfileRow>;
+}
+
+export interface DeckFields {
+  title: string;
+  description: string;
+  colour: DeckColour;
+}
+
+const isColour = (value: unknown): value is DeckColour => (DECK_COLOURS as readonly unknown[]).includes(value);
+const isCardState = (value: unknown): value is CardState => (CARD_STATES as readonly unknown[]).includes(value);
+
+/**
+ * A deck's fields. A field that is not in the input keeps its current value; a new deck needs a name.
+ * The name is trimmed and kept to 80 characters, the description to 300, and an unknown colour becomes green.
+ */
+export function cleanDeck(input: Record<string, unknown>, current?: DeckFields): DeckFields {
+  const title = input.title === undefined && current ? current.title : String(input.title ?? '').trim().slice(0, DECK_TITLE_MAX);
+  if (!title) throw userError('Give the deck a name of 1 to 80 characters.');
+  const description =
+    input.description === undefined && current ? current.description : String(input.description ?? '').slice(0, DECK_DESCRIPTION_MAX);
+  const colour: DeckColour = input.colour === undefined && current ? current.colour : isColour(input.colour) ? input.colour : (current?.colour ?? 'green');
+  return { title, description, colour };
+}
+
+export interface CardText {
+  front: string;
+  back: string;
+  note: string;
+}
+
+/** A card's text. A card needs a front and a back; the note is optional. Missing fields keep their current value. */
+export function cleanCardText(input: Record<string, unknown>, current?: CardText): CardText {
+  const front = input.front === undefined && current ? current.front : String(input.front ?? '').trim().slice(0, CARD_FRONT_MAX);
+  const back = input.back === undefined && current ? current.back : String(input.back ?? '').trim().slice(0, CARD_BACK_MAX);
+  if (!front || !back) throw userError('A card needs a front and a back.');
+  const note = input.note === undefined && current ? current.note : String(input.note ?? '').trim().slice(0, CARD_NOTE_MAX);
+  return { front, back, note };
+}
+
+export interface CardStats {
+  state: CardState;
+  ease: number;
+  interval_days: number;
+  reps: number;
+  lapses: number;
+  due_at: string;
+  last_review_at: string | null;
+}
+
+/** A card's review state. A new card starts new, at ease 2.5, due now. Values are kept inside their limits. */
+export function cleanCardStats(input: Record<string, unknown>, now: string, current?: CardStats): CardStats {
+  const ease = Number(input.ease);
+  return {
+    state: isCardState(input.state) ? input.state : (current?.state ?? 'new'),
+    ease: Number.isFinite(ease) ? Math.min(CARD_EASE_MAX, Math.max(CARD_EASE_MIN, Math.round(ease * 100) / 100)) : (current?.ease ?? 2.5),
+    interval_days: clampNumber(input.interval_days, 0, CARD_INTERVAL_MAX, current?.interval_days ?? 0),
+    reps: clampNumber(input.reps, 0, 100000, current?.reps ?? 0),
+    lapses: clampNumber(input.lapses, 0, 100000, current?.lapses ?? 0),
+    due_at: isoTime(input.due_at, current?.due_at ?? now),
+    last_review_at:
+      input.last_review_at === undefined ? (current?.last_review_at ?? null) : input.last_review_at ? isoTime(input.last_review_at, now) : null,
+  };
 }
 
 /** A review item needs its key and its question, or the review screen cannot show it. */

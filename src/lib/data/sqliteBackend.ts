@@ -2,8 +2,8 @@
 // the bridge. Friends and sharing are not part of offline use.
 import type { DannaBridge } from '../bridge';
 import { LOCAL_ANNOUNCEMENTS } from '../../content/announcements';
-import type { AttemptKind, AttemptRow, LeagueRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorChatRow, TutorRow } from '../types';
-import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch } from './backend';
+import type { AttemptKind, AttemptRow, CardRow, DeckRow, LeagueRow, LessonProgressRow, LibraryFileRow, LibraryLinkRow, ProfileRow, ReviewRow, Skill, TestRow, TutorChatRow, TutorRow } from '../types';
+import type { CardPatch, DataBackend, DeckPatch, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewCard, NewDeck, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch } from './backend';
 
 const ONLINE_ONLY = 'This is available with an online account.';
 
@@ -41,6 +41,15 @@ export function createSqliteBackend(bridge: DannaBridge): DataBackend {
     getAttempt: (id: string) => call<AttemptRow | null>('getAttempt', [id]),
     insertAttempt: (row: NewAttempt) => call<AttemptRow>('insertAttempt', [row]),
     listLeague: (days: number) => call<LeagueRow[]>('listLeague', [days]),
+    listDecks: () => call<DeckRow[]>('listDecks'),
+    createDeck: (input: NewDeck) => call<DeckRow>('createDeck', [input]),
+    updateDeck: (id: string, patch: DeckPatch) => call<DeckRow>('updateDeck', [id, patch]),
+    deleteDeck: (id: string) => call<void>('deleteDeck', [id]),
+    listCards: (deckId: string) => call<CardRow[]>('listCards', [deckId]),
+    createCards: (deckId: string, rows: NewCard[]) => call<CardRow[]>('createCards', [deckId, rows]),
+    updateCard: (id: string, patch: CardPatch) => call<CardRow>('updateCard', [id, patch]),
+    deleteCard: (id: string) => call<void>('deleteCard', [id]),
+    listDueCards: (now: string, limit: number) => call<CardRow[]>('listDueCards', [now, limit]),
 
     getSkillScores: () => call<Partial<Record<Skill, number>>>('getSkillScores'),
     setSkillScores: (scores) => call<void>('setSkillScores', [scores]),

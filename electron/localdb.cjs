@@ -81,6 +81,34 @@ CREATE TABLE IF NOT EXISTS attempts (
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS attempts_recent ON attempts (created_at);
+CREATE TABLE IF NOT EXISTS decks (
+  id TEXT PRIMARY KEY,
+  owner_id TEXT NOT NULL DEFAULT '',
+  title TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  colour TEXT NOT NULL DEFAULT 'green',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS cards (
+  id TEXT PRIMARY KEY,
+  deck_id TEXT NOT NULL,
+  owner_id TEXT NOT NULL DEFAULT '',
+  front TEXT NOT NULL,
+  back TEXT NOT NULL,
+  note TEXT NOT NULL DEFAULT '',
+  state TEXT NOT NULL DEFAULT 'new',
+  ease REAL NOT NULL DEFAULT 2.5,
+  interval_days INTEGER NOT NULL DEFAULT 0,
+  reps INTEGER NOT NULL DEFAULT 0,
+  lapses INTEGER NOT NULL DEFAULT 0,
+  due_at TEXT NOT NULL,
+  last_review_at TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS cards_deck ON cards (deck_id, created_at);
+CREATE INDEX IF NOT EXISTS cards_due ON cards (due_at);
 CREATE TABLE IF NOT EXISTS skill_scores (
   skill TEXT PRIMARY KEY,
   score INTEGER NOT NULL,
@@ -889,11 +917,206 @@ function listLeague(days = 7) {
   ];
 }
 
+// Decks and flashcards (2.0.0). The same rules and limits as src/lib/data/rules.ts, which must change with these.
+const DECK_LIMIT = 100;
+const CARD_LIMIT = 5000;
+const CARD_BATCH_LIMIT = 500;
+const DECK_COLOURS = ['green', 'blue', 'violet', 'sun', 'red', 'slate'];
+const CARD_STATES = ['new', 'learning', 'review'];
+
+function cleanDeckFields(input, current) {
+  const source = input && typeof input === 'object' ? input : {};
+  const title = source.title === undefined && current ? current.title : String(source.title ?? '').trim().slice(0, 80);
+  if (!title) throw userError('Give the deck a name of 1 to 80 characters.');
+  const description = source.description === undefined && current ? current.description : String(source.description ?? '').slice(0, 300);
+  const colour =
+    source.colour === undefined && current ? current.colour : DECK_COLOURS.includes(source.colour) ? source.colour : current ? current.colour : 'green';
+  return { title, description, colour };
+}
+
+function cleanCardText(input, current) {
+  const source = input && typeof input === 'object' ? input : {};
+  const front = source.front === undefined && current ? current.front : String(source.front ?? '').trim().slice(0, 300);
+  const back = source.back === undefined && current ? current.back : String(source.back ?? '').trim().slice(0, 600);
+  if (!front || !back) throw userError('A card needs a front and a back.');
+  const note = source.note === undefined && current ? current.note : String(source.note ?? '').trim().slice(0, 300);
+  return { front, back, note };
+}
+
+function cleanCardStats(input, at, current) {
+  const source = input && typeof input === 'object' ? input : {};
+  const ease = Number(source.ease);
+  return {
+    state: CARD_STATES.includes(source.state) ? source.state : current ? current.state : 'new',
+    ease: Number.isFinite(ease) ? Math.min(4, Math.max(1.3, Math.round(ease * 100) / 100)) : current ? current.ease : 2.5,
+    interval_days: clamp(source.interval_days, 0, 36500, current ? current.interval_days : 0),
+    reps: clamp(source.reps, 0, 100000, current ? current.reps : 0),
+    lapses: clamp(source.lapses, 0, 100000, current ? current.lapses : 0),
+    due_at: isoTime(source.due_at, current ? current.due_at : at),
+    last_review_at:
+      source.last_review_at === undefined
+        ? current
+          ? current.last_review_at
+          : null
+        : source.last_review_at
+          ? isoTime(source.last_review_at, at)
+          : null,
+  };
+}
+
+function getDeck(id) {
+  return db().prepare('SELECT * FROM decks WHERE id = ?').get(String(id)) ?? null;
+}
+
+function getCard(id) {
+  return db().prepare('SELECT * FROM cards WHERE id = ?').get(String(id)) ?? null;
+}
+
+function listDecks() {
+  return db().prepare('SELECT * FROM decks ORDER BY created_at DESC').all();
+}
+
+function createDeck(input = {}) {
+  if (Number(db().prepare('SELECT COUNT(*) AS total FROM decks').get().total) >= DECK_LIMIT) {
+    throw userError('You can have 100 decks. Delete one to make another.');
+  }
+  const existing = typeof input.id === 'string' && input.id ? getDeck(input.id) : null;
+  if (existing) return existing;
+  const profile = getProfile();
+  const fields = cleanDeckFields(input, null);
+  const at = isoTime(input.created_at, now());
+  const id = typeof input.id === 'string' && input.id ? input.id : randomUUID();
+  db()
+    .prepare('INSERT INTO decks (id, owner_id, title, description, colour, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .run(id, profile.id, fields.title, fields.description, fields.colour, at, at);
+  return getDeck(id);
+}
+
+function updateDeck(id, patch = {}) {
+  const current = getDeck(id);
+  if (!current) throw userError('That deck could not be found.');
+  const fields = cleanDeckFields(patch, current);
+  db()
+    .prepare('UPDATE decks SET title = ?, description = ?, colour = ?, updated_at = ? WHERE id = ?')
+    .run(fields.title, fields.description, fields.colour, now(), current.id);
+  return getDeck(current.id);
+}
+
+function deleteDeck(id) {
+  db().prepare('DELETE FROM cards WHERE deck_id = ?').run(String(id));
+  db().prepare('DELETE FROM decks WHERE id = ?').run(String(id));
+}
+
+function listCards(deckId) {
+  return db().prepare('SELECT * FROM cards WHERE deck_id = ? ORDER BY created_at ASC').all(String(deckId));
+}
+
+function createCards(deckId, rows = []) {
+  const deck = getDeck(deckId);
+  if (!deck) throw userError('That deck could not be found.');
+  const list = Array.isArray(rows) ? rows : [];
+  if (list.length > CARD_BATCH_LIMIT) throw userError('Add up to 500 cards at a time.');
+  if (Number(db().prepare('SELECT COUNT(*) AS total FROM cards').get().total) + list.length > CARD_LIMIT) {
+    throw userError('You can have 5000 cards. Delete some to add more.');
+  }
+  const profile = getProfile();
+  const stamp = now();
+  const made = list.map((row) => {
+    const at = isoTime(row.created_at, stamp);
+    return {
+      id: typeof row.id === 'string' && row.id ? row.id : randomUUID(),
+      deck_id: deck.id,
+      owner_id: profile.id,
+      ...cleanCardText(row, null),
+      ...cleanCardStats({ due_at: row.due_at }, at, null),
+      created_at: at,
+      updated_at: at,
+    };
+  });
+  db().exec('BEGIN');
+  try {
+    for (const card of made) {
+      db()
+        .prepare(
+          'INSERT INTO cards (id, deck_id, owner_id, front, back, note, state, ease, interval_days, reps, lapses, due_at, last_review_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        )
+        .run(
+          card.id,
+          card.deck_id,
+          card.owner_id,
+          card.front,
+          card.back,
+          card.note,
+          card.state,
+          card.ease,
+          card.interval_days,
+          card.reps,
+          card.lapses,
+          card.due_at,
+          card.last_review_at,
+          card.created_at,
+          card.updated_at,
+        );
+    }
+    db().exec('COMMIT');
+  } catch (error) {
+    db().exec('ROLLBACK');
+    throw error;
+  }
+  return made.map((card) => getCard(card.id));
+}
+
+function updateCard(id, patch = {}) {
+  const current = getCard(id);
+  if (!current) throw userError('That card could not be found.');
+  const text = cleanCardText(patch, current);
+  const at = now();
+  const stats = cleanCardStats(patch, at, current);
+  db()
+    .prepare(
+      'UPDATE cards SET front = ?, back = ?, note = ?, state = ?, ease = ?, interval_days = ?, reps = ?, lapses = ?, due_at = ?, last_review_at = ?, updated_at = ? WHERE id = ?',
+    )
+    .run(
+      text.front,
+      text.back,
+      text.note,
+      stats.state,
+      stats.ease,
+      stats.interval_days,
+      stats.reps,
+      stats.lapses,
+      stats.due_at,
+      stats.last_review_at,
+      at,
+      current.id,
+    );
+  return getCard(current.id);
+}
+
+function deleteCard(id) {
+  db().prepare('DELETE FROM cards WHERE id = ?').run(String(id));
+}
+
+function listDueCards(at, limit = 50) {
+  const cutoff = isoTime(at, now());
+  const size = clamp(limit, 1, 500, 50);
+  return db().prepare('SELECT * FROM cards WHERE due_at <= ? ORDER BY due_at ASC LIMIT ?').all(cutoff, size);
+}
+
 // Only these actions can be called from the interface.
 const METHODS = {
   getProfile,
   updateProfile,
   listLeague,
+  listDecks,
+  createDeck,
+  updateDeck,
+  deleteDeck,
+  listCards,
+  createCards,
+  updateCard,
+  deleteCard,
+  listDueCards,
   listAttempts,
   countAttempts,
   getAttempt,

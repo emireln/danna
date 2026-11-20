@@ -160,7 +160,7 @@ Every feature is finished when all of these hold:
 - [x] M6. Today: daily goal and quests (F4). Quest 2 counts flashcards once M10 saves them.
 - [x] M7. League: attempts XP, weekly ranking, friends function, tiers (F5)
 - [x] M8. Achievements on the profile (F6). Two of them (first deck, 10 saved words) count once M9 and M10 save decks.
-- [ ] M9. Decks: data, parity, policies (F7 data)
+- [x] M9. Decks: data, parity, policies, the four grades and the import (F7 data). Migration 0022.
 - [ ] M10. Decks: screens, study session, import, summary (F7 UI)
 - [ ] M11. Writing check and local checks (F8)
 - [ ] M12. Tap to define and "Saved words" (F9)

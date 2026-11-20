@@ -151,6 +151,43 @@ export interface AttemptRow {
   created_at: string;
 }
 
+/** The colours a deck can have. The look paints each one. */
+export const DECK_COLOURS = ['green', 'blue', 'violet', 'sun', 'red', 'slate'] as const;
+export type DeckColour = (typeof DECK_COLOURS)[number];
+
+/** A card is new until it is first graded, learning while it comes back soon, and in review once it is kept for later. */
+export const CARD_STATES = ['new', 'learning', 'review'] as const;
+export type CardState = (typeof CARD_STATES)[number];
+
+export interface DeckRow {
+  id: string;
+  owner_id: string;
+  title: string;
+  description: string;
+  colour: DeckColour;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CardRow {
+  id: string;
+  deck_id: string;
+  owner_id: string;
+  front: string;
+  back: string;
+  note: string;
+  state: CardState;
+  /** How much the interval grows at each good answer, from 1.3 to 4. */
+  ease: number;
+  interval_days: number;
+  reps: number;
+  lapses: number;
+  due_at: string;
+  last_review_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 /** One person in the weekly league: the caller, or an accepted friend, with the XP of the last days. */
 export interface LeagueRow {
   user_id: string;

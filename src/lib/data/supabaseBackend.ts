@@ -18,8 +18,10 @@ import type {
   LibraryLinkRow,
   AiKeyRow,
   LeagueRow,
+  CardRow,
+  DeckRow,
 } from '../types';
-import type { DataBackend, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
+import type { CardPatch, DataBackend, DeckPatch, LibraryFileUpdate, LibraryLinkPatch, NewAttempt, NewCard, NewDeck, NewLibraryFile, NewLibraryLink, NewTest, ProfilePatch, SharePayload } from './backend';
 import { KIND_MIME } from '../library';
 import { userError } from '../bridge';
 import { FeedbackLimitError } from '../feedback';
@@ -35,6 +37,20 @@ type Result<T> = { data: T; error: { message: string; code?: string } | null };
 
 function unwrap<T>(result: Result<T>): T {
   if (result.error) throw new Error(result.error.message);
+  return result.data;
+}
+
+/** The error of a write, as a message the learner can act on. */
+function writeError(error: { code?: string; message: string }): Error {
+  if (error.code === '54000') return userError('You have reached the limit. Delete some to add more.');
+  if (error.code === '23514') return userError('Check what you typed: the text is empty or too long.');
+  if (error.code === '42501') return userError('That change is not allowed for this account.');
+  return new Error(error.message);
+}
+
+/** The one row a write returned, or the error it gave. */
+function writeOne(result: { data: unknown; error: { code?: string; message: string } | null }): unknown {
+  if (result.error) throw writeError(result.error);
   return result.data;
 }
 
@@ -305,6 +321,50 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       } else {
         unwrap(await sb.from('friendships').delete().eq('id', friendshipId));
       }
+    },
+
+    async listDecks() {
+      return unwrap(await sb.from('decks').select('*').order('created_at', { ascending: false })) as DeckRow[];
+    },
+
+    async createDeck(input: NewDeck) {
+      const id = await me();
+      return writeOne(await sb.from('decks').insert({ ...input, owner_id: id }).select('*').single()) as DeckRow;
+    },
+
+    async updateDeck(id: string, patch: DeckPatch) {
+      return writeOne(await sb.from('decks').update(patch).eq('id', id).select('*').single()) as DeckRow;
+    },
+
+    async deleteDeck(id: string) {
+      unwrap(await sb.from('decks').delete().eq('id', id));
+    },
+
+    async listCards(deckId: string) {
+      return unwrap(await sb.from('cards').select('*').eq('deck_id', deckId).order('created_at', { ascending: true })) as CardRow[];
+    },
+
+    async createCards(deckId: string, rows: NewCard[]) {
+      if (rows.length > 500) throw userError('Add up to 500 cards at a time.');
+      const id = await me();
+      const result = await sb
+        .from('cards')
+        .insert(rows.map((row) => ({ ...row, deck_id: deckId, owner_id: id })))
+        .select('*');
+      if (result.error) throw writeError(result.error);
+      return (result.data ?? []) as CardRow[];
+    },
+
+    async updateCard(id: string, patch: CardPatch) {
+      return writeOne(await sb.from('cards').update(patch).eq('id', id).select('*').single()) as CardRow;
+    },
+
+    async deleteCard(id: string) {
+      unwrap(await sb.from('cards').delete().eq('id', id));
+    },
+
+    async listDueCards(now: string, limit: number) {
+      return unwrap(await sb.from('cards').select('*').lte('due_at', now).order('due_at', { ascending: true }).limit(limit)) as CardRow[];
     },
 
     async listLeague(days: number) {
