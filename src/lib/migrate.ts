@@ -88,6 +88,7 @@ export async function copyProgress(from: DataBackend, to: DataBackend): Promise<
       skills: attempt.skills,
       answers: attempt.answers,
       duration_s: attempt.duration_s,
+      xp: attempt.xp,
     });
   }
 

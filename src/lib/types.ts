@@ -20,6 +20,10 @@ export const LEVELS: readonly Level[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 export type Goal = 'english' | 'toefl';
 export const GOALS: readonly Goal[] = ['english', 'toefl'];
 
+/** The look of the app: Classic (the current look) or Playful (the friendly look with 3D buttons, from 2.0.0). */
+export type LookId = 'classic' | 'playful';
+export const LOOKS: readonly LookId[] = ['classic', 'playful'];
+
 export type Accent = 'blue' | 'teal' | 'amber' | 'ink';
 
 interface QuestionBase {
@@ -104,6 +108,8 @@ export interface ProfileRow {
   display_name: string;
   avatar_color: string;
   goal: Goal;
+  /** The look chosen in Settings. Kept on the account, or on this device when there is no account. */
+  ui_style: LookId;
   target_score: number;
   exam_date: string | null;
   /** The exam the learner is preparing for, named as they wrote it. Null when they have not named one. */
@@ -140,6 +146,8 @@ export interface AttemptRow {
   skills: Partial<Record<Skill, number>>;
   answers: AnswerRecord[];
   duration_s: number;
+  /** The XP this run earned. The weekly league adds these up. Runs saved before 2.0.0 are 0. */
+  xp: number;
   created_at: string;
 }
 

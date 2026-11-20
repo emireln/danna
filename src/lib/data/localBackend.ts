@@ -125,6 +125,7 @@ function defaultProfile(): ProfileRow {
     display_name: 'Learner',
     avatar_color: '#2f6bff',
     goal: 'english',
+    ui_style: 'classic',
     target_score: 100,
     exam_date: null,
     exam_name: null,

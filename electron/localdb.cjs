@@ -41,7 +41,11 @@ const PROFILE_FIELDS = new Set([
   'streak',
   'last_active',
   'onboarding_done',
+  'ui_style',
 ]);
+
+// The looks a profile can use. Must match LOOKS in src/lib/types.ts.
+const LOOKS = ['classic', 'playful'];
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS profile (
@@ -56,6 +60,7 @@ CREATE TABLE IF NOT EXISTS profile (
   daily_minutes INTEGER NOT NULL DEFAULT 15,
   level TEXT NOT NULL DEFAULT 'B1',
   goal TEXT NOT NULL DEFAULT 'english',
+  ui_style TEXT NOT NULL DEFAULT 'classic',
   xp INTEGER NOT NULL DEFAULT 0,
   streak INTEGER NOT NULL DEFAULT 0,
   last_active TEXT,
@@ -72,6 +77,7 @@ CREATE TABLE IF NOT EXISTS attempts (
   skills TEXT NOT NULL DEFAULT '{}',
   answers TEXT NOT NULL DEFAULT '[]',
   duration_s INTEGER NOT NULL DEFAULT 0,
+  xp INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS attempts_recent ON attempts (created_at);
@@ -184,6 +190,11 @@ function db() {
     connection.exec("ALTER TABLE profile ADD COLUMN goal TEXT NOT NULL DEFAULT 'english'");
     connection.exec("UPDATE profile SET goal = 'toefl'");
   }
+  // The look (Classic or Playful) came with 2.0.0. A profile from before it keeps the Classic look.
+  if (!profileColumns.includes('ui_style')) connection.exec("ALTER TABLE profile ADD COLUMN ui_style TEXT NOT NULL DEFAULT 'classic'");
+  // The XP of each run came with 2.0.0, for the weekly league. Runs saved before it count as 0 in the league.
+  const attemptColumns = connection.prepare('PRAGMA table_info(attempts)').all().map((column) => column.name);
+  if (!attemptColumns.includes('xp')) connection.exec('ALTER TABLE attempts ADD COLUMN xp INTEGER NOT NULL DEFAULT 0');
   // The coach's modes came after the 1.0.0 release. Chats kept before them have no mode, and keep working as free chats.
   const chatColumns = connection.prepare('PRAGMA table_info(tutor_chats)').all().map((column) => column.name);
   if (!chatColumns.includes('mode')) connection.exec('ALTER TABLE tutor_chats ADD COLUMN mode TEXT');
@@ -260,6 +271,8 @@ function cleanProfileValue(key, value, current) {
       return LEVELS.includes(value) ? value : current.level;
     case 'goal':
       return GOALS.includes(value) ? value : current.goal;
+    case 'ui_style':
+      return LOOKS.includes(value) ? value : current.ui_style;
     case 'xp':
       return Math.max(current.xp, clamp(value, 0, 10000000, current.xp));
     case 'streak':
@@ -380,7 +393,7 @@ function insertAttempt(input = {}) {
   const id = typeof input.id === 'string' && input.id ? input.id : randomUUID();
   db()
     .prepare(
-      'INSERT OR IGNORE INTO attempts (id, kind, ref_id, title, score_pct, predicted, skills, answers, duration_s, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT OR IGNORE INTO attempts (id, kind, ref_id, title, score_pct, predicted, skills, answers, duration_s, xp, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     )
     .run(
       id,
@@ -392,6 +405,7 @@ function insertAttempt(input = {}) {
       JSON.stringify(cleanSkills(input.skills)),
       JSON.stringify(cleanAnswers(input.answers)),
       clamp(input.duration_s, 0, 86400, 0),
+      clamp(input.xp, 0, 100000, 0),
       isoTime(input.created_at, now()),
     );
   return getAttempt(id);

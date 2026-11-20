@@ -315,6 +315,7 @@ export function RunnerScreen() {
               skills,
               answers,
               duration_s: duration,
+              xp,
             });
           } catch (error) {
             // A save that reached the database before the connection failed is found again by its id.

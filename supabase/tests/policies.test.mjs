@@ -27,6 +27,7 @@ const migration0015Sql = await readFile(join(here, '..', 'migrations', '0015_exa
 const migration0016Sql = await readFile(join(here, '..', 'migrations', '0016_release_1_3_0.sql'), 'utf8');
 const migration0017Sql = await readFile(join(here, '..', 'migrations', '0017_feedback_limit.sql'), 'utf8');
 const migration0018Sql = await readFile(join(here, '..', 'migrations', '0018_release_1_4_0.sql'), 'utf8');
+const migration0020Sql = await readFile(join(here, '..', 'migrations', '0020_v2_schema.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -181,6 +182,41 @@ test('people see and change only their own profile', async () => {
 
   const reassigned = await refused(as(db, ALICE, 'update public.profiles set id = $1 where id = $2', [BOB, ALICE]));
   assert.equal(reassigned.code, PERMISSION_DENIED);
+});
+
+test('the look is one of two values, and only its owner can change it', async () => {
+  const chosen = await as(db, ALICE, "update public.profiles set ui_style = 'playful' where id = $1 returning ui_style", [ALICE]);
+  assert.equal(chosen.rows[0].ui_style, 'playful');
+
+  const unknown = await refused(as(db, ALICE, "update public.profiles set ui_style = 'neon' where id = $1", [ALICE]));
+  assert.equal(unknown.code, CHECK_FAILED);
+
+  const borrowed = await as(db, BOB, "update public.profiles set ui_style = 'classic' where id = $1", [ALICE]);
+  assert.equal(borrowed.affectedRows, 0);
+  const kept = await as(db, ALICE, 'select ui_style from public.profiles where id = $1', [ALICE]);
+  assert.equal(kept.rows[0].ui_style, 'playful');
+});
+
+test('each run keeps its XP, and XP is never negative', async () => {
+  const saved = await as(
+    db,
+    ALICE,
+    "insert into public.attempts (user_id, kind, ref_id, title, score_pct, xp, duration_s) values ($1, 'practice', 'flashcards', 'Flashcards', 80, 42, 60) returning xp",
+    [ALICE],
+  );
+  assert.equal(saved.rows[0].xp, 42);
+
+  const negative = await refused(
+    as(db, ALICE, "insert into public.attempts (user_id, kind, ref_id, title, score_pct, xp, duration_s) values ($1, 'practice', 'flashcards', 'Flashcards', 80, -1, 60)", [ALICE]),
+  );
+  assert.equal(negative.code, CHECK_FAILED);
+});
+
+test('migration 0020 runs on a current database, and again, without changing what is there', async () => {
+  await db.exec(migration0020Sql);
+  await db.exec(migration0020Sql);
+  const kept = await as(db, ALICE, 'select ui_style from public.profiles where id = $1', [ALICE]);
+  assert.equal(kept.rows[0].ui_style, 'playful');
 });
 
 test('XP never goes down, and streak stays in range', async () => {
@@ -394,6 +430,7 @@ test('table and column privileges match what the app does', async () => {
   assert.equal(await table('authenticated', 'public.profiles', 'DELETE'), false);
   assert.equal(await column('authenticated', 'public.profiles', 'id', 'UPDATE'), false);
   assert.equal(await column('authenticated', 'public.profiles', 'xp', 'UPDATE'), true);
+  assert.equal(await column('authenticated', 'public.profiles', 'ui_style', 'UPDATE'), true);
   assert.equal(await column('authenticated', 'public.shares', 'attempt_id', 'UPDATE'), false);
   assert.equal(await column('authenticated', 'public.shares', 'seen', 'UPDATE'), true);
   assert.equal(await column('authenticated', 'public.friendships', 'requester_id', 'UPDATE'), false);

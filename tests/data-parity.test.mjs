@@ -142,6 +142,10 @@ async function scenario(backend) {
   );
   await step('a bad username is refused', () => backend.updateProfile({ username: 'Bad Name' }));
   await step('a good username is kept', () => backend.updateProfile({ username: 'ana_01' }));
+  await step('the look is kept, and an unknown look is refused', async () => {
+    await backend.updateProfile({ ui_style: 'playful' });
+    return backend.updateProfile({ ui_style: 'neon' });
+  });
 
   const attempt = {
     id: 'attempt-1',
@@ -153,6 +157,7 @@ async function scenario(backend) {
     skills: { reading: 150, mixed: 9, writing: -4 },
     answers: ANSWERS,
     duration_s: 99999,
+    xp: 37,
     created_at: '2026-03-01T10:00:00.000Z',
   };
   await step('an attempt is saved', () => backend.insertAttempt(attempt));
@@ -332,5 +337,7 @@ test('the scenario really reaches the rules: the refusals and the clamps are in 
   assert.equal(find('a picture must be WebP').error, 'That picture could not be saved. Try another one.');
   assert.equal(find('an attempt is saved').value.score_pct, 100);
   assert.equal(find('xp grows').value.xp, 50);
+  assert.equal(find('the look is kept, and an unknown look is refused').value.ui_style, 'playful');
+  assert.equal(find('an attempt is saved').value.xp, 37);
   assert.equal(find('a WebP picture is saved').value.pictureBytes, 2048);
 });

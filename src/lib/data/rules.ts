@@ -2,7 +2,7 @@
 // and tests/data-parity.test.mjs checks that both sides give the same answers, so the browser preview behaves
 // like the app. When a rule changes, change it in both places.
 import { userError } from '../bridge';
-import { GOALS, LEVELS, SKILLS, type AnswerRecord, type AttemptKind, type Goal, type Level, type LibraryKind, type ProfileRow, type Skill, type TutorAttachment } from '../types';
+import { GOALS, LEVELS, LOOKS, SKILLS, type AnswerRecord, type AttemptKind, type Goal, type Level, type LibraryKind, type LookId, type ProfileRow, type Skill, type TutorAttachment } from '../types';
 
 export const ATTEMPT_KINDS: readonly AttemptKind[] = ['diagnostic', 'lesson', 'checkpoint', 'mock', 'practice', 'review'];
 export const TEST_SKILLS: ReadonlyArray<Skill | 'mixed'> = [...SKILLS, 'mixed'];
@@ -37,6 +37,7 @@ export function optionalText(value: unknown): string | null {
 export const isSkill = (value: unknown): value is Skill => (SKILLS as readonly unknown[]).includes(value);
 const isLevel = (value: unknown): value is Level => (LEVELS as readonly unknown[]).includes(value);
 const isGoal = (value: unknown): value is Goal => (GOALS as readonly unknown[]).includes(value);
+const isLook = (value: unknown): value is LookId => (LOOKS as readonly unknown[]).includes(value);
 
 /** Only the five skills are kept, each as a whole number from 0 to 100. */
 export function cleanSkills(scores: unknown): Partial<Record<Skill, number>> {
@@ -84,6 +85,7 @@ export interface CleanAttempt {
   skills: Partial<Record<Skill, number>>;
   answers: AnswerRecord[];
   duration_s: number;
+  xp: number;
   created_at: string;
 }
 
@@ -98,6 +100,7 @@ export function cleanAttempt(input: Record<string, unknown>, now: string): Clean
     skills: cleanSkills(input.skills),
     answers: cleanAnswers(input.answers),
     duration_s: clampNumber(input.duration_s, 0, 86400, 0),
+    xp: clampNumber(input.xp, 0, 100000, 0),
     created_at: isoTime(input.created_at, now),
   };
 }
@@ -117,6 +120,7 @@ const PROFILE_FIELDS = [
   'streak',
   'last_active',
   'onboarding_done',
+  'ui_style',
 ] as const;
 
 type ProfileField = (typeof PROFILE_FIELDS)[number];
@@ -144,6 +148,8 @@ function cleanProfileValue(key: ProfileField, value: unknown, current: ProfileRo
       return isLevel(value) ? value : current.level;
     case 'goal':
       return isGoal(value) ? value : current.goal;
+    case 'ui_style':
+      return isLook(value) ? value : current.ui_style;
     case 'xp':
       // XP only grows: a lower value from an old copy never takes points away.
       return Math.max(current.xp, clampNumber(value, 0, 10_000_000, current.xp));

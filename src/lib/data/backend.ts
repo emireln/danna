@@ -36,6 +36,8 @@ export interface NewAttempt {
   skills: AttemptRow['skills'];
   answers: AttemptRow['answers'];
   duration_s: number;
+  /** The XP this run earned. The weekly league counts it. Zero when the caller does not know it. */
+  xp?: number;
 }
 
 export interface NewTest {
@@ -68,6 +70,7 @@ export type ProfilePatch = Partial<
     | 'last_active'
     | 'onboarding_done'
     | 'ai_salt'
+    | 'ui_style'
   >
 >;
 
