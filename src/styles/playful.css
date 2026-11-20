@@ -1085,6 +1085,18 @@
     background: var(--primary-600);
   }
 
+  /* The flag on a language tab is a little bigger in the Playful look, and on the green tab it has a white ring. */
+  :root[data-look='playful'] .lang-flag {
+    height: 22px;
+    border-radius: 5px;
+    box-shadow: 0 0 0 1px var(--line-2);
+  }
+
+  :root[data-look='playful'] .segmented__btn[aria-selected='true'] .lang-flag,
+  :root[data-look='playful'] .segmented__btn.is-active .lang-flag {
+    box-shadow: 0 0 0 2px #ffffff;
+  }
+
   /* The skill tiles on Today, the remove button of the level report and the tools under each coach reply are clickable
      too: the same white, edge, tint and press as the Roadmap button. */
   :root[data-look='playful'] .tile,

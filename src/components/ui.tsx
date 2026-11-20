@@ -391,6 +391,10 @@ export function Badge({ tone = 'neutral', children }: { tone?: BadgeTone; childr
 export interface TabItem<T extends string> {
   value: T;
   label: string;
+  /** A picture drawn before the label, such as a flag. */
+  icon?: ReactNode;
+  /** The icon already says what the tab is: the label is then kept for screen readers and shown as a tooltip. */
+  iconOnly?: boolean;
   /** Shown beside the label when above zero. */
   count?: number;
   /** Red count: something here is waiting for the person (a request, an unread item). */
@@ -421,9 +425,11 @@ export function Tabs<T extends string>({
           role="tab"
           aria-selected={value === item.value}
           className="segmented__btn"
+          title={item.iconOnly ? item.label : undefined}
           onClick={() => onChange(item.value)}
         >
-          {item.label}
+          {item.icon}
+          {item.iconOnly ? <span className="sr-only">{item.label}</span> : item.label}
           {item.count !== undefined && item.count > 0 && (
             <span className={`segmented__count${item.alert ? ' segmented__count--alert' : ''}`}>{item.count}</span>
           )}

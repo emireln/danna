@@ -786,6 +786,16 @@
     box-shadow: var(--shadow-sm);
   }
 
+  /* The flag on a language tab: the country's own picture, with a hairline edge so a white stripe stays visible. */
+  .lang-flag {
+    display: block;
+    height: 20px;
+    width: auto;
+    margin: 0 auto;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
   .segmented__count {
     display: inline-grid;
     place-items: center;

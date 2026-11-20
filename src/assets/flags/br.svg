@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+  <rect width="1000" height="700" fill="#009C3B"/>
+  <path fill="#FFDF00" d="M500 60 L940 350 L500 640 L60 350 Z"/>
+  <defs><clipPath id="globe"><circle cx="500" cy="350" r="175"/></clipPath></defs>
+  <circle cx="500" cy="350" r="175" fill="#002776"/>
+  <path d="M250 435 L750 265" fill="none" stroke="#FFFFFF" stroke-width="34" clip-path="url(#globe)"/>
+</svg>
