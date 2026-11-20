@@ -941,7 +941,11 @@
   }
 
   :root[data-look='playful'] .nav__item:active {
-    transform: translateY(3px);
+    transform: none;
+  }
+
+  :root[data-look='playful'] .nav__item.is-active svg {
+    transform: none;
   }
 
   :root[data-look='playful'] .menu__item:hover {
@@ -1028,7 +1032,20 @@
 
   /* The tabs (Study by section, Mock tests, and the other segment controls) are buttons too: white, with the edge. The
      chosen tab is green, with the green edge. */
+  /* The tabs are a row of buttons, with no frame around them in the Playful look, at the height of the small buttons. */
+  :root[data-look='playful'] .segmented {
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
   :root[data-look='playful'] .segmented__btn {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 800;
     border: 2px solid var(--line-2);
     border-radius: 12px;
     background: #ffffff;
@@ -1044,9 +1061,15 @@
     background: var(--surface-2);
   }
 
+  /* The tabs do not move on a press: the edge flattens and the tint shows, and the row keeps its place. */
   :root[data-look='playful'] .segmented__btn:active {
-    transform: translateY(4px);
-    box-shadow: none;
+    transform: none;
+    box-shadow: 0 1px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .segmented__btn[aria-selected='true']:active,
+  :root[data-look='playful'] .segmented__btn.is-active:active {
+    box-shadow: 0 1px 0 var(--primary-700);
   }
 
   :root[data-look='playful'] .segmented__btn[aria-selected='true'],
@@ -1120,6 +1143,69 @@
   :root[data-look='playful'] .node:active:not(:disabled) {
     translate: 0 4px;
     box-shadow: none;
+  }
+
+  /* The Recommended-for-you picker is the size of the buttons: 14 pixels of text, 40 pixels high, with its chevron at 16. */
+  :root[data-look='playful'] .pick__trigger {
+    height: 40px;
+    padding: 0 10px 0 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    gap: 8px;
+  }
+
+  :root[data-look='playful'] .pick__chev {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* The title bar's buttons are the size of the XP badge: 30 pixels high, with its corners and its 2 pixel edge. The
+     profile picture is round, at the same size. A press lifts them by 2 pixels, the edge's own height. */
+  :root[data-look='playful'] .titlebar__actions {
+    gap: 6px;
+  }
+
+  :root[data-look='playful'] .titlebar__actions .btn--icon,
+  :root[data-look='playful'] .titlebar__actions .icon-wrap,
+  :root[data-look='playful'] .titlebar__actions .avatar-btn {
+    width: 30px;
+    height: 30px;
+    box-shadow: 0 2px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .titlebar__actions .btn--icon:hover:not(:disabled),
+  :root[data-look='playful'] .titlebar__actions .icon-wrap:hover:not(:disabled),
+  :root[data-look='playful'] .titlebar__actions .avatar-btn:hover:not(:disabled) {
+    box-shadow: 0 2px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .titlebar__actions .btn--icon:active:not(:disabled),
+  :root[data-look='playful'] .titlebar__actions .icon-wrap:active:not(:disabled),
+  :root[data-look='playful'] .titlebar__actions .avatar-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .titlebar__actions .btn--icon svg,
+  :root[data-look='playful'] .titlebar__actions .icon-wrap svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  :root[data-look='playful'] .titlebar__actions .avatar-btn {
+    padding: 0;
+  }
+
+  :root[data-look='playful'] .titlebar__actions .avatar-btn .avatar {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
+
+  /* Changing section fades the page in without the 8 pixel slide: nothing jumps when a bottom tab is chosen. */
+  :root[data-look='playful'] .shell__page {
+    transform: none !important;
   }
 
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
