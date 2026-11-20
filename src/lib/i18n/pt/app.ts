@@ -1642,9 +1642,9 @@ export const APP_PT: Record<string, string> = {
   'Careful writer': 'Escritor cuidadoso',
   'Run five writing checks.': 'Faça cinco revisões de texto.',
   'Word collector': 'Colecionador de palavras',
-  'Save ten words to review.': 'Salve dez palavras para revisar.',
+  'Save ten words from the reader.': 'Salve dez palavras da leitura.',
   'Conversationalist': 'Conversador',
-  'Finish three role-play scenarios.': 'Termine três simulações de conversa.',
+  'Finish three role-play scenarios.': 'Termine três cenas de conversa.',
 
   // The weekly league (2.0.0)
   'League': 'Liga',

@@ -14,6 +14,7 @@ import { SKILL_LABEL, type AttemptRow, type LeagueRow, type LessonProgressRow } 
 import { LeagueCard } from '../components/LeagueCard';
 import { AchievementGrid } from '../components/AchievementGrid';
 import { LEAGUE_DAYS } from '../lib/league';
+import { SAVED_WORDS_NAMES } from '../lib/deck';
 import { achievementsOf, statsOf } from '../lib/achievements';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -27,6 +28,8 @@ export function ProfileScreen() {
   const [league, setLeague] = useState<LeagueRow[] | null>(null);
   const [recentRuns, setRecentRuns] = useState<AttemptRow[]>([]);
   const [lessons, setLessons] = useState<LessonProgressRow[]>([]);
+  // The decks, and the cards of the saved-words deck, for the deck and word achievements.
+  const [deckCounts, setDeckCounts] = useState({ decks: 0, savedWords: 0 });
   useEffect(() => {
     if (!backend) return undefined;
     let active = true;
@@ -39,6 +42,23 @@ export function ProfileScreen() {
       })
       .catch(() => {
         if (active) setLeague([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [backend]);
+  useEffect(() => {
+    if (!backend) return undefined;
+    let active = true;
+    backend
+      .listDecks()
+      .then(async (decks) => {
+        const saved = decks.find((deck) => SAVED_WORDS_NAMES.includes(deck.title));
+        const cards = saved ? await backend.listCards(saved.id) : [];
+        if (active) setDeckCounts({ decks: decks.length, savedWords: cards.length });
+      })
+      .catch(() => {
+        if (active) setDeckCounts({ decks: 0, savedWords: 0 });
       });
     return () => {
       active = false;
@@ -293,7 +313,7 @@ export function ProfileScreen() {
           userId={profile.id}
         />
         <AchievementGrid
-          items={achievementsOf(statsOf({ profile, lessons, runs: recentRuns, decks: 0, savedWords: 0 }))}
+          items={achievementsOf(statsOf({ profile, lessons, runs: recentRuns, decks: deckCounts.decks, savedWords: deckCounts.savedWords }))}
         />
         <FeatureCard
           icon={<ChartColumn />}

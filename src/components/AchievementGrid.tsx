@@ -104,7 +104,7 @@ function achievementText(t: ReturnType<typeof useT>, id: AchievementId): string 
     case 'careful-writer':
       return t('Run five writing checks.');
     case 'word-collector':
-      return t('Save ten words to review.');
+      return t('Save ten words from the reader.');
     case 'conversationalist':
       return t('Finish three role-play scenarios.');
   }
