@@ -1410,4 +1410,13 @@ export const APP_PT: Record<string, string> = {
 
   // The title bar (2.0.0)
   'XP': 'XP',
+
+  // Today: the daily goal and the quests (2.0.0)
+  'Daily goal': 'Meta do dia',
+  '{minutes} of {goal} minutes today': '{minutes} de {goal} minutos hoje',
+  'Goal reached. Nice!': 'Meta batida. Boa!',
+  'Quests': 'Missões',
+  'Finish a lesson or a test': 'Termine uma aula ou um teste',
+  'Study {count} flashcards': 'Estude {count} cartões',
+  'Practise for {count} minutes': 'Pratique por {count} minutos',
 };

@@ -157,7 +157,7 @@ Every feature is finished when all of these hold:
 - [x] M3. Settings "Look" picker; `LookSync`; Classic unchanged (F1 UI)
 - [x] M4. Playful design system: tokens, 3D buttons, cards, navigation, font; contrast test (F2). The reference brief from the screenshots (Talkpal, Duolingo, Fluency, FluentU) is in DESIGN.md, section 2. Still to restyle in M16: roadmap nodes, coach bubbles, the score reports and the skill cards.
 - [x] M5. Title bar: Beta tag (both looks) and XP chip (Playful), tested (F3)
-- [ ] M6. Today: daily goal and quests (F4)
+- [x] M6. Today: daily goal and quests (F4). Quest 2 counts flashcards once M10 saves them.
 - [ ] M7. League: attempts XP, weekly ranking, friends function, tiers (F5)
 - [ ] M8. Achievements on the profile (F6)
 - [ ] M9. Decks: data, parity, policies (F7 data)

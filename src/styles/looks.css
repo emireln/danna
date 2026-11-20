@@ -131,6 +131,151 @@
     height: 14px;
   }
 
+  /* Today's goal row: the daily goal ring and the quests, side by side. */
+  .goal-row {
+    align-items: stretch;
+  }
+
+  .goal-card {
+    height: 100%;
+  }
+
+  .daily-goal {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 100%;
+  }
+
+  .daily-goal__ring {
+    flex: none;
+    width: 84px;
+    height: 84px;
+  }
+
+  .daily-goal__track {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 8;
+  }
+
+  .daily-goal__value {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 0.6s var(--ease);
+  }
+
+  .daily-goal__text {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .daily-goal__title {
+    font-weight: 700;
+  }
+
+  .daily-goal__count {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .quests {
+    display: grid;
+    gap: 10px;
+  }
+
+  .quests__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 700;
+  }
+
+  .quests__count {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .quests__list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .quest {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .quest__icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--primary-50);
+    color: var(--primary);
+  }
+
+  .quest__icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .quest__body {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .quest__title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .quest__bar {
+    display: block;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .quest__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--primary);
+    transition: width 0.4s var(--ease);
+  }
+
+  .quest__count {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .quest--done .quest__icon {
+    background: var(--primary);
+    color: #ffffff;
+  }
+
+  .quest--done .quest__count {
+    color: var(--primary);
+  }
+
   /* The Beta tag beside the wordmark: a small square with a thin border. It is never a pill. */
   .beta-tag {
     display: inline-flex;

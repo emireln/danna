@@ -3,6 +3,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Languages, Map as MapIcon, RotateCw, ScanSearch, X } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
+import { DailyGoal } from '../components/DailyGoal';
+import { QuestList } from '../components/QuestList';
+import { dayActivity, goalOf, questsOf } from '../lib/quests';
+import { localDate } from '../lib/progress';
 import { Badge, FeatureCard, Notice, PageHeader, Skeleton } from '../components/ui';
 import { Select } from '../components/Pickers';
 import { useAuth } from '../state/auth';
@@ -43,6 +47,8 @@ export function TodayScreen() {
   const [progress, setProgress] = useState<LessonProgressRow[] | null>(null);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [diagnostic, setDiagnostic] = useState<AttemptRow | null>(null);
+  // The newest runs, for today's goal and quests.
+  const [recent, setRecent] = useState<AttemptRow[]>([]);
   // The level report can be removed from Today for good. The choice is kept on this device, for this account.
   const [reportHidden, setReportHidden] = useState(false);
   useEffect(() => {
@@ -59,12 +65,13 @@ export function TodayScreen() {
     if (!backend) return undefined;
     let active = true;
     // The newest level check, however many sessions have been done since.
-    Promise.all([backend.listLessonProgress(), backend.listReviewItems(), backend.listAttempts(1, 'diagnostic')])
-      .then(([rows, items, checks]) => {
+    Promise.all([backend.listLessonProgress(), backend.listReviewItems(), backend.listAttempts(1, 'diagnostic'), backend.listAttempts(200)])
+      .then(([rows, items, checks, runs]) => {
         if (!active) return;
         setProgress(rows);
         setReviews(items);
         setDiagnostic(checks[0] ?? null);
+        setRecent(runs);
       })
       .catch((error: unknown) => {
         console.error('Could not load your progress', error);
@@ -79,6 +86,11 @@ export function TodayScreen() {
 
   const nodes = useMemo(() => nodeStates(indexProgress(progress ?? [])), [progress]);
   const dueNow = reviews.filter((item) => new Date(item.due_at).getTime() <= Date.now()).length;
+  // Today's goal and quests, from the runs saved today (local time, as the streak counts days).
+  const activity = useMemo(() => dayActivity(recent, localDate()), [recent]);
+  const quests = useMemo(() => questsOf(activity), [activity]);
+  const dailyMinutes = profile?.daily_minutes ?? 15;
+  const goal = goalOf(activity.minutes, dailyMinutes);
   const focusNode =
     nodes.find((node) => node.state !== 'done' && (focus === 'all' || node.item.lesson.skill === focus)) ??
     nodes.find((node) => node.state !== 'done') ??
@@ -125,6 +137,17 @@ export function TodayScreen() {
       <div className="stack">
         {loadError && <Notice tone="error">{t(loadError)}</Notice>}
         {banners.length > 0 && <BannerCarousel items={banners} />}
+
+        {progress !== null && (
+          <div className="grid-2 goal-row">
+            <section className="card goal-card">
+              <DailyGoal minutes={activity.minutes} goal={dailyMinutes} percent={goal.percent} done={goal.done} />
+            </section>
+            <section className="card goal-card">
+              <QuestList quests={quests} />
+            </section>
+          </div>
+        )}
 
         <div className="section-title">
           <button className="btn btn--ghost btn--sm" onClick={() => navigate('/roadmap')}>
