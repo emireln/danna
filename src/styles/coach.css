@@ -741,6 +741,56 @@
     color: var(--ink);
   }
 
+  /* ---------- Role-play scenes: a grid of scenes, each with its title, the character and the goal ---------- */
+  .roleplay-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+
+  .roleplay-card {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+    box-shadow: var(--shadow-sm);
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 0.2s var(--ease),
+      transform 0.2s var(--ease);
+  }
+
+  .roleplay-card:hover:not(:disabled) {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+
+  .roleplay-card:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .roleplay-card__title {
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .roleplay-card__with {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+  }
+
+  .roleplay-card__goal {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+
   .recent-list__mode {
     font-size: 13px;
     color: var(--muted);

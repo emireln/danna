@@ -16,12 +16,13 @@ import { errorText } from '../lib/bridge';
 import { attachmentsOf, titleFromQuestion, MAX_FILES, pickStarters, STARTERS, STARTER_COUNT, type PendingFile } from '../lib/coach';
 import { learnerContext } from '../lib/coachContext';
 import { coachMode, type CoachModeId } from '../lib/coachModes';
+import { fluencyOf, isRoleplayMode, ROLEPLAY_XP, scenarioOf } from '../lib/scenarios';
 import { parseCoachReply, spokenText, type VocabItem } from '../lib/coachReply';
 import { vocabReview } from '../lib/coachVocab';
 import { draftKey } from '../lib/drafts';
 import { indexFor, retrieve, type LibraryDocument } from '../lib/retrieval';
 import { activeExamDate } from '../lib/exam';
-import { localDate } from '../lib/progress';
+import { localDate, nextStreak } from '../lib/progress';
 import { useT } from '../lib/i18n/react';
 import { narrate, type Narration } from '../lib/speech';
 import type { ChatImage, ChatMessage, LibraryFileRow, ReviewRow, TutorChatRow, TutorRow } from '../lib/types';
@@ -85,7 +86,7 @@ export function CoachScreen() {
   const location = useLocation();
   const t = useT();
   const { backend } = useAuth();
-  const { profile, skills } = useAppData();
+  const { profile, skills, patchProfile } = useAppData();
   const { ready, selection, connections, desktop, canTranscribe, startReply, transcribe } = useAI();
   const { notify } = useToast();
 
@@ -353,7 +354,7 @@ export function CoachScreen() {
   };
 
   // Writes a reply to the chat, as it is drawn. The whole reply is saved when it is complete, or when it is stopped.
-  const runReply = async (chatId: string, conversation: ChatMessage[], modeId: CoachModeId, notes: string[] = []) => {
+  const runReply = async (chatId: string, conversation: ChatMessage[], modeId: CoachModeId, notes: string[] = [], summaryCounts = false) => {
     if (!backend || !profile) return;
     setSending(true);
     setFailure(null);
@@ -370,6 +371,8 @@ export function CoachScreen() {
       if (text.trim()) {
         const row = await backend.addTutor(chatId, 'assistant', text);
         if (result.cut) setCutReplies((set) => new Set(set).add(row.id));
+        // Only a reply to a new message counts, so writing the same summary again does not count it twice.
+        if (summaryCounts && !result.aborted && isRoleplayMode(modeId)) void recordRoleplay(modeId, text);
         if (activeRef.current === chatId) setMessages((list) => [...(list ?? []), row]);
         if (autoRead && !result.aborted && activeRef.current === chatId) speak(text);
       }
@@ -384,6 +387,30 @@ export function CoachScreen() {
       replyStream.current = null;
       setLive(null);
       setSending(false);
+    }
+  };
+
+  // A role-play's summary is a practice run: it counts for the profile, the league and the role-play achievements.
+  const recordRoleplay = async (modeId: CoachModeId, reply: string) => {
+    const scene = scenarioOf(modeId);
+    const percent = fluencyOf(parseCoachReply(reply));
+    if (!scene || percent === null || !backend || !profile) return;
+    try {
+      await backend.insertAttempt({
+        kind: 'practice',
+        ref_id: modeId,
+        title: t(scene.title),
+        score_pct: percent,
+        predicted: null,
+        skills: { speaking: percent },
+        answers: [],
+        duration_s: 0,
+        xp: ROLEPLAY_XP,
+      });
+      const today = localDate();
+      await patchProfile({ xp: profile.xp + ROLEPLAY_XP, streak: nextStreak(profile.last_active, profile.streak, today), last_active: today });
+    } catch (failure) {
+      notify(t(errorText(failure)), 'error');
     }
   };
 
@@ -418,7 +445,9 @@ export function CoachScreen() {
       const userRow = await backend.addTutor(id, 'user', text, { attachments: attachmentsOf(files) });
       const history = [...(messages ?? []), userRow];
       if (activeRef.current === id) setMessages(history);
-      if (isFirstQuestion) void nameChat(id, text || files.map((file) => file.name).join(', '));
+      // A role-play is named after its scene, not after the opening message that starts it.
+      const scene = scenarioOf(modeId);
+      if (isFirstQuestion) void nameChat(id, scene ? t(scene.title) : text || files.map((file) => file.name).join(', '));
 
       const { docs, images } = await documentsFor(files, id);
       const indexes = docs.filter((doc) => doc.text.trim()).map(indexFor);
@@ -433,7 +462,7 @@ export function CoachScreen() {
         images.length > 0 ? 'The learner sent pictures with this question. Look at them and answer about them.' : '',
       ].filter(Boolean);
       const conversation: ChatMessage[] = [...chatHistory(history.slice(0, -1)), { role: 'user', content, images }];
-      await runReply(id, conversation, modeId, notes);
+      await runReply(id, conversation, modeId, notes, true);
     } catch (error) {
       const message = t(errorText(error));
       setFailure(message);
@@ -746,6 +775,16 @@ export function CoachScreen() {
           <h1 className="coach-bar__title">{activeChat?.title || t('Coach')}</h1>
         </div>
         <div className="coach-bar__tools">
+          {isRoleplayMode(activeMode.id) && messages !== null && messages.length > 0 && (
+            <button
+              type="button"
+              className="btn btn--primary btn--sm"
+              onClick={() => void send(t('End the role-play and give me my score.'), { asText: true })}
+              disabled={busy || !ready}
+            >
+              {t('Finish and score')}
+            </button>
+          )}
           {ready && providerLabel && (
             <span className="chip chip--ai">
               <Sparkles aria-hidden="true" /> {providerLabel}

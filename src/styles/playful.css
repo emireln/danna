@@ -571,6 +571,22 @@
     box-shadow: inset 0 -3px 0 var(--primary);
   }
 
+  /* The role-play scenes of the coach: a chunky card with its edge, and the title in heavy type. */
+  :root[data-look='playful'] .roleplay-card {
+    border: 2px solid var(--line-2);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .roleplay-card:hover:not(:disabled) {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  :root[data-look='playful'] .roleplay-card__title {
+    font-weight: 900;
+  }
+
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
   @media (prefers-reduced-motion: reduce) {
     :root[data-look='playful'] .btn,

@@ -3,6 +3,7 @@
 import type { ComponentType } from 'react';
 import { BookOpen, ListChecks, Languages, MessageCircle, Mic, PenLine, RefreshCw, Target, Users } from 'lucide-react';
 import { coachMode, COACH_MODES, type CoachModeId, type ModeIcon } from '../lib/coachModes';
+import { roleplayModeId, SCENARIOS } from '../lib/scenarios';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { daysUntil } from '../lib/progress';
@@ -124,6 +125,17 @@ export function CoachHome({
             </button>
           );
         })}
+      </div>
+
+      <h3 className="coach-home__label">{t('Role-play scenes')}</h3>
+      <div className="roleplay-grid">
+        {SCENARIOS.map((scene) => (
+          <button key={scene.id} type="button" className="roleplay-card" onClick={() => onMode(roleplayModeId(scene.id))} disabled={busy}>
+            <span className="roleplay-card__title">{t(scene.title)}</span>
+            <span className="roleplay-card__with">{t('With {who}', { who: t(scene.character) })}</span>
+            <span className="roleplay-card__goal">{t(scene.goal)}</span>
+          </button>
+        ))}
       </div>
 
       {starters.length > 0 && (

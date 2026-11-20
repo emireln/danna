@@ -2,7 +2,10 @@
 // starting message and its own instructions for the model. The shared rules (the learner's level, the reply language,
 // the cards) are in coachSystem. Titles, blurbs and openers are English keys that the interface translates.
 
-export type CoachModeId = 'chat' | 'conversation' | 'writing' | 'speaking' | 'exam' | 'grammar' | 'vocabulary' | 'reading' | 'review';
+import { roleplayInstructions, roleplayModeId, scenarioOf, type Scenario } from './scenarios';
+
+/** The modes of the coach. A role-play scene is a mode too, with the id `roleplay-` and the scene's id. */
+export type CoachModeId = 'chat' | 'conversation' | 'writing' | 'speaking' | 'exam' | 'grammar' | 'vocabulary' | 'reading' | 'review' | `roleplay-${string}`;
 
 export type ModeIcon = 'chat' | 'people' | 'pen' | 'mic' | 'target' | 'rule' | 'words' | 'book' | 'repeat';
 
@@ -139,7 +142,25 @@ export const COACH_MODES: readonly CoachMode[] = [
   },
 ];
 
-/** The mode with this id. An unknown or missing id gives the free conversation mode, as chats from before modes do. */
+/**
+ * The mode with this id. A role-play id gives the mode of its scene. An unknown or missing id gives the free
+ * conversation mode, as chats from before modes do.
+ */
 export function coachMode(id: string | null | undefined): CoachMode {
+  const scene = scenarioOf(id);
+  if (scene) return roleplayMode(scene);
   return COACH_MODES.find((mode) => mode.id === id) ?? COACH_MODES[0];
+}
+
+/** A role-play is a mode of its own: the learner starts it, and the coach plays the scene until the summary. */
+function roleplayMode(scene: Scenario): CoachMode {
+  return {
+    id: roleplayModeId(scene.id),
+    icon: 'people',
+    title: scene.title,
+    blurb: scene.goal,
+    start: 'send',
+    opener: 'Start the role-play.',
+    instructions: roleplayInstructions(scene),
+  };
 }
