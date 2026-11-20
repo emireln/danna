@@ -71,6 +71,10 @@ export const MESSAGES_PT: Record<string, string> = {
   'This picture could not be read. Try another one.': 'Não foi possível ler esta imagem. Tente outra.',
   'This PDF has no readable text yet. A scanned PDF needs its text first.': 'Este PDF ainda não tem texto legível. Um PDF escaneado precisa de texto antes.',
   'This file has no text in it.': 'Este arquivo não tem texto.',
+  'That banner is too large. Choose a smaller picture.': 'Este banner é grande demais. Escolha uma imagem menor.',
+  'That banner could not be saved. Try another picture.': 'Este banner não pôde ser salvo. Tente outra imagem.',
+  'That file is no longer in your library.': 'Este arquivo não está mais na sua biblioteca.',
+  'This message could not be found.': 'Esta mensagem não foi encontrada.',
   'DeepSeek cannot read pictures yet. Remove the pictures, or choose another provider in Settings.':
     'O DeepSeek ainda não lê imagens. Remova as imagens ou escolha outro provedor em Configurações.',
 };
