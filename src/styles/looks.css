@@ -564,4 +564,18 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* The next roadmap lesson rings in the Playful look too. The ring keeps the button's edge, which the Classic pulse
+     does not have. */
+  @keyframes pulse-playful {
+    0% {
+      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 0 rgba(18, 128, 60, 0.35);
+    }
+    70% {
+      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 16px rgba(18, 128, 60, 0);
+    }
+    100% {
+      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 0 rgba(18, 128, 60, 0);
+    }
+  }
 }

@@ -1208,6 +1208,66 @@
     transform: none !important;
   }
 
+  /* ---------- The roadmap nodes: the same states as the buttons. The next lesson is the green primary button with its
+     edge; a finished one is a white ghost button with a green check; a locked one is the disabled button. The unit check
+     that is done is a sun button, like the XP badge. The START bubble is a sun chip. ---------- */
+  :root[data-look='playful'] .node {
+    transform: none;
+  }
+
+  :root[data-look='playful'] .node--current {
+    background: var(--primary);
+    color: #ffffff;
+    border: 0;
+    box-shadow: 0 5px 0 var(--primary-700);
+  }
+
+  :root[data-look='playful'] .node--current:hover:not(:disabled) {
+    background: var(--primary-600);
+  }
+
+  :root[data-look='playful'] .node--done {
+    background: #ffffff;
+    color: var(--primary);
+    border: 2px solid var(--line-2);
+    box-shadow: 0 4px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .node--done:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
+  :root[data-look='playful'] .node--locked {
+    background: #d5dbef;
+    color: #6b6f92;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 0 #c4cbea;
+  }
+
+  :root[data-look='playful'] .node--checkpoint.node--done {
+    background: var(--sun);
+    color: var(--sun-ink);
+    border: 0;
+    box-shadow: 0 5px 0 var(--sun-edge);
+  }
+
+  :root[data-look='playful'] .node--checkpoint.node--done:hover:not(:disabled) {
+    background: #ffd44f;
+  }
+
+  :root[data-look='playful'] .node.pulse {
+    animation-name: pulse-playful;
+  }
+
+  :root[data-look='playful'] .node__bubble {
+    background: var(--sun);
+    color: var(--sun-ink);
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-weight: 900;
+    box-shadow: 0 3px 0 var(--sun-edge);
+  }
+
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
   @media (prefers-reduced-motion: reduce) {
     :root[data-look='playful'] .btn,
