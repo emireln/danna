@@ -149,6 +149,11 @@
     box-shadow: 0 4px 0 var(--line-2);
   }
 
+  /* A white button takes the same tint on hover as the white roadmap nodes and the ghost buttons. */
+  :root[data-look='playful'] .btn--white:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
   :root[data-look='playful'] .btn--danger {
     background: #ffffff;
     color: var(--red-ink);
@@ -196,9 +201,11 @@
     box-shadow: var(--shadow);
   }
 
+  /* A card you can press has the tint and the edge of the other buttons on hover, not a lift. */
   :root[data-look='playful'] .card--hover:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lift);
+    transform: none;
+    background: var(--surface-2);
+    box-shadow: var(--shadow);
     border-color: var(--line-2);
   }
 
@@ -216,8 +223,9 @@
   }
 
   :root[data-look='playful'] .feature-card--link:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lift);
+    transform: none;
+    background: var(--surface-2);
+    box-shadow: var(--shadow);
   }
 
   /* The hero: one per screen, violet, with white text. */
@@ -596,6 +604,11 @@
   :root[data-look='playful'] .grade:active:not(:disabled) {
     transform: translateY(4px);
     box-shadow: none;
+  }
+
+  /* The coloured grades take the same soft tint on hover as the coloured cards: a white layer over the colour. */
+  :root[data-look='playful'] .grade:hover:not(:disabled) {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.14));
   }
 
   :root[data-look='playful'] .grade--again {
@@ -991,28 +1004,35 @@
     transform: translateY(2px);
   }
 
-  :root[data-look='playful'] .node:hover:not(:disabled) {
-    filter: brightness(1.06);
-  }
-
-  :root[data-look='playful'] .node:active:not(:disabled) {
-    transform: translateY(4px);
-  }
-
   /* The coloured section cards of Self study: the same edge and press as the buttons, and a tint on hover. Each card
-     has its own edge colour, a shade darker than its background. */
+     has its own edge colour, a shade darker than its background. The tint is a white layer that fades in, not a change
+     of brightness, which flickered on the colour when the pointer moved over the card. */
   :root[data-look='playful'] .section-card {
     border-radius: 22px;
     box-shadow: 0 6px 0 var(--edge, rgba(15, 23, 42, 0.35));
     transition:
       transform 80ms ease,
-      box-shadow 80ms ease,
-      filter 150ms ease;
+      box-shadow 80ms ease;
+  }
+
+  :root[data-look='playful'] .section-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: #ffffff;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
   }
 
   :root[data-look='playful'] .section-card:hover {
     transform: none;
-    filter: brightness(1.06);
+  }
+
+  :root[data-look='playful'] .section-card:hover::before {
+    opacity: 0.12;
   }
 
   :root[data-look='playful'] .section-card:active {
@@ -1173,22 +1193,20 @@
     opacity: 1;
   }
 
-  /* The Roadmap nodes are circles: the edge is the circle's own, and a press sinks the circle. The translate property
-     is used for the press, because the motion library sets the transform of each node. */
+  /* The Roadmap nodes are buttons like the others: the edge is the circle's own, the tint on hover is the same as on
+     every button (the background changes, with no brightness filter), and a press sinks the node 4 pixels with its edge
+     flattened, with the same timing. */
   :root[data-look='playful'] .node {
     box-shadow: 0 5px 0 rgba(20, 12, 70, 0.28);
     transition:
-      translate 80ms ease,
+      transform 80ms ease,
       box-shadow 80ms ease,
-      filter 150ms ease;
-  }
-
-  :root[data-look='playful'] .node:hover:not(:disabled) {
-    filter: brightness(1.06);
+      background-color 150ms ease,
+      border-color 150ms ease;
   }
 
   :root[data-look='playful'] .node:active:not(:disabled) {
-    translate: 0 4px;
+    transform: translateY(4px);
     box-shadow: none;
   }
 
