@@ -60,6 +60,23 @@
     background: var(--primary);
   }
 
+  /* The Classic picture keeps the Classic colours, whatever the look of the page is. */
+  .look-card__preview--classic {
+    background: #f3f5f9;
+  }
+
+  .look-card__preview--classic .look-card__bar {
+    background: #d5dce8;
+  }
+
+  .look-card__preview--classic .look-card__block {
+    background: #eef4ff;
+  }
+
+  .look-card__preview--classic .look-card__button {
+    background: #2f6bff;
+  }
+
   /* The Playful picture: bright, with a chunky button that has a visible bottom edge. */
   .look-card__preview--playful {
     background: #eef6ff;

@@ -1,0 +1,350 @@
+/* The Playful look (2.0.0): friendlier and gamified, with chunky 3D controls, bright colours and progress
+   everywhere. Every rule sits under :root[data-look="playful"], so the Classic look is unchanged. The tokens are
+   the ones in docs/v2/DESIGN.md (section 3); tests/look-contrast.test.mjs reads them from this file. */
+@layer looks {
+  :root[data-look='playful'] {
+    --font: 'Nunito Variable', Nunito, 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+    --ink: #1d1a3d;
+    --ink-2: #41406a;
+    --muted: #5d5b7d;
+    --line: #dde3f7;
+    --line-2: #c4cbea;
+    --canvas: #f1f5ff;
+    --canvas-2: #e6edff;
+    --surface-2: #eaf0ff;
+
+    --primary: #12803c;
+    --primary-600: #0f6f34;
+    --primary-700: #0b5a2a;
+    --primary-50: #e8f8ee;
+    --primary-100: #c7efd6;
+
+    --blue: #1566d6;
+    --blue-edge: #0f4fa3;
+    --blue-50: #e8f1ff;
+
+    --violet: #5b3fd9;
+    --violet-edge: #3f27b0;
+    --violet-50: #efeaff;
+    --violet-100: #dcd2ff;
+
+    --hero-a: #3d24b5;
+    --hero-b: #6a4bef;
+    --mint: #7ef3c2;
+
+    --sun: #ffc62b;
+    --sun-edge: #d89b00;
+    --sun-ink: #3d2b00;
+
+    --red: #d9363e;
+    --red-edge: #a8232b;
+    --red-ink: #b42318;
+    --red-50: #fdecec;
+
+    --green: #12803c;
+    --green-50: #e8f8ee;
+    --green-edge: #0b5a2a;
+    --teal: #0f8f86;
+    --amber: #ffc62b;
+    --amber-ink: #8a5a00;
+    --slate: #9aa3c4;
+
+    --radius-sm: 10px;
+    --radius: 16px;
+    --radius-lg: 22px;
+
+    --shadow-sm: 0 2px 0 var(--line-2);
+    --shadow: 0 4px 0 var(--line-2);
+    --shadow-lift: 0 6px 0 var(--line-2), 0 18px 30px -18px rgba(29, 26, 61, 0.35);
+  }
+
+  /* Headings and eyebrows: heavy, with the uppercase labels Duolingo and Talkpal use for sections. */
+  :root[data-look='playful'] h1,
+  :root[data-look='playful'] h2 {
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  :root[data-look='playful'] .eyebrow {
+    color: var(--violet);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* On the violet hero and the banners the eyebrow takes the mint highlight, so it still reads. */
+  :root[data-look='playful'] .hero .eyebrow,
+  :root[data-look='playful'] .hero__meta,
+  :root[data-look='playful'] .banner .eyebrow {
+    color: var(--mint);
+  }
+
+  /* 3D buttons: a bottom edge, and the press sinks the button into the page. */
+  :root[data-look='playful'] .btn {
+    height: 48px;
+    border-radius: var(--radius);
+    font-weight: 800;
+    transition:
+      transform 80ms ease,
+      box-shadow 80ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease,
+      opacity 150ms ease;
+  }
+
+  :root[data-look='playful'] .btn--sm {
+    height: 40px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  :root[data-look='playful'] .btn--icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  :root[data-look='playful'] .btn:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .btn--primary {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 4px 0 var(--primary-700);
+  }
+
+  :root[data-look='playful'] .btn--primary:hover:not(:disabled) {
+    background: var(--primary-600);
+  }
+
+  :root[data-look='playful'] .btn--coffee {
+    background: var(--sun);
+    border-color: transparent;
+    color: var(--sun-ink);
+    box-shadow: 0 4px 0 var(--sun-edge);
+  }
+
+  :root[data-look='playful'] .btn--coffee:hover:not(:disabled) {
+    background: #ffd44f;
+  }
+
+  :root[data-look='playful'] .btn--ghost {
+    background: #ffffff;
+    color: var(--ink);
+    border: 2px solid var(--line-2);
+    box-shadow: 0 4px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .btn--ghost:hover:not(:disabled) {
+    background: var(--surface-2);
+  }
+
+  :root[data-look='playful'] .btn--white {
+    background: #ffffff;
+    color: var(--ink);
+    border: 2px solid var(--line-2);
+    box-shadow: 0 4px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .btn--danger {
+    background: #ffffff;
+    color: var(--red-ink);
+    border: 2px solid #f0c3c0;
+    box-shadow: 0 4px 0 #f0c3c0;
+  }
+
+  :root[data-look='playful'] .btn:disabled {
+    opacity: 1;
+    background: #d5dbef;
+    border-color: transparent;
+    color: #6b6f92;
+    box-shadow: 0 4px 0 #c4cbea;
+  }
+
+  :root[data-look='playful'] .btn:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+  }
+
+  /* Chips: rounded squares, not pills. Pills stay for the segment controls only. */
+  :root[data-look='playful'] .chip {
+    border-width: 2px;
+    border-radius: var(--radius-sm);
+    font-weight: 800;
+  }
+
+  :root[data-look='playful'] .chip--blue {
+    color: var(--blue);
+    background: var(--blue-50);
+    border-color: #c9dcff;
+  }
+
+  :root[data-look='playful'] .chip--ai {
+    color: var(--violet);
+    background: var(--violet-50);
+    border-color: transparent;
+  }
+
+  /* Cards: white, a thick border and a visible bottom edge. Hover lifts them. */
+  :root[data-look='playful'] .card {
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    background: #ffffff;
+    box-shadow: var(--shadow);
+  }
+
+  :root[data-look='playful'] .card--hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+    border-color: var(--line-2);
+  }
+
+  :root[data-look='playful'] .card--done {
+    background: #eef1fb;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .feature-card {
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    background: #ffffff;
+    box-shadow: var(--shadow);
+  }
+
+  :root[data-look='playful'] .feature-card--link:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* The hero: one per screen, violet, with white text. */
+  :root[data-look='playful'] .hero {
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+  }
+
+  :root[data-look='playful'] .hero__title {
+    font-weight: 900;
+  }
+
+  /* The profile is the second hero of the app: the same violet, so the look reads as one system. */
+  :root[data-look='playful'] .profile-hero {
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+  }
+
+  /* Banners: the accent names keep their meaning, with the palette's colours. */
+  :root[data-look='playful'] .banner {
+    border-radius: var(--radius-lg);
+  }
+
+  :root[data-look='playful'] .banner--blue {
+    background: linear-gradient(135deg, var(--hero-a), var(--hero-b));
+  }
+
+  :root[data-look='playful'] .banner--teal {
+    background: var(--primary);
+  }
+
+  :root[data-look='playful'] .banner--amber {
+    background: var(--sun);
+    color: var(--sun-ink);
+  }
+
+  :root[data-look='playful'] .banner--amber .banner__title,
+  :root[data-look='playful'] .banner--amber .banner__text {
+    color: var(--sun-ink);
+  }
+
+  :root[data-look='playful'] .banner--ink {
+    background: var(--ink);
+  }
+
+  /* Bottom navigation: the active tab shows its icon in a soft green square, not a line. */
+  :root[data-look='playful'] .nav {
+    position: relative;
+    isolation: isolate;
+    background: #ffffff;
+    border-top: 2px solid var(--line);
+  }
+
+  :root[data-look='playful'] .nav__item {
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  :root[data-look='playful'] .nav__item.is-active {
+    color: var(--primary);
+  }
+
+  :root[data-look='playful'] .nav__item.is-active::before {
+    display: none;
+  }
+
+  :root[data-look='playful'] .nav__item.is-active::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    z-index: -1;
+    width: 44px;
+    height: 32px;
+    transform: translateX(-50%);
+    border-radius: 12px;
+    background: var(--primary-50);
+  }
+
+  /* The title bar: white, with a thick bottom border. */
+  :root[data-look='playful'] .titlebar {
+    background: #ffffff;
+    border-bottom: 2px solid var(--line);
+  }
+
+  /* Progress: thick rounded bars with stripes while a value is being earned. */
+  :root[data-look='playful'] .progress {
+    height: 14px;
+    border-radius: 999px;
+    background: #dfe5fa;
+  }
+
+  :root[data-look='playful'] .progress__bar {
+    border-radius: 999px;
+    background-color: var(--primary);
+    background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px);
+  }
+
+  /* Inputs: a thick border, a soft ring on focus. */
+  :root[data-look='playful'] .input {
+    border: 2px solid var(--line-2);
+    border-radius: 14px;
+    background: #ffffff;
+  }
+
+  :root[data-look='playful'] .input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px var(--blue-50);
+  }
+
+  /* Sheets and menus: rounder, with the card edge. */
+  :root[data-look='playful'] .sheet {
+    border-radius: var(--radius-lg);
+  }
+
+  :root[data-look='playful'] .menu {
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 6px 0 var(--line-2);
+  }
+
+  /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
+  @media (prefers-reduced-motion: reduce) {
+    :root[data-look='playful'] .btn,
+    :root[data-look='playful'] .card--hover:hover,
+    :root[data-look='playful'] .feature-card--link:hover {
+      transition: none;
+    }
+  }
+}
