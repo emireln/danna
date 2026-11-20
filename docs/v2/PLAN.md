@@ -163,7 +163,7 @@ Every feature is finished when all of these hold:
 - [x] M9. Decks: data, parity, policies, the four grades and the import (F7 data). Migration 0022.
 - [x] M10. Decks: screens, study session, import, summary (F7 UI). The flashcards quest counts from here on.
 - [x] M11. Writing check: model check with validated replies, local rules, accept, ignore, save as a card (F8)
-- [ ] M12. Tap to define and "Saved words" (F9)
+- [x] M12. Tap to define and "Saved words" (F9). Works in text and Markdown files; PDF pages are pictures, so their words cannot be tapped (a PDF saved as text can be).
 - [ ] M13. Role-play scenarios in the coach (F10)
 - [ ] M14. Portuguese coverage test and every translation (F12)
 - [ ] M15. Release notes, migration 0021, README, screenshots (F11)

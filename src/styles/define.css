@@ -1,0 +1,105 @@
+/* Tap to define (2.0.0): the card of a tapped word in the library reader, and the mark on the word in the text. The
+   Playful versions are in playful.css. */
+@layer looks {
+  .word-card {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    z-index: 2;
+    display: grid;
+    gap: 12px;
+    width: min(380px, calc(100% - 48px));
+    max-height: calc(100% - 48px);
+    overflow: auto;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-lift);
+  }
+
+  .word-card:focus {
+    outline: none;
+  }
+
+  .word-card:focus-visible {
+    box-shadow: var(--shadow-lift), 0 0 0 3px var(--primary-100);
+  }
+
+  .word-card__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .word-card__title {
+    display: flex;
+    flex: 1;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .word-card__word {
+    font-size: 22px;
+    font-weight: 750;
+    overflow-wrap: anywhere;
+  }
+
+  .word-card__answer p,
+  .word-card__hint {
+    margin: 0;
+  }
+
+  .word-card__hint {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .word-card__meaning {
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  .word-card__status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .word-card__sentence {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--primary-50);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .word-card__mark {
+    padding: 0 2px;
+    border-radius: 4px;
+    background: var(--primary-100);
+    color: inherit;
+    font-weight: 750;
+  }
+
+  .word-card__pen {
+    margin: 0;
+  }
+
+  .word-card__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+}
+
+/* The tapped word in the text, while its card is open. Browsers with the Custom Highlight API paint it. */
+::highlight(tapped-word) {
+  background-color: var(--primary-100);
+  color: inherit;
+}

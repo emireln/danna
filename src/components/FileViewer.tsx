@@ -14,15 +14,18 @@ import {
   useRef,
   useState,
   type HTMLAttributes,
+  type MouseEvent,
   type ReactNode,
 } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import { ChevronDown, ChevronUp, Pencil, Search, X } from 'lucide-react';
 import { ConfirmSheet, Notice, SearchField, Spinner } from './ui';
+import { WordCard } from './WordCard';
 import { errorText } from '../lib/bridge';
 import { findRanges, pageHits, splitHits } from '../lib/find';
 import { KIND_MIME, LIBRARY_MAX_BYTES, LIBRARY_TEXT_LIMIT } from '../lib/library';
 import { drawPdf, pdfPageTexts } from '../lib/pdf';
+import { markTapped, tappedWord, type TappedWord } from '../lib/wordTap';
 import { useT } from '../lib/i18n/react';
 import type { LibraryFileRow } from '../lib/types';
 import { useAuth } from '../state/auth';
@@ -145,6 +148,8 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
   const [current, setCurrent] = useState(0);
   const [viewMatches, setViewMatches] = useState(0);
   const [pdfPages, setPdfPages] = useState<string[] | null>(null);
+  const [tapped, setTapped] = useState<(TappedWord & { id: number }) | null>(null);
+  const tapCount = useRef(0);
   const pages = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const editor = useRef<HTMLTextAreaElement>(null);
@@ -228,6 +233,9 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
     if (findOpen) findBox.current?.focus();
   }, [findOpen]);
 
+  // The mark on the tapped word goes when the viewer closes.
+  useEffect(() => () => markTapped(null), []);
+
   function scrollToPage(page: number) {
     const canvas = pages.current?.children.item(page - 1);
     if (canvas instanceof HTMLElement) canvas.scrollIntoView({ block: 'start' });
@@ -255,6 +263,25 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
     setFindOpen(false);
     setQuery('');
     setCurrent(0);
+  }
+
+  // A tap on a word opens its card and marks the word. Links, buttons and the editor keep their own clicks, and so
+  // does text that is selected.
+  function tapWord(event: MouseEvent<HTMLDivElement>) {
+    if (editing || !ready) return;
+    if (window.getSelection()?.isCollapsed === false) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest('a, button, input, textarea')) return;
+    const found = tappedWord(event.clientX, event.clientY);
+    if (!found) return;
+    tapCount.current += 1;
+    markTapped(found.range);
+    setTapped({ ...found, id: tapCount.current });
+  }
+
+  function closeWord() {
+    markTapped(null);
+    setTapped(null);
   }
 
   function requestClose() {
@@ -332,7 +359,8 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
       const key = event.key.toLowerCase();
       if (event.key === 'Escape') {
         event.preventDefault();
-        if (findOpen) closeFind();
+        if (tapped) closeWord();
+        else if (findOpen) closeFind();
         else requestClose();
       } else if (command && key === 'f') {
         event.preventDefault();
@@ -437,7 +465,7 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
         </div>
       )}
 
-      <div className="viewer__body" ref={body}>
+      <div className="viewer__body" ref={body} onClick={tapWord}>
         {loaded.status === 'loading' && <Spinner dark />}
         {loaded.status === 'error' && <Notice tone="error">{t(loaded.message)}</Notice>}
         {ready && editing && isPdf && (
@@ -454,6 +482,12 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
             onChange={(event) => setDraft(event.target.value)}
           />
         )}
+        {ready && !editing && !isPdf && <p className="viewer__note muted small">{t('Tap a word to define it.')}</p>}
+        {ready && !editing && isPdf && (
+          <p className="viewer__note muted small">
+            {t('Words in a PDF cannot be tapped. Edit it and save its text as a new file to tap them.')}
+          </p>
+        )}
         {loaded.status === 'pdf' && <div ref={pages} className="viewer__pages" hidden={editing} />}
         {loaded.status === 'text' && !editing && file.kind === 'txt' && <pre className="viewer__text">{markWords(loaded.text, options)}</pre>}
         {loaded.status === 'text' && !editing && file.kind === 'md' && (
@@ -464,6 +498,8 @@ export function FileViewer({ file, onClose, onChanged }: { file: LibraryFileRow;
           </div>
         )}
       </div>
+
+      {tapped && <WordCard key={tapped.id} hit={tapped.hit} onClose={closeWord} />}
 
       {discard && (
         <ConfirmSheet title={t('Discard your changes?')} confirmLabel={t('Discard changes')} onConfirm={confirmDiscard} onClose={() => setDiscard(null)}>

@@ -5,6 +5,9 @@ import type { CardRow } from './types';
 
 export const IMPORT_CARD_LIMIT = 500;
 export const SAVED_WORDS_TITLE = 'Saved words';
+/** The names the app's own decks have: the English name, and the Portuguese one made when the app was in Portuguese. */
+export const SAVED_WORDS_NAMES: readonly string[] = [SAVED_WORDS_TITLE, 'Palavras salvas'];
+export const CORRECTIONS_NAMES: readonly string[] = ['My corrections', 'Minhas correções'];
 
 export interface ParsedCard {
   front: string;

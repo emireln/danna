@@ -9,14 +9,13 @@ import { extractJson } from '../lib/ai';
 import { replyLanguage } from '../lib/i18n';
 import { useT, type Translate } from '../lib/i18n/react';
 import { applyIssue, localCheck, parseCheck, WRITING_CHECK_XP, WRITING_MAX_WORDS, WRITING_MIN_WORDS, wordCount, writingCheckRequest, type CheckResult, type Issue, type IssueCategory, type Tone } from '../lib/writingCheck';
+import { CORRECTIONS_NAMES } from '../lib/deck';
 import { WRITING_REF } from '../lib/quests';
 import { localDate, nextStreak } from '../lib/progress';
 import { useAI } from '../state/ai';
 import { useAppData } from '../state/appData';
 import { useAuth } from '../state/auth';
 import { useToast } from '../state/toast';
-
-const CORRECTIONS_DECK = 'My corrections';
 
 function categoryName(t: Translate, category: IssueCategory): string {
   switch (category) {
@@ -145,12 +144,12 @@ export function WriteScreen() {
     if (!backend) return;
     try {
       const decks = await backend.listDecks();
-      let deck = decks.find((item) => item.title === CORRECTIONS_DECK);
+      let deck = decks.find((item) => CORRECTIONS_NAMES.includes(item.title));
       if (!deck) {
-        deck = await backend.createDeck({ title: CORRECTIONS_DECK, description: t('Corrections from the writing check'), colour: 'violet' });
+        deck = await backend.createDeck({ title: t('My corrections'), description: t('Corrections from the writing check'), colour: 'violet' });
       }
       await backend.createCards(deck.id, [{ front: issue.original, back: issue.suggestion, note: t(issue.reason) }]);
-      notify(t('Saved to {deck}.', { deck: CORRECTIONS_DECK }), 'ok');
+      notify(t('Saved to {deck}.', { deck: deck.title }), 'ok');
     } catch (failure) {
       notify(t(errorText(failure)), 'error');
     }
