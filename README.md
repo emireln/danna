@@ -125,7 +125,7 @@ The tests check the things that would hurt most if they broke: the lessons, copy
 
 ## Logos and icons
 
-`brand/logo.png` is the master logo. After you change it, or add a platform logo, run:
+`brand/logo.png` is the master logo, and `brand/icon.png` is the app icon. The icon is a finished picture with its own rounded square, so it is used as it is, with no frame. After you change either file, or add a platform logo, run:
 
 ```bash
 npm run art
@@ -133,7 +133,7 @@ npm run art
 
 That makes everything the app and the installer need:
 
-- The app logo and icon, for the app, the window, the tray and the installer (`npm run icons`).
+- The app logo, and the app icon for the window, the tray, the installer and the browser tab (`npm run icons`).
 - Logos for learning platforms like YouTube and Coursera (`npm run logos`). A platform without an official logo shows its first letter until one is added to `brand/platforms/`.
 - The side picture of the installer (`npm run installer-art`).
 
@@ -176,8 +176,9 @@ You only need this if you want accounts.
 | `supabase/migrations/0021_v2_league.sql` | The weekly league with your friends (2.0.0) |
 | `supabase/migrations/0022_v2_decks.sql` | Decks and flashcards (2.0.0) |
 | `supabase/migrations/0023_release_2_0_0.sql` | The 2.0.0 release notes |
+| `supabase/migrations/0024_release_2_1_0.sql` | The 2.1.0 release notes |
 
-The coach needs `0013` before it shows the chat list. Version 2.0.0 needs `0020` to `0023`, in that order: they add the look, the XP, the league, the decks and the 2.0.0 release notes.
+The coach needs `0013` before it shows the chat list. Version 2.0.0 needs `0020` to `0023`, in that order: they add the look, the XP, the league, the decks and the 2.0.0 release notes. Version 2.1.0 needs `0024`, which adds its release notes.
 
 3. In **Authentication**, keep email confirmation on, and set the Site URL and the redirect URLs for the app.
 4. Never put a service-role or secret key into the app. Only the publishable key goes in.
@@ -211,7 +212,7 @@ People on this device see the release notes and banners bundled in `src/content/
 ## Project structure
 
 ```
-brand/         The master logo, and the platform logos (brand/platforms)
+brand/         The master logo and app icon, and the platform logos (brand/platforms)
 docs/          Screenshots and the tour GIF for this page
 electron/      The desktop shell: window, tray, offline database, sign-in, AI keys and providers
 scripts/       Logo, icon and installer art, plus the version bump and the release

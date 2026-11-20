@@ -1,4 +1,4 @@
-// Draws the installer's side banner: a 164 x 314 BMP, the #2f6bff background, and the letters of
+// Draws the installer's side banner: a 164 x 314 BMP, the #5337d2 background, and the letters of
 // "danna" in white, stacked from the top: D, A, N, N, A. The letters use the bold Unbounded font
 // that the app uses for its wordmark. The installer and the uninstaller both use the banner.
 // Run with: npm run installer-art
@@ -15,7 +15,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FONT = join(root, 'node_modules', '@fontsource', 'unbounded', 'files', 'unbounded-latin-700-normal.woff');
 const WIDTH = 164;
 const HEIGHT = 314;
-const BACKGROUND = '#2f6bff';
+const BACKGROUND = '#5337d2';
 const LETTERS = ['D', 'A', 'N', 'N', 'A'];
 const CAP_HEIGHT = 34; // pixels for each letter
 const GAP = 20; // pixels between letters

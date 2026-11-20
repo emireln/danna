@@ -22,7 +22,7 @@ const WIDTH = 1080;
 const HEIGHT = 1400;
 const INK = '#0f1b33';
 const MUTED = '#5b677d';
-const PRIMARY = '#2f6bff';
+const PRIMARY = '#5337d2';
 const TRACK = '#e8edf6';
 
 function font(weight: number, size: number): string {

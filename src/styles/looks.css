@@ -70,11 +70,11 @@
   }
 
   .look-card__preview--classic .look-card__block {
-    background: #eef4ff;
+    background: #f1eefc;
   }
 
   .look-card__preview--classic .look-card__button {
-    background: #2f6bff;
+    background: #5337d2;
   }
 
   /* The Playful picture: bright, with a chunky button that has a visible bottom edge. */
@@ -550,7 +550,7 @@
     height: 24px;
     padding: 0 9px;
     border-radius: 8px;
-    background: linear-gradient(120deg, #2456e0 0%, #6b3fd6 100%);
+    background: linear-gradient(120deg, #5337d2 0%, #6b3fd6 100%);
     box-shadow: 0 2px 8px rgba(36, 86, 224, 0.28);
     color: #ffffff;
     font-size: 10px;
@@ -614,13 +614,13 @@
      does not have. */
   @keyframes pulse-playful {
     0% {
-      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 0 rgba(18, 128, 60, 0.35);
+      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 0 rgba(83, 55, 210, 0.35);
     }
     70% {
-      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 16px rgba(18, 128, 60, 0);
+      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 16px rgba(83, 55, 210, 0);
     }
     100% {
-      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 0 rgba(18, 128, 60, 0);
+      box-shadow: 0 5px 0 var(--primary-700), 0 0 0 0 rgba(83, 55, 210, 0);
     }
   }
 }

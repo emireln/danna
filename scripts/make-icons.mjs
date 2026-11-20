@@ -1,6 +1,9 @@
-// Builds every logo and icon file from brand/logo.png, the master logo.
+// Builds every logo and icon file from two masters in brand/:
+//   brand/logo.png   the master logo: the mark shown inside the app
+//   brand/icon.png   the master app icon: a finished icon with its own rounded square, used as it is, with no frame
+// It writes:
 //   src/assets/logo.webp   the logo shown in the app (WebP)
-//   src/assets/icon.webp   the app icon shown in the app (WebP)
+//   src/assets/icon.webp   the app icon (WebP)
 //   public/favicon.webp    the browser tab icon (WebP)
 //   build/icon.png         the app icon, 1024 px (PNG)
 //   build/icon.ico         the installer and shortcut icon (several sizes)
@@ -13,21 +16,16 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SOURCE = join(root, 'brand', 'logo.png');
-
-// The app icon is the logo on a white rounded square.
-const TILE_RADIUS = 0.225; // corner radius as a share of the icon size
-const TILE_EDGE_SHARE = 0.008; // a thin edge, so the white tile reads on white backgrounds
-const TILE_EDGE = '#e3e9f5';
-const ICON_MARK_SHARE = 0.6; // the logo fills 60% of the icon width
+const LOGO_SOURCE = join(root, 'brand', 'logo.png');
+const ICON_SOURCE = join(root, 'brand', 'icon.png');
 const LOGO_MARK_SHARE = 0.92; // the logo fills 92% of the in-app square
 const ICO_SIZES = [16, 24, 32, 48, 64, 128, 256];
 const WEBP = { quality: 92, alphaQuality: 100, effort: 6 };
 const CLEAR = { r: 0, g: 0, b: 0, alpha: 0 };
 
 // The logo without its transparent margin, so every size uses the mark's real shape.
-async function loadMark() {
-  return sharp(await readFile(SOURCE)).trim().png().toBuffer();
+async function loadLogo() {
+  return sharp(await readFile(LOGO_SOURCE)).trim().png().toBuffer();
 }
 
 async function fitMark(mark, box) {
@@ -44,17 +42,10 @@ async function logoSquare(size, mark) {
   return centred(size, await fitMark(mark, Math.round(size * LOGO_MARK_SHARE)));
 }
 
-async function iconPng(size, mark) {
-  const inset = (size * TILE_EDGE_SHARE) / 2;
-  const side = size - inset * 2;
-  const radius = size * TILE_RADIUS;
-  const tile = Buffer.from(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
-      `<rect x="${inset}" y="${inset}" width="${side}" height="${side}" rx="${radius}" ry="${radius}" ` +
-      `fill="#ffffff" stroke="${TILE_EDGE}" stroke-width="${size * TILE_EDGE_SHARE}"/></svg>`,
-  );
-  const markPng = await fitMark(mark, Math.round(size * ICON_MARK_SHARE));
-  return sharp(tile).composite([{ input: markPng, gravity: 'centre' }]).png().toBuffer();
+// The app icon is already a finished icon: a rounded square with its own colours and a transparent margin. It is
+// resized as it is, so the window, the tray, the installer and the tab show the same picture.
+async function appIcon(size, icon) {
+  return sharp(icon).resize(size, size, { fit: 'contain', background: CLEAR }).png().toBuffer();
 }
 
 // A Windows icon file holding several PNG images (Windows Vista and later read PNG entries).
@@ -79,22 +70,23 @@ function encodeIco(images) {
   return Buffer.concat([header, ...images.map((image) => image.png)]);
 }
 
-const mark = await loadMark();
+const logo = await loadLogo();
+const icon = await readFile(ICON_SOURCE);
 
 await mkdir(join(root, 'src', 'assets'), { recursive: true });
-await writeFile(join(root, 'src', 'assets', 'logo.webp'), await sharp(await logoSquare(512, mark)).webp(WEBP).toBuffer());
-await writeFile(join(root, 'src', 'assets', 'icon.webp'), await sharp(await iconPng(512, mark)).webp(WEBP).toBuffer());
-await writeFile(join(root, 'public', 'favicon.webp'), await sharp(await iconPng(128, mark)).webp(WEBP).toBuffer());
+await writeFile(join(root, 'src', 'assets', 'logo.webp'), await sharp(await logoSquare(512, logo)).webp(WEBP).toBuffer());
+await writeFile(join(root, 'src', 'assets', 'icon.webp'), await sharp(await appIcon(512, icon)).webp(WEBP).toBuffer());
+await writeFile(join(root, 'public', 'favicon.webp'), await sharp(await appIcon(128, icon)).webp(WEBP).toBuffer());
 
 await mkdir(join(root, 'build'), { recursive: true });
-await writeFile(join(root, 'build', 'icon.png'), await iconPng(1024, mark));
+await writeFile(join(root, 'build', 'icon.png'), await appIcon(1024, icon));
 const sizes = [];
-for (const size of ICO_SIZES) sizes.push({ size, png: await iconPng(size, mark) });
+for (const size of ICO_SIZES) sizes.push({ size, png: await appIcon(size, icon) });
 await writeFile(join(root, 'build', 'icon.ico'), encodeIco(sizes));
 
 await mkdir(join(root, 'electron', 'assets'), { recursive: true });
-await writeFile(join(root, 'electron', 'assets', 'icon.png'), await iconPng(256, mark));
-await writeFile(join(root, 'electron', 'assets', 'tray.png'), await iconPng(16, mark));
-await writeFile(join(root, 'electron', 'assets', 'tray@2x.png'), await iconPng(32, mark));
+await writeFile(join(root, 'electron', 'assets', 'icon.png'), await appIcon(256, icon));
+await writeFile(join(root, 'electron', 'assets', 'tray.png'), await appIcon(16, icon));
+await writeFile(join(root, 'electron', 'assets', 'tray@2x.png'), await appIcon(32, icon));
 
 console.log('Wrote the logo and icon files: src/assets, public/favicon.webp, build/, electron/assets/');

@@ -16,11 +16,11 @@
     --canvas-2: #f3f5f9;
     --surface-2: #f6f8fb;
 
-    --primary: #2f6bff;
-    --primary-600: #1f56e8;
-    --primary-700: #1a45c4;
-    --primary-50: #eef4ff;
-    --primary-100: #dce8ff;
+    --primary: #5337d2;
+    --primary-600: #4429b8;
+    --primary-700: #3a2693;
+    --primary-50: #f1eefc;
+    --primary-100: #e1dbf8;
 
     --hero-a: #1c3bb0;
     --hero-b: #3564ea;
@@ -570,7 +570,7 @@
   .btn--primary {
     background: var(--primary);
     color: #fff;
-    box-shadow: 0 8px 18px -10px rgba(47, 107, 255, 0.85);
+    box-shadow: 0 8px 18px -10px rgba(83, 55, 210, 0.85);
   }
 
   .btn--primary:hover:not(:disabled) {
@@ -708,7 +708,7 @@
   .input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.14);
+    box-shadow: 0 0 0 4px rgba(83, 55, 210, 0.14);
   }
 
   textarea.input {
@@ -1326,10 +1326,12 @@
     color: rgba(255, 255, 255, 0.86);
   }
 
+  /* The picture column has no hard edge: its light starts at nothing on the left and grows toward the right side, and
+     the artwork fades in from the left, so the whole banner reads as one smooth gradient. */
   .banner__media {
     position: relative;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.08);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.2) 100%);
   }
 
   .banner__media img {
@@ -1343,6 +1345,8 @@
     width: 100%;
     height: 100%;
     display: block;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 40%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 40%);
   }
 
   .banner .btn--white {
@@ -1982,7 +1986,7 @@
   }
 
   .option:hover:not(:disabled) {
-    border-color: #b7c6e8;
+    border-color: #beb2f0;
     transform: translateX(2px);
   }
 
@@ -2883,7 +2887,7 @@
 
   .choice:hover {
     transform: translateY(-1px);
-    border-color: #b7c6e8;
+    border-color: #beb2f0;
   }
 
   .choice[aria-checked='true'] {
@@ -2960,7 +2964,7 @@
     height: 24px;
     padding: 0 9px;
     border-radius: 8px;
-    background: linear-gradient(120deg, #2456e0 0%, #6b3fd6 100%);
+    background: linear-gradient(120deg, #5337d2 0%, #6b3fd6 100%);
     color: #ffffff;
     font-size: 11px;
     font-weight: 800;
@@ -3080,13 +3084,13 @@
 
   @keyframes pulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.35);
+      box-shadow: 0 0 0 0 rgba(83, 55, 210, 0.35);
     }
     70% {
-      box-shadow: 0 0 0 16px rgba(47, 107, 255, 0);
+      box-shadow: 0 0 0 16px rgba(83, 55, 210, 0);
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(47, 107, 255, 0);
+      box-shadow: 0 0 0 0 rgba(83, 55, 210, 0);
     }
   }
 

@@ -3,7 +3,7 @@ import { animate, motion } from 'framer-motion';
 import { useT } from '../lib/i18n/react';
 
 /** The colours of the score report's legend: the learner's line and the goal line, as on the radar chart. */
-export const REPORT_YOU = '#2f6bff';
+export const REPORT_YOU = '#5337d2';
 export const REPORT_GOAL = '#a4adbf';
 
 /** Counts from 0 to `to`. */
@@ -100,15 +100,15 @@ export function Radar({ axes, goal }: { axes: RadarAxis[]; goal?: number }) {
         )}
         <polygon
           points={polygon(dataPoints)}
-          fill="rgba(47,107,255,0.16)"
-          stroke="#2f6bff"
+          fill="rgba(83,55,210,0.16)"
+          stroke="#5337d2"
           strokeWidth={2.2}
           strokeLinejoin="round"
         />
         {axes.map((axis, index) => {
           const [x, y] = point(index, axis.value);
           return (
-            <circle key={axis.label} cx={x} cy={y} r={index === weakest ? 5 : 3.5} fill={index === weakest ? '#e5484d' : '#2f6bff'} />
+            <circle key={axis.label} cx={x} cy={y} r={index === weakest ? 5 : 3.5} fill={index === weakest ? '#e5484d' : '#5337d2'} />
           );
         })}
       </motion.g>

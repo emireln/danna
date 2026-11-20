@@ -402,7 +402,7 @@
 
   .mode-card:hover:not(:disabled) {
     transform: translateY(-1px);
-    border-color: #b7c6e8;
+    border-color: #beb2f0;
   }
 
   .mode-card[aria-checked='true'] {
