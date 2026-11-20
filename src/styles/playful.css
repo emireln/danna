@@ -1287,6 +1287,24 @@
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 60%);
   }
 
+  /* A notice with a button, in the Playful look: the message on the left and its button on the right, on one row and
+     centred across the height. On a narrow screen the button drops under the message. The notice's text sits in one
+     span, so the span is the row. */
+  :root[data-look='playful'] .notice:has(button) > span {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+  }
+
+  /* A text button in the Playful look is a button: its hover shows the tint, not an underline. */
+  :root[data-look='playful'] .btn--text:hover {
+    text-decoration: none;
+  }
+
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */
   @media (prefers-reduced-motion: reduce) {
     :root[data-look='playful'] .btn,
