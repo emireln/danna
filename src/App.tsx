@@ -28,6 +28,9 @@ import { FriendsScreen } from './screens/FriendsScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { ProfileReportScreen } from './screens/ProfileReportScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
+import { DecksScreen } from './screens/DecksScreen';
+import { DeckScreen } from './screens/DeckScreen';
+import { StudyDeckScreen } from './screens/StudyDeckScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { WhatsNewScreen } from './screens/WhatsNewScreen';
 
@@ -146,6 +149,9 @@ function AppRoutes() {
         <Route path="profile" element={<ProfileScreen />} />
         <Route path="profile/report" element={<ProfileReportScreen />} />
         <Route path="library" element={<LibraryScreen />} />
+        <Route path="decks" element={<DecksScreen />} />
+        <Route path="decks/:id" element={<DeckScreen />} />
+        <Route path="decks/:id/study" element={<StudyDeckScreen />} />
         <Route path="settings" element={<SettingsScreen />} />
         <Route path="whats-new" element={<WhatsNewScreen />} />
       </Route>

@@ -1,0 +1,378 @@
+/* Flashcards (2.0.0): decks, their cards, the study session that turns a card, and the four grades.
+   The Playful versions of these are in playful.css. */
+@layer looks {
+  .deck-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .deck-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--deck, var(--primary));
+    border-radius: var(--radius);
+    background: var(--canvas);
+  }
+
+  .deck-card--green {
+    --deck: var(--primary);
+  }
+
+  .deck-card--blue {
+    --deck: var(--blue);
+  }
+
+  .deck-card--violet {
+    --deck: var(--violet);
+  }
+
+  .deck-card--sun {
+    --deck: var(--sun);
+  }
+
+  .deck-card--red {
+    --deck: var(--red);
+  }
+
+  .deck-card--slate {
+    --deck: var(--slate);
+  }
+
+  .deck-card__open {
+    display: grid;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    color: var(--ink);
+    text-align: left;
+  }
+
+  .deck-card__title {
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .deck-card__text {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .deck-card__meta {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .deck-card__study {
+    flex: none;
+  }
+
+  .deck-colours {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .deck-colour {
+    width: 32px;
+    height: 32px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .deck-colour[aria-checked='true'] {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  .deck-colour--green {
+    background: var(--primary);
+  }
+
+  .deck-colour--blue {
+    background: var(--blue);
+  }
+
+  .deck-colour--violet {
+    background: var(--violet);
+  }
+
+  .deck-colour--sun {
+    background: var(--sun);
+  }
+
+  .deck-colour--red {
+    background: var(--red);
+  }
+
+  .deck-colour--slate {
+    background: var(--slate);
+  }
+
+  .deck-import {
+    font: inherit;
+    resize: vertical;
+  }
+
+  .card-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .card-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--canvas);
+  }
+
+  .card-item__body {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .card-item__front {
+    font-weight: 800;
+  }
+
+  .card-item__back {
+    color: var(--ink-2);
+    font-size: 14px;
+  }
+
+  .card-item__note {
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .card-item__side {
+    display: grid;
+    justify-items: end;
+    gap: 4px;
+  }
+
+  .card-state {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .card-state--learning {
+    background: var(--amber);
+    color: var(--amber-ink);
+  }
+
+  .card-state--review {
+    background: var(--primary-50);
+    color: var(--primary-700);
+  }
+
+  .card-item__due {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .card-item__actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  .study-stage {
+    width: min(560px, 100%);
+    margin: 0 auto;
+  }
+
+  .flip-card {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 180px;
+    padding: 0;
+    border: 0;
+    background: none;
+    perspective: 1200px;
+    cursor: pointer;
+  }
+
+  .flip-card__inner {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 360ms var(--ease);
+  }
+
+  .flip-card.is-flipped .flip-card__inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card__face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 10px;
+    padding: 24px;
+    border: 2px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+    text-align: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .flip-card__face--front {
+    transform: rotateY(0deg);
+  }
+
+  .flip-card__face--back {
+    background: var(--primary-50);
+    transform: rotateY(180deg);
+  }
+
+  .flip-card__label {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .flip-card__text {
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .flip-card__note {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .grade-bar {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .grade {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    border: 0;
+    border-radius: var(--radius);
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  .grade:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .grade--again {
+    background: var(--red);
+  }
+
+  .grade--hard {
+    background: #b7791f;
+  }
+
+  .grade--good {
+    background: var(--primary);
+  }
+
+  .grade--easy {
+    background: var(--blue);
+  }
+
+  .grade__label {
+    font-weight: 800;
+  }
+
+  .grade__wait {
+    font-size: 12px;
+    opacity: 0.9;
+  }
+
+  .grade__key {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 11px;
+    opacity: 0.7;
+  }
+
+  .study-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .study-summary__item {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 14px 8px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+
+  .study-summary__value {
+    font-size: 26px;
+    font-weight: 900;
+  }
+
+  .study-summary__label {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .study-summary__xp {
+    margin: 0;
+    color: var(--primary);
+    font-size: 22px;
+    font-weight: 900;
+  }
+
+  .study-stage__hint {
+    margin: 0;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .grade-bar,
+    .study-summary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

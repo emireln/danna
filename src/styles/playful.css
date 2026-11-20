@@ -373,6 +373,75 @@
     background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.18) 0 8px, transparent 8px 16px);
   }
 
+  /* Flashcards: the decks and cards have a thick border and an edge; the grades are 3D buttons with their colours. */
+  :root[data-look='playful'] .deck-card {
+    border: 2px solid var(--line);
+    border-left: 8px solid var(--deck, var(--primary));
+    border-radius: var(--radius);
+    background: #ffffff;
+    box-shadow: var(--shadow);
+  }
+
+  :root[data-look='playful'] .card-item {
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    background: #ffffff;
+    box-shadow: var(--shadow);
+  }
+
+  :root[data-look='playful'] .flip-card__face {
+    border: 2px solid var(--line-2);
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 6px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .flip-card__face--back {
+    background: var(--primary-50);
+    border-color: #b8e8c9;
+    box-shadow: 0 6px 0 #b8e8c9;
+  }
+
+  :root[data-look='playful'] .grade {
+    box-shadow: 0 5px 0 rgba(29, 26, 61, 0.28);
+    transition: transform 80ms ease, box-shadow 80ms ease;
+  }
+
+  :root[data-look='playful'] .grade:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+
+  :root[data-look='playful'] .grade--again {
+    background: var(--red);
+    box-shadow: 0 5px 0 var(--red-edge);
+  }
+
+  :root[data-look='playful'] .grade--hard {
+    background: #b7791f;
+    box-shadow: 0 5px 0 #8a5a00;
+  }
+
+  :root[data-look='playful'] .grade--good {
+    background: var(--primary);
+    box-shadow: 0 5px 0 var(--primary-700);
+  }
+
+  :root[data-look='playful'] .grade--easy {
+    background: var(--blue);
+    box-shadow: 0 5px 0 var(--blue-edge);
+  }
+
+  :root[data-look='playful'] .study-summary__item {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    background: #ffffff;
+  }
+
+  :root[data-look='playful'] .study-summary__value {
+    color: var(--primary-700);
+  }
+
   /* The achievements: an unlocked badge is a violet 3D tile; a locked one is grey and flat. */
   :root[data-look='playful'] .achievement {
     border: 2px solid var(--line);

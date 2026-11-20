@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, CalendarDays, ClipboardCheck, GraduationCap, Languages, Plus, Sparkles, Star } from 'lucide-react';
 import { GenerateSheet } from '../components/GenerateSheet';
 import { BackLink, Empty, FeatureCard, Notice, PageHeader, ProgressBar, SectionTitle, Skeleton, Tabs } from '../components/ui';
+import { Layers } from 'lucide-react';
 import { TOEFL_TEST_ID, levelSkillTests, levelTest, lessonsForSkill, toeflLessons, toeflSkillTests, toeflTest, wordsTest } from '../content';
 import { LEVELS } from '../lib/types';
 import { SECTION_ART, SECTION_BASE } from '../lib/art';
@@ -93,6 +94,13 @@ export function StudyScreen() {
             onClick={() => setTab('mock')}
           />
         </div>
+
+        <FeatureCard
+          icon={<Layers />}
+          title={t('Flashcards')}
+          meta={t('Decks you review with spaced repetition. Each card comes back when you are about to forget it.')}
+          onClick={() => navigate('/decks')}
+        />
 
         <FeatureCard
           icon={<GraduationCap />}
