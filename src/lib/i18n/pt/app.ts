@@ -1397,4 +1397,14 @@ export const APP_PT: Record<string, string> = {
   'Practise my mistakes': 'Praticar meus erros',
   'Work again on the answers you got wrong recently.': 'Trabalhe de novo nas respostas que você errou recentemente.',
   'Help me practise the mistakes I made recently.': 'Me ajude a praticar os erros que cometi recentemente.',
+
+  // The look (2.0.0): Settings
+  'Look': 'Visual',
+  'Your look is saved to your account. Without an account it is kept on this device.':
+    'Seu visual é salvo na sua conta. Sem conta, ele fica guardado neste dispositivo.',
+  'Classic': 'Clássico',
+  'Playful': 'Divertido',
+  'The calm, clear look you know. Flat buttons, quiet colours.': 'O visual calmo e claro que você já conhece. Botões lisos e cores discretas.',
+  'Friendlier and bright: 3D buttons, quests and celebrations.': 'Mais amigável e colorido: botões 3D, missões e comemorações.',
+  'Your look is saved.': 'Seu visual foi salvo.',
 };

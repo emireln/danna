@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Cloud, Coffee, Eye, EyeOff, KeyRound, Laptop, Play, Star, Trash2, Volume2 } from 'lucide-react';
 import { LanguageSwitch } from '../components/LanguageSwitch';
+import { LookPicker } from '../components/LookPicker';
 import { Select } from '../components/Pickers';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
 import { checkFeedback, FeedbackLimitError } from '../lib/feedback';
+import { lookOf } from '../lib/look';
 import { openSupport } from '../lib/support';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
@@ -18,7 +20,7 @@ import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
-import type { AIModel, Provider } from '../lib/types';
+import type { AIModel, LookId, Provider } from '../lib/types';
 
 const PROVIDER_LABEL: Record<Provider, string> = {
   openai: 'OpenAI',
@@ -43,7 +45,22 @@ export function SettingsScreen() {
   const t = useT();
   const { mode, email, signOut, moveToDevice, backend, vaultError } = useAuth();
   const ai = useAI();
-  const { refresh, refreshSocial } = useAppData();
+  const { refresh, refreshSocial, profile, patchProfile } = useAppData();
+  const look = lookOf(profile);
+  const [savingLook, setSavingLook] = useState(false);
+  // The look is saved to the profile: to the account in the cloud, or to this device without one.
+  const chooseLook = async (next: LookId) => {
+    if (next === look) return;
+    setSavingLook(true);
+    try {
+      await patchProfile({ ui_style: next });
+      notify(t('Your look is saved.'), 'ok');
+    } catch (error) {
+      notify(t(errorText(error)), 'error');
+    } finally {
+      setSavingLook(false);
+    }
+  };
   const { notify } = useToast();
   const online = onlineAvailable();
 
@@ -341,6 +358,10 @@ export function SettingsScreen() {
         </div>
         <LanguageSwitch />
       </div>
+
+      <SectionTitle title={t('Look')} />
+      <p className="muted">{t('Your look is saved to your account. Without an account it is kept on this device.')}</p>
+      <LookPicker value={look} disabled={savingLook} onChange={(next) => void chooseLook(next)} />
 
       <SectionTitle title={t('How you use danna')} />
       <div className="mode-grid" role="radiogroup" aria-label={t('How you use danna')}>

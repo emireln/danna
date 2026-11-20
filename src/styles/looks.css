@@ -1,0 +1,122 @@
+/* The look picker in Settings: two radio cards, each with a small picture of its look.
+   The Playful theme itself is in playful.css. */
+@layer looks {
+  .look-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .look-card {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .look-card[aria-checked='true'] {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-100);
+  }
+
+  .look-card:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .look-card__preview {
+    display: grid;
+    gap: 6px;
+    height: 84px;
+    padding: 10px;
+    border-radius: var(--radius);
+    background: var(--canvas-2);
+  }
+
+  .look-card__bar {
+    width: 40%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--line-2);
+  }
+
+  .look-card__block {
+    height: 30px;
+    border-radius: 6px;
+    background: var(--primary-50);
+  }
+
+  .look-card__button {
+    width: 46px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--primary);
+  }
+
+  /* The Playful picture: bright, with a chunky button that has a visible bottom edge. */
+  .look-card__preview--playful {
+    background: #eef6ff;
+  }
+
+  .look-card__preview--playful .look-card__bar {
+    background: #b9cde6;
+  }
+
+  .look-card__preview--playful .look-card__block {
+    border: 2px solid #d6e4f5;
+    border-radius: 14px;
+    background: #ffffff;
+  }
+
+  .look-card__preview--playful .look-card__button {
+    height: 16px;
+    border-radius: 10px;
+    background: #128a4e;
+    box-shadow: 0 3px 0 #0c6b3b;
+  }
+
+  .look-card__title {
+    font-weight: 700;
+  }
+
+  .look-card__text {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .look-card__tick {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    width: 22px;
+    height: 22px;
+    place-items: center;
+    border-radius: 6px;
+    background: var(--primary);
+    color: #ffffff;
+  }
+
+  .look-card__tick:empty {
+    display: none;
+  }
+
+  .look-card__tick svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  @media (max-width: 640px) {
+    .look-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}

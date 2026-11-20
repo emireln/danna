@@ -6,6 +6,7 @@ import './styles/library.css';
 import './styles/system.css';
 import './styles/controls.css';
 import './styles/coach.css';
+import './styles/looks.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';

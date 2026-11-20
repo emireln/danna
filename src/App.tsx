@@ -8,6 +8,7 @@ import { hasWelcomed } from './lib/session';
 import { AuthProvider, useAuth } from './state/auth';
 import { AIProvider } from './state/ai';
 import { AppDataProvider, useAppData } from './state/appData';
+import { LookSync } from './state/look';
 import { ToastProvider } from './state/toast';
 import { UpdateNotice } from './components/UpdateNotice';
 import { LanguageProvider, useT } from './lib/i18n/react';
@@ -173,6 +174,7 @@ export default function App() {
         <AuthProvider>
           <AIProvider>
             <AppDataProvider>
+              <LookSync />
               <Frame />
             </AppDataProvider>
           </AIProvider>

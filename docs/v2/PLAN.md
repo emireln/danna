@@ -154,7 +154,7 @@ Every feature is finished when all of these hold:
 - [x] M0. Research and the codebase map (this document)
 - [x] M1. This plan and the design spec (committed)
 - [x] M2. `ui_style` and `attempts.xp` in every backend; migration 0020; parity and policy tests (F1 data)
-- [ ] M3. Settings "Look" picker; `LookProvider`; Classic unchanged (F1 UI)
+- [x] M3. Settings "Look" picker; `LookSync`; Classic unchanged (F1 UI)
 - [ ] M4. Playful design system: tokens, 3D buttons, cards, navigation, font; contrast test (F2)
 - [ ] M5. Title bar: Beta tag and XP chip, both looks (F3)
 - [ ] M6. Today: daily goal and quests (F4)
