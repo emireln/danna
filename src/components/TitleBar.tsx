@@ -6,7 +6,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeftRight, BookOpen, Coffee, LogOut, Search, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
 import { StreakFire } from './StreakFire';
-import { UpdateButton } from './UpdateButton';
 import { GlobalSearch } from './GlobalSearch';
 import { bridge, type WindowState } from '../lib/bridge';
 import { openSupport } from '../lib/support';
@@ -184,7 +183,6 @@ export function TitleBar() {
         </div>
       )}
 
-      <UpdateButton />
       {windows.desktop && (
         <div className="titlebar__controls">
           <button className="titlebar__control" onClick={windows.minimize} aria-label={t('Minimize')}>
