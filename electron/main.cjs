@@ -6,6 +6,7 @@ const { pathToFileURL } = require('node:url');
 const keystore = require('./keystore.cjs');
 const ai = require('./ai.cjs');
 const speech = require('./speech.cjs');
+const { createLiveSessions } = require('./live.cjs');
 const localdb = require('./localdb.cjs');
 const settings = require('./settings.cjs');
 const { shellLanguage, shellText } = require('./i18n.cjs');
@@ -431,6 +432,32 @@ function registerIpc() {
   });
   handle('speech:stop', ({ id }) => speechService.stop(id));
   handle('speech:voices', () => speechService.voices());
+
+  // Live talk (electron/live.cjs): the conversation with the Gemini Live API. Microphone frames are sent without a reply,
+  // so they use ipcMain.on; each one is checked for its sender like every other channel.
+  const live = createLiveSessions({ send, getKey: (provider) => keystore.getKey(provider) });
+  handle('live:start', ({ instructions, voice, turnMode, model }) => {
+    if (typeof instructions !== 'string' || instructions.length > 12000) throw userError('The coach could not start. Try again.');
+    return live.start({ instructions, voice, turnMode, model });
+  });
+  handle('live:text', ({ text }) => live.sendText(text));
+  handle('live:stop', () => live.stop());
+  ipcMain.on('live:audio', (event, frame) => {
+    try {
+      assertTrustedSender(event);
+    } catch {
+      return;
+    }
+    live.sendAudio(frame);
+  });
+  ipcMain.on('live:activity', (event, kind) => {
+    try {
+      assertTrustedSender(event);
+    } catch {
+      return;
+    }
+    live.sendActivity(kind);
+  });
 
   handle('ai:transcribe', async ({ audio, mime }) => {
     if (!keystore.hasKey('openai')) throw userError('Add an OpenAI key in Settings to transcribe speaking answers.');

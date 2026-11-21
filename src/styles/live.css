@@ -1,0 +1,297 @@
+/* The talk with the coach: the character on a stage, the caption under it, the transcript and the controls. The character
+   is drawn by three.js on a canvas that fills the stage; everything around it is ordinary page layout. */
+@layer screens {
+  .live {
+    display: grid;
+    gap: 16px;
+    padding-bottom: 32px;
+  }
+
+  .live__intro {
+    margin: 4px 0 0;
+    color: var(--muted);
+    max-width: 62ch;
+  }
+
+  .live__engine {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .live__stage {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    padding: 12px 16px 16px;
+    border-radius: var(--radius-lg);
+    background: var(--surface-2);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .live__scene {
+    position: relative;
+    width: 100%;
+    height: min(56vh, 440px);
+    min-height: 260px;
+  }
+
+  .live__scene canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .live__fallback {
+    margin: 0;
+    padding: 24px 16px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .live__caption {
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .live__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .live__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+
+  .live__dot--listening {
+    background: var(--green);
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+
+  .live__dot--thinking {
+    background: var(--amber);
+    animation: live-pulse 0.9s ease-in-out infinite;
+  }
+
+  .live__dot--speaking {
+    background: var(--primary);
+    animation: live-pulse 0.7s ease-in-out infinite;
+  }
+
+  .live__dot--connecting {
+    animation: live-pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes live-pulse {
+    50% {
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+  }
+
+  .live__notice {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .live__controls,
+  .live__row,
+  .live__modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .live__talk {
+    min-width: 220px;
+    min-height: 60px;
+    font-size: 16px;
+  }
+
+  .live__talk.is-talking {
+    background: var(--red);
+    border-color: var(--red);
+  }
+
+  .live__composer {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .live__input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+  }
+
+  .live__input:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  .live__transcript {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    max-height: 42vh;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 4px 2px;
+  }
+
+  .live__empty {
+    margin: 0;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .live__line {
+    margin: 0;
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    line-height: 1.5;
+  }
+
+  .live__line--user {
+    justify-self: end;
+    background: var(--primary-50);
+  }
+
+  .live__who {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .live__summary {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    background: var(--surface-2);
+  }
+
+  .live__setup {
+    display: grid;
+    gap: 14px;
+  }
+
+  .live__coaches {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .live__coach {
+    display: grid;
+    gap: 4px;
+    padding: 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--ink);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .live__coach strong {
+    font-size: 16px;
+  }
+
+  .live__coach span {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .live__coach[aria-checked='true'] {
+    border-color: var(--primary);
+    background: var(--primary-50);
+    box-shadow: 0 0 0 2px var(--primary-100);
+  }
+
+  .live__field {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+
+  .live__select {
+    min-height: 40px;
+    padding: 0 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+  }
+
+  .live__consent {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    background: var(--white);
+    box-shadow: var(--shadow);
+  }
+
+  .live__consent p {
+    margin: 0;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 640px) {
+    .live__line {
+      max-width: 92%;
+    }
+
+    .live__talk {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .live__scene {
+      height: 52vh;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live__dot {
+      animation: none;
+    }
+  }
+}

@@ -7,6 +7,7 @@ import './styles/library.css';
 import './styles/system.css';
 import './styles/controls.css';
 import './styles/coach.css';
+import './styles/live.css';
 import './styles/looks.css';
 import './styles/decks.css';
 import './styles/write.css';

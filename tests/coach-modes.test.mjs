@@ -26,7 +26,7 @@ test('every mode has its own id and card, and the free chat is first', () => {
   assert.equal(ids[0], 'chat');
   for (const mode of modes.COACH_MODES) {
     assert.ok(mode.title.length > 0 && mode.blurb.length > 0, `${mode.id} has a title and a blurb`);
-    assert.ok(['send', 'write'].includes(mode.start), `${mode.id} starts in a known way`);
+    assert.ok(['send', 'write', 'open'].includes(mode.start), `${mode.id} starts in a known way`);
   }
 });
 

@@ -13,6 +13,7 @@ danna is an English learning app for Windows: a roadmap from A1 to C1, an option
 - `npm run web`: the interface in a browser on port 5173. Desktop-only features are missing there: AI keys, the tray, library files, updates and the built-in and Windows voices. Data is kept in browser storage.
 - `npm run build`: typecheck, then the production build into `dist/`. `npm start` opens that build, so build first.
 - `npm test`: every test, using node:test. `npm run test:sync` runs the progress-copy tests and `npm run test:db` the database policy tests.
+- `DANNA_GEMINI_KEY=<key> node --test tests/live-smoke.test.mjs`: one live talk against the real Gemini Live service. It is skipped without the variable. Never write the key to a file or to the repository.
 - `npm run typecheck`: TypeScript without emitting files.
 - `npm run dist`: the Windows installer in `release/`. It fetches the built-in voice first (`tts:fetch`). Delete an older `release/` folder before building.
 - `npm run release`: publishes the installer as a GitHub release for the current version. See Git and releases.
@@ -41,6 +42,7 @@ There is no CI. Run the checks yourself.
 - The renderer reaches the main process only through `window.danna`. `electron/preload.cjs` exposes it, and `src/lib/bridge.ts` types it. The handlers are in `electron/main.cjs`, and every handler checks the sender.
 - AI keys are stored with Electron `safeStorage` (`electron/keystore.cjs`), and every provider request is made in `electron/ai.cjs`. A key crosses into the renderer only to be sealed for an account (`keys:export` and `keys:import`).
 - Speech: `electron/speech-service.cjs` chooses between the built-in Kokoro voice (`electron/kokoro.cjs`), a Windows voice (`electron/winvoices.cjs`) and a cloud voice.
+- Talk live (`/coach/live`): `electron/live.cjs` holds the Gemini Live session, and the renderer's `src/lib/live/` holds the microphone, the voice player and the conversation. `src/avatar/` draws the three characters with three.js, loaded only on that screen. See `docs/live-coach.md`.
 - The look is `classic` (the default) or `playful`. It is saved on the profile (`ui_style`), or on the device when there is no account. `src/state/look.tsx` sets `data-look` on `<html>`. Before the profile loads, the page is Classic.
 - Rules live in `src/lib`: grading (`src/lib/grading.ts`), scoring (`src/lib/scoring.ts`), review and flashcards (`src/lib/srs.ts`), the roadmap (`src/lib/roadmap.ts`), the coach and the writing check. Screens stay thin.
 

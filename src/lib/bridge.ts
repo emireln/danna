@@ -111,6 +111,30 @@ export interface AppSettings {
   voiceVolume: number;
 }
 
+/** What the live conversation reports. Audio is the coach's voice: 16-bit mono PCM at 24 kHz. */
+export type LiveEvent =
+  | { type: 'ready'; model: string }
+  | { type: 'audio'; mimeType: string; data: Uint8Array }
+  | { type: 'transcript'; role: 'user' | 'model'; text: string }
+  | { type: 'interrupted' }
+  | { type: 'turn-complete' }
+  | { type: 'activity'; speaking: boolean }
+  | { type: 'go-away'; timeLeftMs: number | null }
+  | { type: 'reconnecting'; attempt: number }
+  | { type: 'error'; message: string }
+  | { type: 'closed'; reason: string };
+
+export interface LiveStartOptions {
+  /** The coach's instructions for this conversation, built from the learner's facts. */
+  instructions: string;
+  /** A Gemini voice name, such as 'Kore'. Unknown names fall back to the default voice. */
+  voice?: string;
+  /** 'auto': the server decides when the learner has finished. 'manual': the interface signals it. */
+  turnMode?: 'auto' | 'manual';
+  /** A live model name. Left out, the newest model of the list is used, with the next one as a fallback. */
+  model?: string;
+}
+
 export interface DannaBridge {
   info: () => Promise<AppInfo>;
   keys: {
@@ -147,6 +171,17 @@ export interface DannaBridge {
     voices: () => Promise<SpeechVoices>;
     /** Every piece of sound, note and end that the desktop app sends. Returns the way to stop listening. */
     onChunk: (callback: (chunk: SpeechChunk) => void) => () => void;
+  };
+  /** The live conversation with the Gemini Live API. It needs a Gemini key; the key never leaves the desktop app. */
+  live: {
+    start: (options: LiveStartOptions) => Promise<{ started: true; model: string }>;
+    stop: () => Promise<{ stopped: boolean }>;
+    sendText: (text: string) => Promise<boolean>;
+    /** One microphone frame: 16 kHz, 16-bit mono PCM. Sent without a reply. */
+    sendAudio: (frame: ArrayBuffer) => void;
+    /** Manual turn-taking only: 'start' when the learner starts to speak, 'end' when they stop. */
+    sendActivity: (kind: 'start' | 'end') => void;
+    onEvent: (callback: (event: LiveEvent) => void) => () => void;
   };
   local: {
     call: <T = unknown>(method: string, args?: unknown[]) => Promise<T>;

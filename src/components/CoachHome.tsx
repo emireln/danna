@@ -1,7 +1,7 @@
 // The coach's home: what the learner is working on, the ways to work with the coach (the modes), a few questions to
 // start from, and the recent chats. It is what a learner sees before a chat starts.
 import type { ComponentType } from 'react';
-import { BookOpen, ListChecks, Languages, MessageCircle, Mic, PenLine, RefreshCw, Target, Users } from 'lucide-react';
+import { BookOpen, ListChecks, Languages, MessageCircle, Mic, PenLine, Radio, RefreshCw, Target, Users } from 'lucide-react';
 import { coachMode, COACH_MODES, type CoachModeId, type ModeIcon } from '../lib/coachModes';
 import { roleplayModeId, SCENARIOS } from '../lib/scenarios';
 import { tn } from '../lib/i18n';
@@ -14,6 +14,7 @@ const ICONS: Record<ModeIcon, ComponentType<{ 'aria-hidden'?: boolean }>> = {
   people: Users,
   pen: PenLine,
   mic: Mic,
+  live: Radio,
   target: Target,
   rule: ListChecks,
   words: Languages,

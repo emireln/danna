@@ -17,6 +17,8 @@ const preloadPath = join(root, 'electron', 'preload.cjs');
 const electronPath = require.resolve('electron');
 
 const handlers = new Map();
+// Channels that take messages without a reply (the microphone's frames) are listened to, not handled.
+const listeners = new Map();
 const opened = [];
 let folder = '';
 
@@ -69,6 +71,9 @@ function electronStub() {
     ipcMain: {
       handle(channel, handler) {
         handlers.set(channel, handler);
+      },
+      on(channel, listener) {
+        listeners.set(channel, listener);
       },
     },
     shell: {
@@ -144,6 +149,19 @@ test('only danna pages can call the desktop process', async () => {
   }
   await assert.rejects(invoke('settings:get', undefined, 'https://evil.example/'), /untrusted page/);
   await assert.rejects(invoke('keys:state', undefined, 'file:///C:/x.html'), /untrusted page/);
+});
+
+test('the live talk takes calls and microphone frames only from danna pages', async () => {
+  const options = { instructions: 'Be kind.', voice: 'Kore', turnMode: 'auto' };
+  await assert.rejects(invoke('live:start', options, 'https://evil.example/'), /untrusted page/);
+  await assert.rejects(invoke('live:text', { text: 'hi' }, 'https://evil.example/'), /untrusted page/);
+  // A frame from another page is refused quietly: the listener returns nothing and throws nothing.
+  const frame = listeners.get('live:audio');
+  assert.ok(frame, 'the microphone frames are listened to');
+  assert.doesNotThrow(() => frame({ senderFrame: { url: 'https://evil.example/' } }, new ArrayBuffer(8)));
+  // From a danna page the call reaches the talk, which asks for the Gemini key when there is none.
+  assert.equal(await refusal(invoke('live:start', options)), 'Add a Gemini key in Settings to talk live.');
+  assert.equal(await refusal(invoke('live:stop', undefined)), null);
 });
 
 test('danna pages can read the app information', async () => {

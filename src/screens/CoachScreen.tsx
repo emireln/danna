@@ -478,6 +478,11 @@ export function CoachScreen() {
   const startMode = (id: CoachModeId) => {
     const mode = coachMode(id);
     setFailure(null);
+    // A mode with a screen of its own opens that screen; no chat is started here.
+    if (mode.start === 'open') {
+      navigate('/coach/live');
+      return;
+    }
     if (mode.start === 'send' && mode.opener) {
       void send(t(mode.opener), { mode: id });
       return;

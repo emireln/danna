@@ -10,6 +10,7 @@ import { ONBOARDING_PT } from './onboarding';
 import { ALERTS_PT } from './alerts';
 import { RELEASE_NOTES_PT } from './release-notes';
 import { VOICES_PT } from './voices';
+import { LIVE_PT } from './live';
 
 export const PT: Record<string, string> = {
   ...CONTENT_PT,
@@ -23,4 +24,5 @@ export const PT: Record<string, string> = {
   ...ALERTS_PT,
   ...RELEASE_NOTES_PT,
   ...VOICES_PT,
+  ...LIVE_PT,
 };

@@ -5,17 +5,28 @@
 import { roleplayInstructions, roleplayModeId, scenarioOf, type Scenario } from './scenarios';
 
 /** The modes of the coach. A role-play scene is a mode too, with the id `roleplay-` and the scene's id. */
-export type CoachModeId = 'chat' | 'conversation' | 'writing' | 'speaking' | 'exam' | 'grammar' | 'vocabulary' | 'reading' | 'review' | `roleplay-${string}`;
+export type CoachModeId =
+  | 'chat'
+  | 'conversation'
+  | 'writing'
+  | 'speaking'
+  | 'live'
+  | 'exam'
+  | 'grammar'
+  | 'vocabulary'
+  | 'reading'
+  | 'review'
+  | `roleplay-${string}`;
 
-export type ModeIcon = 'chat' | 'people' | 'pen' | 'mic' | 'target' | 'rule' | 'words' | 'book' | 'repeat';
+export type ModeIcon = 'chat' | 'people' | 'pen' | 'mic' | 'live' | 'target' | 'rule' | 'words' | 'book' | 'repeat';
 
 export interface CoachMode {
   id: CoachModeId;
   icon: ModeIcon;
   title: string;
   blurb: string;
-  /** 'send': the opening message is sent at once. 'write': the learner writes or attaches first. */
-  start: 'send' | 'write';
+  /** 'send': the opening message is sent at once. 'write': the learner writes or attaches first. 'open': the mode has a screen of its own. */
+  start: 'send' | 'write' | 'open';
   /** The message that starts the mode, as the learner sees it. Empty when the learner writes first. */
   opener: string;
   /** What the model is told in this mode. English; the reply language is set by coachSystem. */
@@ -74,6 +85,19 @@ export const COACH_MODES: readonly CoachMode[] = [
       'Do not correct transcription slips. Keep every reply to at most three sentences, because the app reads it aloud.',
       'Ask one question at a time, and follow up on what the learner said.',
       'Now and then give one spoken-style correction, as "You could say: ..." with a short reason, and praise one specific thing.',
+    ].join(' '),
+  },
+  {
+    id: 'live',
+    icon: 'live',
+    title: 'Talk live',
+    blurb: 'A real-time voice talk with a 3D coach that answers as you speak.',
+    start: 'open',
+    opener: '',
+    instructions: [
+      'Live talk, kept as a chat. The learner talked with you by voice, so their words reach you as text: expect spoken, informal English.',
+      'Keep each reply to at most three sentences, because it may be read aloud. Ask one question at a time, and follow up on what the learner said.',
+      'Do not correct transcription slips. Now and then give one correction, as "You could say: ..." with a short reason, and praise one specific thing.',
     ].join(' '),
   },
   {

@@ -39,6 +39,15 @@ contextBridge.exposeInMainWorld(
       voices: () => call('speech:voices'),
       onChunk: (callback) => listen('speech:chunk', callback),
     }),
+    live: Object.freeze({
+      start: (options) => call('live:start', options),
+      stop: () => call('live:stop'),
+      sendText: (text) => call('live:text', { text }),
+      // Audio frames and turn signals are sent without a reply, so they do not wait for one.
+      sendAudio: (frame) => ipcRenderer.send('live:audio', frame),
+      sendActivity: (kind) => ipcRenderer.send('live:activity', kind),
+      onEvent: (callback) => listen('live:event', callback),
+    }),
     local: Object.freeze({
       call: (method, args) => call('local:call', { method, args }),
     }),

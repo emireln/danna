@@ -1368,6 +1368,8 @@ export const APP_PT: Record<string, string> = {
   'Fix my writing': 'Corrigir minha escrita',
   'Paste a paragraph or an email. Get scores, corrections and a model version.': 'Cole um parágrafo ou um e-mail. Receba notas, correções e uma versão modelo.',
   'Speaking practice': 'Prática de fala',
+  'Talk live': 'Conversa ao vivo',
+  'A real-time voice talk with a 3D coach that answers as you speak.': 'Uma conversa por voz em tempo real com um coach 3D que responde enquanto você fala.',
   'Talk with your coach by voice. Short turns, and gentle feedback you can hear.': 'Converse com seu coach por voz. Falas curtas e um retorno gentil que você pode ouvir.',
   "Let's practise speaking. Ask me one question to start.": 'Vamos praticar a fala. Faça-me uma pergunta para começar.',
   'Exam practice': 'Treino para a prova',
