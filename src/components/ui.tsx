@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logoUrl from '../assets/logo.webp';
+import { defaultAvatarUrl } from '../lib/avatarPack';
 import { useT } from '../lib/i18n/react';
 
 /** How many rows a long list shows at first, and how many more each press of "Show more" adds. */
@@ -54,25 +55,21 @@ export function initials(name: string): string {
 
 export function Avatar({
   name,
-  color,
+  seed,
   size = 'md',
   src,
 }: {
   name: string;
-  color?: string;
+  /** A stable text for the person, such as their id. It picks their built-in picture when they have none of their own. */
+  seed?: string;
   size?: 'sm' | 'md' | 'lg';
-  /** A picture URL. When there is one, it replaces the initials. */
+  /** The person's own picture. When there is one, it replaces the built-in picture. */
   src?: string | null;
 }) {
   const sizeClass = size === 'lg' ? 'avatar--lg' : size === 'sm' ? 'avatar--sm' : '';
-  const pictureClass = src ? 'avatar--picture' : '';
   return (
-    <span className={`avatar ${sizeClass} ${pictureClass}`} style={color && !src ? { background: color } : undefined} aria-hidden="true">
-      {src ? (
-        <img className="avatar__img" src={src} alt="" draggable={false} />
-      ) : (
-        initials(name)
-      )}
+    <span className={`avatar avatar--picture ${sizeClass}`} aria-hidden="true">
+      <img className="avatar__img" src={src || defaultAvatarUrl(seed ?? name)} alt="" draggable={false} />
     </span>
   );
 }

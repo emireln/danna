@@ -166,6 +166,8 @@ function ClozeBody({ question, state, reveal, locked, correctBlanks, onChange }:
         const remaining = segment.answer.length - segment.reveal;
         const typed = (values[segment.index] ?? '').slice(prefix.length);
         const status = reveal ? (correctBlanks?.[segment.index] ? 'blank--ok' : 'blank--bad') : '';
+        // A wrong gap shows its answer right after what was typed, so the box is only as wide as the typed text.
+        const wrong = Boolean(reveal && !correctBlanks?.[segment.index]);
         return (
           <span key={`b${segment.index}`} className={`blank ${status}`}>
             {prefix && <span className="blank__prefix">{prefix}</span>}
@@ -179,9 +181,10 @@ function ClozeBody({ question, state, reveal, locked, correctBlanks, onChange }:
               autoComplete="off"
               spellCheck={false}
               aria-label={t('Blank {number}', { number: segment.index + 1 })}
-              style={{ width: `${remaining + 0.6}ch` }}
+              style={{ width: `${(wrong ? Math.max(typed.length, 1) : remaining) + 0.6}ch` }}
               onChange={(event) => {
-                const clean = event.target.value.replace(/\s/g, '');
+                // A phrase keeps its spaces, such as "would have"; only the spaces before the first letter are dropped.
+                const clean = event.target.value.replace(/^\s+/, '');
                 setBlank(segment.index, prefix, clean);
                 if (clean.length >= remaining) {
                   const nextIndex = inputs.current.findIndex(
@@ -191,7 +194,7 @@ function ClozeBody({ question, state, reveal, locked, correctBlanks, onChange }:
                 }
               }}
             />
-            {reveal && !correctBlanks?.[segment.index] && <span className="blank__answer">{segment.answer}</span>}
+            {wrong && <span className="blank__answer">{segment.answer}</span>}
           </span>
         );
       })}

@@ -263,7 +263,7 @@ export function ProfileScreen() {
           </div>
 
           <div className="profile-hero__picture">
-            <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
+            <Avatar name={name} seed={profile.id} size="lg" src={pictureUrl} />
             <button
               className="profile-hero__picture-edit"
               onClick={() => setPictureOpen(true)}
@@ -440,7 +440,7 @@ export function ProfileScreen() {
         <Sheet title={t('Profile picture')} onClose={() => !pictureBusy && setPictureOpen(false)}>
           <div className="stack">
             <div className="picture-preview">
-              <Avatar name={name} color={profile.avatar_color} size="lg" src={pictureUrl} />
+              <Avatar name={name} seed={profile.id} size="lg" src={pictureUrl} />
             </div>
             <div className="stack--tight">
               <button className="btn btn--primary btn--block" onClick={() => fileInput.current?.click()} disabled={pictureBusy}>

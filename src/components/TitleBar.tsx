@@ -121,7 +121,7 @@ export function TitleBar() {
               aria-expanded={menuOpen}
               aria-label={t('Account menu')}
             >
-              <Avatar name={name} color={profile?.avatar_color} size="sm" src={pictureUrl} />
+              <Avatar name={name} seed={profile?.id} size="sm" src={pictureUrl} />
             </button>
             <AnimatePresence>
               {menuOpen && (

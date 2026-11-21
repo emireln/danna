@@ -125,7 +125,7 @@ The tests check the things that would hurt most if they broke: the lessons, copy
 
 ## Logos and icons
 
-`brand/logo.png` is the master logo, and `brand/icon.png` is the app icon. The icon is a finished picture with its own rounded square, so it is used as it is, with no frame. After you change either file, or add a platform logo, run:
+`brand/logo.png` is the master logo, `brand/icon.png` is the app icon, and `brand/tray-icon.png` is the tray icon. The icon is a finished picture with its own rounded square, so it is used as it is, with no frame. After you change either file, or add a platform logo, run:
 
 ```bash
 npm run art
@@ -133,9 +133,13 @@ npm run art
 
 That makes everything the app and the installer need:
 
-- The app logo, and the app icon for the window, the tray, the installer and the browser tab (`npm run icons`).
+- The app logo, the app icon for the window, the installer and the browser tab, and the tray icon (`npm run icons`).
 - Logos for learning platforms like YouTube and Coursera (`npm run logos`). A platform without an official logo shows its first letter until one is added to `brand/platforms/`.
 - The side picture of the installer (`npm run installer-art`).
+
+## Avatars
+
+People without a picture get one of 24 built-in avatars, made with [DiceBear](https://www.dicebear.com) under the CC0 licence. The pictures live in `src/assets/avatars`. Each person's avatar is chosen from their id, so it stays the same on every screen. To rebuild the pack, run `npm run avatars`.
 
 ## Build the Windows installer
 

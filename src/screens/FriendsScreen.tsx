@@ -219,7 +219,7 @@ export function FriendsScreen() {
                     {row.friend ? (
                       <PersonAvatar person={row.friend} size="sm" />
                     ) : (
-                      <Avatar name={row.name} size="sm" src={pictureUrl} />
+                      <Avatar name={row.name} seed={profile?.id} size="sm" src={pictureUrl} />
                     )}
                     <div className="person__body">
                       <div className="person__name">{row.me ? t('{name} (you)', { name: row.name }) : row.name}</div>

@@ -3,6 +3,7 @@
 import { useT } from '../lib/i18n/react';
 import { dailyXp, LEAGUE_DAYS, placeOf, ranked, tierOf, type TierId } from '../lib/league';
 import type { AttemptRow, LeagueRow } from '../lib/types';
+import { PersonAvatar } from './PersonAvatar';
 import { Skeleton } from './ui';
 
 function tierName(t: ReturnType<typeof useT>, id: TierId): string {
@@ -85,8 +86,8 @@ export function LeagueCard({
             {ranked(rows).map((row, index) => (
               <li key={row.user_id} className={row.user_id === userId ? 'league__row league__row--me' : 'league__row'}>
                 <span className="league__position">{index + 1}</span>
-                <span className="league__who" style={{ background: row.avatar_color }} aria-hidden="true">
-                  {(row.display_name || row.username).slice(0, 1).toUpperCase()}
+                <span className="league__who" aria-hidden="true">
+                  <PersonAvatar person={{ ...row, id: row.user_id }} size="sm" />
                 </span>
                 <span className="league__name">
                   {row.display_name || row.username}

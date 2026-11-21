@@ -109,13 +109,13 @@ test('a progress bar reports its value as a whole number', () => {
   assert.match(markup, /aria-label="Lessons"/);
 });
 
-test('a picture is shown when there is one, and initials when there is not', () => {
-  const pictured = render(h(ui.Avatar, { name: 'Ana Maria', src: 'blob:one' }));
+test('a picture is shown when there is one, and a built-in picture chosen by the seed when there is not', () => {
+  const pictured = render(h(ui.Avatar, { name: 'Ana Maria', seed: 'ana-id', src: 'blob:one' }));
   assert.match(pictured, /<img class="avatar__img" src="blob:one"/);
-  assert.doesNotMatch(pictured, /AM/);
-  const plain = render(h(ui.Avatar, { name: 'Ana Maria', color: '#123456' }));
-  assert.match(plain, />AM</);
-  assert.match(plain, /background:#123456/);
+  const plain = render(h(ui.Avatar, { name: 'Ana Maria', seed: 'ana-id' }));
+  assert.match(plain, /<img class="avatar__img" src="[^"]*avatar-\d\d\.svg"/, 'a built-in picture');
+  assert.doesNotMatch(plain, /AM/, 'no initials');
+  assert.equal(render(h(ui.Avatar, { name: 'Someone else', seed: 'ana-id' })), plain, 'the same seed picks the same picture');
 });
 
 test('initials come from the first two words, and a blank name has a placeholder', () => {
