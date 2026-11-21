@@ -16,6 +16,23 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     created_at: '2026-11-01T09:00:00Z',
   },
   {
+    id: 'local-release-230',
+    kind: 'release_note',
+    title: 'danna 2.3.0',
+    body: [
+      '- Talk live: a real-time voice conversation with your coach. With a Gemini key, the coach answers in its own voice while you speak. With any other AI key, the coach writes the replies and the app’s voice reads them aloud.',
+      '- Realistic coaches: Ana, Leo and Mia are realistic 3D people, shown from the head up. Their mouths follow the voice, and they blink and look at you while they talk.',
+      '- Privacy: danna asks for your consent once on each device. A talk ends when danna is hidden, and it is kept in your coach chats only when you save it.',
+    ].join('\n'),
+    version: '2.3.0',
+    image_url: null,
+    cta_label: null,
+    cta_url: null,
+    accent: 'blue',
+    priority: 0,
+    created_at: '2026-11-21T15:00:00Z',
+  },
+  {
     id: 'local-release-220',
     kind: 'release_note',
     title: 'danna 2.2.0',

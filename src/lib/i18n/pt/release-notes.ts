@@ -29,4 +29,10 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
     'Painéis: cada painel abre entre a barra de título e as abas de baixo, então nenhuma delas cobre o painel em uma janela pequena.',
   'Fixes: the send arrow of the coach shows in both looks, the streak takes the place of the XP badge in the title bar, the review says “In 10 min” for a question due soon, and a word saved to review says when it comes back.':
     'Correções: a seta de enviar do coach aparece nos dois visuais, a sequência ocupa o lugar do chip de XP na barra de título, a revisão mostra “Em 10 min” para uma pergunta que vence logo, e uma palavra salva na revisão diz quando volta.',
+  'Talk live: a real-time voice conversation with your coach. With a Gemini key, the coach answers in its own voice while you speak. With any other AI key, the coach writes the replies and the app’s voice reads them aloud.':
+    'Conversa ao vivo: uma conversa por voz em tempo real com o seu coach. Com uma chave do Gemini, o coach responde com a própria voz enquanto você fala. Com qualquer outra chave de IA, o coach escreve as respostas e a voz do app as lê em voz alta.',
+  'Realistic coaches: Ana, Leo and Mia are realistic 3D people, shown from the head up. Their mouths follow the voice, and they blink and look at you while they talk.':
+    'Coaches realistas: Ana, Leo e Mia são pessoas em 3D com aparência real, mostradas da cabeça para cima. A boca acompanha a voz, e eles piscam e olham para você enquanto falam.',
+  'Privacy: danna asks for your consent once on each device. A talk ends when danna is hidden, and it is kept in your coach chats only when you save it.':
+    'Privacidade: o danna pede o seu consentimento uma vez em cada aparelho. Uma conversa termina quando o danna fica oculto, e só fica nas suas conversas com o coach quando você a salva.',
 };
