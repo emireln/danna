@@ -1,8 +1,10 @@
-// Natural voices for listening practice. The voices come from the speech models of OpenAI and Google Gemini,
-// with the keys the learner already added. This file holds only the rules and the request bodies, so the tests
-// can check them without the network. The calls themselves are in ai.cjs.
+// Voices for listening practice and read-aloud. Three kinds of voice can read: the built-in voice (Kokoro, on this
+// computer, no internet), the voices installed on this PC (Windows, read through the system speech service), and the
+// natural voices of OpenAI and Google Gemini, which need the learner's own key. This file holds only the rules and the
+// request bodies, so the tests can check them without the network or Windows. The calls themselves are elsewhere:
+// ai.cjs (cloud), kokoro.cjs (built-in), winvoices.cjs (this PC), and speech-service.cjs (which chooses and streams).
 
-/** The voices each provider's speech model offers. */
+/** The voices each cloud provider's speech model offers. */
 const SPEECH_VOICES = Object.freeze({
   openai: Object.freeze(['coral', 'nova', 'onyx', 'sage', 'alloy', 'ash']),
   gemini: Object.freeze(['Kore', 'Zephyr', 'Puck', 'Charon']),
@@ -11,27 +13,77 @@ const SPEECH_VOICES = Object.freeze({
 /** The voice used with "Automatic", and for a provider whose voice is not named. */
 const DEFAULT_VOICE = Object.freeze({ openai: 'coral', gemini: 'Kore' });
 
-/** Every choice the learner can make: automatic, the device voice, or one named voice. */
+/**
+ * The voices built into danna. Their files are bundled by scripts/fetch-tts-model.mjs, which lists the same ids.
+ * The first letter of an id says the accent: a is American, b is British.
+ */
+const BUILTIN_VOICES = Object.freeze([
+  Object.freeze({ id: 'af_heart', name: 'Heart', accent: 'us', gender: 'female' }),
+  Object.freeze({ id: 'af_bella', name: 'Bella', accent: 'us', gender: 'female' }),
+  Object.freeze({ id: 'af_nicole', name: 'Nicole', accent: 'us', gender: 'female' }),
+  Object.freeze({ id: 'af_sarah', name: 'Sarah', accent: 'us', gender: 'female' }),
+  Object.freeze({ id: 'am_michael', name: 'Michael', accent: 'us', gender: 'male' }),
+  Object.freeze({ id: 'bf_emma', name: 'Emma', accent: 'uk', gender: 'female' }),
+  Object.freeze({ id: 'bm_george', name: 'George', accent: 'uk', gender: 'male' }),
+]);
+
+const DEFAULT_BUILTIN = 'af_heart';
+const BUILTIN_IDS = BUILTIN_VOICES.map((voice) => voice.id);
+
+/** A voice installed on this PC is named by its system id, such as a registry path. These characters are allowed. */
+const WINDOWS_ID = /^[A-Za-z0-9_.\\:\- ]{1,300}$/;
+
+/** Every choice the learner can make, in the order of the Settings list. A Windows voice is named in full at choice time. */
 const CHOICES = Object.freeze([
   'auto',
+  // The old name of "Automatic" on this PC, read from settings saved by earlier versions.
   'device',
+  ...BUILTIN_IDS.map((id) => `builtin:${id}`),
   ...SPEECH_VOICES.openai.map((voice) => `openai:${voice}`),
   ...SPEECH_VOICES.gemini.map((voice) => `gemini:${voice}`),
 ]);
 
-const isVoiceChoice = (value) => typeof value === 'string' && CHOICES.includes(value);
+function isVoiceChoice(value) {
+  if (typeof value !== 'string') return false;
+  if (CHOICES.includes(value)) return true;
+  return value.startsWith('windows:') && WINDOWS_ID.test(value.slice('windows:'.length));
+}
+
+/** What the learner is told when a choice cannot be used as chosen. These are shown as they are, in Portuguese too. */
+const NOTE = Object.freeze({
+  needsKey: 'Add the key for this voice in Settings. Using the built-in voice for now.',
+  noWindowsVoice: 'That voice is not installed on this PC any more. Using the built-in voice for now.',
+  cloudFailed: 'The voice of your AI key could not be used. Using the built-in voice for now.',
+  windowsFailed: 'The voice on this PC could not be used. Using the built-in voice for now.',
+});
 
 /**
- * The provider and the voice that read a text, for a choice. `available` says which providers have a key.
- * Returns null when the device voice has to read it: the learner chose it, or no key can make a natural voice.
+ * The engine and the voice that read a text, for a choice.
+ * `available` says which cloud providers have a key, and which voices on this PC are installed (null when that is not
+ * known yet). The plan is never empty: the built-in voice is the fallback, and a note says why when it is used.
  */
-function pickSpeech(choice, available = {}) {
-  if (!isVoiceChoice(choice) || choice === 'device') return null;
-  const named = /^(openai|gemini):(.+)$/.exec(choice);
-  if (named) return available[named[1]] ? { provider: named[1], voice: named[2] } : null;
-  if (available.openai) return { provider: 'openai', voice: DEFAULT_VOICE.openai };
-  if (available.gemini) return { provider: 'gemini', voice: DEFAULT_VOICE.gemini };
-  return null;
+function planSpeech(choice, available = {}) {
+  const value = isVoiceChoice(choice) ? choice : 'auto';
+  const chosen = value === 'device' ? 'auto' : value;
+  const named = /^(openai|gemini):(.+)$/.exec(chosen);
+  if (named) {
+    if (available[named[1]]) return { engine: 'cloud', provider: named[1], voice: named[2] };
+    return { engine: 'builtin', voice: DEFAULT_BUILTIN, note: NOTE.needsKey };
+  }
+  if (chosen.startsWith('builtin:')) {
+    const id = chosen.slice('builtin:'.length);
+    return { engine: 'builtin', voice: BUILTIN_IDS.includes(id) ? id : DEFAULT_BUILTIN };
+  }
+  if (chosen.startsWith('windows:')) {
+    const id = chosen.slice('windows:'.length);
+    const installed = Array.isArray(available.windows) ? available.windows : null;
+    if (installed && !installed.includes(id)) return { engine: 'builtin', voice: DEFAULT_BUILTIN, note: NOTE.noWindowsVoice };
+    return { engine: 'windows', id };
+  }
+  // Automatic: a cloud voice when the learner has a key for one, otherwise the built-in voice, which is always there.
+  if (available.openai) return { engine: 'cloud', provider: 'openai', voice: DEFAULT_VOICE.openai };
+  if (available.gemini) return { engine: 'cloud', provider: 'gemini', voice: DEFAULT_VOICE.gemini };
+  return { engine: 'builtin', voice: DEFAULT_BUILTIN };
 }
 
 /** The longest text sent to a speech model. A listening passage is far shorter. */
@@ -104,11 +156,15 @@ function pcmToWav(pcm, sampleRate = 24000) {
 module.exports = {
   SPEECH_VOICES,
   DEFAULT_VOICE,
+  BUILTIN_VOICES,
+  DEFAULT_BUILTIN,
   CHOICES,
+  NOTE,
   MAX_SPEECH_CHARS,
   TEACHER_STYLE,
+  WINDOWS_ID,
   isVoiceChoice,
-  pickSpeech,
+  planSpeech,
   speechText,
   openAISpeechBody,
   geminiSpeechBody,

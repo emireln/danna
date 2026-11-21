@@ -24,18 +24,40 @@ after(async () => {
 });
 
 test('the interface offers exactly the voice choices the app can make', () => {
-  assert.deepEqual(voices.VOICE_OPTIONS.map((option) => option.value).sort(), [...speech.CHOICES].sort());
+  assert.deepEqual([...voices.LISTED_CHOICES].sort(), speech.CHOICES.filter((choice) => choice !== 'device').sort());
 });
 
-test('with no key the device voice reads; with a key, a natural voice reads, OpenAI first', () => {
-  assert.equal(speech.pickSpeech('auto', {}), null);
-  assert.deepEqual(speech.pickSpeech('auto', { openai: true }), { provider: 'openai', voice: 'coral' });
-  assert.deepEqual(speech.pickSpeech('auto', { gemini: true }), { provider: 'gemini', voice: 'Kore' });
-  assert.deepEqual(speech.pickSpeech('auto', { openai: true, gemini: true }), { provider: 'openai', voice: 'coral' });
-  assert.deepEqual(speech.pickSpeech('gemini:Puck', { openai: true, gemini: true }), { provider: 'gemini', voice: 'Puck' });
-  assert.equal(speech.pickSpeech('openai:nova', { gemini: true }), null, 'a named voice needs its own key');
-  assert.equal(speech.pickSpeech('device', { openai: true, gemini: true }), null, 'the device voice is always the learner’s choice');
-  assert.equal(speech.pickSpeech('openai:unknown', { openai: true }), null, 'an unknown voice is not used');
+test('Automatic reads with a cloud voice when a key is there, and with the built-in voice otherwise', () => {
+  assert.deepEqual(speech.planSpeech('auto', {}), { engine: 'builtin', voice: 'af_heart' });
+  assert.deepEqual(speech.planSpeech('auto', { openai: true }), { engine: 'cloud', provider: 'openai', voice: 'coral' });
+  assert.deepEqual(speech.planSpeech('auto', { gemini: true }), { engine: 'cloud', provider: 'gemini', voice: 'Kore' });
+  assert.deepEqual(speech.planSpeech('auto', { openai: true, gemini: true }), { engine: 'cloud', provider: 'openai', voice: 'coral' });
+  assert.deepEqual(speech.planSpeech('gemini:Puck', { openai: true, gemini: true }), { engine: 'cloud', provider: 'gemini', voice: 'Puck' });
+  assert.deepEqual(speech.planSpeech('openai:unknown', { openai: true }), speech.planSpeech('auto', { openai: true }), 'an unknown voice is treated as Automatic');
+});
+
+test('a named cloud voice needs its own key, and says so when it is missing', () => {
+  const plan = speech.planSpeech('openai:nova', { gemini: true });
+  assert.equal(plan.engine, 'builtin');
+  assert.equal(plan.note, speech.NOTE.needsKey);
+});
+
+test('the built-in voices are chosen by id, and the old device choice is Automatic', () => {
+  assert.deepEqual(speech.planSpeech('builtin:bm_george', {}), { engine: 'builtin', voice: 'bm_george' });
+  assert.deepEqual(speech.planSpeech('device', { openai: true }), { engine: 'cloud', provider: 'openai', voice: 'coral' });
+  assert.equal(speech.planSpeech('device', {}).engine, 'builtin');
+  assert.equal(voices.BUILTIN_VOICES.length, speech.BUILTIN_VOICES.length, 'the list in the interface has every built-in voice');
+  assert.deepEqual(voices.BUILTIN_VOICES.map((voice) => voice.id), speech.BUILTIN_VOICES.map((voice) => voice.id));
+});
+
+test('a voice on this PC is chosen by its id, and a voice that has been removed falls back with a note', () => {
+  assert.equal(speech.isVoiceChoice('windows:ID-1'), true);
+  assert.equal(speech.isVoiceChoice('windows:bad;rm'), false, 'an id with odd characters is refused');
+  assert.deepEqual(speech.planSpeech('windows:ID-1', { windows: ['ID-1'] }), { engine: 'windows', id: 'ID-1' });
+  const gone = speech.planSpeech('windows:ID-2', { windows: ['ID-1'] });
+  assert.equal(gone.engine, 'builtin');
+  assert.equal(gone.note, speech.NOTE.noWindowsVoice);
+  assert.equal(speech.planSpeech('windows:ID-2', { windows: null }).engine, 'windows', 'before the list is read, the id is tried');
 });
 
 test('the text read aloud is one line, and no longer than the limit', () => {

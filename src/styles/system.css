@@ -1733,6 +1733,43 @@
     font-weight: 620;
   }
 
+  /* ---------- Voices: the listening choices in Settings, each with a button to hear it first ---------- */
+  .voice-group__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .voice-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .voice-row__choice {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .voice-row__listen {
+    flex: none;
+  }
+
+  .voice-row__meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .voice-row__choice:disabled,
+  .voice-row__listen:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
   /* ---------- Layout helpers used by the first-run flow and the report ---------- */
   .mt-2 { margin-top: var(--space-2); }
   .pb-3 { padding-bottom: var(--space-3); }

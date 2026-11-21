@@ -1091,20 +1091,10 @@ export const APP_PT: Record<string, string> = {
   'Units': 'Unidades',
   'Coach chats': 'Chats do coach',
   'Listening voice': 'Voz para escutar',
-  'Device voice': 'Voz do aparelho',
-  'Automatic: the most natural voice your keys allow': 'Automático: a voz mais natural que as suas chaves permitem',
-  'Reads the listening passages aloud. A natural voice uses the key you added for that provider, and the text is sent to that provider.':
-    'Lê os textos de escuta em voz alta. Uma voz natural usa a chave que você adicionou para esse provedor, e o texto é enviado a esse provedor.',
   'Play a sample': 'Ouvir um exemplo',
   'Stop the sample': 'Parar o exemplo',
   'Volume': 'Volume',
   'Preparing the voice…': 'Preparando a voz…',
-  'Using the device voice. Add an OpenAI or Google Gemini key in Settings for a more natural voice.':
-    'Usando a voz do aparelho. Adicione uma chave da OpenAI ou do Google Gemini em Configurações para uma voz mais natural.',
-  'Add the key for this voice in Settings. Using the device voice for now.':
-    'Adicione a chave desta voz em Configurações. Por enquanto, usando a voz do aparelho.',
-  'The natural voice could not be used: {reason} Using the device voice for now.':
-    'Não foi possível usar a voz natural: {reason} Por enquanto, usando a voz do aparelho.',
   'Check for updates': 'Verificar atualizações',
   'Updates are checked in the installed danna app.': 'As atualizações são verificadas no app do danna instalado.',
   'Could not check for updates. Try again later.': 'Não foi possível verificar atualizações. Tente de novo mais tarde.',

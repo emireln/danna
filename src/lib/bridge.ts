@@ -51,12 +51,48 @@ export interface UpdateStatus {
   version: string | null;
 }
 
-/** The result of a natural voice request. Without a key for the voice, `unavailable` is true and the device voice reads. */
-export interface SpeechReply {
-  unavailable?: boolean;
+/** The engine that reads a reading, and a note when the chosen voice could not be used as chosen. */
+export interface SpeechStart {
+  engine: 'cloud' | 'builtin' | 'windows';
+  voice: string | null;
+  note: string | null;
+}
+
+/** A piece of the sound of a reading, a note, or the end of it (done, with an error when the reading could not be made). */
+export interface SpeechChunk {
+  id: string;
   audio?: Uint8Array;
   mime?: string;
-  provider?: string;
+  note?: string;
+  done?: boolean;
+  error?: string;
+}
+
+/** A voice built into danna. `ready` is false when its files are not in this copy of the app. */
+export interface BuiltinVoice {
+  id: string;
+  name: string;
+  accent: 'us' | 'uk';
+  gender: 'female' | 'male';
+  ready: boolean;
+}
+
+/** A voice installed on this PC. `natural` is true for the natural voices of Windows. */
+export interface WindowsVoice {
+  id: string;
+  name: string;
+  language: string;
+  gender: 'female' | 'male' | 'unknown';
+  natural: boolean;
+}
+
+/** The voices a learner can choose from, and whether each cloud key is there. */
+export interface SpeechVoices {
+  builtin: BuiltinVoice[];
+  windows: WindowsVoice[];
+  windowsError: string | null;
+  recommended: string | null;
+  cloud: { openai: boolean; gemini: boolean };
 }
 
 /** What a check for updates found: a newer version downloading or ready, none (idle), or the check could not be made. */
@@ -69,7 +105,7 @@ export interface AppSettings {
   closeToTray: boolean;
   /** The language the app is shown in. Null follows the system language. */
   language: 'en' | 'pt' | null;
-  /** The voice for listening: 'auto', 'device', or a named voice such as 'openai:coral'. */
+  /** The voice for listening: 'auto', 'builtin:<id>', 'windows:<id>', or a cloud voice such as 'openai:coral'. */
   voice: string;
   /** How loud the listening voice is, from 0 to 100. */
   voiceVolume: number;
@@ -101,7 +137,16 @@ export interface DannaBridge {
     stop: (id: string) => Promise<{ stopped: boolean }>;
     onChunk: (callback: (chunk: ReplyChunk) => void) => () => void;
     transcribe: (audio: ArrayBuffer, mime: string) => Promise<{ text: string }>;
-    speak: (text: string, voice: string) => Promise<SpeechReply>;
+  };
+  speech: {
+    /** Starts reading a text with a voice, under an id the caller chose. The sound arrives through onChunk. */
+    start: (id: string, text: string, voice: string) => Promise<SpeechStart>;
+    /** Stops the reading with this id. */
+    stop: (id: string) => Promise<{ stopped: boolean }>;
+    /** The voices the learner can choose from. */
+    voices: () => Promise<SpeechVoices>;
+    /** Every piece of sound, note and end that the desktop app sends. Returns the way to stop listening. */
+    onChunk: (callback: (chunk: SpeechChunk) => void) => () => void;
   };
   local: {
     call: <T = unknown>(method: string, args?: unknown[]) => Promise<T>;

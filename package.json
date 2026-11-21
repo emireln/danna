@@ -1,7 +1,7 @@
 {
   "name": "danna",
   "productName": "danna",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "danna: an English learning desktop app, from A1 to C1, with an optional TOEFL warm-up, AI tutoring, roadmaps and friends.",
   "private": true,
   "type": "module",
@@ -16,8 +16,9 @@
     "build": "tsc --noEmit && vite build",
     "start": "electron .",
     "icons": "node scripts/make-icons.mjs",
-    "dist": "npm run build && electron-builder --win nsis --x64 --publish never",
+    "dist": "npm run tts:fetch && npm run build && electron-builder --win nsis --x64 --publish never",
     "bump": "node scripts/bump-version.mjs",
+    "tts:fetch": "node scripts/fetch-tts-model.mjs",
     "release": "node scripts/release.mjs",
     "prepare": "husky",
     "logos": "node scripts/make-platform-logos.mjs",
@@ -32,7 +33,9 @@
     "electron-updater": "^6.8.11",
     "framer-motion": "^14.12.0",
     "lucide-react": "^1.72.0",
+    "onnxruntime-node": "1.21.0",
     "pdfjs-dist": "^6.5.438",
+    "phonemizer": "1.2.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-markdown": "^10.1.0",
@@ -84,7 +87,11 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/onnxruntime-node/bin/napi-v3/darwin/**",
+      "!node_modules/onnxruntime-node/bin/napi-v3/linux/**",
+      "!node_modules/onnxruntime-node/bin/napi-v3/win32/arm64/**",
+      "!node_modules/onnxruntime-node/script/**"
     ],
     "win": {
       "target": [
@@ -108,6 +115,18 @@
       "uninstallDisplayName": "danna",
       "installerSidebar": "build/installerSidebar.bmp",
       "uninstallerSidebar": "build/uninstallerSidebar.bmp"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "resources/tts",
+        "to": "tts",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/onnxruntime-node/**/*"
+    ]
   }
 }

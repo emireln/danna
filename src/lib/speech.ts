@@ -1,7 +1,7 @@
-// Reads a passage aloud. The natural voice comes from the learner's AI key, through the desktop app, which keeps
-// the keys. Without a key, or outside the desktop app, the device voice reads instead, and a note says so. A voice
-// that was made is kept for a while, so the same passage does not ask the provider again.
-import { bridge, errorText } from './bridge';
+// Reads a passage aloud. In the desktop app the sound is made on this computer: by the built-in voice, by a voice
+// installed on this PC, or, with the learner's own key, by a cloud voice. The sound comes in pieces, so the first words
+// play while the rest is still being made. In a browser, the browser's own voice reads, and a note says so.
+import { bridge, errorText, type DannaBridge, type SpeechChunk } from './bridge';
 import { t } from './i18n';
 import { DEFAULT_VOICE, DEFAULT_VOLUME, pickDeviceVoice, volumeLevel } from './voices';
 
@@ -16,142 +16,180 @@ export interface NarrationOptions {
   onStart: () => void;
   /** The voice has finished or was stopped. Called once, after the caller has the handle from narrate. */
   onEnd: () => void;
-  /** A note for the learner, such as that the device voice reads instead. */
+  /** A note for the learner, such as that another voice reads instead. */
   onNotice: (message: string) => void;
 }
 
-const KEPT_VOICES = 24;
-const kept = new Map<string, Promise<string | null>>();
-
-function keep(key: string, make: () => Promise<string | null>): Promise<string | null> {
-  const known = kept.get(key);
-  if (known) {
-    // Used again, so it is the newest and the oldest voices are forgotten first.
-    kept.delete(key);
-    kept.set(key, known);
-    return known;
-  }
-  const pending = make();
-  kept.set(key, pending);
-  pending
-    .then((url) => {
-      // Nothing is kept for a text that no key could read, because a key may be added later.
-      if (url === null) kept.delete(key);
-    })
-    .catch(() => kept.delete(key));
-  while (kept.size > KEPT_VOICES) {
-    const oldest = kept.keys().next().value as string;
-    const old = kept.get(oldest);
-    kept.delete(oldest);
-    old
-      ?.then((url) => {
-        if (url) URL.revokeObjectURL(url);
-      })
-      .catch(() => undefined);
-  }
-  return pending;
+/** Reads the text aloud. Returns a handle that stops it. */
+export function narrate(text: string, options: NarrationOptions): Narration {
+  if (!bridge) return narrateInBrowser(text, options);
+  return narrateInApp(bridge, text, options);
 }
 
-async function makeVoice(text: string, voice: string): Promise<string | null> {
-  if (!bridge) return null;
-  const reply = await bridge.ai.speak(text, voice);
-  if (reply.unavailable || !reply.audio) return null;
-  // A copy in a buffer of its own, so the Blob holds exactly these bytes.
-  const bytes = new Uint8Array(reply.audio);
-  return URL.createObjectURL(new Blob([bytes.buffer as ArrayBuffer], { type: reply.mime ?? 'audio/mpeg' }));
-}
-
-/** The voice and the loudness the learner chose in Settings. */
-async function savedSettings(): Promise<{ voice: string; volume: number }> {
-  if (!bridge) return { voice: 'device', volume: DEFAULT_VOLUME };
+/** The loudness and the voice the learner chose in Settings. */
+async function savedSettings(api: DannaBridge): Promise<{ voice: string; volume: number }> {
   try {
-    const settings = await bridge.settings.get();
+    const settings = await api.settings.get();
     return { voice: settings.voice || DEFAULT_VOICE, volume: volumeLevel(settings.voiceVolume) };
   } catch {
     return { voice: DEFAULT_VOICE, volume: DEFAULT_VOLUME };
   }
 }
 
-/** Reads the text aloud. Returns a handle that stops it. */
-export function narrate(text: string, options: NarrationOptions): Narration {
-  let finished = false;
-  let audio: HTMLAudioElement | null = null;
-  // The loudness from 0 to 1, read from Settings before the voice starts.
-  let loudness = DEFAULT_VOLUME / 100;
+function randomReadingId(): string {
+  const bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+  return `read-${Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
+}
 
+/** Reads with the browser's own voice. It is used in a browser, and when the desktop app cannot read. */
+function speakInBrowser(text: string, loudness: number, onStart: () => void, onEnd: () => void): () => void {
+  const synth = window.speechSynthesis;
+  if (!synth) {
+    window.setTimeout(onEnd, 0);
+    return () => undefined;
+  }
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    onEnd();
+  };
+  synth.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  const voice = pickDeviceVoice(synth.getVoices());
+  if (voice) utterance.voice = voice;
+  utterance.lang = 'en-US';
+  utterance.rate = 0.95;
+  utterance.volume = loudness;
+  utterance.onstart = () => {
+    if (!finished) onStart();
+  };
+  utterance.onend = finish;
+  utterance.onerror = finish;
+  synth.speak(utterance);
+  return () => {
+    synth.cancel();
+    finish();
+  };
+}
+
+function narrateInBrowser(text: string, options: NarrationOptions): Narration {
+  let finished = false;
   const finish = () => {
     if (finished) return;
     finished = true;
     window.setTimeout(options.onEnd, 0);
   };
-
-  const playDevice = () => {
-    const synth = window.speechSynthesis;
-    if (!synth || finished) {
+  options.onNotice(t('The built-in voices are in the desktop app. Here the browser’s own voice reads.'));
+  const stopSpeaking = speakInBrowser(text, DEFAULT_VOLUME / 100, () => options.onStart(), finish);
+  return {
+    stop() {
+      if (finished) return;
+      stopSpeaking();
       finish();
+    },
+  };
+}
+
+/** The desktop app makes the sound. The pieces of it arrive by id, and each one is played as soon as it is there. */
+function narrateInApp(api: DannaBridge, text: string, options: NarrationOptions): Narration {
+  const readingId = randomReadingId();
+  const queue: string[] = [];
+  let audio: HTMLAudioElement | null = null;
+  let loudness = DEFAULT_VOLUME / 100;
+  let finished = false;
+  let started = false;
+  let streamEnded = false;
+  let stopListening: () => void = () => undefined;
+  let stopBrowser: (() => void) | null = null;
+
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    stopListening();
+    for (const url of queue.splice(0)) URL.revokeObjectURL(url);
+    window.setTimeout(options.onEnd, 0);
+  };
+
+  const beginSound = () => {
+    if (started || finished) return;
+    started = true;
+    options.onStart();
+  };
+
+  const playNext = () => {
+    if (finished) return;
+    const url = queue.shift();
+    if (!url) {
+      audio = null;
+      if (streamEnded) finish();
       return;
     }
-    synth.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voice = pickDeviceVoice(synth.getVoices());
-    if (voice) utterance.voice = voice;
-    utterance.lang = 'en-US';
-    utterance.rate = 0.95;
-    utterance.volume = loudness;
-    utterance.onstart = () => {
-      if (!finished) options.onStart();
+    const element = new Audio(url);
+    element.volume = loudness;
+    element.onplaying = beginSound;
+    let advanced = false;
+    const advance = () => {
+      if (advanced) return;
+      advanced = true;
+      URL.revokeObjectURL(url);
+      audio = null;
+      playNext();
     };
-    utterance.onend = finish;
-    utterance.onerror = finish;
-    synth.speak(utterance);
+    element.onended = advance;
+    element.onerror = advance;
+    audio = element;
+    element.play().catch(advance);
   };
 
-  // True when the natural voice is playing. False when no key could make it, so the device voice reads.
-  const playNatural = async (voice: string): Promise<boolean> => {
-    const url = await keep(`${voice}\n${text}`, () => makeVoice(text, voice));
-    if (finished) return true;
-    if (!url) {
-      options.onNotice(
-        voice === DEFAULT_VOICE
-          ? t('Using the device voice. Add an OpenAI or Google Gemini key in Settings for a more natural voice.')
-          : t('Add the key for this voice in Settings. Using the device voice for now.'),
-      );
-      return false;
+  const onChunk = (chunk: SpeechChunk) => {
+    if (chunk.id !== readingId || finished) return;
+    if (chunk.note) options.onNotice(t(chunk.note));
+    if (chunk.audio) {
+      // A copy in a buffer of its own, so the Blob holds exactly these bytes.
+      const bytes = new Uint8Array(chunk.audio);
+      queue.push(URL.createObjectURL(new Blob([bytes.buffer as ArrayBuffer], { type: chunk.mime ?? 'audio/wav' })));
+      if (!audio) playNext();
     }
-    audio = new Audio(url);
-    audio.volume = loudness;
-    audio.onplaying = () => {
-      if (!finished) options.onStart();
-    };
-    audio.onended = finish;
-    audio.onerror = () => {
-      audio = null;
-      playDevice();
-    };
-    await audio.play();
-    return true;
+    if (!chunk.done) return;
+    streamEnded = true;
+    if (chunk.error && !started) {
+      // Nothing was heard yet, so the browser's voice reads the text instead.
+      for (const url of queue.splice(0)) URL.revokeObjectURL(url);
+      options.onNotice(t('The voice could not be used. Using the browser voice for now.'));
+      stopBrowser = speakInBrowser(text, loudness, beginSound, finish);
+      return;
+    }
+    if (chunk.error) options.onNotice(t(chunk.error));
+    if (!audio && queue.length === 0) finish();
   };
+
+  stopListening = api.speech.onChunk(onChunk);
 
   void (async () => {
-    const saved = await savedSettings();
+    const saved = await savedSettings(api);
     loudness = saved.volume / 100;
-    const voice = options.voice ?? saved.voice;
     if (finished) return;
-    if (voice !== 'device' && bridge) {
-      try {
-        if (await playNatural(voice)) return;
-      } catch (error) {
-        options.onNotice(t('The natural voice could not be used: {reason} Using the device voice for now.', { reason: t(errorText(error)) }));
-      }
+    try {
+      const reply = await api.speech.start(readingId, text, options.voice ?? saved.voice);
+      if (reply.note) options.onNotice(t(reply.note));
+      // Stopped while the reading was starting: the desktop app is told to stop as well.
+      if (finished) void api.speech.stop(readingId).catch(() => undefined);
+    } catch (error) {
+      if (finished) return;
+      options.onNotice(t(errorText(error)));
+      stopBrowser = speakInBrowser(text, loudness, beginSound, finish);
     }
-    if (!finished) playDevice();
   })();
 
   return {
     stop() {
       if (finished) return;
       audio?.pause();
-      window.speechSynthesis?.cancel();
+      audio = null;
+      stopBrowser?.();
+      void api.speech.stop(readingId).catch(() => undefined);
       finish();
     },
   };

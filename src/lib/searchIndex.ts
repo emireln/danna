@@ -23,7 +23,7 @@ const PAGES: ReadonlyArray<{ title: string; route: string; keywords: string }> =
 const SETTINGS: ReadonlyArray<{ title: string; keywords: string }> = [
   { title: 'App language', keywords: 'idioma language english portuguese português' },
   { title: 'AI assistant', keywords: 'key chave openai anthropic gemini openrouter deepseek ia' },
-  { title: 'Listening voice', keywords: 'voice voz natural speech tts audio som' },
+  { title: 'Listening voice', keywords: 'voice voz natural speech tts audio som built-in offline windows narrator kokoro' },
   { title: 'Check for updates', keywords: 'update atualização version versão new release nova' },
 ];
 

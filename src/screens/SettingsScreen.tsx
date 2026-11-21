@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Cloud, Coffee, Eye, EyeOff, KeyRound, Laptop, Play, Star, Trash2, Volume2 } from 'lucide-react';
 import { LanguageSwitch } from '../components/LanguageSwitch';
 import { LookPicker } from '../components/LookPicker';
-import { Select } from '../components/Pickers';
+import { VoicePicker } from '../components/VoicePicker';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
 import { bridge, errorText, type AppSettings } from '../lib/bridge';
 import { checkFeedback, FeedbackLimitError } from '../lib/feedback';
@@ -24,7 +24,6 @@ import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { narrate, type Narration } from '../lib/speech';
-import { VOICE_OPTIONS } from '../lib/voices';
 import { backendFor, onlineAvailable } from '../lib/session';
 import { useUpdateStatus } from '../lib/update';
 import { useAI } from '../state/ai';
@@ -751,15 +750,7 @@ export function SettingsScreen() {
         <>
           <SectionTitle title={t('Listening voice')} />
           <div className="stack">
-            <p className="small muted">
-              {t('Reads the listening passages aloud. A natural voice uses the key you added for that provider, and the text is sent to that provider.')}
-            </p>
-            <Select
-              label={t('Listening voice')}
-              value={settings.voice}
-              onChange={(value) => void saveVoice(value)}
-              options={VOICE_OPTIONS.map((option) => ({ value: option.value, label: t(option.label) }))}
-            />
+            <VoicePicker value={settings.voice} onChoose={(choice) => void saveVoice(choice)} />
             <label className="volume">
               <span className="volume__label">{t('Volume')}</span>
               <input

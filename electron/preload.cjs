@@ -32,7 +32,12 @@ contextBridge.exposeInMainWorld(
       stop: (id) => call('ai:stop', { id }),
       onChunk: (callback) => listen('ai:chunk', callback),
       transcribe: (audio, mime) => call('ai:transcribe', { audio, mime }),
-      speak: (text, voice) => call('ai:speak', { text, voice }),
+    }),
+    speech: Object.freeze({
+      start: (id, text, voice) => call('speech:start', { id, text, voice }),
+      stop: (id) => call('speech:stop', { id }),
+      voices: () => call('speech:voices'),
+      onChunk: (callback) => listen('speech:chunk', callback),
     }),
     local: Object.freeze({
       call: (method, args) => call('local:call', { method, args }),

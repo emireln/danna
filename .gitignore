@@ -4,6 +4,9 @@ node_modules/
 # build output
 dist/
 release/
+
+# the built-in voice (about 100 MB): fetched with npm run tts:fetch, never committed
+resources/tts/
 *.tsbuildinfo
 
 # environment files may hold keys; only public settings and the example are committed

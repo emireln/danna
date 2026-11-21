@@ -31,6 +31,8 @@ function get() {
   } catch {
     // First launch: defaults apply.
   }
+  // The device voice of earlier versions is now Automatic, which reads with the built-in voice.
+  if (result.voice === 'device') result.voice = 'auto';
   return result;
 }
 

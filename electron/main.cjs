@@ -13,6 +13,21 @@ const sessionStore = require('./session.cjs');
 const { userError } = require('./errors.cjs');
 const { autoUpdater } = require('electron-updater');
 const { createUpdates } = require('./updater.cjs');
+const kokoro = require('./kokoro.cjs');
+const { createWindowsVoices } = require('./winvoices.cjs');
+const { createSpeechService } = require('./speech-service.cjs');
+
+// The built-in voice ships with the app (resources/tts/kokoro). In development it is read from the same folder in the project.
+const kokoroEngine = kokoro.createSpeechEngine({
+  modelDir: app.isPackaged ? path.join(process.resourcesPath, 'tts', 'kokoro') : path.join(__dirname, '..', 'resources', 'tts', 'kokoro'),
+});
+const speechService = createSpeechService({
+  kokoro: kokoroEngine,
+  windows: createWindowsVoices(),
+  cloud: ai,
+  hasKey: (provider) => keystore.hasKey(provider),
+  getKey: (provider) => keystore.getKey(provider),
+});
 
 // Set by `npm run dev`; packaged builds always serve the bundled interface.
 const DEV_URL = !app.isPackaged && process.env.DANNA_DEV_URL ? process.env.DANNA_DEV_URL : null;
@@ -406,16 +421,16 @@ function registerIpc() {
     return { stopped: Boolean(controller) };
   });
 
-  // Reads a text aloud with the natural voice the learner chose. Without a key for it, the device voice is used.
-  handle('ai:speak', async ({ text, voice }) => {
-    const picked = speech.pickSpeech(speech.isVoiceChoice(voice) ? voice : 'auto', {
-      openai: keystore.hasKey('openai'),
-      gemini: keystore.hasKey('gemini'),
+  // Reads a text aloud with the voice the learner chose. The sound comes back through speech:chunk, with the same id,
+  // as it is made. The reply says which engine reads, and why a different one may be used.
+  handle('speech:start', ({ id, text, voice }, event) => {
+    const sender = event.sender;
+    return speechService.start({ id, text, choice: voice }, (payload) => {
+      if (!sender.isDestroyed()) sender.send('speech:chunk', payload);
     });
-    if (!picked) return { unavailable: true };
-    const result = await ai.speak(picked.provider, keystore.getKey(picked.provider), typeof text === 'string' ? text : '', picked.voice);
-    return { audio: new Uint8Array(result.bytes), mime: result.mime, provider: picked.provider };
   });
+  handle('speech:stop', ({ id }) => speechService.stop(id));
+  handle('speech:voices', () => speechService.voices());
 
   handle('ai:transcribe', async ({ audio, mime }) => {
     if (!keystore.hasKey('openai')) throw userError('Add an OpenAI key in Settings to transcribe speaking answers.');
