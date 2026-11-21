@@ -1,15 +1,16 @@
-// The coach's face on the talk screen. The 3D scene (scene.ts, with three.js) is loaded only when the talk opens, and each
-// frame the character is moved by the pose from rig.ts. On a device without 3D graphics the talk still works, and a line says so.
+// The coach on the talk screen: a real person model (characters.ts), drawn in 3D and moved every frame by the pose from rig.ts.
+// The model is loaded when the talk opens. Without 3D graphics the talk still works, and a line says so.
 import { useEffect, useRef, useState } from 'react';
+import { Spinner } from '../components/ui';
 import { useT } from '../lib/i18n/react';
 import type { LiveConversation } from '../lib/live/conversation';
+import type { CoachInfo } from './characters';
 import { createRig } from './rig';
-import type { CharacterKind } from './scene';
 
-export function CoachFigure({ kind, conversation }: { kind: CharacterKind; conversation: LiveConversation }) {
+export function CoachFigure({ coach, conversation }: { coach: CoachInfo; conversation: LiveConversation }) {
   const t = useT();
   const host = useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = useState(false);
+  const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
 
   useEffect(() => {
     const element = host.current;
@@ -19,11 +20,16 @@ export function CoachFigure({ kind, conversation }: { kind: CharacterKind; conve
     let dispose: (() => void) | null = null;
     const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const rig = createRig({ reducedMotion });
-    import('./scene')
-      .then(({ createCharacterScene }) => {
-        if (disposed) return;
-        const scene = createCharacterScene(element, kind);
+    setState('loading');
+    import('./coach3d')
+      .then(({ loadCoach }) => loadCoach(element, coach))
+      .then((scene) => {
+        if (disposed) {
+          scene.dispose();
+          return;
+        }
         dispose = scene.dispose;
+        setState('ready');
         let last = performance.now();
         const loop = (now: number) => {
           const seconds = (now - last) / 1000;
@@ -35,17 +41,29 @@ export function CoachFigure({ kind, conversation }: { kind: CharacterKind; conve
         frame = window.requestAnimationFrame(loop);
       })
       .catch(() => {
-        if (!disposed) setFailed(true);
+        if (!disposed) setState('failed');
       });
     return () => {
       disposed = true;
       window.cancelAnimationFrame(frame);
       dispose?.();
     };
-  }, [kind, conversation]);
+  }, [coach, conversation]);
 
-  if (failed) {
-    return <p className="live__fallback">{t('The 3D coach needs graphics support, which this device does not have. The talk still works.')}</p>;
+  if (state === 'failed') {
+    return (
+      <p className="live__fallback">
+        {t('The 3D coach needs graphics support, which this device does not have. The talk still works.')}
+      </p>
+    );
   }
-  return <div className="live__scene" ref={host} role="img" aria-label={t('Your talking coach')} />;
+  return (
+    <div className="live__scene" ref={host} role="img" aria-label={t('Your talking coach')} aria-busy={state === 'loading'}>
+      {state === 'loading' && (
+        <p className="live__loading">
+          <Spinner /> {t('Loading your coach…')}
+        </p>
+      )}
+    </div>
+  );
 }

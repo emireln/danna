@@ -1,7 +1,7 @@
-// The character's body language: where the eyes look, when it blinks, how it tilts its head with the intonation, and how
-// its mouth moves with the voice. These are pure functions of time and sound, so the tests need no 3D scene. The scene
-// (scene.ts) only shows the pose this file computes.
-import { CLOSED_MOUTH, ease, mouthFor, type Mouth, type SoundFrame } from '../lib/live/analysis';
+// The coach's body language: where the eyes look, when it blinks, how the head moves with the status and the intonation,
+// and how the mouth moves with the voice. These are pure functions of time and sound, so the tests need no 3D scene. The
+// 3D scene (coach3d.ts) turns the pose into blend shape weights (morphs.ts) and bone turns.
+import { CLOSED_MOUTH, ease, mouthFor, SILENCE, type Mouth, type SoundFrame } from '../lib/live/analysis';
 import type { LiveStatus } from '../lib/live/conversation';
 
 export interface RigInput {
@@ -19,25 +19,23 @@ export interface Pose extends Mouth {
   roll: number;
   /** How high the brows are raised. */
   lift: number;
-  /** Where the eyes look: -1 left to 1 right, -1 down to 1 up. */
+  /** A gentle smile. */
+  smile: number;
+  /** Where the eyes look: -1 the viewer's left to 1 the viewer's right, and -1 down to 1 up. */
   gazeX: number;
   gazeY: number;
   /** 0 with the eyes open, 1 closed. */
   blink: number;
-  /** 1 while the character is thinking (a tilted head, an arm raised). */
+  /** 1 while the coach is thinking: the head tilts and the eyes look up. */
   lean: number;
-  /** How bright the character's lights are. */
-  glow: number;
-  /** How far an arm is raised. */
-  wave: number;
-  /** The body moves up and down, from -1 to 1. */
-  bob: number;
+  /** The breath, from -1 (out) to 1 (in). */
+  breath: number;
 }
 
 export interface RigOptions {
-  /** Keeps the head still and the body quiet, for people who ask the system for less motion. */
+  /** Keeps the head still and the breath quiet, for people who ask the system for less motion. */
   reducedMotion?: boolean;
-  /** Chooses when the character blinks. Tests pass a fixed sequence. */
+  /** Chooses when the coach blinks. Tests pass a fixed sequence. */
   random?: () => number;
 }
 
@@ -55,75 +53,60 @@ interface Target {
   pitch: number;
   roll: number;
   lift: number;
+  smile: number;
   gazeX: number;
   gazeY: number;
   lean: number;
-  glow: number;
-  wave: number;
-  bob: number;
+  breath: number;
 }
 
-/** The pose the character is moving towards, for this status and sound. */
+/** The pose the coach is moving towards, for this status and sound. */
 function targetFor(input: RigInput, time: number, motion: number): Target {
-  const idle = Math.sin(time * 0.5) * 0.04 * motion;
-  // The intonation of the coach: above the middle pitch the voice rises, and the head follows it.
+  const sway = Math.sin(time * 0.5) * 0.04 * motion;
   const intonation = input.coach.pitch > 0 ? clampRange((input.coach.pitch - PITCH_MIDDLE) / PITCH_RANGE, -1, 1) : 0;
+  const breath = Math.sin(time * 1.1) * motion;
   switch (input.status) {
     case 'listening':
       return {
-        yaw: 0.08 * motion,
-        pitch: (0.04 + input.user * 0.1) * motion,
+        yaw: 0.06 * motion,
+        pitch: (0.03 + input.user * 0.07) * motion,
         roll: 0,
         lift: 0.2,
-        gazeX: 0.1 * motion,
+        smile: 0.3,
+        gazeX: 0.05 * motion,
         gazeY: 0,
         lean: 0,
-        glow: 0.6,
-        wave: 0,
-        bob: input.user * 0.2 * motion,
+        breath,
       };
     case 'thinking':
       return {
-        yaw: -0.22 * motion,
-        pitch: -0.05 * motion,
-        roll: 0.12 * motion,
-        lift: 0.4,
-        gazeX: -0.6 * motion,
-        gazeY: 0.5 * motion,
+        yaw: -0.18 * motion,
+        pitch: -0.04 * motion,
+        roll: 0.1 * motion,
+        lift: 0.45,
+        smile: 0,
+        gazeX: -0.5 * motion,
+        gazeY: 0.4 * motion,
         lean: 1,
-        glow: 0.4 + 0.2 * Math.sin(time * 4) * motion,
-        wave: 0.6 * motion,
-        bob: 0,
+        breath,
       };
     case 'speaking':
       return {
-        yaw: 0.05 * Math.sin(time * 0.7) * motion,
-        pitch: (-0.06 * Math.max(0, intonation) + 0.02 * Math.sin(time * 0.9)) * motion,
-        roll: 0.04 * Math.sin(time * 0.5) * motion,
-        lift: clampRange(0.15 + Math.max(0, intonation) * 0.8, 0, 1),
+        yaw: 0.04 * Math.sin(time * 0.7) * motion,
+        pitch: (-0.06 * Math.max(0, intonation) + 0.015 * Math.sin(time * 0.9)) * motion,
+        roll: 0.03 * Math.sin(time * 0.5) * motion,
+        lift: clampRange(0.15 + Math.max(0, intonation) * 0.6, 0, 1),
+        smile: 0.1,
         gazeX: 0,
         gazeY: 0,
         lean: 0,
-        glow: clampRange(0.8 + input.coach.level * 0.4, 0, 1),
-        wave: 0.2 * motion,
-        bob: input.coach.level * 0.35 * motion,
+        breath,
       };
     case 'ended':
-      return { yaw: 0, pitch: 0, roll: 0, lift: 0, gazeX: 0, gazeY: 0, lean: 0, glow: 0, wave: 0, bob: 0 };
+      return { yaw: 0, pitch: 0, roll: 0, lift: 0, smile: 0, gazeX: 0, gazeY: 0, lean: 0, breath: 0 };
     default:
-      // idle and connecting: a calm breathing sway.
-      return {
-        yaw: idle,
-        pitch: idle * 0.5,
-        roll: 0,
-        lift: 0,
-        gazeX: 0,
-        gazeY: 0,
-        lean: 0,
-        glow: 0.25 + 0.1 * Math.sin(time * 1.2),
-        wave: 0,
-        bob: Math.sin(time * 1.3) * 0.03 * motion,
-      };
+      // idle and connecting: a calm sway and a slow breath.
+      return { yaw: sway, pitch: sway * 0.5, roll: 0, lift: 0, smile: 0.1, gazeX: 0, gazeY: 0, lean: 0, breath };
   }
 }
 
@@ -134,7 +117,7 @@ export function createRig(options: RigOptions = {}) {
   let mouth: Mouth = CLOSED_MOUTH;
   let nextBlink = 1.5 + random() * 2;
   let blinkStart = -1;
-  let current: Target = targetFor({ status: 'idle', coach: { level: 0, pitch: 0, low: 0, mid: 0, high: 0 }, user: 0 }, 0, motion);
+  let current: Target = targetFor({ status: 'idle', coach: SILENCE, user: 0 }, 0, motion);
 
   return {
     update(input: RigInput, seconds: number): Pose {
@@ -153,7 +136,7 @@ export function createRig(options: RigOptions = {}) {
           blink = Math.sin(Math.PI * phase);
         }
       }
-      // A character that has ended rests with its eyes closed.
+      // A coach that has ended rests with its eyes closed.
       if (input.status === 'ended') blink = Math.max(blink, 0.85);
 
       const target = targetFor(input, time, motion);
@@ -163,29 +146,13 @@ export function createRig(options: RigOptions = {}) {
         pitch: ease(current.pitch, target.pitch, dt, rate),
         roll: ease(current.roll, target.roll, dt, rate),
         lift: ease(current.lift, target.lift, dt, rate),
+        smile: ease(current.smile, target.smile, dt, rate),
         gazeX: ease(current.gazeX, target.gazeX, dt, rate * 2),
         gazeY: ease(current.gazeY, target.gazeY, dt, rate * 2),
         lean: ease(current.lean, target.lean, dt, rate),
-        glow: ease(current.glow, target.glow, dt, rate),
-        wave: ease(current.wave, target.wave, dt, rate),
-        bob: ease(current.bob, target.bob, dt, rate),
+        breath: ease(current.breath, target.breath, dt, rate * 2),
       };
-      return {
-        open: mouth.open,
-        round: mouth.round,
-        wide: mouth.wide,
-        yaw: current.yaw,
-        pitch: current.pitch,
-        roll: current.roll,
-        lift: current.lift,
-        gazeX: current.gazeX,
-        gazeY: current.gazeY,
-        blink,
-        lean: current.lean,
-        glow: current.glow,
-        wave: current.wave,
-        bob: current.bob,
-      };
+      return { open: mouth.open, round: mouth.round, wide: mouth.wide, blink, ...current };
     },
   };
 }

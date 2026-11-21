@@ -241,23 +241,7 @@
     box-shadow: 0 0 0 2px var(--primary-100);
   }
 
-  .live__field {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--ink-2);
-    font-weight: 600;
-  }
 
-  .live__select {
-    min-height: 40px;
-    padding: 0 10px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--line);
-    background: var(--white);
-    color: var(--ink);
-    font: inherit;
-  }
 
   .live__consent {
     display: grid;
@@ -272,6 +256,24 @@
   .live__consent p {
     margin: 0;
     color: var(--ink-2);
+  }
+
+  .live__loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .live__credit {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
   }
 
   @media (max-width: 640px) {

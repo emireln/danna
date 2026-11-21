@@ -9,7 +9,7 @@ The coach works in text. The learner also needs to hear and speak English, get a
 ## What the learner gets
 
 - A "Talk live" card on the coach home. It opens `/coach/live`, a screen with a 3D coach.
-- Three coaches with the same brain and different looks: Pip (a small robot), Bloop (a soft green creature) and Luna (a friendly guide). Each starts with a different Gemini voice, which can be changed on the screen.
+- Three real people as coaches, with the same brain: Ana (MakeHuman, CC0), Leo and Mia (Microsoft RocketBox, MIT). Each coach starts with a Gemini voice that suits it, which can be changed on the screen. Only the head is shown.
 - A start button. The coach answers with its voice and its face, and stops at once when the learner speaks (barge-in). Captions show both sides of the talk, and the learner can type a message at any time.
 - Two ways of taking turns (Gemini engine): talk freely (the server decides when the learner has finished) or hold to talk.
 - The coach knows the learner's level, goal, exam date, weakest skill and recent answers to review. It gives at most one gentle correction per turn, then asks a question.
@@ -48,9 +48,19 @@ Checked with Node probes and with the opt-in live test (`tests/live-smoke.test.m
 - `prompt.ts` writes the voice rules, the persona and the learner's facts (`learnerContext`).
 - `conversation.ts` joins both engines, the microphone and the player, and gives the screen one state: status, transcript, notices and errors.
 
-**Avatar (`src/avatar/`).** `rig.ts` computes the body language from the status and the sound: blinks, gaze, head movement, the intonation lift (rising pitch lifts the brows and tilts the head), the thinking pose and the mouth. `scene.ts` builds the three characters from simple three.js shapes, so no model files are needed. `Avatar.tsx` runs the loop. three.js is a separate chunk that loads only when the screen opens.
+**Avatar (`src/avatar/`).** `characters.ts` lists the coaches and their models. `morphs.ts` turns the mouth, eyes and brows of the pose into weights for the ARKit face shapes and the Oculus visemes that every model carries. `rig.ts` computes the body language from the status and the sound: blinks, gaze, head movement, the intonation lift (rising pitch lifts the brows and tilts the head), the thinking pose and the mouth. `coach3d.ts` loads the model (three.js, with meshopt decoding), turns the head and neck bones, and cuts the body away below the neck, so only the head is drawn. `Avatar.tsx` runs the loop. three.js and the models load only when the screen opens.
 
 **Screen.** `src/screens/LiveScreen.tsx`, route `/coach/live`. The coach home card uses the mode `live` (`src/lib/coachModes.ts`), which opens the screen instead of starting a chat.
+
+## Coaches and their models
+
+The models are in `public/characters/`, with their credits and the full MIT license text in `CREDITS.md`.
+
+- **Ana:** MakeHuman with the MPFB plugin (CC0). The file is the MPFB model that the TalkingHead project ships.
+- **Leo and Mia:** avatars from the Microsoft RocketBox library (MIT): `Male_Adult_02` and `Female_Adult_15`.
+- All three carry the ARKit face shapes and the Oculus visemes, under the same names, so one set of weights moves every face. The check that each file has them is in `tests/live-characters.test.mjs`.
+- The RocketBox files were converted with `scripts/characters/convert-rocketbox.py`, which needs Blender's Python module (`bpy` 5.3.0). The textures are converted to WebP and the files are compressed with `gltf-transform` (`optimize --compress meshopt --texture-compress webp --texture-size 2048`).
+- The content security policy allows WebAssembly (`'wasm-unsafe-eval'`), which the meshopt decoder needs, and `blob:` addresses, which the loader uses for the textures. Nothing else in the policy changed.
 
 ## Privacy, keys and cost
 

@@ -5,7 +5,8 @@ import react from '@vitejs/plugin-react';
 // scripts for React Fast Refresh; production allows only the bundled scripts.
 function securityPolicy(options: { dev: boolean; supabaseUrl: string }): Plugin {
   // The app may contact only its own project address. No wildcard hosts.
-  const connect = ["'self'"];
+  // blob: is read by the 3D loader for the textures of the coach models; the app creates those blob addresses itself.
+  const connect = ["'self'", 'blob:'];
   const images = ["'self'", 'data:', 'blob:'];
   if (options.supabaseUrl) {
     try {
@@ -20,7 +21,8 @@ function securityPolicy(options: { dev: boolean; supabaseUrl: string }): Plugin 
 
   const policy = [
     "default-src 'self'",
-    `script-src 'self'${options.dev ? " 'unsafe-inline'" : ''}`,
+    // WebAssembly may be compiled, and nothing else: the coach models are decoded with meshopt, which runs as WebAssembly.
+    `script-src 'self' 'wasm-unsafe-eval'${options.dev ? " 'unsafe-inline'" : ''}`,
     "style-src 'self' 'unsafe-inline'",
     `img-src ${images.join(' ')}`,
     "font-src 'self' data:",

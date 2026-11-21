@@ -5,9 +5,10 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEv
 import { useNavigate } from 'react-router-dom';
 import { ArrowUp, Mic, MicOff, PhoneOff, Save, Square } from 'lucide-react';
 import { CoachFigure } from '../avatar/Avatar';
-import type { CharacterKind } from '../avatar/scene';
+import { COACHES, coachOf, type CoachId } from '../avatar/characters';
+import { Select } from '../components/Pickers';
 import { useVoiceInput, VoiceButton } from '../components/VoiceInput';
-import { BackLink, Notice, PageHeader } from '../components/ui';
+import { BackLink, Field, Notice, PageHeader } from '../components/ui';
 import { bridge, errorText } from '../lib/bridge';
 import { titleFromQuestion } from '../lib/coach';
 import { learnerContext } from '../lib/coachContext';
@@ -25,9 +26,6 @@ import { useToast } from '../state/toast';
 
 const CONSENT_KEY = 'danna.live.consent';
 const CHARACTER_KEY = 'danna.live.character';
-const NAMES: Record<CharacterKind, string> = { pip: 'Pip', bloop: 'Bloop', luna: 'Luna' };
-/** The Gemini voice each character starts with. The learner can choose another one. */
-const DEFAULT_GEMINI_VOICE: Record<CharacterKind, string> = { pip: 'Puck', bloop: 'Fenrir', luna: 'Aoede' };
 const GEMINI_VOICES = ['Puck', 'Kore', 'Aoede', 'Charon', 'Fenrir', 'Leda', 'Orus', 'Zephyr'];
 
 function readStored(key: string): string | null {
@@ -54,11 +52,9 @@ export function LiveScreen() {
   const { profile, skills } = useAppData();
   const ai = useAI();
   const { notify } = useToast();
-  const [character, setCharacter] = useState<CharacterKind>(() => {
-    const saved = readStored(CHARACTER_KEY);
-    return saved === 'bloop' || saved === 'luna' ? saved : 'pip';
-  });
-  const [voice, setVoice] = useState(DEFAULT_GEMINI_VOICE.pip);
+  const [coachId, setCoachId] = useState<CoachId>(() => coachOf(readStored(CHARACTER_KEY)).id);
+  const coach = coachOf(coachId);
+  const [voice, setVoice] = useState(() => coachOf(coachId).voice);
   const [turnMode, setTurnMode] = useState<'auto' | 'manual'>('auto');
   const [consented, setConsented] = useState(() => readStored(CONSENT_KEY) === '1');
   const [askingConsent, setAskingConsent] = useState(false);
@@ -117,11 +113,11 @@ export function LiveScreen() {
 
   const engine: LiveEngine | null = !bridge || !ai.loaded ? null : ai.connections.some((item) => item.provider === 'gemini') ? 'gemini' : ai.ready ? 'typed' : null;
   const active = live.status !== 'idle' && !live.ended;
-  const coaches: Array<{ kind: CharacterKind; detail: string }> = [
-    { kind: 'pip', detail: t('A small robot with a bright screen') },
-    { kind: 'bloop', detail: t('A soft green creature who loves questions') },
-    { kind: 'luna', detail: t('A friendly guide with a ponytail') },
-  ];
+  const details: Record<CoachId, string> = {
+    ana: t('A young woman in a casual outfit'),
+    leo: t('A man in a casual sweater'),
+    mia: t('A woman in a blue shirt'),
+  };
 
   const facts = useMemo(
     () =>
@@ -150,16 +146,16 @@ export function LiveScreen() {
     (error) => notify(t(errorText(error)), 'error'),
   );
 
-  const choose = (kind: CharacterKind) => {
-    setCharacter(kind);
-    setVoice(DEFAULT_GEMINI_VOICE[kind]);
-    writeStored(CHARACTER_KEY, kind);
+  const choose = (id: CoachId) => {
+    setCoachId(id);
+    setVoice(coachOf(id).voice);
+    writeStored(CHARACTER_KEY, id);
   };
 
   // The talk is started inside the click, so the sound is allowed to play.
   const beginTalk = () => {
     if (!engine) return;
-    const instructions = liveInstructions({ persona: NAMES[character], facts, language: lang === 'pt' ? 'pt' : 'en' });
+    const instructions = liveInstructions({ persona: coach.name, facts, language: lang === 'pt' ? 'pt' : 'en' });
     void conversation.start({ engine, instructions, voice, appVoice, turnMode });
   };
 
@@ -237,7 +233,6 @@ export function LiveScreen() {
       : engine === 'typed'
         ? t('Your AI key writes, the app voice reads')
         : t('No AI key yet');
-  const coachName = NAMES[character];
 
   return (
     <main className="page live">
@@ -264,7 +259,7 @@ export function LiveScreen() {
       {live.error && <Notice tone="error">{live.error}</Notice>}
 
       <section className="live__stage" aria-label={t('Your coach')}>
-        <CoachFigure kind={character} conversation={conversation} />
+        <CoachFigure coach={coach} conversation={conversation} />
         <div className="live__caption">
           <p className="live__status" role="status" aria-live="polite">
             <span className={`live__dot live__dot--${live.status}`} aria-hidden="true" />
@@ -343,7 +338,7 @@ export function LiveScreen() {
         ) : (
           live.lines.map((line) => (
             <p key={line.id} className={`live__line live__line--${line.role}`}>
-              <span className="live__who">{line.role === 'user' ? t('You') : coachName}</span>
+              <span className="live__who">{line.role === 'user' ? t('You') : coach.name}</span>
               {line.text}
             </p>
           ))
@@ -365,32 +360,30 @@ export function LiveScreen() {
       {!active && (
         <section className="live__setup" aria-label={t('Before you start')}>
           <div className="live__coaches" role="radiogroup" aria-label={t('Your coach')}>
-            {coaches.map((item) => (
+            {COACHES.map((item) => (
               <button
-                key={item.kind}
+                key={item.id}
                 type="button"
                 role="radio"
-                aria-checked={character === item.kind}
+                aria-checked={coachId === item.id}
                 className="live__coach"
-                onClick={() => choose(item.kind)}
+                onClick={() => choose(item.id)}
               >
-                <strong>{NAMES[item.kind]}</strong>
-                <span>{item.detail}</span>
+                <strong>{item.name}</strong>
+                <span>{details[item.id]}</span>
               </button>
             ))}
           </div>
           <div className="live__row">
             {engine === 'gemini' && (
-              <label className="live__field">
-                <span>{t('Coach voice')}</span>
-                <select className="live__select" value={voice} onChange={(event) => setVoice(event.target.value)}>
-                  {GEMINI_VOICES.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Field label={t('Coach voice')}>
+                <Select<string>
+                  label={t('Coach voice')}
+                  value={voice}
+                  onChange={setVoice}
+                  options={GEMINI_VOICES.map((name) => ({ value: name, label: name }))}
+                />
+              </Field>
             )}
             {engine === 'gemini' && (
               <div className="live__modes" role="group" aria-label={t('How you talk')}>
@@ -421,6 +414,10 @@ export function LiveScreen() {
           )}
         </section>
       )}
+
+      <p className="live__credit">
+        {t('The coaches are open models: Ana by MakeHuman (CC0), Leo and Mia by Microsoft RocketBox (MIT).')}
+      </p>
     </main>
   );
 }
