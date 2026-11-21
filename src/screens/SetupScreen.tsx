@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
-import { Field, FeatureCard, Notice, Spinner } from '../components/ui';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { Field, Notice, Spinner } from '../components/ui';
+import { KeyConnect } from '../components/KeyConnect';
 import { LookPicker } from '../components/LookPicker';
 import { DateField, todayIso } from '../components/Pickers';
 import { errorText } from '../lib/bridge';
@@ -223,12 +224,14 @@ export function SetupScreen() {
                   />
                   <div className="choice-grid" role="radiogroup" aria-label={t('Goal')}>
                     <button role="radio" aria-checked={shownGoal === 'english'} className="choice" onClick={() => setGoal('english')}>
+                      <span className="choice__tick">{shownGoal === 'english' && <Check aria-hidden="true" />}</span>
                       <span className="choice__title">{t('General English')}</span>
                       <span className="choice__text">
                         {t('Grammar, words, reading, listening, speaking and writing for daily life, study and work.')}
                       </span>
                     </button>
                     <button role="radio" aria-checked={shownGoal === 'toefl'} className="choice" onClick={() => setGoal('toefl')}>
+                      <span className="choice__tick">{shownGoal === 'toefl' && <Check aria-hidden="true" />}</span>
                       <span className="choice__title">{t('TOEFL warm-up')}</span>
                       <span className="choice__text">{t('Practice in the style of the test, with an estimated score and a countdown.')}</span>
                     </button>
@@ -239,6 +242,7 @@ export function SetupScreen() {
                       <div className="choice-grid choice-grid--four" role="radiogroup" aria-label={t('Target score')}>
                         {TARGETS.map((score) => (
                           <button key={score} role="radio" aria-checked={shownTarget === score} className="choice" onClick={() => setTarget(score)}>
+                            <span className="choice__tick">{shownTarget === score && <Check aria-hidden="true" />}</span>
                             <span className="choice__title">{score}+</span>
                             <span className="choice__text">{t('out of 120')}</span>
                           </button>
@@ -262,6 +266,7 @@ export function SetupScreen() {
                   <div className="choice-grid" role="radiogroup" aria-label={t('Minutes per day')}>
                     {MINUTES.map((minutes) => (
                       <button key={minutes} role="radio" aria-checked={shownDaily === minutes} className="choice" onClick={() => setDaily(minutes)}>
+                        <span className="choice__tick">{shownDaily === minutes && <Check aria-hidden="true" />}</span>
                         <span className="choice__title">{t('{minutes} minutes', { minutes })}</span>
                         <span className="choice__text">
                           {minutes <= 10
@@ -288,6 +293,7 @@ export function SetupScreen() {
                   <div className="choice-grid" role="radiogroup" aria-label={t('Current level')}>
                     {LEVELS.map((item) => (
                       <button key={item} role="radio" aria-checked={shownLevel === item} className="choice" onClick={() => setLevel(item)}>
+                        <span className="choice__tick">{shownLevel === item && <Check aria-hidden="true" />}</span>
                         <span className="choice__title">{item}</span>
                         <span className="choice__text">{t(LEVEL_TEXT[item])}</span>
                       </button>
@@ -303,11 +309,8 @@ export function SetupScreen() {
                     title={t('Add an AI key for a personal coach')}
                     text={t('Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works.')}
                   />
-                  <FeatureCard
-                    icon={<Sparkles />}
-                    title={t('Add it later in Settings')}
-                    meta={t('Paste a key whenever you like. It stays on this device.')}
-                  />
+                  <KeyConnect autoFocus />
+                  <p className="muted">{t('Prefer to wait? Add a key later in Settings. It stays on this device.')}</p>
                 </>
               )}
             </motion.div>

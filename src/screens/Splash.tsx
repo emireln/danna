@@ -1,4 +1,4 @@
-import { BrandMark } from '../components/ui';
+import { Wordmark } from '../components/ui';
 import { useT } from '../lib/i18n/react';
 
 export function Splash() {
@@ -6,7 +6,7 @@ export function Splash() {
   return (
     <div className="auth" role="status" aria-label={t('Loading danna')}>
       <div className="splash-stack">
-        <BrandMark size={44} />
+        <Wordmark className="wordmark--xl" />
         <span className="spinner spinner--dark" aria-hidden="true" />
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { BrandMark, Field, Notice, Sheet, Spinner, Tabs, Wordmark } from '../components/ui';
+import { Field, Notice, Sheet, Spinner, Tabs, Wordmark } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { backendFor, onlineAvailable } from '../lib/session';
@@ -103,7 +103,6 @@ export function AuthScreen() {
     <div className="auth">
       <div className="auth__card">
         <div className="auth-hero">
-          <BrandMark size={52} />
           <Wordmark className="wordmark--xl" />
           <div>
             <h1>{mode === 'signin' ? t('Welcome back') : t('Create your account')}</h1>

@@ -33,8 +33,8 @@ export const APP_PT: Record<string, string> = {
   'Your AI keys could not be saved to your account: {reason}': 'Não foi possível salvar suas chaves de IA na sua conta: {reason}',
   'Account password': 'Senha da conta',
   'Save my keys to my account': 'Salvar minhas chaves na minha conta',
-  'Your key is saved on this device. Enter your account password below to save it to your account too.':
-    'Sua chave foi salva neste dispositivo. Digite a senha da sua conta abaixo para salvá-la na sua conta também.',
+  'Your key is saved on this device. Enter your account password in Settings to save it to your account too.':
+    'Sua chave foi salva neste dispositivo. Digite a senha da sua conta em Configurações para salvá-la na sua conta também.',
   'Done. This device can now save and read your AI keys in your account.':
     'Pronto. Este dispositivo já pode salvar e ler suas chaves de IA na sua conta.',
   'Your account profile could not be found. Try again in a moment.':
@@ -370,8 +370,7 @@ export const APP_PT: Record<string, string> = {
   'Add an AI key for a personal coach': 'Adicione uma chave de IA para ter um coach pessoal',
   'Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works.':
     'Funciona com OpenAI, Anthropic, Google Gemini, OpenRouter ou DeepSeek. Você pode pular esta etapa, e tudo continua funcionando.',
-  'Add it later in Settings': 'Adicione depois, em Configurações',
-  'Paste a key whenever you like. It stays on this device.': 'Cole uma chave quando quiser. Ela fica salva neste dispositivo.',
+  'Prefer to wait? Add a key later in Settings. It stays on this device.': 'Prefere esperar? Adicione uma chave depois, em Configurações. Ela fica neste dispositivo.',
   'Start my plan': 'Começar meu plano',
   'Add the name you want danna to use.': 'Digite o nome que você quer que o danna use.',
   'Usernames use 3 to 20 lowercase letters, numbers or underscores.': 'Nomes de usuário usam de 3 a 20 letras minúsculas, números ou sublinhados.',

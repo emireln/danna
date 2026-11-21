@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Cloud, Coffee, Eye, EyeOff, KeyRound, Laptop, Play, Star, Trash2, Volume2 } from 'lucide-react';
+import { Bell, Cloud, Coffee, Laptop, Play, Star, Trash2, Volume2 } from 'lucide-react';
 import { LanguageSwitch } from '../components/LanguageSwitch';
+import { KeyConnect, PROVIDER_LABEL } from '../components/KeyConnect';
 import { LookPicker } from '../components/LookPicker';
 import { VoicePicker } from '../components/VoicePicker';
 import { ConfirmSheet, Empty, Notice, PageHeader, SectionTitle, Sheet, Spinner } from '../components/ui';
@@ -31,24 +32,6 @@ import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
 import type { AIModel, LookId, Provider } from '../lib/types';
-
-const PROVIDER_LABEL: Record<Provider, string> = {
-  openai: 'OpenAI',
-  anthropic: 'Anthropic',
-  gemini: 'Google Gemini',
-  openrouter: 'OpenRouter',
-  deepseek: 'DeepSeek',
-};
-
-/** The providers a key could belong to, shown while typing. The desktop app makes the real decision. */
-function candidatesFor(key: string): Provider[] {
-  if (key.startsWith('sk-ant-')) return ['anthropic'];
-  if (key.startsWith('sk-or-')) return ['openrouter'];
-  if (/^(AIza[\w-]{30,}|AQ\.[\w-]{30,})$/.test(key)) return ['gemini'];
-  if (key.startsWith('sk-proj-') || key.startsWith('sk-svcacct-') || key.startsWith('sk-admin-')) return ['openai'];
-  if (key.startsWith('sk-')) return ['openai', 'deepseek'];
-  return [];
-}
 
 export function SettingsScreen() {
   const navigate = useNavigate();
@@ -129,9 +112,6 @@ export function SettingsScreen() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [version, setVersion] = useState('');
   const update = useUpdateStatus();
-  const [keyDraft, setKeyDraft] = useState('');
-  const [showKey, setShowKey] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modelsFor, setModelsFor] = useState<Provider | null>(null);
   const [models, setModels] = useState<AIModel[]>([]);
@@ -264,10 +244,6 @@ export function SettingsScreen() {
     };
   }, [mode]);
 
-  const candidates = candidatesFor(keyDraft.trim());
-  const detected = candidates.length > 0;
-  const detectedLabel = candidates.length === 1 ? PROVIDER_LABEL[candidates[0]] : t('OpenAI or DeepSeek');
-
   useEffect(() => {
     bridge
       ?.info()
@@ -278,29 +254,6 @@ export function SettingsScreen() {
       .then(setSettings)
       .catch(() => undefined);
   }, []);
-
-  const connect = async () => {
-    if (!bridge) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const result = await bridge.keys.add(keyDraft.trim());
-      setKeyDraft('');
-      await ai.refresh();
-      // With an account open, the new key is saved to it as well, so the other devices get it.
-      const locked = ai.keysLocked;
-      const problem = await ai.syncNow();
-      setModelsFor(result.provider);
-      setModels(result.models);
-      notify(t('{label} is connected. The newest model is selected.', { label: result.label }), 'ok');
-      if (problem) notify(t('Your AI keys could not be saved to your account: {reason}', { reason: t(problem) }), 'error');
-      else if (locked) notify(t('Your key is saved on this device. Enter your account password below to save it to your account too.'));
-    } catch (caught) {
-      setError(t(errorText(caught)));
-    } finally {
-      setBusy(false);
-    }
-  };
 
   // Enters the account password here, which opens the vault, so the AI keys can be saved to the account.
   const unlockNow = async () => {
@@ -598,54 +551,13 @@ export function SettingsScreen() {
           )}
         </p>
 
-        {!ai.desktop && <Notice tone="info">{t('Keys can be added in the danna desktop app.')}</Notice>}
-
-        {ai.desktop && (
-          <div className="card stack">
-            <div className="stack--tight">
-              <label className="field__label" htmlFor="ai-key">
-                {t('Your key')}
-              </label>
-              <div className="input-action">
-                <span className="input-wrap">
-                  <input
-                    id="ai-key"
-                    className="input"
-                    type={showKey ? 'text' : 'password'}
-                    value={keyDraft}
-                    onChange={(event) => setKeyDraft(event.target.value)}
-                    placeholder={t('Paste your key here')}
-                    autoComplete="off"
-                    spellCheck={false}
-                    disabled={busy}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' && detected && !busy) void connect();
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn--icon"
-                    onClick={() => setShowKey((value) => !value)}
-                    aria-label={showKey ? t('Hide key') : t('Show key')}
-                  >
-                    {showKey ? <EyeOff /> : <Eye />}
-                  </button>
-                </span>
-                <button className="btn btn--primary" onClick={connect} disabled={!detected || busy}>
-                  {busy ? <Spinner /> : <KeyRound />} {t('Connect')}
-                </button>
-              </div>
-            </div>
-            {keyDraft.trim() && (
-              <div className="row row--wrap">
-                <span className={`chip ${detected ? 'chip--blue' : ''}`}>
-                  {detected ? t('Looks like {provider}', { provider: detectedLabel }) : t('We do not recognize this key yet')}
-                </span>
-              </div>
-            )}
-            {error && <Notice tone="error">{error}</Notice>}
-          </div>
-        )}
+        <KeyConnect
+          onConnected={(connection) => {
+            setModelsFor(connection.provider);
+            setModels(connection.models);
+          }}
+        />
+        {error && <Notice tone="error">{error}</Notice>}
 
         {ai.desktop && ai.connections.length === 0 && (
           <Empty title={t('No key connected yet')}>{t('Paste a key above to unlock the assistant.')}</Empty>

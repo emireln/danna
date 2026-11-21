@@ -886,6 +886,27 @@
     box-shadow: none;
   }
 
+  /* A chosen card keeps its colour in the Playful look. The base rules above give every card a white face and a grey
+     edge, which would hide the violet edge and the tint of a choice, so the chosen cards are set again here, under the
+     pointer too. The press still sinks a chosen card like any other. */
+  :root[data-look='playful'] .choice[aria-checked='true'],
+  :root[data-look='playful'] .look-card[aria-checked='true'],
+  :root[data-look='playful'] .mode-card[aria-checked='true'],
+  :root[data-look='playful'] .choice[aria-checked='true']:hover:not(:disabled),
+  :root[data-look='playful'] .look-card[aria-checked='true']:hover:not(:disabled),
+  :root[data-look='playful'] .mode-card[aria-checked='true']:hover:not(:disabled) {
+    background: var(--primary-50);
+    border-color: var(--primary);
+    box-shadow: 0 4px 0 var(--primary-700);
+  }
+
+  :root[data-look='playful'] .choice[aria-checked='true']:active:not(:disabled),
+  :root[data-look='playful'] .look-card[aria-checked='true']:active:not(:disabled),
+  :root[data-look='playful'] .mode-card[aria-checked='true']:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: none;
+  }
+
   :root[data-look='playful'] .btn--icon:focus-visible,
   :root[data-look='playful'] .btn--text:focus-visible,
   :root[data-look='playful'] .avatar-btn:focus-visible,
