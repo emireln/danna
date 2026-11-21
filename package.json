@@ -1,7 +1,7 @@
 {
   "name": "danna",
   "productName": "danna",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "danna: an English learning desktop app, from A1 to C1, with an optional TOEFL warm-up, AI tutoring, roadmaps and friends.",
   "private": true,
   "type": "module",
@@ -44,7 +44,6 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.16",
-    "@fontsource/unbounded": "^5.3.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -54,7 +53,6 @@
     "electron": "^45.3.0",
     "electron-builder": "^26.18.0",
     "husky": "^9.1.7",
-    "opentype.js": "^2.0.0",
     "sharp": "^0.35.5",
     "simple-icons": "^16.37.0",
     "typescript": "~5.9.3",

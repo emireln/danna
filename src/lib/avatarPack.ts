@@ -1,8 +1,8 @@
-// The built-in pictures for people who have not chosen one. The 24 pictures are DiceBear avatars under CC0, written by
-// scripts/make-avatars.mjs and bundled with the app, so they load offline.
+// The built-in pictures for people who have not chosen one. The 96 pictures are WebP files made from DiceBear avatars
+// under CC0 by scripts/make-avatars.mjs. The app bundles them, so they load offline, and never converts them.
 // A pick is random but fixed: a hash of the person's id chooses the picture, so the same person has the same one
 // everywhere in the app, and the id itself never leaves the device.
-const pictures = import.meta.glob<string>('../assets/avatars/*.svg', { eager: true, query: '?url', import: 'default' });
+const pictures = import.meta.glob<string>('../assets/avatars/*.webp', { eager: true, query: '?url', import: 'default' });
 const urls = Object.keys(pictures)
   .sort()
   .map((path) => pictures[path]);

@@ -113,7 +113,7 @@ test('a picture is shown when there is one, and a built-in picture chosen by the
   const pictured = render(h(ui.Avatar, { name: 'Ana Maria', seed: 'ana-id', src: 'blob:one' }));
   assert.match(pictured, /<img class="avatar__img" src="blob:one"/);
   const plain = render(h(ui.Avatar, { name: 'Ana Maria', seed: 'ana-id' }));
-  assert.match(plain, /<img class="avatar__img" src="[^"]*avatar-\d\d\.svg"/, 'a built-in picture');
+  assert.match(plain, /<img class="avatar__img" src="[^"]*avatar-\d\d\.webp"/, 'a built-in picture');
   assert.doesNotMatch(plain, /AM/, 'no initials');
   assert.equal(render(h(ui.Avatar, { name: 'Someone else', seed: 'ana-id' })), plain, 'the same seed picks the same picture');
 });

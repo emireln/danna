@@ -125,7 +125,7 @@ The tests check the things that would hurt most if they broke: the lessons, copy
 
 ## Logos and icons
 
-`brand/logo.png` is the master logo, `brand/icon.png` is the app icon, and `brand/tray-icon.png` is the tray icon. The icon is a finished picture with its own rounded square, so it is used as it is, with no frame. After you change either file, or add a platform logo, run:
+`brand/logo.png` is the master logo, `brand/icon.png` is the app icon, `brand/tray-icon.png` is the tray icon, and `brand/banner.png` is the installer's side picture. The icon is a finished picture with its own rounded square, so it is used as it is, with no frame. After you change either file, or add a platform logo, run:
 
 ```bash
 npm run art
@@ -135,11 +135,11 @@ That makes everything the app and the installer need:
 
 - The app logo, the app icon for the window, the installer and the browser tab, and the tray icon (`npm run icons`).
 - Logos for learning platforms like YouTube and Coursera (`npm run logos`). A platform without an official logo shows its first letter until one is added to `brand/platforms/`.
-- The side picture of the installer (`npm run installer-art`).
+- The side picture of the installer and the uninstaller, from the banner (`npm run installer-art`).
 
 ## Avatars
 
-People without a picture get one of 24 built-in avatars, made with [DiceBear](https://www.dicebear.com) under the CC0 licence. The pictures live in `src/assets/avatars`. Each person's avatar is chosen from their id, so it stays the same on every screen. To rebuild the pack, run `npm run avatars`.
+People without a picture get one of 96 built-in avatars: WebP pictures made with [DiceBear](https://www.dicebear.com) under the CC0 licence, listed in `src/assets/avatars/CREDITS.md`. Each person's avatar is chosen from their id, so it stays the same on every screen. The app bundles the pictures and never converts them. Pictures people upload are converted to WebP on their device. To rebuild the pack, run `npm run avatars`.
 
 ## Build the Windows installer
 
