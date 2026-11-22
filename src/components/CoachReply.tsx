@@ -1,9 +1,9 @@
 // One reply of the coach as the learner sees it: its text, its cards (exercises, feedback, vocabulary, actions and
 // quick replies), and the actions under it (copy, listen, write again, continue). The card rules live in
 // lib/coachReply.ts and lib/coachVocab.ts; this file only draws them and keeps the learner's answers.
-import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Fragment, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
-import { ArrowRight, BookmarkCheck, BookmarkPlus, Check, Copy, Pencil, RotateCcw, Square, Volume2, X } from 'lucide-react';
+import { ArrowRight, BookOpen, BookmarkCheck, BookmarkPlus, Check, Copy, FileText, Image as ImageIcon, Pencil, RotateCcw, Square, Volume2, X } from 'lucide-react';
 import { bundledTest } from '../content';
 import {
   averageScore,
@@ -27,6 +27,8 @@ import { clearDraft, localDrafts, readDraft, writeDraft, type DraftStore } from 
 import { getLocale } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { narrate, type Narration } from '../lib/speech';
+import type { TextStore } from '../lib/textStore';
+import type { TutorAttachment } from '../lib/types';
 
 // The coach's text is shown as Markdown. Links are shown as plain words: the coach does not open web pages.
 const replyParts: Components = {
@@ -439,7 +441,7 @@ export interface AssistantReplyProps {
 }
 
 /** A reply of the coach: its parts in order, the quick replies under the newest one, and its tools. */
-export function AssistantReply({
+function AssistantReplyView({
   id,
   text,
   streaming = false,
@@ -536,10 +538,13 @@ export function AssistantReply({
   );
 }
 
+// A reply that has been written does not change, so the chat draws it again only when its own text or its own state changes.
+export const AssistantReply = memo(AssistantReplyView);
+
 /** The learner's own message: a bubble, its files, and the actions under it. */
-export function LearnerTurn({
+function LearnerTurnView({
   text,
-  files,
+  attachments,
   editable,
   busy,
   onCopy,
@@ -547,7 +552,7 @@ export function LearnerTurn({
   children,
 }: {
   text: string;
-  files: ReactNode;
+  attachments: TutorAttachment[];
   editable: boolean;
   busy: boolean;
   onCopy: (text: string) => void;
@@ -557,7 +562,16 @@ export function LearnerTurn({
   const t = useT();
   return (
     <div className="turn turn--user">
-      {files}
+      {attachments.length > 0 && (
+        <div className="turn__files">
+          {attachments.map((file, index) => (
+            <span key={`${file.name}-${index}`} className="file-chip file-chip--static">
+              {file.kind === 'library' ? <BookOpen aria-hidden="true" /> : file.kind === 'image' ? <ImageIcon aria-hidden="true" /> : <FileText aria-hidden="true" />}
+              <span className="file-chip__name">{file.name}</span>
+            </span>
+          ))}
+        </div>
+      )}
       {text && <div className="turn__bubble">{text}</div>}
       {children}
       {text && (
@@ -573,5 +587,49 @@ export function LearnerTurn({
         </div>
       )}
     </div>
+  );
+}
+
+export const LearnerTurn = memo(LearnerTurnView);
+
+const doNothing = () => undefined;
+const saveNothing = async () => false;
+
+/** The reply being written. Its text comes from the store, so each piece draws this reply, and not the whole chat. */
+export function WritingReply({
+  store,
+  reviewKeys,
+  onNavigate,
+  onCopy,
+  onFollow,
+}: {
+  store: TextStore;
+  reviewKeys: ReadonlySet<string>;
+  onNavigate: (to: string) => void;
+  onCopy: (text: string) => void;
+  /** Called after each piece, so the chat can follow the newest text while the learner is at its end. */
+  onFollow: () => void;
+}) {
+  const text = useSyncExternalStore(store.subscribe, store.get, store.get);
+  useEffect(() => {
+    onFollow();
+  }, [text, onFollow]);
+  return (
+    <AssistantReply
+      id="writing"
+      text={text}
+      streaming
+      latest={false}
+      busy
+      cut={false}
+      draftPrefix={null}
+      reviewKeys={reviewKeys}
+      onSend={doNothing}
+      onSaveWord={saveNothing}
+      onNavigate={onNavigate}
+      onRegenerate={doNothing}
+      onContinue={doNothing}
+      onCopy={onCopy}
+    />
   );
 }

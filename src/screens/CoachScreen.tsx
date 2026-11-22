@@ -1,10 +1,10 @@
 // The coach: a list of chats, each with its own history and its own way of working (a mode). A reply is written as
 // it comes, and can be stopped, written again, edited or continued. The learner's answers, files and voice go in
 // the same message box. A chat is named from its first question.
-import { useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowUp, AtSign, BookOpen, Download, FileText, History, Image as ImageIcon, Paperclip, Plus, Sparkles, Square, Volume2, VolumeX, X } from 'lucide-react';
-import { AssistantReply, LearnerTurn } from '../components/CoachReply';
+import { ArrowUp, AtSign, BookOpen, Download, FileText, History, Paperclip, Plus, Sparkles, Square, Volume2, VolumeX, X } from 'lucide-react';
+import { AssistantReply, LearnerTurn, WritingReply } from '../components/CoachReply';
 import { CoachHome } from '../components/CoachHome';
 import { ChatHistory } from '../components/ChatHistory';
 import { MentionSheet } from '../components/MentionSheet';
@@ -26,6 +26,7 @@ import { localDate, nextStreak } from '../lib/progress';
 import { useT } from '../lib/i18n/react';
 import { narrate, type Narration } from '../lib/speech';
 import { playSound } from '../lib/sound';
+import { createTextStore } from '../lib/textStore';
 import type { ChatImage, ChatMessage, LibraryFileRow, ReviewRow, TutorChatRow, TutorRow } from '../lib/types';
 import { useAI, type ReplyStream } from '../state/ai';
 import { useAppData } from '../state/appData';
@@ -43,10 +44,18 @@ const AUTO_READ_KEY = 'danna.coach.autoRead';
 const FILES_ONLY = 'Summarize these files and tell me what matters most for learning English.';
 const PICTURES_ONLY = 'Describe these pictures and tell me what is useful for learning English in them.';
 
-/** A reply that is still being written: its chat, and the text so far. */
+/** A reply that is still being written, and the chat it is written in. Its text is kept apart (liveText), so a piece does not draw the screen. */
 interface LiveReply {
   chatId: string;
-  text: string;
+}
+
+/** A function with the same identity for the life of the screen, that always runs the newest version of `fn`. */
+function useStableCallback<Args extends unknown[], Result>(fn: (...args: Args) => Result): (...args: Args) => Result {
+  const latest = useRef(fn);
+  useLayoutEffect(() => {
+    latest.current = fn;
+  });
+  return useCallback((...args: Args) => latest.current(...args), []);
 }
 
 function readAutoRead(): boolean {
@@ -108,6 +117,8 @@ export function CoachScreen() {
   // The mode a new chat starts in, chosen on the home. Null means the free chat, until a mode is chosen.
   const [pendingMode, setPendingMode] = useState<CoachModeId | null>(null);
   const [live, setLive] = useState<LiveReply | null>(null);
+  // The text of the reply being written. It is kept outside the state above, so each piece draws only that reply (WritingReply).
+  const [liveText] = useState(createTextStore);
   const [cutReplies, setCutReplies] = useState<ReadonlySet<string>>(() => new Set());
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [reviewKeys, setReviewKeys] = useState<ReadonlySet<string>>(() => new Set());
@@ -128,7 +139,7 @@ export function CoachScreen() {
   const replyStream = useRef<ReplyStream | null>(null);
   // The newest text of the reply being written, shown at most once per frame.
   const liveFrame = useRef<number | null>(null);
-  const liveNext = useRef<LiveReply | null>(null);
+  const liveNext = useRef<string | null>(null);
   // The list follows the newest message, until the learner scrolls up to read earlier ones.
   const stickToBottom = useRef(true);
   const narration = useRef<Narration | null>(null);
@@ -155,6 +166,11 @@ export function CoachScreen() {
     const list = listRef.current;
     if (list) list.scrollTop = list.scrollHeight;
   }, []);
+
+  // A reply being written follows the newest text, while the learner is at the end of the chat.
+  const followStream = useCallback(() => {
+    if (stickToBottom.current) scrollToEnd();
+  }, [scrollToEnd]);
 
   const openChat = useCallback(
     async (id: string | null) => {
@@ -230,10 +246,10 @@ export function CoachScreen() {
     navigate(location.pathname, { replace: true, state: null });
   }, [location.key, location.pathname, navigate, openChat]);
 
-  // The newest text follows the list while the learner is at its end.
+  // The newest message follows the list while the learner is at its end. A reply being written follows it too (followStream).
   useEffect(() => {
     if (stickToBottom.current) scrollToEnd();
-  }, [messages?.length, visibleLive?.text, sending, failure, activeId, scrollToEnd]);
+  }, [messages?.length, sending, failure, activeId, scrollToEnd]);
 
   // Search in the chat history: the chats whose name or messages match, a moment after the learner stops typing.
   useEffect(() => {
@@ -332,12 +348,12 @@ export function CoachScreen() {
   };
 
   // Shows the reply's text as it is written, at most once per frame, so a fast reply does not stall the screen.
-  const showLive = (chatId: string, text: string) => {
-    liveNext.current = { chatId, text };
+  const showLive = (text: string) => {
+    liveNext.current = text;
     if (liveFrame.current !== null) return;
     liveFrame.current = window.requestAnimationFrame(() => {
       liveFrame.current = null;
-      if (liveNext.current) setLive(liveNext.current);
+      if (liveNext.current !== null) liveText.set(liveNext.current);
     });
   };
 
@@ -359,11 +375,12 @@ export function CoachScreen() {
     if (!backend || !profile) return;
     setSending(true);
     setFailure(null);
-    setLive({ chatId, text: '' });
+    liveText.set('');
+    setLive({ chatId });
     let written = '';
     const stream = startReply({ system: instructionsFor(modeId, notes), messages: conversation, maxTokens: REPLY_TOKENS }, (piece) => {
       written += piece;
-      showLive(chatId, written);
+      showLive(written);
     });
     replyStream.current = stream;
     try {
@@ -388,6 +405,7 @@ export function CoachScreen() {
       if (liveFrame.current !== null) window.cancelAnimationFrame(liveFrame.current);
       liveFrame.current = null;
       liveNext.current = null;
+      liveText.set('');
       replyStream.current = null;
       setLive(null);
       setSending(false);
@@ -776,6 +794,15 @@ export function CoachScreen() {
     </button>
   );
 
+  // The rows of the chat are drawn again only when their own text changes, so the handlers they get keep their identity: each
+  // one runs the newest version of its function.
+  const sendAsText = useStableCallback((text: string) => void send(text, { asText: true }));
+  const saveWordStable = useStableCallback(saveWord);
+  const regenerateStable = useStableCallback(() => void regenerate());
+  const continueStable = useStableCallback(continueReply);
+  const editStable = useStableCallback(() => void editLast());
+  const copyStable = useStableCallback(copyText);
+
   return (
     <div className="page page--coach coach">
       <header className="coach-bar">
@@ -877,20 +904,9 @@ export function CoachScreen() {
                     text={message.content}
                     editable={message.id === lastQuestionId}
                     busy={busy}
-                    onCopy={copyText}
-                    onEdit={() => void editLast()}
-                    files={
-                      message.attachments.length > 0 ? (
-                        <div className="turn__files">
-                          {message.attachments.map((file, index) => (
-                            <span key={`${file.name}-${index}`} className="file-chip file-chip--static">
-                              {file.kind === 'library' ? <BookOpen aria-hidden="true" /> : file.kind === 'image' ? <ImageIcon aria-hidden="true" /> : <FileText aria-hidden="true" />}
-                              <span className="file-chip__name">{file.name}</span>
-                            </span>
-                          ))}
-                        </div>
-                      ) : null
-                    }
+                    onCopy={copyStable}
+                    onEdit={editStable}
+                    attachments={message.attachments}
                   />
                 ) : (
                   message.content && (
@@ -903,34 +919,17 @@ export function CoachScreen() {
                       cut={cutReplies.has(message.id)}
                       draftPrefix={profile ? draftKey(profile.id, `coach-exercise:${message.id}`) : null}
                       reviewKeys={reviewKeys}
-                      onSend={(text) => void send(text, { asText: true })}
-                      onSaveWord={saveWord}
+                      onSend={sendAsText}
+                      onSaveWord={saveWordStable}
                       onNavigate={navigate}
-                      onRegenerate={() => void regenerate()}
-                      onContinue={continueReply}
-                      onCopy={copyText}
+                      onRegenerate={regenerateStable}
+                      onContinue={continueStable}
+                      onCopy={copyStable}
                     />
                   )
                 ),
               )}
-              {visibleLive && (
-                <AssistantReply
-                  id="writing"
-                  text={visibleLive.text}
-                  streaming
-                  latest={false}
-                  busy
-                  cut={false}
-                  draftPrefix={null}
-                  reviewKeys={reviewKeys}
-                  onSend={() => undefined}
-                  onSaveWord={async () => false}
-                  onNavigate={navigate}
-                  onRegenerate={() => undefined}
-                  onContinue={() => undefined}
-                  onCopy={copyText}
-                />
-              )}
+              {visibleLive && <WritingReply store={liveText} reviewKeys={reviewKeys} onNavigate={navigate} onCopy={copyStable} onFollow={followStream} />}
               {sending && !visibleLive && (
                 <div className="turn turn--coach" aria-label={t('Coach is typing')}>
                   <span className="turn__avatar" aria-hidden="true">
