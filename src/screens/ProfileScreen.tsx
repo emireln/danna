@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Camera, ChartColumn, ClipboardCheck, Flame, Image as ImageIcon, Pencil, Settings2, Target, Trash2, Zap } from 'lucide-react';
+import { BookOpen, Camera, ChartColumn, ClipboardCheck, Flame, Image as ImageIcon, Pencil, Settings2, Shuffle, Target, Trash2, Zap } from 'lucide-react';
 import { Avatar, Empty, Field, FeatureCard, ProgressBar, SectionTitle, Sheet, Skeleton, Spinner } from '../components/ui';
 import { errorText } from '../lib/bridge';
 import { activeExamDate } from '../lib/exam';
 import { PictureError, prepareAvatar } from '../lib/avatar';
+import { randomAvatarUrl } from '../lib/avatarPack';
 import { prepareBanner } from '../lib/banner';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
@@ -170,6 +171,22 @@ export function ProfileScreen() {
       await changePicture(null);
       setPictureOpen(false);
       notify(t('Picture removed.'), 'ok');
+    } catch (error) {
+      notify(t(errorText(error)), 'error');
+    } finally {
+      setPictureBusy(false);
+    }
+  };
+
+  // A picture from the ones bundled with the app, for someone who wants a new one without a file of their own.
+  const randomPicture = async () => {
+    setPictureBusy(true);
+    try {
+      const response = await fetch(randomAvatarUrl());
+      if (!response.ok) throw new Error('The built-in picture could not be read.');
+      await changePicture(await response.blob());
+      setPictureOpen(false);
+      notify(t('Picture updated.'), 'ok');
     } catch (error) {
       notify(t(errorText(error)), 'error');
     } finally {
@@ -446,13 +463,15 @@ export function ProfileScreen() {
               <button className="btn btn--primary btn--block" onClick={() => fileInput.current?.click()} disabled={pictureBusy}>
                 {pictureBusy ? <Spinner /> : <Camera aria-hidden="true" />} {pictureUrl ? t('Change picture') : t('Add picture')}
               </button>
+              <button className="btn btn--ghost btn--block" onClick={() => void randomPicture()} disabled={pictureBusy}>
+                <Shuffle aria-hidden="true" /> {t('Random picture')}
+              </button>
               {pictureUrl && (
                 <button className="btn btn--ghost btn--block" onClick={removePicture} disabled={pictureBusy}>
                   <Trash2 aria-hidden="true" /> {t('Remove picture')}
                 </button>
               )}
             </div>
-            <p className="small muted">{t('A picture is cropped to a square and kept small.')}</p>
           </div>
         </Sheet>
       )}
@@ -473,7 +492,6 @@ export function ProfileScreen() {
                 </button>
               )}
             </div>
-            <p className="small muted">{t('Use a wide picture. It is cropped to a strip and kept small.')}</p>
           </div>
         </Sheet>
       )}

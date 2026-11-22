@@ -643,6 +643,8 @@ export const APP_PT: Record<string, string> = {
   'Change picture': 'Trocar foto',
   'Add picture': 'Adicionar foto',
   'Remove picture': 'Remover foto',
+  'Random picture': 'Foto aleatória',
+  'The built-in picture could not be read.': 'Não foi possível ler a foto pronta.',
   'Your profile': 'Seu perfil',
   'Level progress': 'Progresso do nível',
   'Edit name': 'Editar nome',
@@ -1106,8 +1108,6 @@ export const APP_PT: Record<string, string> = {
   'No banner yet': 'Nenhum banner ainda',
   'Change banner': 'Trocar banner',
   'Remove banner': 'Remover banner',
-  'Use a wide picture. It is cropped to a strip and kept small.': 'Use uma foto larga. Ela é recortada em uma faixa e fica pequena.',
-  'A picture is cropped to a square and kept small.': 'A foto é recortada em um quadrado e fica pequena.',
   'Banner updated.': 'Banner atualizado.',
   'Banner removed.': 'Banner removido.',
   'That picture is too detailed to save as a banner. Try a simpler one.':

@@ -24,3 +24,8 @@ function hash(text: string): number {
 export function defaultAvatarUrl(seed: string): string {
   return urls[hash(seed) % urls.length];
 }
+
+/** A picture from the pack at random, for someone who wants a new one without choosing a file of their own. */
+export function randomAvatarUrl(random: () => number = Math.random): string {
+  return urls[Math.floor(random() * urls.length)];
+}
