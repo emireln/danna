@@ -215,6 +215,8 @@ function createSpeechEngine({
   modelDir,
   loadRuntime = () => require('onnxruntime-node'),
   loadPhonemizer = () => require('phonemizer'),
+  // The processor threads one sentence may use. Fewer leaves room for the window; the speed barely changes.
+  threads,
 }) {
   const modelFile = path.join(modelDir, 'model.onnx');
   const tokenizerFile = path.join(modelDir, 'tokenizer.json');
@@ -231,7 +233,8 @@ function createSpeechEngine({
     if (!loading) {
       loading = (async () => {
         const runtime = loadRuntime();
-        const session = await runtime.InferenceSession.create(modelFile, { executionProviders: ['cpu'] });
+        const options = threads ? { executionProviders: ['cpu'], intraOpNumThreads: threads } : { executionProviders: ['cpu'] };
+        const session = await runtime.InferenceSession.create(modelFile, options);
         return { runtime, session, tokenizer: loadTokenizer(tokenizerFile), phonemize: loadPhonemizer().phonemize };
       })();
       // A failed start is not kept, so the next request tries again.

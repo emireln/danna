@@ -1,5 +1,5 @@
 // danna desktop shell: custom window frame, tray, offline data, AI keys and secure IPC.
-const { app, BrowserWindow, ipcMain, shell, safeStorage, session, protocol, net, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, safeStorage, session, protocol, net, Tray, Menu, nativeImage, utilityProcess } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
@@ -15,15 +15,20 @@ const { userError } = require('./errors.cjs');
 const { autoUpdater } = require('electron-updater');
 const { createUpdates } = require('./updater.cjs');
 const kokoro = require('./kokoro.cjs');
+const { createSpeechHost } = require('./speech-host.cjs');
 const { createWindowsVoices } = require('./winvoices.cjs');
 const { createSpeechService } = require('./speech-service.cjs');
 
 // The built-in voice ships with the app (resources/tts/kokoro). In development it is read from the same folder in the project.
-const kokoroEngine = kokoro.createSpeechEngine({
-  modelDir: app.isPackaged ? path.join(process.resourcesPath, 'tts', 'kokoro') : path.join(__dirname, '..', 'resources', 'tts', 'kokoro'),
+const kokoroDir = app.isPackaged ? path.join(process.resourcesPath, 'tts', 'kokoro') : path.join(__dirname, '..', 'resources', 'tts', 'kokoro');
+const kokoroEngine = kokoro.createSpeechEngine({ modelDir: kokoroDir });
+// The voice runs in a utility process of its own, so loading a voice or making its sound never stalls this process.
+const voiceHost = createSpeechHost({
+  available: (voice) => kokoroEngine.available(voice),
+  fork: () => utilityProcess.fork(path.join(__dirname, 'speech-worker.cjs'), [kokoroDir], { serviceName: 'danna voice', stdio: 'ignore' }),
 });
 const speechService = createSpeechService({
-  kokoro: kokoroEngine,
+  kokoro: voiceHost,
   windows: createWindowsVoices(),
   cloud: ai,
   hasKey: (provider) => keystore.hasKey(provider),
