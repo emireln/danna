@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { CalendarDays, Languages, Map as MapIcon, RotateCw, ScanSearch, X } from 'lucide-react';
+import { Languages, Map as MapIcon, RotateCw, ScanSearch, X } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
 import { DailyGoal } from '../components/DailyGoal';
 import { QuestList } from '../components/QuestList';
@@ -12,7 +12,6 @@ import { Select } from '../components/Pickers';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { nodeStates, progressMap as indexProgress } from '../lib/roadmap';
-import { examDateText } from '../lib/exam';
 import { isLevelReportRemoved, rememberLevelReportRemoved } from '../lib/levelReport';
 import { bandFor, toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, type Skill } from '../lib/types';
@@ -138,13 +137,6 @@ export function TodayScreen() {
     { key: 'review', label: t('Daily review'), count: dueNow, color: '#4b5a7a', icon: 'review', to: '/review' },
   ];
 
-  // The exam card names the exam and its date. The countdown lives on the exam page.
-  const examMeta = profile?.exam_paused
-    ? t('Paused. Not planning an exam for now.')
-    : profile?.exam_date
-    ? [profile.exam_name, examDateText(profile.exam_date)].filter(Boolean).join(' · ')
-    : t('Save your exam date and test your skills.');
-
   return (
     <div className="page">
       <PageHeader eyebrow={t('Your plan')} title={t("Today's learning")}>
@@ -232,7 +224,6 @@ export function TodayScreen() {
                 onClick={() => navigate('/play/diagnostic')}
               />
             )}
-            <FeatureCard icon={<CalendarDays />} title={t('Your exam')} meta={examMeta} onClick={() => navigate('/exam')} />
           </div>
         )}
 

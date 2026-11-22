@@ -95,7 +95,7 @@ export function ExamScreen() {
 
   return (
     <div className="page">
-      <BackLink to="/">{t('Today')}</BackLink>
+      <BackLink to="/study">{t('Self study')}</BackLink>
       <PageHeader eyebrow={t('Your exam')} title={profile?.exam_name || t('Your exam')}>
         <p className="muted">{t('Save the date, see how many days are left, and test the skills the exam asks for.')}</p>
       </PageHeader>

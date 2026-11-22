@@ -124,10 +124,14 @@ test('initials come from the first two words, and a blank name has a placeholder
   assert.equal(ui.initials('   '), '?');
 });
 
-test('the clock in a session counts minutes and seconds', () => {
+test('the clock in a session counts minutes and seconds, and shows the hours once an hour has passed', () => {
   assert.equal(ui.formatClock(0), '00:00');
   assert.equal(ui.formatClock(75), '01:15');
-  assert.equal(ui.formatClock(3605), '60:05');
+  assert.equal(ui.formatClock(3599), '59:59');
+  assert.equal(ui.formatClock(3605), '1:00:05');
+  assert.equal(ui.formatClock(3600 * 36 + 60 * 49 + 54), '36:49:54', 'a long session keeps its hours, not its minutes');
+  assert.equal(ui.formatClock(-5), '00:00', 'a negative time is shown as zero');
+  assert.equal(ui.formatClock(75.9), '01:15', 'a fraction of a second is not shown');
 });
 
 test('the badge of a feature card and the star icon render without a crash', () => {

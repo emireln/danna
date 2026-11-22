@@ -22,6 +22,19 @@ function filesIn(folder, extensions) {
 
 const styles = filesIn(join(src, 'styles'), ['.css']).map((path) => readFileSync(path, 'utf8')).join('\n');
 const screens = filesIn(src, ['.tsx']).map((path) => ({ path, text: readFileSync(path, 'utf8') }));
+// The Classic look is the palette in app.css; the Playful look is in playful.css and defines its own colours.
+const classicPalette = readFileSync(join(src, 'styles', 'app.css'), 'utf8');
+
+// Every deck colour is a token that the Classic look defines: a swatch without its colour is an empty button.
+test('every deck colour has its colour in the Classic palette', () => {
+  const deckStyles = readFileSync(join(src, 'styles', 'decks.css'), 'utf8');
+  const colours = [...deckStyles.matchAll(/\.deck-colour--(\w+)\s*\{/g)].map((match) => match[1]);
+  assert.ok(colours.length >= 6, `the deck colours are styled, got ${colours.length}`);
+  for (const colour of colours) {
+    assert.match(classicPalette, new RegExp(`--${colour}:\\s*#[0-9a-f]{6};`, 'i'), `--${colour} is defined in app.css`);
+  }
+});
+
 
 // Classes a screen writes as plain text: className="a b c". Dynamic parts (with braces) are left out.
 function staticClasses(text) {

@@ -483,8 +483,12 @@ export function FeatureCard({
   return <div className={className}>{content}</div>;
 }
 
+// A clock of a session or a question: minutes and seconds (05:09), and once an hour has passed, the hours too (1:05:09,
+// or 36:49:54 after a day). The hours are not capped, so a long session never runs its minutes into the hours.
 export function formatClock(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  const total = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+  const seconds = String(total % 60).padStart(2, '0');
+  return hours > 0 ? `${hours}:${minutes}:${seconds}` : `${minutes}:${seconds}`;
 }
