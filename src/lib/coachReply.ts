@@ -87,7 +87,9 @@ export function isAppRoute(path: string): boolean {
 /** The blocks the app draws as cards, as the model is told them. Each form is written the way the app reads it. */
 export const COACH_BLOCK_GUIDE = [
   'Some replies carry blocks that the app draws as cards. A block is written as a line with three backticks and its name, then one JSON value, then a line with three backticks. Use a block only when it helps; most replies are plain text. The blocks and their JSON:',
-  '- ```exercise, then {"title": string, "items": [...]}, with up to eight items. A "choice" item has "prompt", "options" (two to four strings), "answer" (the index of the right option, counting from 0) and "explain". A "gap" item has "prompt" with ___ for each missing word, "answers" (one string for each ___, in order; accepted alternatives are joined with |), an optional "hint", and "explain". A "free" item has a "prompt" that asks the learner to write something; the app sends their answer to you.',
+  '- ```exercise, then {"title": string, "items": [...]}, with up to eight items. Every item has a "type", which is "choice", "gap" or "free". A "choice" item has "type": "choice", "prompt", "options" (two to four strings), "answer" (the index of the right option, counting from 0) and "explain". A "gap" item has "type": "gap", "prompt" with ___ for each missing word, "answers" (one string for each ___, in order; accepted alternatives are joined with |), an optional "hint", and "explain". A "free" item has "type": "free" and a "prompt" that asks the learner to write something; the app sends their answer to you.',
+  '  For example, one choice question is written as a line of three backticks and "exercise", then this JSON, then a line of three backticks:',
+  '  {"title": "Past simple", "items": [{"type": "choice", "prompt": "Yesterday I ___ to the cinema.", "options": ["go", "went", "gone"], "answer": 1, "explain": "Yesterday needs the past simple, went."}]}',
   '- ```feedback, then {"title": string, "scores": [{"label": string, "score": number from 0 to 5}], "summary": string, "corrections": [{"before": string, "after": string, "why": string}], "model": string}, for a text the learner wrote. "before" quotes the learner\'s own words exactly.',
   '- ```vocab, then {"items": [{"word": string, "meaning": string, "example": string, "note": string}]}, for new words. Each "example" uses the exact word, so the app can save it for review.',
   '- ```actions, then {"items": [{"label": string, "to": string}]}, to send the learner to practice in the app. The allowed paths are /study/reading, /study/listening, /study/speaking, /study/writing, /study/language, /study/toefl, /review, /exam, /roadmap, /play/diagnostic and /play/test/ followed by a test id.',
@@ -121,25 +123,68 @@ function readJson(body: string): unknown {
   return null;
 }
 
+// The names an item's "type" may carry, written without spaces, dashes or underscores.
+const KINDS = new Map<string, ExerciseItem['type']>([
+  ['choice', 'choice'],
+  ['multiplechoice', 'choice'],
+  ['mcq', 'choice'],
+  ['gap', 'gap'],
+  ['fill', 'gap'],
+  ['fillin', 'gap'],
+  ['blank', 'gap'],
+  ['free', 'free'],
+]);
+
+/**
+ * The kind of an item. A type the item names is used, and a name the app does not know leaves the item out. An item
+ * with no type is read from its fields: options make a choice, answers make a gap, and anything else is a free answer.
+ */
+function kindOf(value: Record<string, unknown>): ExerciseItem['type'] | null {
+  const named = value.type === undefined || value.type === null ? '' : String(value.type).replace(/[\s_-]+/g, '').toLowerCase();
+  if (named) return KINDS.get(named) ?? null;
+  if (Array.isArray(value.options)) return 'choice';
+  if (value.answer !== undefined || value.answers !== undefined) return 'gap';
+  return 'free';
+}
+
+/** The index of the right option. A number counts from 0. Text may be the option itself, or its letter (A to F). */
+function answerIndex(value: unknown, options: string[]): number | null {
+  if (typeof value === 'number') return Number.isInteger(value) ? value : null;
+  if (typeof value !== 'string') return null;
+  const text = clean(value, MAX_OPTION);
+  if (/^\d+$/.test(text)) return Number(text);
+  const same = options.findIndex((option) => option.toLowerCase() === text.toLowerCase());
+  if (same !== -1) return same;
+  const letter = /^\(?([a-f])\)?[.):]?$/i.exec(text);
+  return letter ? letter[1].toLowerCase().charCodeAt(0) - 'a'.charCodeAt(0) : null;
+}
+
+/** The accepted answers of a gap, as the model wrote them: a list, or one text for a single blank. */
+function answersOf(value: Record<string, unknown>): unknown[] {
+  const raw = value.answers !== undefined ? value.answers : value.answer;
+  if (Array.isArray(raw)) return raw;
+  return raw === undefined ? [] : [raw];
+}
+
 function toItem(value: unknown): ExerciseItem | null {
   if (!isRecord(value)) return null;
   const prompt = clean(value.prompt, MAX_PROMPT).replace(/_{3,}/g, BLANK);
   if (!prompt) return null;
   const explain = clean(value.explain, MAX_PROMPT);
-  switch (value.type) {
+  switch (kindOf(value)) {
     case 'choice': {
       const options = Array.isArray(value.options)
         ? value.options.map((option) => clean(option, MAX_OPTION)).filter((option) => option.length > 0).slice(0, MAX_OPTIONS)
         : [];
-      const answer = value.answer;
-      if (options.length < 2 || typeof answer !== 'number' || !Number.isInteger(answer) || answer < 0 || answer >= options.length) {
+      const answer = answerIndex(value.answer, options);
+      if (options.length < 2 || answer === null || answer < 0 || answer >= options.length) {
         return null;
       }
       return { type: 'choice', prompt, options, answer, explain };
     }
     case 'gap': {
       const blanks = prompt.split(BLANK).length - 1;
-      const answers = Array.isArray(value.answers) ? value.answers.map((answer) => clean(answer, MAX_OPTION)) : [];
+      const answers = answersOf(value).map((answer) => clean(answer, MAX_OPTION));
       if (blanks < 1 || answers.length !== blanks || answers.some((answer) => answer.length === 0)) return null;
       return { type: 'gap', prompt, answers, hint: clean(value.hint, MAX_PROMPT), explain };
     }

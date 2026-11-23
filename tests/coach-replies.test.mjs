@@ -138,4 +138,67 @@ test('the coach is told how to write exercises and quick replies, and never to p
   assert.match(system, /"free"/);
   assert.match(system, /counting from 0/);
   assert.match(system, /Never write the answers in the text/);
+  assert.match(system, /Every item has a "type"/);
+});
+
+// What the model really wrote when it was asked for multiple-choice questions: its items have no "type".
+const FENCE = '```';
+const UNTYPED_REPLY = [
+  'Okay, I can help you with that! Here are four multiple-choice questions about prepositions of place.',
+  '',
+  `${FENCE}exercise`,
+  `{"title": "Prepositions of Place", "items": [{"prompt": "The keys are ___ the table. Can you see them?", "options": ["in", "on", "at"], "answer": 1, "explain": "Use 'on' when something is resting on a surface."}, {"prompt": "We usually meet ___ the coffee shop near my office.", "options": ["in", "on", "at"], "answer": 2, "explain": "Use 'at' for a specific location or point."}, {"prompt": "My dog loves to hide ___ my bed when it hears thunder.", "options": ["on", "under", "in"], "answer": 1, "explain": "Use 'under' when something is directly below another object."}, {"prompt": "The bank is ___ the supermarket and the post office.", "options": ["in", "between", "on"], "answer": 1, "explain": "Use 'between' when something is in the middle of two other things."}]}`,
+  FENCE,
+  'I hope these are helpful for your study!',
+  '',
+  `${FENCE}chips`,
+  `["Can I get more questions?", "What are prepositions?", "Let's review this topic."]`,
+  FENCE,
+].join('\n');
+
+test('a real reply whose items have no type is read as the questions it was asked for', () => {
+  const parts = reply.parseCoachReply(UNTYPED_REPLY);
+  assert.deepEqual(
+    parts.map((part) => part.kind),
+    ['text', 'exercise', 'text', 'chips'],
+  );
+  const { exercise } = parts[1];
+  assert.equal(exercise.title, 'Prepositions of Place');
+  assert.deepEqual(exercise.items.map((item) => item.type), ['choice', 'choice', 'choice', 'choice']);
+  assert.deepEqual(exercise.items[0].options, ['in', 'on', 'at']);
+  assert.equal(exercise.items[0].answer, 1);
+  assert.equal(exercise.items[1].answer, 2);
+  assert.equal(exercise.items[0].explain, "Use 'on' when something is resting on a surface.");
+  assert.deepEqual(parts[3].chips, ['Can I get more questions?', 'What are prepositions?', "Let's review this topic."]);
+});
+
+test('an item with no type is read from its fields, and the answer can be a letter or the text of an option', () => {
+  const [exercise] = reply
+    .parseCoachReply(
+      '```exercise\n{"items":[' +
+        '{"prompt":"Pick one","options":["in","on","at"],"answer":"B"},' +
+        '{"prompt":"Pick two","options":["in","on","at"],"answer":"at"},' +
+        '{"prompt":"She ___ home.","answer":"goes"},' +
+        '{"prompt":"Write about your day."}' +
+        ']}\n```',
+    )
+    .map((part) => part.exercise);
+  assert.deepEqual(exercise.items.map((item) => item.type), ['choice', 'choice', 'gap', 'free']);
+  assert.equal(exercise.items[0].answer, 1);
+  assert.equal(exercise.items[1].answer, 2);
+  assert.deepEqual(exercise.items[2].answers, ['goes']);
+});
+
+test('a type is matched by its name, and a name the app does not know leaves the item out', () => {
+  const [exercise] = reply
+    .parseCoachReply(
+      '```exercise\n{"items":[' +
+        '{"type":"Multiple choice","prompt":"Pick","options":["a","b"],"answer":0},' +
+        '{"type":"fill-in","prompt":"I ___ it.","answers":["did"]},' +
+        '{"type":"constructor","prompt":"Not a kind"},' +
+        '{"type":"essay","prompt":"Not a kind either"}' +
+        ']}\n```',
+    )
+    .map((part) => part.exercise);
+  assert.deepEqual(exercise.items.map((item) => item.type), ['choice', 'gap']);
 });
