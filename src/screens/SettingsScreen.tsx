@@ -709,33 +709,35 @@ export function SettingsScreen() {
       {mode === 'supabase' && (
         <>
           <SectionTitle title={t('Account')} />
-          {deviceHasProgress && (
+          <div className="stack">
+            {deviceHasProgress && (
+              <div className="settings-row">
+                <div className="settings-row__body">
+                  <div className="settings-row__title">{t('Progress saved on this device')}</div>
+                  <div className="settings-row__text">
+                    {t('Lessons, scores, sets, your picture and library can be added to your account.')}
+                  </div>
+                </div>
+                <button className="btn btn--ghost btn--sm" onClick={() => setAddOpen(true)}>
+                  {t('Add to my account')}
+                </button>
+              </div>
+            )}
             <div className="settings-row">
               <div className="settings-row__body">
-                <div className="settings-row__title">{t('Progress saved on this device')}</div>
-                <div className="settings-row__text">
-                  {t('Lessons, scores, sets, your picture and library can be added to your account.')}
-                </div>
+                <div className="settings-row__title">{email ?? t('Signed in')}</div>
+                <div className="settings-row__text">{t('Your progress is saved to your account.')}</div>
               </div>
-              <button className="btn btn--ghost btn--sm" onClick={() => setAddOpen(true)}>
-                {t('Add to my account')}
+              <button
+                className="btn btn--ghost btn--sm"
+                onClick={async () => {
+                  await signOut();
+                  navigate('/auth', { replace: true });
+                }}
+              >
+                {t('Sign out')}
               </button>
             </div>
-          )}
-          <div className="settings-row">
-            <div className="settings-row__body">
-              <div className="settings-row__title">{email ?? t('Signed in')}</div>
-              <div className="settings-row__text">{t('Your progress is saved to your account.')}</div>
-            </div>
-            <button
-              className="btn btn--ghost btn--sm"
-              onClick={async () => {
-                await signOut();
-                navigate('/auth', { replace: true });
-              }}
-            >
-              {t('Sign out')}
-            </button>
           </div>
         </>
       )}
