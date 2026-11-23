@@ -1,6 +1,6 @@
 // Speaking to the coach: a press starts a recording, and a second press sends it to be written down. The words come
-// back to the message box, or go straight to the coach in speaking practice. The recording is written down by the
-// OpenAI key, so the button is off without one.
+// back to the message box, or go straight to the coach in speaking practice. The recording is written down by an
+// OpenAI or Gemini key, so the button is off without one.
 import { useEffect, useRef, useState } from 'react';
 import { Mic, Square } from 'lucide-react';
 import { useT } from '../lib/i18n/react';
@@ -88,7 +88,7 @@ export function useVoiceInput(
   return { phase, start, stop, supported };
 }
 
-/** The microphone button. It is off while the words are being written down, or without an OpenAI key. */
+/** The microphone button. It is off while the words are being written down, or without an OpenAI or Gemini key. */
 export function VoiceButton({
   phase,
   supported,
@@ -105,7 +105,7 @@ export function VoiceButton({
   const t = useT();
   const recording = phase === 'recording';
   const label = !enabled
-    ? t('Add an OpenAI key in Settings to speak to your coach.')
+    ? t('Add an OpenAI or Gemini key in Settings to speak to your coach.')
     : recording
       ? t('Stop and send what you said')
       : phase === 'writing'

@@ -48,7 +48,7 @@ export const MESSAGES_PT: Record<string, string> = {
   'Choose a model from the list.': 'Escolha um modelo da lista.',
   'Add an AI key in Settings to use this feature.': 'Adicione uma chave de IA em Configurações para usar este recurso.',
   'Your AI key is missing. Add it again in Settings.': 'Sua chave de IA não está mais salva. Adicione-a de novo em Configurações.',
-  'Add an OpenAI key in Settings to transcribe speaking answers.': 'Adicione uma chave da OpenAI em Configurações para transcrever as respostas faladas.',
+  'Add an OpenAI or Gemini key in Settings to transcribe speaking answers.': 'Adicione uma chave da OpenAI ou do Gemini em Configurações para transcrever as respostas faladas.',
   'No recording was found. Try again.': 'Nenhuma gravação foi encontrada. Tente de novo.',
   'That recording is too long. Try a shorter answer.': 'Esta gravação é longa demais. Tente uma resposta mais curta.',
   'That action is not available right now.': 'Esta ação não está disponível agora.',

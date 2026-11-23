@@ -630,6 +630,43 @@ async function transcribe(key, audio, mime) {
   throw asProviderError('openai', lastError || new Error('Transcription failed.'));
 }
 
+// Gemini hears the recording and writes down its words. The recording comes as WAV, which the renderer makes. Only a
+// model the key cannot use (404) moves on to the next one.
+const GEMINI_TRANSCRIBE_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+const GEMINI_TRANSCRIBE_PROMPT =
+  'Write down exactly the words spoken in this recording, in the language they are spoken in. Write only the words: no labels, no quotation marks and no notes. If there are no words, write nothing.';
+
+async function transcribeWithGemini(key, audio, mime) {
+  const type = String(mime || 'audio/wav').split(';')[0];
+  const body = {
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: GEMINI_TRANSCRIBE_PROMPT }, { inline_data: { mime_type: type, data: Buffer.from(audio).toString('base64') } }],
+      },
+    ],
+    generationConfig: { temperature: 0, maxOutputTokens: 2048, thinkingConfig: { thinkingBudget: 0 } },
+  };
+  let lastError = null;
+  for (const model of GEMINI_TRANSCRIBE_MODELS) {
+    try {
+      const data = await request(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
+        body,
+        timeoutMs: COMPLETION_TIMEOUT_MS,
+      });
+      const candidate = data && Array.isArray(data.candidates) ? data.candidates[0] : null;
+      const parts = candidate && candidate.content && Array.isArray(candidate.content.parts) ? candidate.content.parts : [];
+      return parts.map((part) => (part && typeof part.text === 'string' ? part.text : '')).join('').trim();
+    } catch (error) {
+      lastError = error;
+      if (!error.status || error.status !== 404) break;
+    }
+  }
+  throw asProviderError('gemini', lastError || new Error('Transcription failed.'));
+}
+
 // Speech models answer with audio, not JSON. Their errors are read like any other provider error.
 async function requestBytes(url, { headers = {}, body, timeoutMs = COMPLETION_TIMEOUT_MS } = {}) {
   let response;
@@ -707,4 +744,4 @@ async function speak(provider, key, text, voice) {
   }
 }
 
-module.exports = { PROVIDERS, detectProvider, detectCandidates, deepseekRank, listModels, complete, streamComplete, transcribe, speak };
+module.exports = { PROVIDERS, detectProvider, detectCandidates, deepseekRank, listModels, complete, streamComplete, transcribe, transcribeWithGemini, speak };

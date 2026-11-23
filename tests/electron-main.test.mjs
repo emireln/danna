@@ -195,7 +195,7 @@ test('AI actions need a connected key first, and the key is checked before it is
   assert.equal(await refusal(invoke('ai:complete', { messages: [{ role: 'user', content: 'hi' }] })), 'Add an AI key in Settings to use this feature.');
   assert.equal(await refusal(invoke('ai:models', { provider: 'openai' })), 'Connect this provider first.');
   assert.equal(await refusal(invoke('ai:select', { provider: 'openai', model: 'gpt-4o' })), 'Connect this provider first.');
-  assert.equal(await refusal(invoke('ai:transcribe', { audio: new ArrayBuffer(8), mime: 'audio/webm' })), 'Add an OpenAI key in Settings to transcribe speaking answers.');
+  assert.equal(await refusal(invoke('ai:transcribe', { audio: new ArrayBuffer(8), mime: 'audio/webm' })), 'Add an OpenAI or Gemini key in Settings to transcribe speaking answers.');
   assert.equal(await refusal(invoke('keys:remove', { provider: 'nope' })), 'That AI provider is not supported.');
   assert.equal(await refusal(invoke('keys:add', { key: '   ' })), 'Paste your AI key to connect it.');
   assert.match(await refusal(invoke('keys:add', { key: 'sk-abc def' })), /should not contain spaces/);

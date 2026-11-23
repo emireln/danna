@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { bridge, errorText, type CompletionRequest, type CompletionResult, type StreamedReply } from '../lib/bridge';
-import { tn } from '../lib/i18n';
+import { t, tn } from '../lib/i18n';
+import { recordingToWav } from '../lib/audioWav';
 import { syncAccountKeys, type KeySyncPort } from '../lib/keysync';
 import type { AIConnection, AISelection, Provider } from '../lib/types';
 import { openKey, sealKey } from '../lib/vault';
@@ -22,7 +23,7 @@ interface AIApi {
   selection: AISelection | null;
   /** A model is selected and its key is connected. */
   ready: boolean;
-  /** An OpenAI key is connected, which enables speech-to-text for speaking tasks. */
+  /** An OpenAI or Gemini key is connected, which enables speech-to-text for speaking tasks and the coach's microphone. */
   canTranscribe: boolean;
   /** Signed in, with the vault open: keys added here are saved to the account, sealed. */
   accountKeys: boolean;
@@ -187,7 +188,14 @@ export function AIProvider({ children }: { children: ReactNode }) {
 
   const transcribe = useCallback(async (audio: Blob) => {
     if (!bridge) throw new Error(DESKTOP_ONLY);
-    const { text } = await bridge.ai.transcribe(await audio.arrayBuffer(), audio.type || 'audio/webm');
+    // The recording goes as WAV, which both speech services take. The browser's own format does not reach Gemini.
+    let wav: ArrayBuffer;
+    try {
+      wav = await recordingToWav(audio);
+    } catch {
+      throw new Error(t('That recording could not be read. Try again.'));
+    }
+    const { text } = await bridge.ai.transcribe(wav, 'audio/wav');
     return text;
   }, []);
 
@@ -198,7 +206,7 @@ export function AIProvider({ children }: { children: ReactNode }) {
       connections,
       selection,
       ready: Boolean(selection && connections.some((connection) => connection.provider === selection.provider)),
-      canTranscribe: connections.some((connection) => connection.provider === 'openai'),
+      canTranscribe: connections.some((connection) => connection.provider === 'openai' || connection.provider === 'gemini'),
       accountKeys,
       keysLocked,
       syncError,

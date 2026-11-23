@@ -494,7 +494,7 @@ function SpeakingBody({ question, state, locked, onChange }: SharedProps & { que
         aiHint={
           canTranscribe
             ? t('Feedback appears once the transcript is ready.')
-            : t('Add an OpenAI key in Settings to transcribe speaking. You can still rate yourself.')
+            : t('Add an OpenAI or Gemini key in Settings to transcribe speaking. You can still rate yourself.')
         }
         runAi={runAi}
         onChange={onChange}

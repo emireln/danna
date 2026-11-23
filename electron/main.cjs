@@ -465,11 +465,15 @@ function registerIpc() {
   });
 
   handle('ai:transcribe', async ({ audio, mime }) => {
-    if (!keystore.hasKey('openai')) throw userError('Add an OpenAI key in Settings to transcribe speaking answers.');
+    const openai = keystore.hasKey('openai');
+    if (!openai && !keystore.hasKey('gemini')) throw userError('Add an OpenAI or Gemini key in Settings to transcribe speaking answers.');
     if (!(audio instanceof ArrayBuffer) || audio.byteLength === 0) throw userError('No recording was found. Try again.');
     if (audio.byteLength > 24 * 1024 * 1024) throw userError('That recording is too long. Try a shorter answer.');
     const type = typeof mime === 'string' && /^audio\/[a-z0-9.+-]{1,40}$/i.test(mime) ? mime : 'audio/webm';
-    const text = await ai.transcribe(keystore.getKey('openai'), Buffer.from(audio), type);
+    // OpenAI writes the recording down when its key is connected; otherwise Gemini does.
+    const text = openai
+      ? await ai.transcribe(keystore.getKey('openai'), Buffer.from(audio), type)
+      : await ai.transcribeWithGemini(keystore.getKey('gemini'), Buffer.from(audio), type);
     return { text };
   });
 

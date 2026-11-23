@@ -846,8 +846,8 @@ export const APP_PT: Record<string, string> = {
   'Transcript': 'Transcrição',
   'Recording is optional. You can also rate your own answer below.': 'Gravar é opcional. Você também pode avaliar a sua resposta abaixo.',
   'Feedback appears once the transcript is ready.': 'O feedback aparece quando a transcrição estiver pronta.',
-  'Add an OpenAI key in Settings to transcribe speaking. You can still rate yourself.':
-    'Adicione uma chave da OpenAI em Configurações para transcrever a fala. Você ainda pode se avaliar.',
+  'Add an OpenAI or Gemini key in Settings to transcribe speaking. You can still rate yourself.':
+    'Adicione uma chave da OpenAI ou do Gemini em Configurações para transcrever a fala. Você ainda pode se avaliar.',
   'Get feedback': 'Receber feedback',
   'Get AI feedback': 'Receber feedback da IA',
   'Rate it myself': 'Avaliar eu mesmo',
@@ -1338,7 +1338,8 @@ export const APP_PT: Record<string, string> = {
   'Copy': 'Copiar',
   'Write it again': 'Escrever de novo',
   'Edit and send again': 'Editar e enviar de novo',
-  'Add an OpenAI key in Settings to speak to your coach.': 'Adicione uma chave da OpenAI em Configurações para falar com seu coach.',
+  'Add an OpenAI or Gemini key in Settings to speak to your coach.': 'Adicione uma chave da OpenAI ou do Gemini em Configurações para falar com seu coach.',
+  'That recording could not be read. Try again.': 'Não foi possível ler essa gravação. Tente de novo.',
   'Stop and send what you said': 'Parar e enviar o que você disse',
   'Writing down what you said…': 'Escrevendo o que você disse…',
   'Speak to your coach': 'Fale com seu coach',
