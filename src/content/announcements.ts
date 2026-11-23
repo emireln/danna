@@ -16,6 +16,22 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     created_at: '2026-11-01T09:00:00Z',
   },
   {
+    id: 'local-release-238',
+    kind: 'release_note',
+    title: 'danna 2.3.8',
+    body: [
+      '- Speaking with a Gemini key: the microphone works when Gemini is your only AI key. Gemini writes down what you say, for the coach and for speaking practice.',
+      '- Fixes: the coach’s multiple-choice sets show as cards again, and the Account rows in Settings have room between them.',
+    ].join('\n'),
+    version: '2.3.8',
+    image_url: null,
+    cta_label: null,
+    cta_url: null,
+    accent: 'blue',
+    priority: 0,
+    created_at: '2026-11-23T13:00:00Z',
+  },
+  {
     id: 'local-release-230',
     kind: 'release_note',
     title: 'danna 2.3.0',

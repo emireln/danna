@@ -1,4 +1,4 @@
-// The release notes in Portuguese (2.1.0 and 2.2.0): each key is a bullet of the What's new page, in the same words as
+// The release notes in Portuguese (2.1.0 to 2.3.8): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
   'Reminders: switch them on in Settings. danna can remind you about your streak, today’s goal, cards due for review, an exam that is close, or a longer break. They arrive only while danna is in the background, from the time you choose, and at most one a day.':
@@ -35,4 +35,8 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
     'Coaches realistas: Ana, Leo e Mia são pessoas em 3D com aparência real, mostradas da cabeça para cima. A boca acompanha a voz, e eles piscam e olham para você enquanto falam.',
   'Privacy: danna asks for your consent once on each device. A talk ends when danna is hidden, and it is kept in your coach chats only when you save it.':
     'Privacidade: o danna pede o seu consentimento uma vez em cada aparelho. Uma conversa termina quando o danna fica oculto, e só fica nas suas conversas com o coach quando você a salva.',
+  'Speaking with a Gemini key: the microphone works when Gemini is your only AI key. Gemini writes down what you say, for the coach and for speaking practice.':
+    'Falar com uma chave do Gemini: o microfone funciona quando o Gemini é a sua única chave de IA. O Gemini transcreve o que você fala, para o coach e para a prática de fala.',
+  'Fixes: the coach’s multiple-choice sets show as cards again, and the Account rows in Settings have room between them.':
+    'Correções: os conjuntos de múltipla escolha do coach voltam a aparecer como cartões, e as linhas de Conta nas Configurações têm espaço entre elas.',
 };
