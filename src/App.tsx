@@ -4,6 +4,7 @@ import { AppShell } from './components/Shell';
 import { TitleBar } from './components/TitleBar';
 import { Notice } from './components/ui';
 import { bridge } from './lib/bridge';
+import { LIVE_TALK_ENABLED } from './lib/features';
 import { hasWelcomed } from './lib/session';
 import { AuthProvider, useAuth } from './state/auth';
 import { AIProvider } from './state/ai';
@@ -146,7 +147,7 @@ function AppRoutes() {
         <Route path="review" element={<ReviewScreen />} />
         <Route path="exam" element={<ExamScreen />} />
         <Route path="coach" element={<CoachScreen />} />
-        <Route path="coach/live" element={<LiveScreen />} />
+        <Route path="coach/live" element={LIVE_TALK_ENABLED ? <LiveScreen /> : <Navigate to="/coach" replace />} />
         <Route path="report/:id" element={<ReportScreen />} />
         <Route path="friends" element={<FriendsScreen />} />
         <Route path="profile" element={<ProfileScreen />} />

@@ -1,5 +1,7 @@
 # Talk live with the coach
 
+> **Switched off for now.** `LIVE_TALK_ENABLED` in `src/lib/features.ts` is false: the coach card and `/coach/live` are hidden until the talk is ready. The code stays in place.
+
 Status: built (phase 1). Checked against the live API on 2026-11-21, and the opt-in live test passed again on 2026-11-24 with the same model, `gemini-3.8-live`. The coach has been drawn by TalkingHead since 2026-11-24.
 
 ## Goal

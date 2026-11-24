@@ -3,6 +3,7 @@
 import type { ComponentType } from 'react';
 import { BookOpen, ListChecks, Languages, MessageCircle, Mic, PenLine, Radio, RefreshCw, Target, Users } from 'lucide-react';
 import { coachMode, COACH_MODES, type CoachModeId, type ModeIcon } from '../lib/coachModes';
+import { LIVE_TALK_ENABLED } from '../lib/features';
 import { roleplayModeId, SCENARIOS } from '../lib/scenarios';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
@@ -114,7 +115,7 @@ export function CoachHome({
           <span className="mode-card__title">{t(freeMode.title)}</span>
           <span className="mode-card__blurb">{t(freeMode.blurb)}</span>
         </button>
-        {COACH_MODES.filter((mode) => mode.id !== 'chat').map((mode) => {
+        {COACH_MODES.filter((mode) => mode.id !== 'chat' && (mode.id !== 'live' || LIVE_TALK_ENABLED)).map((mode) => {
           const Icon = ICONS[mode.icon];
           return (
             <button key={mode.id} type="button" className="mode-card" onClick={() => onMode(mode.id)} disabled={busy}>
