@@ -1,6 +1,15 @@
-// The release notes in Portuguese (2.1.0 to 2.3.8): each key is a bullet of the What's new page, in the same words as
+// The release notes in Portuguese (2.1.0 to 2.3.14): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
+  'Forgot your password? The sign-in screen has a link that emails you a reset link. The link opens the danna website, where you choose a new password.':
+    'Esqueceu a senha? A tela de entrada tem um link que envia por e-mail um link de redefinição. O link abre o site do danna, onde você escolhe uma nova senha.',
+  'Talk live is switched off for now while it is reworked. The coach card is hidden, and the rest of the coach works as before.':
+    'O talk live está desligado por enquanto, enquanto passa por uma reformulação. O cartão do coach fica oculto, e o resto do coach funciona como antes.',
+  'A new logo: a white mark on a transparent background, in the app and on the platform logos.':
+    'Um novo logo: uma marca branca sobre fundo transparente, no app e nos logos das plataformas.',
+  'Talk live: the coach is drawn in 3D with TalkingHead. Its mouth follows the words of each reply, and you can ask it to raise a hand, give a thumbs up, say OK or shrug.':
+    'Talk live: o coach é desenhado em 3D com o TalkingHead. A boca acompanha as palavras de cada resposta, e você pode pedir que ele levante a mão, dê um joinha, diga OK ou encolha os ombros.',
+  'Ana is the only coach. Leo and Mia have been removed.': 'Ana é o único coach. Leo e Mia foram removidos.',
   'Reminders: switch them on in Settings. danna can remind you about your streak, today’s goal, cards due for review, an exam that is close, or a longer break. They arrive only while danna is in the background, from the time you choose, and at most one a day.':
     'Lembretes: ative-os nas Configurações. O danna pode lembrar você da sua sequência, da meta de hoje, dos cartões para revisar, de uma prova que está perto ou de uma pausa longa. Eles chegam só enquanto o danna está em segundo plano, no horário que você escolher, e no máximo um por dia.',
   'Sounds: a right and a wrong answer, a finished lesson, a coach reply and a reminder each have a short, soft tone. Switch each one off in Settings, set the volume, or listen to it first.':
