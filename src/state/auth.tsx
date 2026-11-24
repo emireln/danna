@@ -21,6 +21,8 @@ interface AuthApi {
   unlockAccountKeys: (password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<{ confirmEmail: boolean }>;
+  /** Sends the link that lets the person choose a new password. Throws if the request fails. */
+  requestPasswordReset: (email: string) => Promise<void>;
   useOffline: () => void;
   /** Leaves the online account for this device. keepCopy copies progress first. */
   moveToDevice: (keepCopy: boolean) => Promise<void>;
@@ -173,6 +175,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [enter, openVault],
   );
 
+  // The link goes to the site address set for the project (the danna website), so the app needs no address of its own.
+  const requestPasswordReset = useCallback(async (address: string) => {
+    const sb = requireSupabase();
+    const { error } = await sb.auth.resetPasswordForEmail(address.trim());
+    if (error) throw error;
+  }, []);
+
   const unlockAccountKeys = useCallback(
     async (password: string) => {
       await unlockVault(password);
@@ -223,11 +232,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       unlockAccountKeys,
       signIn,
       signUp,
+      requestPasswordReset,
       useOffline,
       moveToDevice,
       signOut,
     }),
-    [status, mode, backend, email, vault, vaultError, unlockAccountKeys, signIn, signUp, useOffline, moveToDevice, signOut],
+    [status, mode, backend, email, vault, vaultError, unlockAccountKeys, signIn, signUp, requestPasswordReset, useOffline, moveToDevice, signOut],
   );
 
   return <AuthContext.Provider value={api}>{children}</AuthContext.Provider>;

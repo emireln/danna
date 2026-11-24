@@ -297,6 +297,13 @@ export const APP_PT: Record<string, string> = {
   'At least 8 characters': 'Pelo menos 8 caracteres',
   'Hide password': 'Ocultar senha',
   'Show password': 'Mostrar senha',
+  'Reset your password': 'Redefina a sua senha',
+  'We will email a link. It opens in your browser, where you choose a new password.':
+    'Enviaremos um link por e-mail. Ele abre no navegador, onde você escolhe uma nova senha.',
+  'Send reset link': 'Enviar link de redefinição',
+  'Forgot your password?': 'Esqueceu a senha?',
+  'If there is an account for this email, we sent a link to choose a new password. It can take a few minutes to arrive.':
+    'Se houver uma conta com este e-mail, enviamos um link para escolher uma nova senha. Ele pode levar alguns minutos para chegar.',
   'or': 'ou',
   'Bring your progress along?': 'Levar o seu progresso junto?',
   'Switch without copying': 'Trocar sem copiar',

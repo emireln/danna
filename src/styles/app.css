@@ -1134,6 +1134,29 @@
     text-align: center;
   }
 
+  /* A text button inside a form, such as "Forgot your password?" */
+  .link-button {
+    align-self: flex-end;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--primary-700);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .link-button:hover:not(:disabled) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .link-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
   /* ---------- Today (recommended study) ---------- */
   .today__title {
     display: flex;

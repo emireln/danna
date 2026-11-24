@@ -22,13 +22,13 @@ export function AuthScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const t = useT();
-  const { status, mode: accountMode, signIn, signUp, useOffline } = useAuth();
+  const { status, mode: accountMode, signIn, signUp, requestPasswordReset, useOffline } = useAuth();
   const { refresh, refreshSocial } = useAppData();
   const routeState = (location.state ?? {}) as AuthRouteState;
   const next = returnPath(routeState.next ?? routeState.from);
   const online = onlineAvailable();
 
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [mode, setMode] = useState<'signin' | 'signup' | 'forgot'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -50,6 +50,18 @@ export function AuthScreen() {
     setInfo(null);
     if (!/^\S+@\S+\.\S+$/.test(email)) {
       setError(t('Enter a valid email address.'));
+      return;
+    }
+    if (mode === 'forgot') {
+      setBusy(true);
+      try {
+        await requestPasswordReset(email);
+        setInfo(t('If there is an account for this email, we sent a link to choose a new password. It can take a few minutes to arrive.'));
+      } catch (caught) {
+        setError(t(errorText(caught)));
+      } finally {
+        setBusy(false);
+      }
       return;
     }
     if (password.length < 8) {
@@ -105,8 +117,12 @@ export function AuthScreen() {
         <div className="auth-hero">
           <Wordmark className="wordmark--xl" />
           <div>
-            <h1>{mode === 'signin' ? t('Welcome back') : t('Create your account')}</h1>
-            <p className="muted mt-2">{t('Your progress syncs across your devices.')}</p>
+            <h1>{mode === 'forgot' ? t('Reset your password') : mode === 'signin' ? t('Welcome back') : t('Create your account')}</h1>
+            <p className="muted mt-2">
+              {mode === 'forgot'
+                ? t('We will email a link. It opens in your browser, where you choose a new password.')
+                : t('Your progress syncs across your devices.')}
+            </p>
           </div>
         </div>
 
@@ -125,16 +141,18 @@ export function AuthScreen() {
           </>
         ) : (
           <>
-            <Tabs
-              block
-              label={t('Account')}
-              value={mode}
-              onChange={setMode}
-              items={[
-                { value: 'signin', label: t('Sign in') },
-                { value: 'signup', label: t('Create account') },
-              ]}
-            />
+            {mode !== 'forgot' && (
+              <Tabs
+                block
+                label={t('Account')}
+                value={mode}
+                onChange={setMode}
+                items={[
+                  { value: 'signin', label: t('Sign in') },
+                  { value: 'signup', label: t('Create account') },
+                ]}
+              />
+            )}
 
             <form className="stack" onSubmit={submit} noValidate>
               <Field label={t('Email')}>
@@ -161,35 +179,67 @@ export function AuthScreen() {
                   />
                 </Field>
               )}
-              <Field label={t('Password')}>
-                <span className="input-wrap">
-                  <input
-                    className="input"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-                    value={password}
-                    disabled={busy}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder={t('At least 8 characters')}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn--icon"
-                    onClick={() => setShowPassword((value) => !value)}
-                    aria-label={showPassword ? t('Hide password') : t('Show password')}
-                  >
-                    {showPassword ? <EyeOff /> : <Eye />}
-                  </button>
-                </span>
-              </Field>
+              {mode !== 'forgot' && (
+                <Field label={t('Password')}>
+                  <span className="input-wrap">
+                    <input
+                      className="input"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                      value={password}
+                      disabled={busy}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder={t('At least 8 characters')}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn--icon"
+                      onClick={() => setShowPassword((value) => !value)}
+                      aria-label={showPassword ? t('Hide password') : t('Show password')}
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                  </span>
+                </Field>
+              )}
+              {mode === 'signin' && (
+                <button
+                  type="button"
+                  className="link-button"
+                  disabled={busy}
+                  onClick={() => {
+                    setMode('forgot');
+                    setPassword('');
+                    setError(null);
+                    setInfo(null);
+                  }}
+                >
+                  {t('Forgot your password?')}
+                </button>
+              )}
 
               {error && <Notice tone="error">{error}</Notice>}
               {info && <Notice tone="info">{info}</Notice>}
 
               <button className="btn btn--primary btn--block" type="submit" disabled={busy}>
-                {busy ? <Spinner /> : mode === 'signin' ? t('Sign in') : t('Create account')}
+                {busy ? <Spinner /> : mode === 'forgot' ? t('Send reset link') : mode === 'signin' ? t('Sign in') : t('Create account')}
               </button>
             </form>
+
+            {mode === 'forgot' && (
+              <button
+                className="btn btn--ghost btn--block"
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setMode('signin');
+                  setError(null);
+                  setInfo(null);
+                }}
+              >
+                {t('Back to sign in')}
+              </button>
+            )}
 
             <div className="divider-row">
               <span className="divider" />

@@ -239,6 +239,7 @@ const PATTERNS: Array<[RegExp, string]> = [
   [/already registered|already been registered|user already exists/i, 'That email already has an account. Try signing in instead.'],
   [/at least 8 characters|password should be/i, 'Use a password with at least 8 characters.'],
   [/rate limit|too many requests|\b429\b/i, 'Too many attempts. Please wait a moment and try again.'],
+  [/for security purposes|can only request this after/i, 'Too many attempts. Please wait a moment and try again.'],
   [/failed to fetch|network ?error|network request failed|timed? ?out|enotfound|econn|offline/i, 'We could not connect. Check your internet connection and try again.'],
   [/duplicate key|already taken|23505/i, 'That name is already taken. Try another one.'],
   [/maximum allowed size|payload too large|exceeded/i, 'That picture is too large. Choose a smaller one.'],
