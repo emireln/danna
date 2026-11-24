@@ -1,10 +1,11 @@
 // Talk live with the coach: a real-time voice conversation with a character that answers as it speaks. With a Gemini key
 // the voice is Gemini Live's own. With any other key, the coach writes with that key and the app's voice, chosen in
 // Settings, reads. The transcript can be kept in the coach's chats when the talk ends.
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUp, Mic, MicOff, PhoneOff, Save, Square } from 'lucide-react';
-import { CoachFigure } from '../avatar/Avatar';
+import { type AvatarHead } from '../avatar/avatarHead';
+import { CoachStage } from '../avatar/CoachStage';
 import { COACHES, coachOf, type CoachId } from '../avatar/characters';
 import { Select } from '../components/Pickers';
 import { useVoiceInput, VoiceButton } from '../components/VoiceInput';
@@ -63,6 +64,9 @@ export function LiveScreen() {
   const [draft, setDraft] = useState('');
   const [holding, setHolding] = useState(false);
   const [saving, setSaving] = useState(false);
+  // The coach as it is drawn now, or null while it loads. A talk needs it, and so do the gestures.
+  const [avatar, setAvatar] = useState<AvatarHead | null>(null);
+  const onAvatar = useCallback((next: AvatarHead | null) => setAvatar(next), []);
 
   // The conversation lives as long as the screen does. Its replies always use the AI key as it is now.
   const replySource = useRef(ai.startReply);
@@ -115,8 +119,6 @@ export function LiveScreen() {
   const active = live.status !== 'idle' && !live.ended;
   const details: Record<CoachId, string> = {
     ana: t('A young woman in a casual outfit'),
-    leo: t('A man in a casual sweater'),
-    mia: t('A woman in a blue shirt'),
   };
 
   const facts = useMemo(
@@ -154,7 +156,7 @@ export function LiveScreen() {
 
   // The talk is started inside the click, so the sound is allowed to play.
   const beginTalk = () => {
-    if (!engine) return;
+    if (!engine || !avatar) return;
     const instructions = liveInstructions({ persona: coach.name, facts, language: lang === 'pt' ? 'pt' : 'en' });
     void conversation.start({ engine, instructions, voice, appVoice, turnMode });
   };
@@ -259,13 +261,27 @@ export function LiveScreen() {
       {live.error && <Notice tone="error">{live.error}</Notice>}
 
       <section className="live__stage" aria-label={t('Your coach')}>
-        <CoachFigure coach={coach} conversation={conversation} />
+        <CoachStage coach={coach} conversation={conversation} lang={lang === 'pt' ? 'pt' : 'en'} onAvatar={onAvatar} />
         <div className="live__caption">
           <p className="live__status" role="status" aria-live="polite">
             <span className={`live__dot live__dot--${live.status}`} aria-hidden="true" />
             {statusLabel}
           </p>
           {live.notice && <p className="live__notice">{live.notice}</p>}
+        </div>
+        <div className="live__gestures" role="group" aria-label={t('Gestures')}>
+          <button type="button" className="btn btn--ghost btn--sm" disabled={!avatar} onClick={() => avatar?.gesture('handup')}>
+            {t('Raise a hand')}
+          </button>
+          <button type="button" className="btn btn--ghost btn--sm" disabled={!avatar} onClick={() => avatar?.gesture('thumbup')}>
+            {t('Thumbs up')}
+          </button>
+          <button type="button" className="btn btn--ghost btn--sm" disabled={!avatar} onClick={() => avatar?.gesture('ok')}>
+            {t('OK')}
+          </button>
+          <button type="button" className="btn btn--ghost btn--sm" disabled={!avatar} onClick={() => avatar?.gesture('shrug')}>
+            {t('Shrug')}
+          </button>
         </div>
       </section>
 
@@ -403,12 +419,12 @@ export function LiveScreen() {
                   ? t('Talking sends your voice to Google while the talk runs, so that the coach can answer. Use headphones for the best result. Nothing is saved unless you save the talk at the end.')
                   : t('Talking sends your words to your AI provider while the talk runs, so that the coach can answer. Use headphones for the best result. Nothing is saved unless you save the talk at the end.')}
               </p>
-              <button type="button" className="btn btn--primary btn--block" onClick={accept} disabled={!engine}>
+              <button type="button" className="btn btn--primary btn--block" onClick={accept} disabled={!engine || !avatar}>
                 {t('I understand, start talking')}
               </button>
             </div>
           ) : (
-            <button type="button" className="btn btn--primary btn--block" onClick={start} disabled={!engine}>
+            <button type="button" className="btn btn--primary btn--block" onClick={start} disabled={!engine || !avatar}>
               {live.ended ? t('Talk again') : t('Start talking')}
             </button>
           )}
@@ -416,7 +432,7 @@ export function LiveScreen() {
       )}
 
       <p className="live__credit">
-        {t('The coaches are open models: Ana by MakeHuman (CC0), Leo and Mia by Microsoft RocketBox (MIT).')}
+        {t('The coach is drawn with TalkingHead (MIT). Ana is made with MakeHuman (CC0).')}
       </p>
     </main>
   );

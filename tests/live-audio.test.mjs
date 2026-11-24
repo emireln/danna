@@ -1,6 +1,6 @@
-// Tests the sound and text helpers of the live conversation: the sound formats, the reading of a voice (loudness, pitch,
-// bands and the mouth), the cutting of a reply into sentences, the instructions, and the microphone worklet, which runs
-// here in a sandbox with fake audio globals.
+// Tests the sound of the live talk: the sound formats (pcm.ts), the sentences of a reply as they are written
+// (sentences.ts), the instructions of the coach (prompt.ts), and the microphone worklet that turns the learner's voice
+// into frames (public/mic-worklet.js). The coach's face and lip-sync are TalkingHead's, tested in live-voice.test.mjs.
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
@@ -12,14 +12,12 @@ import vm from 'node:vm';
 const root = fileURLToPath(new URL('..', import.meta.url));
 let server;
 let pcm;
-let analysis;
 let sentences;
 let prompt;
 
 before(async () => {
   server = await createServer({ root, configFile: false, logLevel: 'silent', appType: 'custom', server: { middlewareMode: true, hmr: false } });
   pcm = await server.ssrLoadModule('/src/lib/live/pcm.ts');
-  analysis = await server.ssrLoadModule('/src/lib/live/analysis.ts');
   sentences = await server.ssrLoadModule('/src/lib/live/sentences.ts');
   prompt = await server.ssrLoadModule('/src/lib/live/prompt.ts');
 });
@@ -39,52 +37,6 @@ test('the sound formats convert both ways, clamped, little-endian, and read a vi
   assert.equal(pcm.pcm16ToFloat(new Uint8Array([1, 0, 9])).length, 1, 'a trailing odd byte is left out');
   const bigger = new Uint8Array([9, 9, 0, 64, 9]);
   assert.ok(Math.abs(pcm.pcm16ToFloat(bigger.subarray(2, 4))[0] - 0.5) < 1e-4);
-});
-
-test('loudness reads speech, and silence is silent', () => {
-  assert.equal(analysis.loudnessOf(new Float32Array(480)), 0);
-  const loud = analysis.loudnessOf(sine(200, 16000, 0.1, 0.5));
-  assert.ok(loud > 0.6 && loud <= 1, `a loud sine reads ${loud}`);
-  assert.ok(analysis.loudnessOf(sine(200, 16000, 0.1, 0.005)) < 0.02, 'a very quiet sound reads as quiet');
-});
-
-test('the pitch of a steady voice is found, and silence has none', () => {
-  const rate = 24000;
-  for (const hz of [110, 180, 220, 300]) {
-    const found = analysis.pitchOf(sine(hz, rate, 1024 / rate, 0.4), rate);
-    assert.ok(Math.abs(found - hz) / hz < 0.03, `${hz} Hz reads ${found} Hz`);
-  }
-  assert.equal(analysis.pitchOf(new Float32Array(1024), rate), 0);
-});
-
-test('the energy of a sound sits in its bands', () => {
-  const binHz = 24000 / 1024;
-  const single = (hz) => {
-    const bins = new Uint8Array(512);
-    bins[Math.round(hz / binHz)] = 255;
-    return bins;
-  };
-  const low = analysis.bandsOf(single(200), binHz);
-  assert.ok(low.low > low.mid && low.low > low.high);
-  const high = analysis.bandsOf(single(3000), binHz);
-  assert.ok(high.high > high.low && high.high > high.mid);
-});
-
-test('the mouth opens with the voice, takes the shape of its energy, and closes when the voice stops', () => {
-  assert.deepEqual(analysis.mouthFor(analysis.SILENCE, analysis.CLOSED_MOUTH, 0.1), { open: 0, round: 0, wide: 0 });
-  const round = { level: 0.2, pitch: 0, low: 0.5, mid: 0.1, high: 0.05 };
-  const wide = { level: 0.2, pitch: 0, low: 0.05, mid: 0.1, high: 0.5 };
-  let roundMouth = analysis.CLOSED_MOUTH;
-  let wideMouth = analysis.CLOSED_MOUTH;
-  for (let i = 0; i < 20; i += 1) {
-    roundMouth = analysis.mouthFor(round, roundMouth, 0.02);
-    wideMouth = analysis.mouthFor(wide, wideMouth, 0.02);
-  }
-  assert.ok(roundMouth.open > 0.5 && roundMouth.round > roundMouth.wide, JSON.stringify(roundMouth));
-  assert.ok(wideMouth.wide > wideMouth.round, JSON.stringify(wideMouth));
-  let closing = roundMouth;
-  for (let i = 0; i < 60; i += 1) closing = analysis.mouthFor(analysis.SILENCE, closing, 0.02);
-  assert.ok(closing.open < 0.05, `the mouth closes, now ${closing.open}`);
 });
 
 test('a reply is cut into sentences as it is written, and the rest waits for more', () => {

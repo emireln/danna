@@ -3,15 +3,14 @@
 //    process keeps the key.
 //  - the typed engine uses the learner's text provider (whichever key they set up) and reads each sentence with the app's
 //    own voice, the one chosen in Settings. It is the way to talk with any key that has no live voice.
-// Both keep the same transcript and drive the same character.
+// Both keep the same transcript and speak through the same coach (the voice attached by the stage, src/avatar).
 import type { ReplyStream } from '../../state/ai';
 import { errorText, type CompletionRequest, type DannaBridge, type LiveEvent, type SpeechChunk } from '../bridge';
 import { t } from '../i18n';
 import type { ChatMessage } from '../types';
-import { SILENCE, type SoundFrame } from './analysis';
 import { openMicrophone as microphone, type Microphone } from './mic';
-import { createPlayer as makePlayer, type Player } from './player';
 import { takeSentences, toSpeech } from './sentences';
+import type { LiveVoice } from './voice';
 
 export type LiveEngine = 'gemini' | 'typed';
 export type LiveStatus = 'idle' | 'connecting' | 'listening' | 'thinking' | 'speaking' | 'ended';
@@ -56,8 +55,10 @@ export interface LiveStartOptions {
 export interface LiveConversation {
   snapshot: () => LiveState;
   subscribe: (listener: () => void) => () => void;
-  /** The sound now: the coach's voice, and how loud the learner is. The character reads it every frame. */
-  sound: () => { coach: SoundFrame; user: number };
+  /** The coach's voice, once the coach is drawn. A talk cannot start without it. */
+  attachVoice: (voice: LiveVoice) => void;
+  /** The coach is gone. A talk in progress ends, and a new one needs another coach. */
+  detachVoice: () => void;
   start: (options: LiveStartOptions) => Promise<void>;
   /** A typed message. It interrupts the coach, if the coach is speaking. */
   sendText: (text: string) => Promise<void>;
@@ -74,8 +75,7 @@ export interface LiveDependencies {
   /** The desktop bridge. Null in a browser, where a talk cannot start. */
   bridge: DannaBridge | null;
   startReply: (request: CompletionRequest, onDelta: (piece: string) => void) => ReplyStream;
-  openMicrophone?: (onFrame: (frame: ArrayBuffer, level: number) => void, sending: () => boolean) => Promise<Microphone>;
-  createPlayer?: () => Player;
+  openMicrophone?: (onFrame: (frame: ArrayBuffer) => void, sending: () => boolean) => Promise<Microphone>;
 }
 
 /** A reply is short: a few sentences, as a talk needs. */
@@ -95,11 +95,12 @@ const IDLE: LiveState = {
   ended: false,
 };
 
-/** One sentence of the coach's voice, made by the app's voice. Its pieces arrive by id and play in order. */
+/** One sentence of the coach's voice, made by the app's voice. Its pieces arrive by id and are spoken in order. */
 interface Clip {
   id: string;
   parts: Uint8Array[];
-  pushed: number;
+  /** The words the pieces say, for the lip-sync. */
+  text: string;
   done: boolean;
 }
 
@@ -110,9 +111,8 @@ interface Session {
   closed: boolean;
   /** The Gemini session was opened, so it must be closed with this talk. */
   started: boolean;
-  player: Player | null;
+  voice: LiveVoice | null;
   mic: Microphone | null;
-  micLevel: number;
   unsubscribe: Array<() => void>;
   lastError: string | null;
   // Typed engine.
@@ -144,10 +144,10 @@ function reasonText(reason: string): string {
 
 export function createLiveConversation(deps: LiveDependencies): LiveConversation {
   const openMic = deps.openMicrophone ?? microphone;
-  const makeVoice = deps.createPlayer ?? makePlayer;
   let state: LiveState = IDLE;
   const listeners = new Set<() => void>();
   let session: Session | null = null;
+  let attached: LiveVoice | null = null;
   let lineCounter = 0;
   let replyCounter = 0;
   let muted = false;
@@ -188,17 +188,17 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
 
   /** The status of the typed engine: speaking while a voice plays or waits, thinking while a reply is written. */
   const settleTyped = (current: Session): void => {
-    if (current.player?.busy() || current.playhead < current.clips.length) setStatus('speaking');
+    if (current.voice?.busy() || current.playhead < current.clips.length) setStatus('speaking');
     else if (current.reply) setStatus('thinking');
     else setStatus('listening');
   };
 
-  /** Plays the clips in order: a clip's pieces go to the player only when every clip before it has finished. */
+  /** Speaks the sentences in order: a sentence goes to the voice only when it is whole, and after every one before it. */
   const pump = (current: Session): void => {
     while (current.playhead < current.clips.length) {
       const clip = current.clips[current.playhead];
-      while (clip.pushed < clip.parts.length) current.player?.pushFile(clip.parts[clip.pushed++]);
       if (!clip.done) break;
+      current.voice?.speakClip(clip.parts, clip.text);
       current.playhead += 1;
     }
     settleTyped(current);
@@ -209,7 +209,7 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
     const words = toSpeech(sentence);
     const api = current.bridge;
     if (!words || !api) return;
-    const clip: Clip = { id: randomId(), parts: [], pushed: 0, done: false };
+    const clip: Clip = { id: randomId(), parts: [], text: words, done: false };
     current.clips.push(clip);
     current.clipById.set(clip.id, clip);
     api.speech
@@ -247,7 +247,7 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
     current.clips = [];
     current.clipById.clear();
     current.playhead = 0;
-    current.player?.clear();
+    current.voice?.clear();
   };
 
   const sendTyped = (current: Session, text: string): void => {
@@ -318,25 +318,28 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
         setStatus('listening');
         return;
       case 'audio':
-        current.player?.pushPcm(event.data);
+        current.voice?.pushPcm(event.data);
         setStatus('speaking');
         return;
       case 'transcript':
         addLine(event.role === 'user' ? 'user' : 'coach', event.text);
+        // The words the model says drive the lip-sync. The learner's words do not move the coach.
+        if (event.role !== 'user') current.voice?.pushWords(event.text);
         return;
       case 'interrupted':
-        current.player?.clear();
+        current.voice?.clear();
         closeLines();
         setStatus('listening');
         return;
       case 'turn-complete':
         closeLines();
-        if (!current.player?.busy()) setStatus('listening');
+        current.voice?.endTurn();
+        if (!current.voice?.busy()) setStatus('listening');
         return;
       case 'activity':
         publish({ userSpeaking: event.speaking });
         if (event.speaking) setStatus('listening');
-        else if (!current.player?.busy()) setStatus('thinking');
+        else if (!current.voice?.busy()) setStatus('thinking');
         return;
       case 'go-away':
         note(t('The connection is being renewed. The talk goes on.'));
@@ -368,16 +371,16 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
 
   // ----- shared -----
 
-  /** Frees what the talk holds: the microphone, the voice, the listeners and the engine's session. */
+  /** Frees what the talk holds: the microphone, the voice, the listeners and the engine's session. The face stays. */
   const teardown = (current: Session): void => {
     if (current.closed) return;
     current.closed = true;
     for (const off of current.unsubscribe.splice(0)) off();
     current.mic?.stop();
     current.mic = null;
-    current.player?.close();
-    current.player = null;
     if (current.engine === 'typed') cancelTyped(current);
+    current.voice?.end();
+    current.voice = null;
     if (current.engine === 'gemini' && current.started) void current.bridge?.live.stop().catch(() => undefined);
   };
 
@@ -396,11 +399,15 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
   };
 
   const startGemini = async (current: Session, api: DannaBridge, options: LiveStartOptions): Promise<void> => {
-    // The voice is made first, so the learner's click is what allows the sound to play.
-    current.player = makeVoice();
-    current.player.onIdle(() => {
-      if (session === current && state.status === 'speaking') setStatus('listening');
-    });
+    // The voice starts first, inside the learner's click, so the sound is allowed to play.
+    const voice = current.voice;
+    if (!voice) return;
+    current.unsubscribe.push(
+      voice.onIdle(() => {
+        if (session === current && state.status === 'speaking') setStatus('listening');
+      }),
+    );
+    void voice.begin('gemini');
     current.unsubscribe.push(api.live.onEvent((event) => onGeminiEvent(current, event)));
     let started: { started: true; model: string };
     try {
@@ -423,10 +430,7 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
     publish({ model: started.model });
     try {
       const mic = await openMic(
-        (frame, level) => {
-          current.micLevel = level;
-          api.live.sendAudio(frame);
-        },
+        (frame) => api.live.sendAudio(frame),
         () => !muted && (options.turnMode !== 'manual' || talking),
       );
       if (current.closed) {
@@ -440,10 +444,14 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
   };
 
   const startTyped = (current: Session): void => {
-    current.player = makeVoice();
-    current.player.onIdle(() => {
-      if (session === current) settleTyped(current);
-    });
+    const voice = current.voice;
+    if (!voice) return;
+    current.unsubscribe.push(
+      voice.onIdle(() => {
+        if (session === current) settleTyped(current);
+      }),
+    );
+    void voice.begin('typed');
     if (current.bridge) current.unsubscribe.push(current.bridge.speech.onChunk((chunk) => onSpeechChunk(current, chunk)));
     setStatus('listening');
   };
@@ -456,9 +464,8 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
       bridge: deps.bridge,
       closed: false,
       started: false,
-      player: null,
+      voice: attached,
       mic: null,
-      micLevel: 0,
       unsubscribe: [],
       lastError: null,
       reply: null,
@@ -471,6 +478,10 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
     muted = false;
     talking = false;
     publish({ ...IDLE, status: 'connecting', engine: options.engine, muted: false });
+    if (!current.voice) {
+      fail(current, t('The coach is still getting ready. Try again in a moment.'));
+      return;
+    }
     const api = deps.bridge;
     if (!api) {
       fail(current, t('Talk live works in the danna desktop app.'));
@@ -488,12 +499,12 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
         listeners.delete(listener);
       };
     },
-    sound() {
-      const current = session;
-      return {
-        coach: current?.player?.sound() ?? SILENCE,
-        user: current && !muted ? current.micLevel : 0,
-      };
+    attachVoice(voice) {
+      attached = voice;
+    },
+    detachVoice() {
+      attached = null;
+      stopSession(true);
     },
     start,
     async sendText(text) {
@@ -512,7 +523,7 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
         settleTyped(current);
         return;
       }
-      current.player?.clear();
+      current.voice?.clear();
       closeLines();
       setStatus('listening');
     },

@@ -1,4 +1,4 @@
-// Tests the live conversation's behaviour with fakes for the desktop bridge, the microphone, the voice player and the text
+// Tests the live conversation's behaviour with fakes for the desktop bridge, the microphone, the coach's voice and the text
 // reply: the Gemini engine (its states, the transcript, the microphone, muting, manual turns, endings and errors) and the
 // typed engine (sentences spoken in order, interruptions and errors).
 import { after, before, test } from 'node:test';
@@ -89,46 +89,63 @@ function fakeBridge({ startError = null } = {}) {
   };
 }
 
-function fakePlayer() {
+/** The coach's voice as the talk sees it: it records what it is given, and the test says when it has finished. */
+function fakeVoice() {
   const pushes = [];
+  const clips = [];
   const idleListeners = new Set();
   let busy = false;
   let cleared = 0;
-  let closed = false;
+  let ended = false;
+  let turns = 0;
+  const idle = () => {
+    for (const listener of [...idleListeners]) listener();
+  };
   return {
     pushes,
+    clips,
     get cleared() {
       return cleared;
     },
-    get closed() {
-      return closed;
+    get ended() {
+      return ended;
     },
+    get turns() {
+      return turns;
+    },
+    async begin() {},
     pushPcm(bytes) {
       pushes.push(['pcm', bytes.byteLength]);
       busy = true;
     },
-    pushFile(bytes) {
-      pushes.push(['file', bytes.byteLength]);
+    pushWords(text) {
+      pushes.push(['words', text]);
+    },
+    endTurn() {
+      turns += 1;
+    },
+    speakClip(pieces, text) {
+      clips.push({ sizes: pieces.map((piece) => piece.byteLength), text });
       busy = true;
     },
     clear() {
       cleared += 1;
       busy = false;
-      for (const listener of [...idleListeners]) listener();
+      idle();
     },
     busy: () => busy,
-    sound: () => ({ level: 0.2, pitch: 180, low: 0.5, mid: 0.1, high: 0.05 }),
     onIdle(listener) {
       idleListeners.add(listener);
       return () => idleListeners.delete(listener);
     },
-    close() {
-      closed = true;
+    end() {
+      ended = true;
+      busy = false;
     },
-    // The voice has played to the end.
+    // The voice has said everything it was given.
     finish() {
       busy = false;
-      for (const listener of [...idleListeners]) listener();
+      idle();
     },
   };
 }
@@ -146,8 +163,8 @@ function fakeMicrophone() {
     };
   };
   // A frame reaches the page only while the conversation is sending, as the real microphone does.
-  mic.frame = (bytes = new ArrayBuffer(8), level = 0.3) => {
-    if (mic.onFrame && mic.sending()) mic.onFrame(bytes, level);
+  mic.frame = (bytes = new ArrayBuffer(8)) => {
+    if (mic.onFrame && mic.sending()) mic.onFrame(bytes);
   };
   return mic;
 }
@@ -182,14 +199,14 @@ function fakeReplies() {
   return { startReply, replies };
 }
 
-function build({ bridge = fakeBridge(), player = fakePlayer(), mic = fakeMicrophone(), replies = fakeReplies() } = {}) {
+function build({ bridge = fakeBridge(), voice = fakeVoice(), mic = fakeMicrophone(), replies = fakeReplies() } = {}) {
   const conv = conversation.createLiveConversation({
     bridge,
     startReply: replies.startReply,
     openMicrophone: mic.open,
-    createPlayer: () => player,
   });
-  return { conv, bridge, player, mic, replies };
+  conv.attachVoice(voice);
+  return { conv, bridge, voice, mic, replies };
 }
 
 const geminiOptions = { engine: 'gemini', instructions: 'Be kind.', voice: 'Puck', appVoice: 'auto', turnMode: 'auto' };
@@ -209,16 +226,20 @@ test('the Gemini talk starts, waits for the model, and then listens with the mic
 });
 
 test('the model’s voice plays as it arrives, the transcript keeps both sides, and the talk listens again when the voice ends', async () => {
-  const { conv, bridge, player } = build();
+  const { conv, bridge, voice } = build();
   await conv.start(geminiOptions);
   bridge.emit({ type: 'ready', model: 'gemini-3.8-live' });
   bridge.emit({ type: 'transcript', role: 'user', text: 'Hel' });
   bridge.emit({ type: 'transcript', role: 'user', text: 'lo' });
   bridge.emit({ type: 'transcript', role: 'model', text: 'Hi there!' });
   bridge.emit({ type: 'audio', mimeType: 'audio/pcm;rate=24000', data: new Uint8Array(4) });
-  assert.deepEqual(player.pushes, [['pcm', 4]]);
+  assert.deepEqual(voice.pushes, [
+    ['words', 'Hi there!'],
+    ['pcm', 4],
+  ]);
   assert.equal(conv.snapshot().status, 'speaking');
   bridge.emit({ type: 'turn-complete' });
+  assert.equal(voice.turns, 1);
   assert.deepEqual(
     conv.snapshot().lines.map((line) => [line.role, line.text, line.open]),
     [
@@ -226,20 +247,20 @@ test('the model’s voice plays as it arrives, the transcript keeps both sides, 
       ['coach', 'Hi there!', false],
     ],
   );
-  player.finish();
+  voice.finish();
   assert.equal(conv.snapshot().status, 'listening');
   conv.stop();
 });
 
 test('an interruption stops the voice at once, and a learner who speaks shows it', async () => {
-  const { conv, bridge, player } = build();
+  const { conv, bridge, voice } = build();
   await conv.start(geminiOptions);
   bridge.emit({ type: 'ready', model: 'm' });
   bridge.emit({ type: 'audio', mimeType: 'audio/pcm;rate=24000', data: new Uint8Array(2) });
   bridge.emit({ type: 'activity', speaking: true });
   assert.equal(conv.snapshot().userSpeaking, true);
   bridge.emit({ type: 'interrupted' });
-  assert.equal(player.cleared, 1);
+  assert.equal(voice.cleared, 1);
   assert.equal(conv.snapshot().status, 'listening');
   bridge.emit({ type: 'activity', speaking: false });
   assert.equal(conv.snapshot().userSpeaking, false);
@@ -254,7 +275,6 @@ test('muting keeps the microphone from sending, and manual turns send only while
   conv.setMuted(true);
   mic.frame(new ArrayBuffer(8));
   assert.equal(conv.snapshot().muted, true);
-  assert.equal(conv.sound().user, 0, 'a muted microphone shows no level');
   assert.ok(!bridge.calls.some((call) => call[0] === 'live.sendAudio'));
   conv.setMuted(false);
   conv.stop();
@@ -291,7 +311,7 @@ test('a typed message reaches the model as text, and the talk shows it', async (
 });
 
 test('a connection that is lost after the talk started ends it with a sentence, and releases the microphone', async () => {
-  const { conv, bridge, player, mic } = build();
+  const { conv, bridge, voice, mic } = build();
   await conv.start(geminiOptions);
   bridge.emit({ type: 'ready', model: 'm' });
   bridge.emit({ type: 'closed', reason: 'connection lost' });
@@ -300,7 +320,7 @@ test('a connection that is lost after the talk started ends it with a sentence, 
   assert.equal(state.ended, true);
   assert.equal(state.error, 'The connection was lost. Start the talk again to carry on.');
   assert.equal(mic.opened, 1);
-  assert.equal(player.closed, true);
+  assert.equal(voice.ended, true);
   assert.ok(!bridge.calls.some((call) => call[0] === 'live.stop'), 'the server already closed the session');
 });
 
@@ -315,7 +335,7 @@ test('a message from Google is shown, and it becomes the reason when the talk en
 });
 
 test('stopping keeps the transcript, closes the session and ignores what comes after', async () => {
-  const { conv, bridge, player, mic } = build();
+  const { conv, bridge, voice, mic } = build();
   await conv.start(geminiOptions);
   bridge.emit({ type: 'ready', model: 'm' });
   bridge.emit({ type: 'transcript', role: 'model', text: 'Good morning.' });
@@ -325,7 +345,7 @@ test('stopping keeps the transcript, closes the session and ignores what comes a
   assert.equal(state.error, null);
   assert.equal(state.lines.length, 1, 'the transcript stays');
   assert.equal(mic.stopped, true);
-  assert.equal(player.closed, true);
+  assert.equal(voice.ended, true);
   assert.deepEqual(bridge.calls.at(-1), ['live.stop']);
   bridge.emit({ type: 'transcript', role: 'user', text: 'Late words' });
   assert.equal(conv.snapshot().lines.length, 1);
@@ -358,8 +378,8 @@ test('a key that is missing, or a microphone that is refused, ends the talk with
     bridge: second.bridge,
     startReply: second.replies.startReply,
     openMicrophone: second.mic.open,
-    createPlayer: () => second.player,
   });
+  conv.attachVoice(second.voice);
   await conv.start(geminiOptions);
   assert.equal(conv.snapshot().ended, true);
   assert.match(conv.snapshot().error, /danna needs the microphone/);
@@ -368,14 +388,30 @@ test('a key that is missing, or a microphone that is refused, ends the talk with
 
 test('without the desktop app a talk does not start and says so', async () => {
   const replies = fakeReplies();
-  const conv = conversation.createLiveConversation({ bridge: null, startReply: replies.startReply, openMicrophone: fakeMicrophone().open, createPlayer: fakePlayer });
+  const conv = conversation.createLiveConversation({ bridge: null, startReply: replies.startReply, openMicrophone: fakeMicrophone().open });
+  conv.attachVoice(fakeVoice());
   await conv.start(geminiOptions);
   assert.equal(conv.snapshot().ended, true);
   assert.equal(conv.snapshot().error, 'Talk live works in the danna desktop app.');
 });
 
-test('the typed engine reads each sentence with the app’s voice, in order, as the reply is written', async () => {
-  const { conv, bridge, player, replies } = build();
+test('a talk cannot start until the coach is drawn, and the coach leaving ends the talk', async () => {
+  const bridge = fakeBridge();
+  const conv = conversation.createLiveConversation({ bridge, startReply: fakeReplies().startReply, openMicrophone: fakeMicrophone().open });
+  await conv.start(geminiOptions);
+  assert.equal(conv.snapshot().ended, true);
+  assert.equal(conv.snapshot().error, 'The coach is still getting ready. Try again in a moment.');
+  assert.ok(!bridge.calls.some((call) => call[0] === 'live.start'), 'no session opens without a coach');
+
+  const { conv: talking, voice } = build();
+  await talking.start(geminiOptions);
+  talking.detachVoice();
+  assert.equal(talking.snapshot().ended, true);
+  assert.equal(voice.ended, true);
+});
+
+test('the typed engine speaks each sentence with the app’s voice, in order, as the reply is written', async () => {
+  const { conv, bridge, voice, replies } = build();
   await conv.start({ engine: 'typed', instructions: 'Be kind.', voice: '', appVoice: 'builtin:amy', turnMode: 'auto' });
   await conv.sendText('Hello coach');
   const reply = replies.replies[0];
@@ -391,13 +427,16 @@ test('the typed engine reads each sentence with the app’s voice, in order, as 
   );
   assert.equal(starts[0][3], 'builtin:amy', 'the app’s voice reads');
 
-  // The second sentence waits until the first has been given to the player.
+  // The second sentence waits until the first has been given to the voice.
   bridge.emitSpeech({ id: starts[1][1], audio: new Uint8Array([1, 2]) });
   bridge.emitSpeech({ id: starts[1][1], done: true });
-  assert.deepEqual(player.pushes, []);
+  assert.deepEqual(voice.clips, []);
   bridge.emitSpeech({ id: starts[0][1], audio: new Uint8Array([3]) });
   bridge.emitSpeech({ id: starts[0][1], done: true });
-  assert.deepEqual(player.pushes, [['file', 1], ['file', 2]]);
+  assert.deepEqual(voice.clips, [
+    { sizes: [1], text: 'Hi there.' },
+    { sizes: [2], text: 'How are you?' },
+  ]);
 
   reply.finish();
   await flush();
@@ -412,13 +451,14 @@ test('the typed engine reads each sentence with the app’s voice, in order, as 
   );
   bridge.emitSpeech({ id: all[2][1], audio: new Uint8Array([4]) });
   bridge.emitSpeech({ id: all[2][1], done: true });
-  player.finish();
+  assert.equal(voice.clips.at(-1).text, 'Fine');
+  voice.finish();
   assert.equal(conv.snapshot().status, 'listening');
   conv.stop();
 });
 
 test('a new message interrupts the reply and the voice that are under way', async () => {
-  const { conv, bridge, replies } = build();
+  const { conv, bridge, voice, replies } = build();
   await conv.start({ engine: 'typed', instructions: 'x', voice: '', appVoice: 'auto', turnMode: 'auto' });
   await conv.sendText('First');
   replies.replies[0].deliver('A long answer. ');
@@ -427,6 +467,7 @@ test('a new message interrupts the reply and the voice that are under way', asyn
   await conv.sendText('Stop, please');
   assert.equal(replies.replies[0].stopped, true);
   assert.deepEqual(bridge.calls.filter((call) => call[0] === 'speech.stop').map((call) => call[1]), pending);
+  assert.ok(voice.cleared >= 1, 'the coach stops speaking');
   assert.equal(conv.snapshot().status, 'thinking');
   assert.equal(replies.replies[1].request.messages.at(-1).content, 'Stop, please');
   conv.stop();

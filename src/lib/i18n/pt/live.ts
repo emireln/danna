@@ -38,9 +38,6 @@ export const LIVE_PT: Record<string, string> = {
   'A young woman in a casual outfit': 'Uma jovem com roupa casual',
   'A man in a casual sweater': 'Um homem de suéter casual',
   'A woman in a blue shirt': 'Uma mulher de camisa azul',
-  'Loading your coach…': 'Carregando seu coach…',
-  'The coaches are open models: Ana by MakeHuman (CC0), Leo and Mia by Microsoft RocketBox (MIT).':
-    'Os coaches são modelos abertos: Ana feita com MakeHuman (CC0), Leo e Mia feitos com os avatares RocketBox da Microsoft (MIT).',
   'Coach voice': 'Voz do coach',
   'How you talk': 'Como você fala',
   'Talk freely': 'Fale à vontade',
@@ -51,9 +48,6 @@ export const LIVE_PT: Record<string, string> = {
   'I understand, start talking': 'Entendi, começar a conversar',
   'Talk again': 'Conversar de novo',
   'Start talking': 'Começar a conversar',
-  'The 3D coach needs graphics support, which this device does not have. The talk still works.':
-    'O coach 3D precisa de suporte a gráficos, que este aparelho não tem. A conversa continua funcionando.',
-  'Your talking coach': 'Seu coach que fala',
   'Saved to your coach chats.': 'Salvo nas suas conversas com o coach.',
   'The connection was lost. Start the talk again to carry on.': 'A conexão caiu. Comece a conversa de novo para continuar.',
   'Could not reach Google. Check your internet connection.': 'Não foi possível acessar o Google. Verifique sua conexão com a internet.',
@@ -75,4 +69,15 @@ export const LIVE_PT: Record<string, string> = {
     'O danna precisa do microfone. Permita o acesso nas configurações do Windows e tente de novo.',
   'No microphone was found. Connect one, then try again.': 'Nenhum microfone foi encontrado. Conecte um e tente de novo.',
   'The microphone could not start. Try again.': 'O microfone não pôde iniciar. Tente de novo.',
+  '{name}, your coach': '{name}, seu coach',
+  'Getting {name} ready…': 'Preparando {name}…',
+  'The coach could not be drawn on this computer.': 'Não foi possível desenhar o coach neste computador.',
+  'The coach is still getting ready. Try again in a moment.': 'O coach ainda está se preparando. Tente de novo em instantes.',
+  Gestures: 'Gestos',
+  'Raise a hand': 'Levantar a mão',
+  'Thumbs up': 'Polegar para cima',
+  OK: 'OK',
+  Shrug: 'Dar de ombros',
+  'The coach is drawn with TalkingHead (MIT). Ana is made with MakeHuman (CC0).':
+    'O coach é desenhado com o TalkingHead (MIT). A Ana é feita com o MakeHuman (CC0).',
 };

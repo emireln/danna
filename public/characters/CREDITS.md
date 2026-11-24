@@ -1,7 +1,7 @@
-# Credits for the coaches
+# Credits for the coach
 
-The coaches of the talk screen are real person models, converted for the app. Each model is used under the license named
-below. The models show the same people as their sources; only their file format and size were changed (see each section).
+The coach of the talk screen is a real person model, converted for the app. The model is used under the license named
+below. It shows the same person as its source; only its file format and size were changed (see the section).
 
 ## Ana: MakeHuman (CC0)
 
@@ -14,40 +14,8 @@ licensing: <https://static.makehumancommunity.org/about/license.html>.
   (<https://github.com/met4citizen/TalkingHead>).
 - Changes: the textures were converted to WebP and the file was compressed with meshopt. Every blend shape was kept.
 
-## Leo: Microsoft RocketBox (MIT)
+## TalkingHead: Mika Suominen (MIT)
 
-Leo is the adult male avatar `Male_Adult_02` of the Microsoft RocketBox avatar library
-(<https://github.com/microsoft/Microsoft-Rocketbox>), licensed under the MIT License printed at the end of this file.
-
-- Changes: converted from the FBX file in Blender (`scripts/characters/convert-rocketbox.py`). Only the ARKit face shapes
-  and the Oculus visemes were kept, under their standard names. The textures were converted to WebP and the file was
-  compressed with meshopt.
-
-## Mia: Microsoft RocketBox (MIT)
-
-Mia is the adult female avatar `Female_Adult_15` of the same library, under the same MIT License. The changes are the same
-as for Leo.
-
-## The MIT License of the RocketBox library
-
-MIT License
-
-Copyright (c) 2020 Microsoft
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+The coach is drawn, lip-synced and moved by TalkingHead, a JavaScript class by Mika Suominen, under the MIT License:
+<https://github.com/met4citizen/TalkingHead>. The lip-sync modules in `public/talkinghead/` come from the same package.
+The license text is in `public/talkinghead/TALKINGHEAD-LICENSE.txt`, and it ships with the app.

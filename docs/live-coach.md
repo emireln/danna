@@ -1,6 +1,6 @@
 # Talk live with the coach
 
-Status: built (phase 1). Checked against the live API on 2026-11-21 with the model `gemini-3.8-live`.
+Status: built (phase 1). Checked against the live API on 2026-11-21, and the opt-in live test passed again on 2026-11-24 with the same model, `gemini-3.8-live`. The coach has been drawn by TalkingHead since 2026-11-24.
 
 ## Goal
 
@@ -9,8 +9,9 @@ The coach works in text. The learner also needs to hear and speak English, get a
 ## What the learner gets
 
 - A "Talk live" card on the coach home. It opens `/coach/live`, a screen with a 3D coach.
-- Three real people as coaches, with the same brain: Ana (MakeHuman, CC0), Leo and Mia (Microsoft RocketBox, MIT). Each coach starts with a Gemini voice that suits it, which can be changed on the screen. Only the head is shown.
+- One coach, Ana, with the same brain as the text coach. She starts with a Gemini voice that suits her, which can be changed on the screen. The camera frames her at mid-shot (TalkingHead's `mid` view).
 - A start button. The coach answers with its voice and its face, and stops at once when the learner speaks (barge-in). Captions show both sides of the talk, and the learner can type a message at any time.
+- Gestures on request: raise a hand, thumbs up, OK, shrug.
 - Two ways of taking turns (Gemini engine): talk freely (the server decides when the learner has finished) or hold to talk.
 - The coach knows the learner's level, goal, exam date, weakest skill and recent answers to review. It gives at most one gentle correction per turn, then asks a question.
 - At the end, the transcript can be saved to the coach's chats. Nothing is saved otherwise.
@@ -18,7 +19,7 @@ The coach works in text. The learner also needs to hear and speak English, get a
 ## Two engines, one screen
 
 1. **Gemini Live.** Used whenever a Gemini key is connected, even when another provider is selected for text. The audio goes both ways in real time, and the transcripts come back with it. The key stays in the main process.
-2. **Typed engine (any other key).** The learner types, or holds the voice button when an OpenAI key is connected (speech-to-text, as in speaking practice). The selected text provider writes the reply as it streams, and each finished sentence is read with the voice chosen in Settings (built-in, Windows or cloud). The coach's mouth follows the same audio analysis as in the Gemini engine.
+2. **Typed engine (any other key).** The learner types, or holds the voice button when an OpenAI key is connected (speech-to-text, as in speaking practice). The selected text provider writes the reply as it streams, and each finished sentence is read with the voice chosen in Settings (built-in, Windows or cloud). TalkingHead moves the mouth with the words of that sentence, timed to the length of its sound.
 
 ## What was verified against the live API
 
@@ -31,6 +32,7 @@ Checked with Node probes and with the opt-in live test (`tests/live-smoke.test.m
 - Barge-in: speech during a long answer produced `interrupted` about 3 s in. The client stops playback and clears its queue at that moment.
 - Voice names are not validated by the server (any string is accepted at setup), so the app uses the documented prebuilt voices.
 - Limits: an audio session without compression ends after 15 minutes, and a connection ends after about 10 minutes, with a `goAway` a minute before. Compression removes the time cap. Resumption handles last 2 hours. The app uses compression and resumes after a dropped connection.
+- 2026-11-24: the opt-in live test passed. The model became ready, answered with more than 2 KB of voice and with words, and the key never reached the window.
 
 ## Architecture
 
@@ -41,26 +43,29 @@ Checked with Node probes and with the opt-in live test (`tests/live-smoke.test.m
 - Messages are built and parsed by pure functions, so the tests need no network.
 
 **Renderer (`src/lib/live/`).**
+
 - `mic.ts` opens the microphone (echo cancellation on) and runs `public/mic-worklet.js`, which turns the browser's rate into 16 kHz, 16-bit mono frames of 40 ms.
-- `player.ts` plays the coach's voice: PCM at 24 kHz as it arrives, or decoded sound files for the typed engine. Both go through one `AnalyserNode`.
-- `analysis.ts` reads a sound (loudness, pitch by autocorrelation, energy in three bands: 80 to 500 Hz, 500 to 1500 Hz and 1500 to 4000 Hz) and maps it to the mouth: open, round and wide. Pure functions.
+- `voice.ts` is the coach's voice, as TalkingHead hears it. The Gemini engine streams the model's audio (PCM at 24 kHz) and the words of each turn into TalkingHead's streaming mode, so the mouth moves as the sound plays; an interruption stops it at once. The typed engine speaks each sentence whole, in order. The voice reports when the coach has finished, and the talk listens again then.
+- `wordTiming.ts` gives each word of a text a start and a length, from the word's letters, with a short gap between words. When the length of the sound is known, the words fill it.
 - `sentences.ts` cuts a streaming reply into sentences and removes markdown before it is spoken.
 - `prompt.ts` writes the voice rules, the persona and the learner's facts (`learnerContext`).
-- `conversation.ts` joins both engines, the microphone and the player, and gives the screen one state: status, transcript, notices and errors.
+- `conversation.ts` joins both engines, the microphone and the coach's voice, and gives the screen one state: status, transcript, notices and errors. A talk cannot start until the coach is drawn.
 
-**Avatar (`src/avatar/`).** `characters.ts` lists the coaches and their models. `morphs.ts` turns the mouth, eyes and brows of the pose into weights for the ARKit face shapes and the Oculus visemes that every model carries. `rig.ts` computes the body language from the status and the sound: blinks, gaze, head movement, the intonation lift (rising pitch lifts the brows and tilts the head), the thinking pose and the mouth. `coach3d.ts` loads the model (three.js, with meshopt decoding), turns the head and neck bones, and cuts the body away below the neck, so only the head is drawn. `Avatar.tsx` runs the loop. three.js and the models load only when the screen opens.
+**Avatar (`src/avatar/`).**
+
+- `characters.ts` is the coach: her name, her model file, her Gemini voice and her licence.
+- `avatarHead.ts` loads TalkingHead (`@met4citizen/talkinghead`, MIT) when the screen opens, shows the model, loads the lip-sync module of the learner's language from `public/talkinghead/` by its address, and gives the talk its voice (decode, stream, speak, stop) and the gestures.
+- `CoachStage.tsx` mounts the coach on the stage, attaches its voice to the conversation once it is drawn, and removes both when the screen goes. It shows a short line while the coach loads, or when it cannot be drawn on the device.
 
 **Screen.** `src/screens/LiveScreen.tsx`, route `/coach/live`. The coach home card uses the mode `live` (`src/lib/coachModes.ts`), which opens the screen instead of starting a chat.
 
-## Coaches and their models
+## The coach's model
 
-The models are in `public/characters/`, with their credits and the full MIT license text in `CREDITS.md`.
-
-- **Ana:** MakeHuman with the MPFB plugin (CC0). The file is the MPFB model that the TalkingHead project ships.
-- **Leo and Mia:** avatars from the Microsoft RocketBox library (MIT): `Male_Adult_02` and `Female_Adult_15`.
-- All three carry the ARKit face shapes and the Oculus visemes, under the same names, so one set of weights moves every face. The check that each file has them is in `tests/live-characters.test.mjs`.
-- The RocketBox files were converted with `scripts/characters/convert-rocketbox.py`, which needs Blender's Python module (`bpy` 5.3.0). The textures are converted to WebP and the files are compressed with `gltf-transform` (`optimize --compress meshopt --texture-compress webp --texture-size 2048`).
-- The content security policy allows WebAssembly (`'wasm-unsafe-eval'`), which the meshopt decoder needs, and `blob:` addresses, which the loader uses for the textures. Nothing else in the policy changed.
+- The model is `public/characters/ana.glb`, and its credit is in `public/characters/CREDITS.md`. Ana is made with MakeHuman and the MPFB plugin (CC0). The file is the MPFB model that the TalkingHead project ships.
+- Ana has the bone names TalkingHead moves by name (Mixamo style: Hips, Spine, Neck, Head, the arms and legs, and the LeftEye and RightEye bones), the 52 ARKit face shapes, and the Oculus visemes except silence (`viseme_sil`). TalkingHead skips a shape that a model lacks, so the mouth simply stays still between words. `tests/live-characters.test.mjs` checks these names in the file.
+- Leo and Mia, the Microsoft RocketBox avatars, were removed. Their rigs use other bone names and axes, so they need a retargeting step before TalkingHead can move them. Their files and the conversion script are in the git history.
+- The lip-sync modules and TalkingHead's licence are in `public/talkinghead/`.
+- The content security policy allows WebAssembly (`'wasm-unsafe-eval'`), which the meshopt decoder needs, and `blob:` addresses, which the loader uses for the textures.
 
 ## Privacy, keys and cost
 
@@ -71,12 +76,12 @@ The models are in `public/characters/`, with their credits and the full MIT lice
 
 ## Testing
 
-- `npm test` runs the unit tests: the message builders and parsers, the session manager against a fake socket, the sound helpers (including the microphone worklet in a sandbox), the conversation behaviour with fake bridge, microphone, player and reply, the rig, and the Electron channel checks.
+- `npm test` runs the unit tests: the message builders and parsers, the session manager against a fake socket, the sound helpers (including the microphone worklet in a sandbox), the conversation and the coach's voice with fakes, the word timing, the coach's model file and credits, and the Electron channel checks.
 - Live check (opt-in): `DANNA_GEMINI_KEY` in the environment runs `tests/live-smoke.test.mjs` against the real service. It is skipped without the variable.
-- App check: `npm run dev` with Electron's fake microphone, given a WAV file as its input. The check reads the transcript, the states and the canvas, and it never writes the key to disk.
+- App check: `npm run dev` with Electron's fake microphone, given a WAV file as its input. The check reads the transcript, the states and the coach's canvas, and it never writes the key to disk.
 
 ## Phases
 
-- **Phase 1 (this build):** the Gemini Live engine, the typed engine, three characters with lip sync, the consent notice, captions, the turn modes, the transcript save.
-- **Phase 2:** tool calls during the talk (save words to a deck, log mistakes), a recap with corrections at the end, phoneme-accurate lip sync, an OpenAI Realtime engine, and offline speech recognition for learners without a key.
+- **Phase 1 (this build):** the Gemini Live engine, the typed engine, one coach with TalkingHead's lip-sync and gestures, the consent notice, captions, the turn modes, the transcript save.
+- **Phase 2:** tool calls during the talk (save words to a deck, log mistakes), a recap with corrections at the end, lip sync from the model's own phonemes, an OpenAI Realtime engine, offline speech recognition for learners without a key, and Leo and Mia again once their rigs are retargeted.
 - **Phase 3:** pronunciation feedback, memory of earlier talks, scene scores and VRM character import.
