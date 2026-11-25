@@ -1,6 +1,14 @@
-// The release notes in Portuguese (2.1.0 to 2.5.0): each key is a bullet of the What's new page, in the same words as
+// The release notes in Portuguese (2.1.0 to 2.6.0): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
+  'The Classic look has the pill design: the cards, buttons, tabs and tags have the same rounded corners as the Playful look.':
+    'O visual Clássico tem o desenho de pílula: cartões, botões, abas e etiquetas têm os mesmos cantos arredondados do visual Divertido.',
+  'The field of the coach has no square outline when you click in it. The rounded box around it shows that the field has focus.':
+    'O campo do coach não tem contorno quadrado ao clicar nele. A caixa arredondada em volta mostra que o campo está em foco.',
+  'While the coach writes a reply, the send button turns red, as a stop button.':
+    'Enquanto o coach escreve uma resposta, o botão de enviar fica vermelho, como botão de parar.',
+  'The small labels above the page titles and the section headings are gone, so the screens read more quietly.':
+    'Os rótulos pequenos acima dos títulos das páginas e das seções sumiram, e as telas ficam mais tranquilas.',
   'Sign in with Google. The sign-in screen has a Continue with Google button, next to the email and password form.':
     'Entrar com o Google. A tela de entrada tem um botão Continuar com o Google, ao lado do formulário de e-mail e senha.',
   'The sign-in screen has the look of the website, with the 3D pictures beside the form.':
