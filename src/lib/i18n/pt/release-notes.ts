@@ -1,6 +1,14 @@
-// The release notes in Portuguese (2.1.0 to 2.3.14): each key is a bullet of the What's new page, in the same words as
+// The release notes in Portuguese (2.1.0 to 2.5.0): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
+  'Sign in with Google. The sign-in screen has a Continue with Google button, next to the email and password form.':
+    'Entrar com o Google. A tela de entrada tem um botão Continuar com o Google, ao lado do formulário de e-mail e senha.',
+  'The sign-in screen has the look of the website, with the 3D pictures beside the form.':
+    'A tela de entrada tem o visual do site, com as imagens 3D ao lado do formulário.',
+  'The name is written Danna, and not DANNA.':
+    'O nome é escrito Danna, e não DANNA.',
+  'Fewer explanatory lines on the sign-in screen and in the forms.':
+    'Menos textos explicativos na tela de entrada e nos formulários.',
   'Forgot your password? The sign-in screen has a link that emails you a reset link. The link opens the Danna website, where you choose a new password.':
     'Esqueceu a senha? A tela de entrada tem um link que envia por e-mail um link de redefinição. O link abre o site do Danna, onde você escolhe uma nova senha.',
   'Talk live is switched off for now while it is reworked. The coach card is hidden, and the rest of the coach works as before.':
