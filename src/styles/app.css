@@ -293,7 +293,7 @@
     font-weight: 700;
     line-height: 1;
     padding: 3px 4px;
-    border-radius: 3px;
+    border-radius: var(--radius-pill);
     background: var(--primary-100);
     color: var(--primary);
   }
@@ -405,7 +405,7 @@
     text-transform: uppercase;
     color: var(--muted);
     background: #e7ebf2;
-    border-radius: 3px;
+    border-radius: var(--radius-pill);
     padding: 2px 6px;
   }
 
@@ -472,7 +472,7 @@
     position: relative;
     background: var(--canvas);
     border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     padding: 18px;
     box-shadow: var(--shadow-sm);
   }
@@ -517,7 +517,7 @@
     flex: none;
     width: 46px;
     height: 46px;
-    border-radius: 8px;
+    border-radius: var(--radius-pill);
     display: grid;
     place-items: center;
     background: var(--primary-50);
@@ -542,7 +542,7 @@
   .icon-tile--sm {
     width: 36px;
     height: 36px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
   }
 
   .icon-tile--sm svg {
@@ -558,7 +558,7 @@
     gap: 8px;
     height: 44px;
     padding: 0 18px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     font-size: 15px;
     font-weight: 620;
     white-space: nowrap;
@@ -647,7 +647,7 @@
     height: 34px;
     padding: 0 12px;
     font-size: 13.5px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
   }
 
   .btn--block {
@@ -658,7 +658,7 @@
     width: 36px;
     height: 36px;
     padding: 0;
-    border-radius: 7px;
+    border-radius: var(--radius-pill);
     color: var(--ink-2);
   }
 
@@ -713,7 +713,7 @@
     height: 44px;
     padding: 0 14px;
     border: 1px solid var(--line-2);
-    border-radius: 6px;
+    border-radius: var(--radius-lg);
     background: var(--canvas);
     transition:
       border-color 0.15s var(--ease),
@@ -784,13 +784,13 @@
     gap: 4px;
     background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: var(--radius-pill);
   }
 
   .segmented__btn {
     height: 34px;
     padding: 0 14px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     font-size: 14px;
     font-weight: 600;
     color: var(--muted);
@@ -943,7 +943,7 @@
     display: flex;
     flex-direction: column;
     background: var(--canvas);
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lift);
     overflow: hidden;
   }
@@ -980,7 +980,7 @@
     padding: 6px;
     background: var(--canvas);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lift);
   }
 
@@ -990,7 +990,7 @@
     gap: 10px;
     width: 100%;
     padding: 9px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     font-size: 14px;
     font-weight: 560;
     color: var(--ink-2);
@@ -1036,7 +1036,7 @@
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-pill);
     background: var(--ink);
     color: #fff;
     font-size: 14px;
@@ -1061,7 +1061,7 @@
     gap: 10px;
     padding: 22px;
     border: 1px dashed var(--line-2);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--canvas);
   }
 
@@ -1070,7 +1070,7 @@
     gap: 12px;
     align-items: flex-start;
     padding: 12px 14px;
-    border-radius: 7px;
+    border-radius: var(--radius-lg);
     background: #fff8e6;
     border: 1px solid #fbe7ad;
     color: #6b4e00;
@@ -1093,7 +1093,7 @@
   .skeleton {
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: var(--radius-pill);
     background: #eef1f6;
   }
 
@@ -1343,7 +1343,7 @@
   .hero {
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     padding: 22px 22px 20px;
     color: #fff;
     background: linear-gradient(115deg, var(--hero-a) 0%, #2a4fd2 58%, var(--hero-b) 100%);
@@ -1414,7 +1414,7 @@
     gap: 12px;
     padding: 11px 14px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: var(--radius-lg);
     background: var(--canvas);
     font-size: 15px;
     font-weight: 600;
@@ -1434,7 +1434,7 @@
     flex: none;
     width: 30px;
     height: 30px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     display: grid;
     place-items: center;
     color: #fff;
@@ -1458,7 +1458,7 @@
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    border-radius: 7px;
+    border-radius: var(--radius-lg);
     background: #e8f0ff;
     font-size: 15px;
     font-weight: 650;
@@ -1485,7 +1485,7 @@
     grid-template-columns: minmax(0, 1fr) 220px;
     align-items: stretch;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     min-height: 150px;
     color: #fff;
   }
@@ -1631,7 +1631,7 @@
 
   /* ---------- Roadmap ---------- */
   .unit {
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     padding: 18px 20px;
     background: var(--canvas);
     border: 1px solid var(--line);
@@ -1648,7 +1648,7 @@
     flex: none;
     width: 44px;
     height: 44px;
-    border-radius: 8px;
+    border-radius: var(--radius-pill);
     display: grid;
     place-items: center;
     color: #fff;
@@ -1809,7 +1809,7 @@
     background: var(--ink);
     color: #fff;
     padding: 4px 9px;
-    border-radius: 5px;
+    border-radius: var(--radius-pill);
     white-space: nowrap;
   }
 
@@ -1842,7 +1842,7 @@
     flex-direction: column;
     gap: 6px;
     padding: 16px 18px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     background: var(--canvas);
     border: 1px solid var(--line);
     text-align: left;
@@ -1914,7 +1914,7 @@
     flex-direction: column;
     min-height: 196px;
     padding: 22px 22px 22px;
-    border-radius: 5px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
     color: #fff;
     text-align: left;
@@ -1968,7 +1968,7 @@
     white-space: nowrap;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: 3px;
+    border-radius: var(--radius-pill);
   }
 
   /* The bar is part of the card's flow, under the badges, so a badge that wraps onto a second line pushes the bar down
@@ -1993,7 +1993,7 @@
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     background: var(--canvas);
     border: 1px solid var(--line);
     text-align: left;
@@ -2110,7 +2110,7 @@
 
   .q-passage {
     padding: 18px 20px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     background: var(--surface-2);
     border: 1px solid var(--line);
     font-size: 15.5px;
@@ -2173,7 +2173,7 @@
     gap: 14px;
     width: 100%;
     padding: 14px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     border: 1.5px solid var(--line-2);
     background: var(--canvas);
     text-align: left;
@@ -2202,7 +2202,7 @@
     flex: none;
     width: 28px;
     height: 28px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     border: 1.5px solid var(--line-2);
     display: grid;
     place-items: center;
@@ -2261,7 +2261,7 @@
     height: 32px;
     margin: 0 4px;
     padding: 0 8px;
-    border-radius: 5px;
+    border-radius: var(--radius);
     border: 1px solid var(--line-2);
     background: var(--canvas);
     transition:
@@ -2320,7 +2320,7 @@
 
   .word {
     padding: 9px 13px;
-    border-radius: 7px;
+    border-radius: var(--radius-pill);
     border: 1px solid var(--line-2);
     background: var(--canvas);
     box-shadow: 0 2px 0 var(--line-2);
@@ -2356,7 +2356,7 @@
   .answer-line.is-over,
   .word-bank.is-over {
     background: var(--primary-50);
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
   }
 
   .word-bank {
@@ -2384,7 +2384,7 @@
 
   .feedback-card {
     padding: 16px 18px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     background: var(--surface-2);
     border: 1px solid var(--line);
     display: flex;
@@ -2412,7 +2412,7 @@
   .rubric-slider button {
     width: 46px;
     height: 44px;
-    border-radius: 7px;
+    border-radius: var(--radius-pill);
     border: 1.5px solid var(--line-2);
     font-weight: 650;
     background: var(--canvas);
@@ -2492,7 +2492,7 @@
     display: inline-flex;
     margin-top: 8px;
     padding: 4px 12px;
-    border-radius: 5px;
+    border-radius: var(--radius-pill);
     background: rgba(255, 255, 255, 0.88);
     color: var(--primary-700);
     font-size: 12.5px;
@@ -2598,7 +2598,7 @@
     flex-direction: column;
     gap: 12px;
     padding: 16px 18px;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--primary-100);
     background: var(--canvas);
   }
@@ -2631,7 +2631,7 @@
     display: flex;
     gap: 10px;
     padding: 11px 13px;
-    border-radius: 7px;
+    border-radius: var(--radius);
     background: var(--surface-2);
     font-size: 14px;
     color: var(--ink-2);
@@ -2651,7 +2651,7 @@
     gap: 26px;
     align-items: center;
     padding: 22px;
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--primary-100);
     background: var(--canvas);
   }
@@ -2689,7 +2689,7 @@
     align-items: center;
     gap: 14px;
     padding: 12px 14px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2726,7 +2726,7 @@
     gap: 14px;
     align-items: flex-start;
     padding: 14px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2771,7 +2771,7 @@
     flex-direction: column;
     gap: 4px;
     padding: 16px;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2794,7 +2794,7 @@
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2816,7 +2816,7 @@
     gap: 12px;
     width: 100%;
     padding: 11px 14px;
-    border-radius: 7px;
+    border-radius: var(--radius-lg);
     border: 1.5px solid var(--line);
     background: var(--canvas);
     text-align: left;
@@ -2865,7 +2865,7 @@
     text-transform: uppercase;
     color: var(--primary-700);
     background: var(--primary-100);
-    border-radius: 3px;
+    border-radius: var(--radius-pill);
     padding: 2px 6px;
   }
 
@@ -2908,7 +2908,7 @@
   .bubble {
     max-width: 78%;
     padding: 12px 15px;
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     font-size: 15px;
     line-height: 1.6;
     white-space: pre-wrap;
@@ -2934,7 +2934,7 @@
     align-items: flex-end;
     gap: 10px;
     padding: 10px;
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--line-2);
     background: var(--canvas);
     box-shadow: var(--shadow-sm);
@@ -2984,7 +2984,7 @@
     gap: 28px;
     align-items: center;
     padding: 26px;
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--line);
     background: var(--canvas);
     box-shadow: var(--shadow-sm);
@@ -3047,7 +3047,7 @@
   .wizard__step {
     flex: 1;
     height: 4px;
-    border-radius: 3px;
+    border-radius: var(--radius-pill);
     background: #e5eaf3;
     overflow: hidden;
   }
@@ -3075,7 +3075,7 @@
     flex-direction: column;
     gap: 6px;
     padding: 16px;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     border: 1.5px solid var(--line-2);
     background: var(--canvas);
     text-align: left;
@@ -3187,7 +3187,7 @@
     align-items: center;
     height: 24px;
     padding: 0 9px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     background: linear-gradient(120deg, var(--primary) 0%, #6b3fd6 100%);
     color: #ffffff;
     font-size: 11px;
@@ -3211,7 +3211,7 @@
     margin-top: 10px;
     padding: 18px;
     border: 1px solid #d6e0f7;
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     background: linear-gradient(180deg, rgba(36, 86, 224, 0.07), rgba(107, 63, 214, 0.03));
   }
 

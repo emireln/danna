@@ -158,7 +158,6 @@ export function ProfileReportScreen() {
         {loadError && <Notice tone="error">{t(loadError)}</Notice>}
       </div>
       <ScoreReport
-        eyebrow={formatLongDate(new Date().toISOString())}
         title={t('Score report')}
         sub={t('Your level is {level}', { level: profile.level })}
         pill={t('Overall')}

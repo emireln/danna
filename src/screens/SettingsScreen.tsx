@@ -364,7 +364,7 @@ export function SettingsScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={t('Preferences')} title={t('Settings')} />
+      <PageHeader title={t('Settings')} />
 
       <SectionTitle title={t('App language')} />
       <div className="settings-row">

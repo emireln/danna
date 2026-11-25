@@ -36,7 +36,7 @@
     gap: 6px;
     height: 84px;
     padding: 10px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--canvas-2);
   }
 
@@ -49,14 +49,14 @@
 
   .look-card__block {
     height: 30px;
-    border-radius: 5px;
+    border-radius: var(--radius);
     background: var(--primary-50);
   }
 
   .look-card__button {
     width: 46px;
     height: 14px;
-    border-radius: 3px;
+    border-radius: var(--radius-pill);
     background: var(--primary);
   }
 
@@ -224,7 +224,7 @@
     width: 36px;
     height: 36px;
     place-items: center;
-    border-radius: 8px;
+    border-radius: var(--radius-pill);
     background: var(--primary-50);
     color: var(--primary);
   }
@@ -315,7 +315,7 @@
     gap: 12px;
     padding: 12px;
     border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--canvas);
   }
 
@@ -324,7 +324,7 @@
     width: 44px;
     height: 44px;
     place-items: center;
-    border-radius: 10px;
+    border-radius: var(--radius-pill);
     background: var(--surface-2);
     color: var(--muted);
   }
@@ -410,7 +410,7 @@
     align-items: center;
     height: 26px;
     padding: 0 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     background: var(--surface-2);
     color: var(--ink-2);
     font-size: 13px;
@@ -469,7 +469,7 @@
     align-items: center;
     gap: 10px;
     padding: 6px 8px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
   }
 
   .league__row--me {

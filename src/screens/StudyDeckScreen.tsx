@@ -183,7 +183,7 @@ export function StudyDeckScreen() {
     return (
       <div className="page">
         {back}
-        <PageHeader eyebrow={t('Session done')} title={t('{count} cards studied', { count: results.length })} />
+        <PageHeader title={t('{count} cards studied', { count: results.length })} />
         <div className="stack">
           <div className="study-summary">
             {counts.map((item) => (

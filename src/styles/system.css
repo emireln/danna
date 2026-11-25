@@ -233,7 +233,7 @@
     display: grid;
     gap: 4px;
     padding: 14px 16px;
-    border-radius: 11px;
+    border-radius: var(--radius-lg);
     background: var(--surface-2);
   }
 
@@ -314,7 +314,7 @@
     height: 28px;
     display: grid;
     place-items: center;
-    border-radius: 6px;
+    border-radius: var(--radius-pill);
     color: var(--muted);
   }
 
@@ -348,7 +348,7 @@
     flex: none;
     width: 44px;
     height: 44px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-pill);
     color: var(--primary);
     background: var(--primary-50);
   }
@@ -588,7 +588,7 @@
     width: 100%;
     padding: 9px 12px;
     border: 1px solid var(--line-2);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--canvas);
     color: var(--ink);
     font: inherit;
@@ -643,7 +643,7 @@
     place-items: center;
     width: 24px;
     height: 24px;
-    border-radius: 5px;
+    border-radius: var(--radius-pill);
     background: var(--surface-2);
     color: var(--ink-2);
     font-size: 12px;
@@ -707,7 +707,7 @@
     width: 100%;
     padding: 9px 12px;
     border: 1px solid var(--line-2);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--canvas);
     color: var(--ink);
     font: inherit;
@@ -797,7 +797,7 @@
     flex: none;
     width: 22px;
     height: 22px;
-    border-radius: 5px;
+    border-radius: var(--radius-pill);
     object-fit: cover;
   }
 
@@ -887,7 +887,7 @@
     gap: 6px;
     padding: 6px 6px 6px 12px;
     border: 1px solid transparent;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
   }
 
   .chat-row:hover {
@@ -967,7 +967,7 @@
     gap: 10px;
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--radius-pill);
     background: var(--canvas);
     cursor: pointer;
   }
@@ -1188,7 +1188,7 @@
     padding: 14px;
     background: var(--canvas);
     border: 1px solid var(--line);
-    border-radius: 13px;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lift);
   }
 
@@ -1223,7 +1223,7 @@
     display: grid;
     gap: 2px;
     padding: 9px 12px;
-    border-radius: 8px;
+    border-radius: var(--radius-pill);
     cursor: pointer;
   }
 
@@ -1259,7 +1259,7 @@
     margin-top: 8px;
     padding: 26px 28px 24px;
     overflow: hidden;
-    border-radius: 19px;
+    border-radius: var(--radius-lg);
     color: #fff;
     box-shadow: 0 22px 44px -26px rgba(20, 36, 107, 0.6);
   }
@@ -1451,7 +1451,7 @@
     min-width: 0;
     padding: 16px 18px;
     border: 1px solid rgba(255, 255, 255, 0.24);
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     background: rgba(255, 255, 255, 0.14);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
@@ -1499,7 +1499,7 @@
     place-items: center;
     aspect-ratio: 10 / 3;
     overflow: hidden;
-    border-radius: 13px;
+    border-radius: var(--radius-lg);
     background: linear-gradient(135deg, var(--accent-deep) 0%, var(--primary) 100%) center / cover no-repeat;
     color: #fff;
     font-weight: 650;
@@ -1520,7 +1520,7 @@
 
   .friend-profile__banner {
     height: 132px;
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     background: linear-gradient(135deg, var(--accent-deep) 0%, var(--primary) 100%) center / cover no-repeat;
   }
 
@@ -1582,7 +1582,7 @@
   .person__main:focus-visible {
     outline: 2px solid var(--primary-100);
     outline-offset: 4px;
-    border-radius: 10px;
+    border-radius: var(--radius-pill);
   }
 
   /* ---------- Quiet text buttons, such as Remove or Remove picture ---------- */

@@ -84,7 +84,7 @@ export function StudyScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={t('Practice on your own')} title={t('Self study')} />
+      <PageHeader title={t('Self study')} />
 
       <div className="stack">
         {loadError && <Notice tone="error">{t(loadError)}</Notice>}
@@ -163,7 +163,6 @@ export function StudyScreen() {
                       aria-label={t('{label}, {completed} of {total} complete', { label, completed, total: lessonCount })}
                     >
                       <span aria-hidden="true" className="section-card__art" style={{ backgroundImage: SECTION_ART[skill] }} />
-                      <span className="section-card__kicker">{t(SECTION_COPY[skill].kicker)}</span>
                       <span className="section-card__title">{label}</span>
                       <span className="section-card__stats">
                         {t('{lessons} · {questions} · {completed} completed', {
@@ -365,7 +364,6 @@ export function StudySectionScreen() {
     <div className="page">
       <BackLink to="/study">{t('Self study')}</BackLink>
       <PageHeader title={label}>
-        <p className="muted">{t(SECTION_COPY[skill].kicker)}</p>
         <div className="mt-3">
           <ProgressBar value={completed} max={Math.max(1, lessons.length)} label={t('{label} progress', { label })} />
         </div>

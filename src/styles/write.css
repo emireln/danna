@@ -71,7 +71,7 @@
 
   .write-preview {
     padding: 14px 16px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--surface-2);
     color: var(--ink);
     line-height: 1.7;
@@ -125,14 +125,14 @@
     gap: 6px;
     padding: 12px 14px;
     border: 1px solid var(--line);
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: #ffffff;
   }
 
   .issue__category {
     justify-self: start;
     padding: 2px 8px;
-    border-radius: 5px;
+    border-radius: var(--radius-pill);
     background: var(--surface-2);
     color: var(--ink-2);
     font-size: 12px;

@@ -205,7 +205,6 @@ export function ReportScreen() {
   return (
     <>
       <ScoreReport
-        eyebrow={formatLongDate(attempt.created_at)}
         title={shared ? t('Report from {name}', { name: sharer }) : isEstimate ? t('Score report') : t(attempt.title)}
         sub={
           shared

@@ -71,7 +71,6 @@ export function CoachHome({
   return (
     <section className="coach-home" aria-label={t('Your coach')}>
       <div className="coach-home__hero">
-        <p className="eyebrow">{t('Your coach')}</p>
         <h2 className="coach-home__title">{t('What would you like to work on?')}</h2>
         <p className="coach-home__lead">{t('Level {level}, studying for {goal}.', { level, goal: goalText })}</p>
       </div>
@@ -106,7 +105,6 @@ export function CoachHome({
         </button>
       </div>
 
-      <h3 className="coach-home__label">{t('Choose a way to work')}</h3>
       <div className="mode-grid">
         <button type="button" className="mode-card mode-card--free" onClick={() => onMode(freeMode.id)} disabled={busy}>
           <span className={`mode-card__icon mode-card__icon--${freeMode.icon}`}>
@@ -129,7 +127,6 @@ export function CoachHome({
         })}
       </div>
 
-      <h3 className="coach-home__label">{t('Role-play scenes')}</h3>
       <div className="roleplay-grid">
         {SCENARIOS.map((scene) => (
           <button key={scene.id} type="button" className="roleplay-card" onClick={() => onMode(roleplayModeId(scene.id))} disabled={busy}>
@@ -142,7 +139,6 @@ export function CoachHome({
 
       {starters.length > 0 && (
         <div className="coach-home__ask">
-          <p className="coach-home__label">{t('Or start with a question')}</p>
           <div className="suggest">
             {starters.map((suggestion) => (
               <button key={suggestion} type="button" onClick={() => onStarter(t(suggestion))} disabled={busy}>
@@ -155,7 +151,6 @@ export function CoachHome({
 
       {recentChats.length > 0 && (
         <div className="coach-home__recent">
-          <h3 className="coach-home__label">{t('Recent chats')}</h3>
           <ul className="recent-list">
             {recentChats.map((chat) => (
               <li key={chat.id}>

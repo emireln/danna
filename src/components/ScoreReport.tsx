@@ -29,7 +29,6 @@ export interface ReportPlanSlice {
 }
 
 export interface ScoreReportProps {
-  eyebrow: string;
   title: string;
   sub?: string;
   pill?: string;
@@ -46,7 +45,6 @@ export interface ScoreReportProps {
 }
 
 export function ScoreReport({
-  eyebrow,
   title,
   sub,
   pill,
@@ -64,7 +62,6 @@ export function ScoreReport({
   return (
     <div>
       <section className="report-hero">
-        <p className="eyebrow">{eyebrow}</p>
         <h1 className="report-hero__title">{title}</h1>
         {sub && <p className="report-hero__sub">{sub}</p>}
         {pill && <span className="report-hero__pill">{pill}</span>}

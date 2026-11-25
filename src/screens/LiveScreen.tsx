@@ -240,7 +240,7 @@ export function LiveScreen() {
     <main className="page live">
       <BackLink to="/coach">{t('Back to the coach')}</BackLink>
       <PageHeader
-        eyebrow={t('Coach')}
+       
         title={t('Talk live')}
         aside={<span className="live__engine">{engineLabel}</span>}
       >

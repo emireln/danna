@@ -785,7 +785,7 @@ export function CoachScreen() {
 
   const modeTitle = t(activeMode.title);
   const sendButton = sending && replyStream.current ? (
-    <button type="button" className="btn btn--primary btn--icon coach-send" onClick={stopReply} aria-label={t('Stop writing')} title={t('Stop writing')}>
+    <button type="button" className="btn btn--icon coach-send coach-send--stop" onClick={stopReply} aria-label={t('Stop writing')} title={t('Stop writing')}>
       <Square aria-hidden="true" />
     </button>
   ) : (
@@ -807,7 +807,6 @@ export function CoachScreen() {
     <div className="page page--coach coach">
       <header className="coach-bar">
         <div className="coach-bar__main">
-          <p className="coach-bar__mode">{modeTitle}</p>
           <h1 className="coach-bar__title">{activeChat?.title || t('Coach')}</h1>
         </div>
         <div className="coach-bar__tools">

@@ -254,7 +254,6 @@ export function ProfileScreen() {
 
         <div className="profile-hero__top">
           <div className="profile-hero__who">
-            <p className="profile-hero__eyebrow">{t('Your profile')}</p>
             <div className="profile-hero__name">
               <h1 className="profile-hero__title">{name}</h1>
               <button

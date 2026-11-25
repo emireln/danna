@@ -73,7 +73,7 @@
   .word-card__sentence {
     margin: 0;
     padding: 10px 12px;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-lg);
     background: var(--primary-50);
     font-size: 15px;
     line-height: 1.55;

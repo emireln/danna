@@ -57,7 +57,7 @@ export function RoadmapScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={t('Your path')} title={t('Roadmap')}>
+      <PageHeader title={t('Roadmap')}>
         <div className="roadmap-progress">
           <ProgressBar value={done} max={Math.max(1, nodes.length)} label={t('Roadmap progress')} />
           <span className="chip">{t('Level {level}', { level: profile?.level ?? 'B1' })}</span>

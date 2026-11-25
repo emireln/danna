@@ -56,7 +56,6 @@ export function WelcomeScreen() {
                 transition={{ duration: 0.25 }}
               >
                 <div>
-                  <p className="eyebrow">{t('Language')}</p>
                   <h1 className="welcome__title mt-2">{t('Choose your language')}</h1>
                   <p className="muted mt-2">{t('You can change it later in Settings.')}</p>
                 </div>
@@ -121,7 +120,6 @@ export function WelcomeScreen() {
                 transition={{ duration: 0.25 }}
               >
                 <div>
-                  <p className="eyebrow">{t('Your progress')}</p>
                   <h1 className="welcome__title mt-2">{t('How would you like to use Danna?')}</h1>
                 </div>
                 <div className="mode-grid" role="radiogroup" aria-label={t('How you use Danna')}>

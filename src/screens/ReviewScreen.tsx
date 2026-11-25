@@ -58,7 +58,7 @@ export function ReviewScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={t('Spaced repetition')} title={t('Review')} />
+      <PageHeader title={t('Review')} />
 
       {loadError && <Notice tone="error">{t(loadError)}</Notice>}
 
@@ -67,7 +67,6 @@ export function ReviewScreen() {
       ) : (
         <>
           <section className="hero" aria-label={t('Daily review')}>
-            <p className="eyebrow">{t('Due now')}</p>
             <h2 className="hero__title">
               {tn('{count} question to review', '{count} questions to review', due.length, { count: due.length })}
             </h2>

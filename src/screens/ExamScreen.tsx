@@ -96,7 +96,7 @@ export function ExamScreen() {
   return (
     <div className="page">
       <BackLink to="/study">{t('Self study')}</BackLink>
-      <PageHeader eyebrow={t('Your exam')} title={profile?.exam_name || t('Your exam')}>
+      <PageHeader title={profile?.exam_name || t('Your exam')}>
         <p className="muted">{t('Save the date, see how many days are left, and test the skills the exam asks for.')}</p>
       </PageHeader>
 
@@ -104,7 +104,6 @@ export function ExamScreen() {
         {loadError && <Notice tone="error">{t(loadError)}</Notice>}
 
         <section className="hero" aria-label={t('Days left')}>
-          <p className="eyebrow">{profile?.exam_name || t('No exam named yet')}</p>
           <h2 className="hero__title">{paused ? t('Exam paused') : summary.title}</h2>
           <p className="hero__text">{paused ? t('You are not planning an exam for now. Your name and date are kept.') : summary.text}</p>
         </section>

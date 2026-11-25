@@ -121,7 +121,7 @@ export function FriendsScreen() {
   if (!online) {
     return (
       <div className="page">
-        <PageHeader eyebrow={t('Study together')} title={t('Friends')} />
+        <PageHeader title={t('Friends')} />
         <Empty
           title={t('Friends need an online account')}
           action={
@@ -144,7 +144,7 @@ export function FriendsScreen() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow={t('Study together')}
+       
         title={t('Friends')}
         aside={
           <button className="btn btn--primary btn--sm" onClick={() => setSharing({})} disabled={accepted.length === 0}>

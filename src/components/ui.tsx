@@ -335,14 +335,12 @@ export function Field({
   );
 }
 
-/** The header of a top-level page: a short eyebrow, the title, and actions on the right. */
+/** The header of a top-level page: the title, and actions on the right. */
 export function PageHeader({
-  eyebrow,
   title,
   aside,
   children,
 }: {
-  eyebrow?: ReactNode;
   title: ReactNode;
   aside?: ReactNode;
   children?: ReactNode;
@@ -350,7 +348,6 @@ export function PageHeader({
   return (
     <header className="page-header">
       <div className="page-header__main">
-        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
         <h1 className="page-title">{title}</h1>
         {children}
       </div>

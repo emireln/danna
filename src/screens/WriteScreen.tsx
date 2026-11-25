@@ -159,7 +159,7 @@ export function WriteScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={t('Write better')} title={t('Writing check')}>
+      <PageHeader title={t('Writing check')}>
         <p className="muted">{t('Write a few sentences, then check them. Take the fixes you agree with.')}</p>
       </PageHeader>
 

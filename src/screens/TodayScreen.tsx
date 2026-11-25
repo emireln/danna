@@ -139,8 +139,7 @@ export function TodayScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={t('Your plan')} title={t("Today's learning")}>
-        <p className="small muted">{t('Your plan updates after every session.')}</p>
+      <PageHeader title={t("Today's learning")}>
       </PageHeader>
 
       <div className="stack">
@@ -229,9 +228,6 @@ export function TodayScreen() {
 
         {focusNode ? (
           <section className="hero" aria-label={t('Continue learning')}>
-            <p className="eyebrow">
-              {t('Unit {number} · {title}', { number: focusNode.item.unit.number, title: t(focusNode.item.unit.title) })}
-            </p>
             <h2 className="hero__title">
               {focusNode.item.checkpoint
                 ? t('Unit check: {title}', { title: t(focusNode.item.unit.title) })

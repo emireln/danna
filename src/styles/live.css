@@ -177,7 +177,7 @@
     margin: 0;
     max-width: 80%;
     padding: 10px 14px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     background: var(--surface-2);
     line-height: 1.5;
   }
@@ -218,7 +218,7 @@
     display: grid;
     gap: 4px;
     padding: 14px;
-    border-radius: var(--radius);
+    border-radius: var(--radius-lg);
     border: 1px solid var(--line);
     background: var(--white);
     color: var(--ink);

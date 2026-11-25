@@ -50,7 +50,7 @@ export function DecksScreen() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow={t('Remember more')}
+       
         title={t('Flashcards')}
         aside={
           <button className="btn btn--primary btn--sm" onClick={() => setCreating(true)}>

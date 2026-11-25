@@ -655,13 +655,6 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
   const t: Translate = useT();
   const isLesson = summary.kind === 'lesson' || summary.kind === 'checkpoint';
   const isDiagnostic = summary.kind === 'diagnostic';
-  const headline = isDiagnostic
-    ? t('Your estimate is ready')
-    : isLesson
-      ? summary.stars
-        ? t('Lesson complete')
-        : t('Keep practicing')
-      : t('Session complete');
   const score = isDiagnostic && summary.predicted !== null ? summary.predicted : summary.pct;
   const suffix = isDiagnostic && summary.predicted !== null ? ' / 120' : '%';
 
@@ -675,7 +668,6 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
       </div>
       <div className="runner__body">
         <motion.div className="runner__inner completion" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <span className="eyebrow">{headline}</span>
           <div className="completion__score" aria-live="polite">
             <CountUp to={score} />
             {suffix}

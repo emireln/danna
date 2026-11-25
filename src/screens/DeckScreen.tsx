@@ -116,7 +116,7 @@ export function DeckScreen() {
   return (
     <div className="page">
       <BackLink to="/decks">{t('Flashcards')}</BackLink>
-      <PageHeader eyebrow={t('Deck')} title={deck.title}>
+      <PageHeader title={deck.title}>
         {deck.description && <p className="muted">{deck.description}</p>}
         <p className="small muted">
           {tn('{count} card', '{count} cards', cards.length, { count: cards.length })} · {tn('{count} is due now', '{count} are due now', due, { count: due })}

@@ -66,7 +66,7 @@ export function WhatsNewScreen() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={t('Updates')} title={t("What's new")} />
+      <PageHeader title={t("What's new")} />
 
       {banners.length > 0 && (
         <div className="mb-4">

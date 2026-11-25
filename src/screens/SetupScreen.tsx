@@ -28,11 +28,10 @@ const LEVEL_TEXT: Record<Level, string> = {
 
 const STEPS = ['Look', 'Name', 'Goal', 'Time', 'Level', 'AI'];
 
-/** The heading block every step uses: a short eyebrow, the question, and one line of help. */
-function StepHead({ eyebrow, title, text }: { eyebrow: string; title: string; text?: string }) {
+/** The heading block every step uses: the question, and one line of help. */
+function StepHead({ title, text }: { title: string; text?: string }) {
   return (
     <div className="step-head">
-      <p className="eyebrow">{eyebrow}</p>
       <h1 className="page-title">{title}</h1>
       {text && <p className="muted">{text}</p>}
     </div>
@@ -180,7 +179,7 @@ export function SetupScreen() {
               {step === 0 && (
                 <>
                   <StepHead
-                    eyebrow={t('Look')}
+                   
                     title={t('Pick the look you like')}
                     text={t('Both looks have every feature. You can change it later in Settings.')}
                   />
@@ -191,7 +190,7 @@ export function SetupScreen() {
               {step === 1 && (
                 <>
                   <StepHead
-                    eyebrow={t('Learning setup')}
+                   
                     title={t('What should Danna call you?')}
                     text={
                       mode === 'supabase'
@@ -218,7 +217,7 @@ export function SetupScreen() {
               {step === 2 && (
                 <>
                   <StepHead
-                    eyebrow={t('Your goal')}
+                   
                     title={t('What do you want to practice?')}
                     text={t('Most people choose General English. The TOEFL warm-up is an extra track you can add at any time.')}
                   />
@@ -259,7 +258,7 @@ export function SetupScreen() {
               {step === 3 && (
                 <>
                   <StepHead
-                    eyebrow={t('Daily time')}
+                   
                     title={t('How much time can you give each day?')}
                     text={t('A steady 15 minutes beats a long session once a week.')}
                   />
@@ -286,7 +285,7 @@ export function SetupScreen() {
               {step === 4 && (
                 <>
                   <StepHead
-                    eyebrow={t('Current level')}
+                   
                     title={t('Where do you feel most comfortable?')}
                     text={t('Be honest. The level check will confirm it.')}
                   />
@@ -305,7 +304,7 @@ export function SetupScreen() {
               {step === 5 && (
                 <>
                   <StepHead
-                    eyebrow={t('Optional')}
+                   
                     title={t('Add an AI key for a personal coach')}
                     text={t('Works with OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. You can skip this and everything still works.')}
                   />
