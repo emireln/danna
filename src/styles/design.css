@@ -1,0 +1,60 @@
+/* The website's design, for the Classic look: pill buttons, the violet accent, Unbounded headings, 24px cards, hairline
+   rules and no lift on hover. The tokens are in app.css. These rules sit outside the layers, so they win over the screen
+   files, and each one is limited to :root:not([data-look='playful']), so Playful keeps exactly its own rules. */
+
+/* Buttons are pills */
+:root:not([data-look='playful']) .btn {
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+}
+
+/* Single-line fields are pills, as the website's fields are. A box of several lines keeps a 16px radius. */
+:root:not([data-look='playful']) input.input {
+  border-radius: var(--radius-pill);
+}
+
+:root:not([data-look='playful']) textarea.input {
+  border-radius: var(--radius);
+}
+
+/* Tabs and segmented controls are pills, as the website's navigation is */
+:root:not([data-look='playful']) :is(.tab, .segmented, .segmented__btn) {
+  border-radius: var(--radius-pill);
+}
+
+/* The hero is the website's deep violet, one gradient, with no glow */
+:root:not([data-look='playful']) .hero {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(115deg, var(--hero-a) 0%, var(--hero-b) 100%);
+  box-shadow: none;
+}
+
+/* The blue banner and the report header take the same deep violet, and banners are cards with the 24px radius */
+:root:not([data-look='playful']) :is(.banner--blue, .report-hero) {
+  background: linear-gradient(115deg, var(--hero-a) 0%, var(--hero-b) 100%);
+}
+
+:root:not([data-look='playful']) .banner {
+  border-radius: var(--radius-lg);
+}
+
+/* Headings use the display face */
+:root:not([data-look='playful']) :is(h1, h2) {
+  font-family: var(--display);
+  letter-spacing: -0.02em;
+}
+
+/* No lift on hover: buttons, tiles and cards keep still and only change colour. A press still gives a little. */
+:root:not([data-look='playful']) :is(.btn, .nav__item, .tile, .card--hover, .quick, .section-card, .set-row, .word, .choice, .node):hover:not(:active) {
+  transform: none;
+}
+
+:root:not([data-look='playful']) .nav__item.is-active svg {
+  transform: none;
+}
+
+/* Focus: a 3px ring that follows the shape of whatever has focus */
+:root:not([data-look='playful']) :focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}

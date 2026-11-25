@@ -14,6 +14,7 @@ import './styles/write.css';
 import './styles/define.css';
 import './styles/tour.css';
 import './styles/playful.css';
+import './styles/design.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
