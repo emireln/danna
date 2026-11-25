@@ -13,7 +13,7 @@ export const ONBOARDING_PT: Record<string, string> = {
   'Close the tour': 'Fechar o tour',
   'Your daily goal, quests and next lesson start here.': 'Sua meta diária, as missões e a próxima lição começam aqui.',
   'Grammar, words, reading, listening, speaking and writing, one section at a time.':
-    'Gramática, palavras, leitura, audição, fala e escrita, uma seção de cada vez.',
+    'Gramática, palavras, leitura, compreensão auditiva, fala e escrita, uma seção de cada vez.',
   'Your flashcards and decks, with spaced repetition.': 'Seus cartões e baralhos, com repetição espaçada.',
   'Practice conversation and writing with your coach, and get feedback on your own text.':
     'Pratique conversação e escrita com o seu coach e receba feedback sobre o seu próprio texto.',
