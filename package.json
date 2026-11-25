@@ -1,7 +1,7 @@
 {
   "name": "danna",
   "productName": "DANNA",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "description": "DANNA: an English learning desktop app, from A1 to C1, with an optional TOEFL warm-up, AI tutoring, roadmaps and friends.",
   "private": true,
   "type": "module",
@@ -23,7 +23,8 @@
     "prepare": "husky",
     "logos": "node scripts/make-platform-logos.mjs",
     "installer-art": "node scripts/make-installer-art.mjs",
-    "art": "npm run icons && npm run logos && npm run installer-art",
+    "brand": "node scripts/make-brand.mjs",
+    "art": "npm run brand && npm run icons && npm run logos && npm run installer-art",
     "avatars": "node scripts/make-avatars.mjs"
   },
   "dependencies": {

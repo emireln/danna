@@ -290,15 +290,15 @@
     color: #ffffff;
   }
 
-  /* ---------- Wordmark ---------- */
+  /* ---------- Wordmark: the display face of the hero (Unbounded, weight 800, tracking -0.02em), as on the website ---------- */
   .wordmark {
     display: inline-flex;
     align-items: center;
     height: 100%;
-    font-family: 'Unbounded Variable', 'Unbounded', var(--font);
-    font-weight: 700;
+    font-family: var(--display);
+    font-weight: 800;
     font-size: 19px;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.02em;
     line-height: 1;
     color: var(--ink);
     white-space: nowrap;
@@ -307,7 +307,7 @@
   .wordmark--xl {
     height: auto;
     font-size: 46px;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.02em;
     line-height: 1;
   }
 
