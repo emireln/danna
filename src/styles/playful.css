@@ -57,6 +57,12 @@
     --shadow-sm: 0 2px 0 var(--line-2);
     --shadow: 0 4px 0 var(--line-2);
     --shadow-lift: 0 6px 0 var(--line-2), 0 18px 30px -18px rgba(29, 26, 61, 0.35);
+
+    /* The window frame: the Playful hero purples, a little brighter than the Classic frame. */
+    --frame-a: #3d24b5;
+    --frame-b: #4f2fd6;
+    --frame-c: #6a4bef;
+    --frame-glow: rgba(155, 134, 255, 0.5);
   }
 
   /* Headings and eyebrows: heavy, with the uppercase labels Duolingo and Talkpal use for sections. */
@@ -474,10 +480,10 @@
     background: var(--primary-50);
   }
 
-  /* The title bar: white, with a thick bottom border. */
+  /* The title bar sits on the frame: no background of its own, and no bottom border. */
   :root[data-look='playful'] .titlebar {
-    background: #ffffff;
-    border-bottom: 2px solid var(--line);
+    background: transparent;
+    border-bottom: 0;
   }
 
   /* Progress: thick rounded bars with stripes while a value is being earned. */

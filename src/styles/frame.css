@@ -5,16 +5,24 @@
 }
 
 @layer screens {
+  /* The window is the app's accent: a gradient with a soft glow, as the hub's frame. The page sits in a white panel
+     inside it, with the same gutter and corners as the hub's panel. */
   .frame {
     height: 100%;
     display: grid;
     grid-template-rows: var(--titlebar-h) minmax(0, 1fr);
-    background: var(--canvas);
+    background:
+      radial-gradient(900px 520px at 92% -14%, var(--frame-glow), transparent 62%),
+      linear-gradient(180deg, var(--frame-a) 0%, var(--frame-b) 46%, var(--frame-c) 100%);
   }
 
   .frame__body {
     position: relative;
     min-height: 0;
+    margin: 0 var(--frame-gutter) var(--frame-gutter);
+    border-radius: var(--frame-radius);
+    background: var(--canvas);
+    box-shadow: 0 34px 60px -40px rgba(10, 4, 40, 0.75);
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -33,10 +41,36 @@
     gap: 8px;
     /* The same inset on both sides, so the wordmark and the account icons sit the same distance from the edges. */
     padding: 0 20px;
-    background: var(--canvas);
-    border-bottom: 1px solid var(--line);
+    background: transparent;
     -webkit-app-region: drag;
     user-select: none;
+  }
+
+  /* On the accent frame the wordmark and the icon buttons are white, with a soft tint on hover. The account menu is a
+     separate popover: it keeps the page's own text colour. */
+  .titlebar .wordmark {
+    color: #ffffff;
+  }
+
+  .titlebar .btn--icon {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .titlebar .btn--icon:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+  }
+
+  .titlebar .icon-badge {
+    box-shadow: 0 0 0 2px var(--frame-b);
+  }
+
+  .titlebar .avatar-btn {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
+  }
+
+  .titlebar .avatar-btn:hover {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
   }
 
   .titlebar a,
@@ -226,7 +260,7 @@
     height: 100%;
     display: grid;
     place-items: center;
-    color: var(--ink-2);
+    color: rgba(255, 255, 255, 0.92);
     transition:
       background-color 0.15s var(--ease),
       color 0.15s var(--ease);
@@ -247,8 +281,8 @@
   }
 
   .titlebar__control:hover {
-    background: #eef1f6;
-    color: var(--ink);
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
   }
 
   .titlebar__control--close:hover {

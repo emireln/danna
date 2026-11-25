@@ -20,7 +20,11 @@ test('the dim of a sheet starts under the title bar', () => {
 });
 
 test('in the shell, the dim stops at the bottom tabs', () => {
-  assert.match(app, /\.shell \.scrim \{\s*--scrim-bottom: var\(--nav-h\);\s*\}/, 'the scrim ends where the tabs begin');
+  assert.match(
+    app,
+    /\.shell \.scrim \{\s*--scrim-bottom: calc\(var\(--nav-h\) \+ var\(--frame-gutter\)\);\s*\}/,
+    'the scrim ends where the tabs begin, above the frame gutter',
+  );
 });
 
 test('a sheet is never taller than the room between the bars, plus a 24 px gutter', () => {
@@ -36,7 +40,11 @@ test('a sheet is never taller than the room between the bars, plus a 24 px gutte
 test('the reader stops at the bottom tabs', () => {
   const viewer = library.match(/\.viewer \{([\s\S]*?)\}/);
   assert.ok(viewer, 'library.css styles the reader');
-  assert.match(viewer[1], /bottom: var\(--nav-h/, 'the reader ends where the tabs begin');
+  assert.match(
+    viewer[1],
+    /bottom: calc\(var\(--nav-h[^)]*\) \+ var\(--frame-gutter/,
+    'the reader ends where the tabs begin, above the frame gutter',
+  );
 });
 
 test('a picker opens above its field when the tabs leave no room below', () => {

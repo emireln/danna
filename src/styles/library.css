@@ -120,15 +120,17 @@
   color: var(--primary-700);
 }
 
+/* The viewer fills the white panel above the bottom tabs: the frame's gutter at the sides, and the panel's rounded top. */
 .viewer {
   position: fixed;
   top: var(--titlebar-h, 46px);
-  right: 0;
-  bottom: var(--nav-h, 64px);
-  left: 0;
+  right: var(--frame-gutter, 16px);
+  bottom: calc(var(--nav-h, 64px) + var(--frame-gutter, 16px));
+  left: var(--frame-gutter, 16px);
   z-index: 60;
   display: flex;
   flex-direction: column;
+  border-radius: var(--frame-radius, 22px) var(--frame-radius, 22px) 0 0;
   background: var(--canvas);
 }
 
