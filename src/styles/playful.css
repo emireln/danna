@@ -167,12 +167,9 @@
     box-shadow: 0 4px 0 #f0c3c0;
   }
 
+  /* A disabled button is faded, as in the Classic look: it keeps its own colours and its edge. */
   :root[data-look='playful'] .btn:disabled {
-    opacity: 1;
-    background: #d5dbef;
-    border-color: transparent;
-    color: #6b6f92;
-    box-shadow: 0 4px 0 #c4cbea;
+    opacity: 0.45;
   }
 
   :root[data-look='playful'] .btn:focus-visible {
@@ -936,6 +933,7 @@
     outline-offset: 3px;
   }
 
+  /* Disabled controls are faded, as in the Classic look, and keep their own colours and edge. */
   :root[data-look='playful'] .btn--icon:disabled,
   :root[data-look='playful'] .btn--text:disabled,
   :root[data-look='playful'] .avatar-btn:disabled,
@@ -955,11 +953,18 @@
   :root[data-look='playful'] .profile-hero__icon:disabled,
   :root[data-look='playful'] .profile-hero__picture-edit:disabled,
   :root[data-look='playful'] .profile-hero__banner-edit:disabled {
-    background: #d5dbef;
-    border-color: transparent;
-    color: #6b6f92;
-    box-shadow: 0 4px 0 #c4cbea;
-    opacity: 1;
+    opacity: 0.45;
+  }
+
+  /* A toggle that is on shows it in the primary colour: a solid key cap with a white icon, also when it is hovered. */
+  :root[data-look='playful'] .btn--icon.is-on {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 4px 0 var(--primary-700);
+  }
+
+  :root[data-look='playful'] .btn--icon.is-on:hover:not(:disabled) {
+    background: var(--primary-600);
   }
 
   /* The small ones are 40 pixels with the Roadmap button's corners; the avatar is round; a text button is a 40 pixel
@@ -1435,7 +1440,8 @@
     box-shadow: 0 4px 0 var(--line-2);
   }
 
-  /* The primary button keeps its solid edge. The ghost button is a soft tint, like the streak badge; the danger one a soft red. */
+  /* The primary button keeps its solid edge. Every other button is a white key cap with ink text, as the Classic look has
+     them, so colour is kept for the primary action. The danger button has a red word and a red edge. */
   :root[data-look='playful'] .btn--primary,
   :root[data-look='playful'] .btn--ghost,
   :root[data-look='playful'] .btn--danger {
@@ -1443,17 +1449,17 @@
   }
 
   :root[data-look='playful'] .btn--ghost {
-    background: var(--primary-50);
-    color: var(--primary-700);
-    box-shadow: 0 4px 0 var(--primary-100);
+    background: #ffffff;
+    color: var(--ink);
+    box-shadow: 0 4px 0 var(--line-2);
   }
 
   :root[data-look='playful'] .btn--ghost:hover:not(:disabled) {
-    background: var(--primary-100);
+    background: var(--surface-2);
   }
 
   :root[data-look='playful'] .btn--danger {
-    background: var(--red-50);
+    background: #ffffff;
     color: var(--red-ink);
     box-shadow: 0 4px 0 #efb8b5;
   }
@@ -1471,21 +1477,17 @@
     box-shadow: 0 3px 0 var(--primary);
   }
 
-  /* Chips are soft tinted pills, like the streak badge. */
+  /* Suggestions are white key caps with ink text, like the other buttons. */
   :root[data-look='playful'] .suggest button {
     border: 0;
-    border-radius: var(--radius-pill);
-    background: var(--primary-50);
-    color: var(--primary-700);
-    box-shadow: 0 3px 0 var(--primary-100);
+    border-radius: var(--radius);
+    background: #ffffff;
+    color: var(--ink);
+    box-shadow: 0 3px 0 var(--line-2);
   }
 
   :root[data-look='playful'] .suggest button:hover:not(:disabled) {
-    background: var(--primary-100);
-  }
-
-  :root[data-look='playful'] .plan-item--urgent {
-    background: var(--primary-50);
+    background: var(--surface-2);
   }
 
   /* A deck keeps its colour stripe on the left, and nothing else. */
