@@ -123,7 +123,7 @@
 /* The viewer fills the white panel above the bottom tabs: the frame's gutter at the sides, and the panel's rounded top. */
 .viewer {
   position: fixed;
-  top: var(--titlebar-h, 46px);
+  top: var(--titlebar-h, 40px);
   right: var(--frame-gutter, 16px);
   bottom: calc(var(--nav-h, 64px) + var(--frame-gutter, 16px));
   left: var(--frame-gutter, 16px);

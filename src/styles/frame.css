@@ -1,7 +1,7 @@
 /* Window frame, custom title bar, wordmark, welcome and mode choice.
    Loaded after app.css, inside the same screens layer so these rules win. */
 :root {
-  --titlebar-h: 46px;
+  --titlebar-h: 40px;
 }
 
 @layer screens {

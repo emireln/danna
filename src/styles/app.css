@@ -62,7 +62,7 @@
     --frame-b: #4730b8;
     --frame-c: #5236d1;
     --frame-glow: rgba(138, 109, 255, 0.45);
-    --frame-gutter: 10px;
+    --frame-gutter: 6px;
     --frame-radius: 18px;
 
     /* Google's own four colours, for the mark on its sign-in button. They do not change with the look. */
@@ -922,7 +922,7 @@
   .scrim {
     --scrim-bottom: 0px;
     position: fixed;
-    top: var(--titlebar-h, 46px);
+    top: var(--titlebar-h, 40px);
     right: 0;
     bottom: var(--scrim-bottom);
     left: 0;
@@ -939,7 +939,7 @@
 
   .sheet {
     width: min(520px, 100%);
-    max-height: calc(100vh - var(--titlebar-h, 46px) - var(--scrim-bottom) - 48px);
+    max-height: calc(100vh - var(--titlebar-h, 40px) - var(--scrim-bottom) - 48px);
     display: flex;
     flex-direction: column;
     background: var(--canvas);
