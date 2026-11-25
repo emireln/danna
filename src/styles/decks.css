@@ -85,7 +85,7 @@
     width: 32px;
     height: 32px;
     border: 2px solid transparent;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
   }
 
@@ -171,7 +171,7 @@
 
   .card-state {
     padding: 2px 8px;
-    border-radius: 6px;
+    border-radius: 5px;
     background: var(--surface-2);
     color: var(--ink-2);
     font-size: 12px;

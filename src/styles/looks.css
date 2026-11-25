@@ -43,20 +43,20 @@
   .look-card__bar {
     width: 40%;
     height: 8px;
-    border-radius: 4px;
+    border-radius: 3px;
     background: var(--line-2);
   }
 
   .look-card__block {
     height: 30px;
-    border-radius: 6px;
+    border-radius: 5px;
     background: var(--primary-50);
   }
 
   .look-card__button {
     width: 46px;
     height: 14px;
-    border-radius: 4px;
+    border-radius: 3px;
     background: var(--primary);
   }
 
@@ -88,13 +88,13 @@
 
   .look-card__preview--playful .look-card__block {
     border: 2px solid #d6e4f5;
-    border-radius: 14px;
+    border-radius: 11px;
     background: #ffffff;
   }
 
   .look-card__preview--playful .look-card__button {
     height: 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #128a4e;
     box-shadow: 0 3px 0 #0c6b3b;
   }
@@ -117,7 +117,7 @@
     width: 22px;
     height: 22px;
     place-items: center;
-    border-radius: 6px;
+    border-radius: 5px;
     background: var(--primary);
     color: #ffffff;
   }
@@ -224,7 +224,7 @@
     width: 36px;
     height: 36px;
     place-items: center;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--primary-50);
     color: var(--primary);
   }
@@ -324,7 +324,7 @@
     width: 44px;
     height: 44px;
     place-items: center;
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--surface-2);
     color: var(--muted);
   }
@@ -410,7 +410,7 @@
     align-items: center;
     height: 26px;
     padding: 0 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--surface-2);
     color: var(--ink-2);
     font-size: 13px;
@@ -469,7 +469,7 @@
     align-items: center;
     gap: 10px;
     padding: 6px 8px;
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
   .league__row--me {
@@ -526,7 +526,7 @@
     align-self: end;
     width: 100%;
     max-width: 28px;
-    border-radius: 8px 8px 4px 4px;
+    border-radius: 6px 6px 3px 3px;
     background: var(--primary);
   }
 

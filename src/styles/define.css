@@ -81,7 +81,7 @@
 
   .word-card__mark {
     padding: 0 2px;
-    border-radius: 4px;
+    border-radius: 3px;
     background: var(--primary-100);
     color: inherit;
     font-weight: 750;

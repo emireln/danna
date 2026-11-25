@@ -50,13 +50,13 @@
     --amber-ink: #8a5a00;
     --slate: #9aa3c4;
 
-    --radius-sm: 10px;
-    --radius: 16px;
-    --radius-lg: 22px;
+    --radius-sm: 8px;
+    --radius: 13px;
+    --radius-lg: 18px;
 
-    --shadow-sm: 0 2px 0 var(--line-2);
+    --shadow-sm: 0 3px 0 var(--line-2);
     --shadow: 0 4px 0 var(--line-2);
-    --shadow-lift: 0 6px 0 var(--line-2), 0 18px 30px -18px rgba(29, 26, 61, 0.35);
+    --shadow-lift: 0 5px 0 var(--line-2);
 
     /* The window frame: the Playful hero purples, a little brighter than the Classic frame. */
     --frame-a: #3d24b5;
@@ -101,14 +101,14 @@
 
   :root[data-look='playful'] .btn--sm {
     height: 40px;
-    border-radius: 12px;
+    border-radius: 10px;
     font-size: 14px;
   }
 
   :root[data-look='playful'] .btn--icon {
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border-radius: 10px;
   }
 
   :root[data-look='playful'] .btn:active:not(:disabled) {
@@ -250,7 +250,7 @@
     position: relative;
     overflow: hidden;
     padding: 26px 26px 24px;
-    border-radius: 28px;
+    border-radius: 22px;
     background: linear-gradient(135deg, var(--hero-a) 0%, var(--hero-b) 100%);
     box-shadow: 0 6px 0 #2a1a82;
   }
@@ -310,7 +310,7 @@
     height: 26px;
     margin-top: 8px;
     padding: 0 10px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.16);
     color: #ffffff;
     font-size: 13px;
@@ -322,7 +322,7 @@
     align-items: center;
     height: 24px;
     padding: 0 10px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--sun);
     color: var(--sun-ink);
     font-weight: 900;
@@ -365,7 +365,7 @@
     gap: 3px;
     padding: 14px 14px 13px;
     border: 2px solid rgba(255, 255, 255, 0.24);
-    border-radius: 18px;
+    border-radius: 14px;
     background: rgba(255, 255, 255, 0.14);
     box-shadow: 0 4px 0 rgba(20, 12, 70, 0.35);
   }
@@ -376,7 +376,7 @@
     width: 36px;
     height: 36px;
     margin-bottom: 7px;
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--sun);
     color: var(--sun-ink);
     box-shadow: 0 3px 0 var(--sun-edge);
@@ -476,7 +476,7 @@
     width: 44px;
     height: 32px;
     transform: translateX(-50%);
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--primary-50);
   }
 
@@ -502,7 +502,7 @@
   /* Inputs: a thick border, a soft ring on focus. */
   :root[data-look='playful'] .input {
     border: 2px solid var(--line-2);
-    border-radius: 14px;
+    border-radius: 11px;
     background: #ffffff;
   }
 
@@ -551,7 +551,7 @@
   }
 
   :root[data-look='playful'] .quest__icon {
-    border-radius: 12px;
+    border-radius: 10px;
     background: var(--sun);
     box-shadow: 0 3px 0 var(--sun-edge);
     color: var(--sun-ink);
@@ -591,7 +591,7 @@
 
   :root[data-look='playful'] .flip-card__face {
     border: 2px solid var(--line-2);
-    border-radius: 24px;
+    border-radius: 19px;
     background: #ffffff;
     box-shadow: 0 6px 0 var(--line-2);
   }
@@ -657,7 +657,7 @@
   }
 
   :root[data-look='playful'] .achievement__badge {
-    border-radius: 14px;
+    border-radius: 11px;
   }
 
   :root[data-look='playful'] .achievement--on .achievement__badge {
@@ -735,12 +735,12 @@
   :root[data-look='playful'] .tour__card,
   :root[data-look='playful'] .tour-offer__card {
     border: 2px solid var(--line-2);
-    border-radius: 20px;
+    border-radius: 16px;
     box-shadow: 0 5px 0 var(--line-2);
   }
 
   :root[data-look='playful'] .tour__spot {
-    border-radius: 16px;
+    border-radius: 13px;
   }
 
   /* The streak in the title bar takes the look of the XP badge it has replaced: a sun-coloured block with its edge. The
@@ -751,7 +751,7 @@
   :root[data-look='playful'] .streak--amethyst {
     height: 30px;
     padding: 0 9px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--sun);
     box-shadow: 0 2px 0 var(--sun-edge);
     color: var(--sun-ink);
@@ -969,7 +969,7 @@
   :root[data-look='playful'] .profile-hero__icon,
   :root[data-look='playful'] .profile-hero__picture-edit,
   :root[data-look='playful'] .profile-hero__banner-edit {
-    border-radius: 12px;
+    border-radius: 10px;
   }
 
   :root[data-look='playful'] .btn--text {
@@ -1007,7 +1007,7 @@
 
   :root[data-look='playful'] .nav__item:hover {
     background: var(--surface-2);
-    border-radius: 14px;
+    border-radius: 11px;
   }
 
   :root[data-look='playful'] .nav__item:active {
@@ -1030,7 +1030,7 @@
      has its own edge colour, a shade darker than its background. The tint is a white layer that fades in, not a change
      of brightness, which flickered on the colour when the pointer moved over the card. */
   :root[data-look='playful'] .section-card {
-    border-radius: 22px;
+    border-radius: 18px;
     box-shadow: 0 6px 0 var(--edge, rgba(15, 23, 42, 0.35));
     transition:
       transform 80ms ease,
@@ -1093,7 +1093,7 @@
     height: 28px;
     padding: 0 11px;
     border: 2px solid rgba(255, 255, 255, 0.6);
-    border-radius: 12px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.16);
     font-size: 13px;
     font-weight: 800;
@@ -1124,7 +1124,7 @@
     font-size: 14px;
     font-weight: 800;
     border: 2px solid var(--line-2);
-    border-radius: 12px;
+    border-radius: 10px;
     background: #ffffff;
     color: var(--ink);
     box-shadow: 0 4px 0 var(--line-2);
@@ -1165,7 +1165,7 @@
   /* The flag on a language tab is a little bigger in the Playful look, and on the green tab it has a white ring. */
   :root[data-look='playful'] .lang-flag {
     height: 22px;
-    border-radius: 5px;
+    border-radius: 4px;
     box-shadow: 0 0 0 1px var(--line-2);
   }
 
@@ -1182,7 +1182,7 @@
     background: #ffffff;
     color: var(--ink);
     border: 2px solid var(--line-2);
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: 0 4px 0 var(--line-2);
     transition:
       transform 80ms ease,
@@ -1236,7 +1236,7 @@
   :root[data-look='playful'] .pick__trigger {
     height: 40px;
     padding: 0 10px 0 12px;
-    border-radius: 12px;
+    border-radius: 10px;
     font-size: 14px;
     font-weight: 700;
     gap: 8px;
@@ -1349,7 +1349,7 @@
   :root[data-look='playful'] .node__bubble {
     background: var(--sun);
     color: var(--sun-ink);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 4px 10px;
     font-weight: 900;
     box-shadow: 0 3px 0 var(--sun-edge);
@@ -1390,6 +1390,108 @@
   /* A text button in the Playful look is a button: its hover shows the tint, not an underline. */
   :root[data-look='playful'] .btn--text:hover {
     text-decoration: none;
+  }
+
+  /* ---------- Flat with a bottom edge, like the app icon. Every control and card is a flat fill with rounded corners, and
+     its only depth is a solid edge under it: no outline, no halo and no blurred shadow. A press sinks it onto the edge. ---------- */
+  :root[data-look='playful'] .card,
+  :root[data-look='playful'] .feature-card,
+  :root[data-look='playful'] .card-item,
+  :root[data-look='playful'] .flip-card__face,
+  :root[data-look='playful'] .achievement,
+  :root[data-look='playful'] .word-card,
+  :root[data-look='playful'] .roleplay-card,
+  :root[data-look='playful'] .tour__card,
+  :root[data-look='playful'] .tour-offer__card,
+  :root[data-look='playful'] .plan-item,
+  :root[data-look='playful'] .word-list__item,
+  :root[data-look='playful'] .writing-trend,
+  :root[data-look='playful'] .btn--white {
+    border: 0;
+    background: #ffffff;
+    box-shadow: 0 4px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .focus-card,
+  :root[data-look='playful'] .mode-card,
+  :root[data-look='playful'] .recent-list__item,
+  :root[data-look='playful'] .look-card,
+  :root[data-look='playful'] .look-option,
+  :root[data-look='playful'] .choice,
+  :root[data-look='playful'] .set-row:not(.set-row--static),
+  :root[data-look='playful'] .pick__trigger,
+  :root[data-look='playful'] .profile-hero__picture-edit,
+  :root[data-look='playful'] .profile-hero__banner-edit,
+  :root[data-look='playful'] .tile,
+  :root[data-look='playful'] .turn__tool,
+  :root[data-look='playful'] .level-report__remove,
+  :root[data-look='playful'] .node--done,
+  :root[data-look='playful'] .btn--icon,
+  :root[data-look='playful'] .btn--text,
+  :root[data-look='playful'] .icon-wrap,
+  :root[data-look='playful'] .avatar-btn,
+  :root[data-look='playful'] .menu {
+    border: 0;
+    box-shadow: 0 4px 0 var(--line-2);
+  }
+
+  /* The primary button keeps its solid edge. The ghost button is a soft tint, like the streak badge; the danger one a soft red. */
+  :root[data-look='playful'] .btn--primary,
+  :root[data-look='playful'] .btn--ghost,
+  :root[data-look='playful'] .btn--danger {
+    border: 0;
+  }
+
+  :root[data-look='playful'] .btn--ghost {
+    background: var(--primary-50);
+    color: var(--primary-700);
+    box-shadow: 0 4px 0 var(--primary-100);
+  }
+
+  :root[data-look='playful'] .btn--ghost:hover:not(:disabled) {
+    background: var(--primary-100);
+  }
+
+  :root[data-look='playful'] .btn--danger {
+    background: var(--red-50);
+    color: var(--red-ink);
+    box-shadow: 0 4px 0 #efb8b5;
+  }
+
+  /* Fields: a white fill with a solid edge. The edge takes the primary colour while the field has the focus. */
+  :root[data-look='playful'] .input {
+    border: 0;
+    background: #ffffff;
+    box-shadow: 0 3px 0 var(--line-2);
+  }
+
+  :root[data-look='playful'] .input:focus,
+  :root[data-look='playful'] .input:focus-visible {
+    outline: none;
+    box-shadow: 0 3px 0 var(--primary);
+  }
+
+  /* Chips are soft tinted pills, like the streak badge. */
+  :root[data-look='playful'] .suggest button {
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--primary-50);
+    color: var(--primary-700);
+    box-shadow: 0 3px 0 var(--primary-100);
+  }
+
+  :root[data-look='playful'] .suggest button:hover:not(:disabled) {
+    background: var(--primary-100);
+  }
+
+  :root[data-look='playful'] .plan-item--urgent {
+    background: var(--primary-50);
+  }
+
+  /* A deck keeps its colour stripe on the left, and nothing else. */
+  :root[data-look='playful'] .deck-card {
+    border: 0;
+    border-left: 8px solid var(--deck, var(--primary));
   }
 
   /* Reduced motion: the presses and lifts still show, but nothing moves for long. */

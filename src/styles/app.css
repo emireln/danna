@@ -39,9 +39,9 @@
     --violet: #5b3fd9;
     --sun: #ffc62b;
 
-    --radius-sm: 6px;
-    --radius: 10px;
-    --radius-lg: 14px;
+    --radius-sm: 5px;
+    --radius: 8px;
+    --radius-lg: 11px;
     --radius-pill: 999px;
 
     --shadow-sm: 0 1px 2px rgba(15, 27, 51, 0.05);
@@ -60,7 +60,7 @@
     --frame-c: #5337d2;
     --frame-glow: rgba(138, 109, 255, 0.45);
     --frame-gutter: 10px;
-    --frame-radius: 22px;
+    --frame-radius: 18px;
   }
 
   :root[data-desktop] {
@@ -153,7 +153,7 @@
   :focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
-    border-radius: 6px;
+    border-radius: 5px;
   }
 
   ::selection {
@@ -281,7 +281,7 @@
     font-weight: 700;
     line-height: 1;
     padding: 3px 4px;
-    border-radius: 4px;
+    border-radius: 3px;
     background: var(--primary-100);
     color: var(--primary);
   }
@@ -289,7 +289,8 @@
   .page {
     width: min(1120px, 100%);
     margin: 0 auto;
-    padding: 36px 48px 56px;
+    /* The side gutter grows with the window: 20 px in a narrow window, the full 48 px in a wide one. */
+    padding: 36px clamp(20px, 4vw, 48px) 56px;
   }
 
   .page--wide {
@@ -392,7 +393,7 @@
     text-transform: uppercase;
     color: var(--muted);
     background: #e7ebf2;
-    border-radius: 4px;
+    border-radius: 3px;
     padding: 2px 6px;
   }
 
@@ -504,7 +505,7 @@
     flex: none;
     width: 46px;
     height: 46px;
-    border-radius: 10px;
+    border-radius: 8px;
     display: grid;
     place-items: center;
     background: var(--primary-50);
@@ -529,7 +530,7 @@
   .icon-tile--sm {
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: 6px;
   }
 
   .icon-tile--sm svg {
@@ -545,7 +546,7 @@
     gap: 8px;
     height: 44px;
     padding: 0 18px;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 15px;
     font-weight: 620;
     white-space: nowrap;
@@ -634,7 +635,7 @@
     height: 34px;
     padding: 0 12px;
     font-size: 13.5px;
-    border-radius: 7px;
+    border-radius: 6px;
   }
 
   .btn--block {
@@ -645,7 +646,7 @@
     width: 36px;
     height: 36px;
     padding: 0;
-    border-radius: 9px;
+    border-radius: 7px;
     color: var(--ink-2);
   }
 
@@ -700,7 +701,7 @@
     height: 44px;
     padding: 0 14px;
     border: 1px solid var(--line-2);
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--canvas);
     transition:
       border-color 0.15s var(--ease),
@@ -771,13 +772,13 @@
     gap: 4px;
     background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
   .segmented__btn {
     height: 34px;
     padding: 0 14px;
-    border-radius: 7px;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
     color: var(--muted);
@@ -803,7 +804,7 @@
     height: 30px;
     width: auto;
     margin-bottom: 4px;
-    border-radius: 4px;
+    border-radius: 3px;
     box-shadow: 0 0 0 1px var(--line);
   }
 
@@ -813,7 +814,7 @@
     height: 20px;
     width: auto;
     margin: 0 auto;
-    border-radius: 3px;
+    border-radius: 2px;
     box-shadow: 0 0 0 1px var(--line);
   }
 
@@ -930,7 +931,7 @@
     display: flex;
     flex-direction: column;
     background: var(--canvas);
-    border-radius: 14px;
+    border-radius: 11px;
     box-shadow: var(--shadow-lift);
     overflow: hidden;
   }
@@ -967,7 +968,7 @@
     padding: 6px;
     background: var(--canvas);
     border: 1px solid var(--line);
-    border-radius: 12px;
+    border-radius: 10px;
     box-shadow: var(--shadow-lift);
   }
 
@@ -977,7 +978,7 @@
     gap: 10px;
     width: 100%;
     padding: 9px 10px;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 14px;
     font-weight: 560;
     color: var(--ink-2);
@@ -1023,7 +1024,7 @@
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--ink);
     color: #fff;
     font-size: 14px;
@@ -1057,7 +1058,7 @@
     gap: 12px;
     align-items: flex-start;
     padding: 12px 14px;
-    border-radius: 9px;
+    border-radius: 7px;
     background: #fff8e6;
     border: 1px solid #fbe7ad;
     color: #6b4e00;
@@ -1080,7 +1081,7 @@
   .skeleton {
     position: relative;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #eef1f6;
   }
 
@@ -1180,7 +1181,7 @@
   .hero {
     position: relative;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 22px 22px 20px;
     color: #fff;
     background: linear-gradient(115deg, var(--hero-a) 0%, #2a4fd2 58%, var(--hero-b) 100%);
@@ -1251,7 +1252,7 @@
     gap: 12px;
     padding: 11px 14px;
     border: 1px solid var(--line);
-    border-radius: 9px;
+    border-radius: 7px;
     background: var(--canvas);
     font-size: 15px;
     font-weight: 600;
@@ -1271,7 +1272,7 @@
     flex: none;
     width: 30px;
     height: 30px;
-    border-radius: 7px;
+    border-radius: 6px;
     display: grid;
     place-items: center;
     color: #fff;
@@ -1295,7 +1296,7 @@
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    border-radius: 9px;
+    border-radius: 7px;
     background: #e8f0ff;
     font-size: 15px;
     font-weight: 650;
@@ -1322,7 +1323,7 @@
     grid-template-columns: minmax(0, 1fr) 220px;
     align-items: stretch;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: 10px;
     min-height: 150px;
     color: #fff;
   }
@@ -1402,7 +1403,7 @@
   .dots span {
     width: 6px;
     height: 6px;
-    border-radius: 3px;
+    border-radius: 2px;
     background: rgba(255, 255, 255, 0.4);
     transition: width 0.3s var(--ease);
   }
@@ -1468,7 +1469,7 @@
 
   /* ---------- Roadmap ---------- */
   .unit {
-    border-radius: 14px;
+    border-radius: 11px;
     padding: 18px 20px;
     background: var(--canvas);
     border: 1px solid var(--line);
@@ -1485,7 +1486,7 @@
     flex: none;
     width: 44px;
     height: 44px;
-    border-radius: 10px;
+    border-radius: 8px;
     display: grid;
     place-items: center;
     color: #fff;
@@ -1646,7 +1647,7 @@
     background: var(--ink);
     color: #fff;
     padding: 4px 9px;
-    border-radius: 6px;
+    border-radius: 5px;
     white-space: nowrap;
   }
 
@@ -1679,7 +1680,7 @@
     flex-direction: column;
     gap: 6px;
     padding: 16px 18px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--canvas);
     border: 1px solid var(--line);
     text-align: left;
@@ -1751,7 +1752,7 @@
     flex-direction: column;
     min-height: 196px;
     padding: 22px 22px 22px;
-    border-radius: 6px;
+    border-radius: 5px;
     overflow: hidden;
     color: #fff;
     text-align: left;
@@ -1805,7 +1806,7 @@
     white-space: nowrap;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: 4px;
+    border-radius: 3px;
   }
 
   /* The bar is part of the card's flow, under the badges, so a badge that wraps onto a second line pushes the bar down
@@ -1830,7 +1831,7 @@
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--canvas);
     border: 1px solid var(--line);
     text-align: left;
@@ -1947,7 +1948,7 @@
 
   .q-passage {
     padding: 18px 20px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--surface-2);
     border: 1px solid var(--line);
     font-size: 15.5px;
@@ -2010,7 +2011,7 @@
     gap: 14px;
     width: 100%;
     padding: 14px 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1.5px solid var(--line-2);
     background: var(--canvas);
     text-align: left;
@@ -2039,7 +2040,7 @@
     flex: none;
     width: 28px;
     height: 28px;
-    border-radius: 7px;
+    border-radius: 6px;
     border: 1.5px solid var(--line-2);
     display: grid;
     place-items: center;
@@ -2098,7 +2099,7 @@
     height: 32px;
     margin: 0 4px;
     padding: 0 8px;
-    border-radius: 6px;
+    border-radius: 5px;
     border: 1px solid var(--line-2);
     background: var(--canvas);
     transition:
@@ -2157,7 +2158,7 @@
 
   .word {
     padding: 9px 13px;
-    border-radius: 9px;
+    border-radius: 7px;
     border: 1px solid var(--line-2);
     background: var(--canvas);
     box-shadow: 0 2px 0 var(--line-2);
@@ -2193,7 +2194,7 @@
   .answer-line.is-over,
   .word-bank.is-over {
     background: var(--primary-50);
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
   .word-bank {
@@ -2221,7 +2222,7 @@
 
   .feedback-card {
     padding: 16px 18px;
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--surface-2);
     border: 1px solid var(--line);
     display: flex;
@@ -2249,7 +2250,7 @@
   .rubric-slider button {
     width: 46px;
     height: 44px;
-    border-radius: 9px;
+    border-radius: 7px;
     border: 1.5px solid var(--line-2);
     font-weight: 650;
     background: var(--canvas);
@@ -2329,7 +2330,7 @@
     display: inline-flex;
     margin-top: 8px;
     padding: 4px 12px;
-    border-radius: 6px;
+    border-radius: 5px;
     background: rgba(255, 255, 255, 0.88);
     color: var(--primary-700);
     font-size: 12.5px;
@@ -2435,7 +2436,7 @@
     flex-direction: column;
     gap: 12px;
     padding: 16px 18px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid var(--primary-100);
     background: var(--canvas);
   }
@@ -2468,7 +2469,7 @@
     display: flex;
     gap: 10px;
     padding: 11px 13px;
-    border-radius: 9px;
+    border-radius: 7px;
     background: var(--surface-2);
     font-size: 14px;
     color: var(--ink-2);
@@ -2488,7 +2489,7 @@
     gap: 26px;
     align-items: center;
     padding: 22px;
-    border-radius: 14px;
+    border-radius: 11px;
     border: 1px solid var(--primary-100);
     background: var(--canvas);
   }
@@ -2510,7 +2511,7 @@
   .plan__row i {
     width: 12px;
     height: 12px;
-    border-radius: 3px;
+    border-radius: 2px;
     flex: none;
   }
 
@@ -2526,7 +2527,7 @@
     align-items: center;
     gap: 14px;
     padding: 12px 14px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2563,7 +2564,7 @@
     gap: 14px;
     align-items: flex-start;
     padding: 14px 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2608,7 +2609,7 @@
     flex-direction: column;
     gap: 4px;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2631,7 +2632,7 @@
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid var(--line);
     background: var(--canvas);
   }
@@ -2653,7 +2654,7 @@
     gap: 12px;
     width: 100%;
     padding: 11px 14px;
-    border-radius: 9px;
+    border-radius: 7px;
     border: 1.5px solid var(--line);
     background: var(--canvas);
     text-align: left;
@@ -2702,7 +2703,7 @@
     text-transform: uppercase;
     color: var(--primary-700);
     background: var(--primary-100);
-    border-radius: 4px;
+    border-radius: 3px;
     padding: 2px 6px;
   }
 
@@ -2745,7 +2746,7 @@
   .bubble {
     max-width: 78%;
     padding: 12px 15px;
-    border-radius: 14px;
+    border-radius: 11px;
     font-size: 15px;
     line-height: 1.6;
     white-space: pre-wrap;
@@ -2771,7 +2772,7 @@
     align-items: flex-end;
     gap: 10px;
     padding: 10px;
-    border-radius: 14px;
+    border-radius: 11px;
     border: 1px solid var(--line-2);
     background: var(--canvas);
     box-shadow: var(--shadow-sm);
@@ -2821,7 +2822,7 @@
     gap: 28px;
     align-items: center;
     padding: 26px;
-    border-radius: 14px;
+    border-radius: 11px;
     border: 1px solid var(--line);
     background: var(--canvas);
     box-shadow: var(--shadow-sm);
@@ -2884,7 +2885,7 @@
   .wizard__step {
     flex: 1;
     height: 4px;
-    border-radius: 4px;
+    border-radius: 3px;
     background: #e5eaf3;
     overflow: hidden;
   }
@@ -2912,7 +2913,7 @@
     flex-direction: column;
     gap: 6px;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 10px;
     border: 1.5px solid var(--line-2);
     background: var(--canvas);
     text-align: left;
@@ -3024,7 +3025,7 @@
     align-items: center;
     height: 24px;
     padding: 0 9px;
-    border-radius: 8px;
+    border-radius: 6px;
     background: linear-gradient(120deg, #5337d2 0%, #6b3fd6 100%);
     color: #ffffff;
     font-size: 11px;
@@ -3048,7 +3049,7 @@
     margin-top: 10px;
     padding: 18px;
     border: 1px solid #d6e0f7;
-    border-radius: 14px;
+    border-radius: 11px;
     background: linear-gradient(180deg, rgba(36, 86, 224, 0.07), rgba(107, 63, 214, 0.03));
   }
 
