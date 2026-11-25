@@ -1,7 +1,7 @@
-// Keeps DANNA up to date with the newest GitHub release (see the publish settings in package.json).
+// Keeps Danna up to date with the newest GitHub release (see the publish settings in package.json).
 // A newer installer is downloaded in the background. When it is ready, the interface is told, and the
-// update is installed when DANNA closes, or at once if the person chooses to restart. Nothing is
-// installed while DANNA is in use.
+// update is installed when Danna closes, or at once if the person chooses to restart. Nothing is
+// installed while Danna is in use.
 const FIRST_CHECK_MS = 20 * 1000;
 const CHECK_EVERY_MS = 4 * 60 * 60 * 1000;
 
@@ -23,7 +23,7 @@ function createUpdates({ app, updater, send, log = () => {} }) {
 
   if (updater) {
     // A newer version is announced first. It is downloaded only when the person asks for it, and it is installed
-    // when they ask to restart, or when DANNA closes.
+    // when they ask to restart, or when Danna closes.
     updater.autoDownload = false;
     updater.autoInstallOnAppQuit = true;
     updater.logger = { info: log, warn: log, error: log, debug: () => {} };

@@ -101,7 +101,7 @@ test('plural forms follow the count in both languages', () => {
 // options of a vocabulary question, which are word meanings.
 const LEARNER_FIELDS = new Set(['title', 'blurb', 'subtitle', 'prompt', 'explanation', 'rubric']);
 // Names and labels that read the same in both languages.
-const SAME_IN_PORTUGUESE = /^DANNA( \d[\d.]*)?$/;
+const SAME_IN_PORTUGUESE = /^Danna( \d[\d.]*)?$/;
 
 function learnerTexts(value, found = [], seen = new Set()) {
   if (!value || typeof value !== 'object' || seen.has(value)) return found;

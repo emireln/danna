@@ -46,7 +46,7 @@ export interface WindowState {
 }
 
 export interface UpdateStatus {
-  /** idle: nothing newer; available: a newer version can be downloaded; downloading: it is on its way; ready: it installs when DANNA restarts or closes. */
+  /** idle: nothing newer; available: a newer version can be downloaded; downloading: it is on its way; ready: it installs when Danna restarts or closes. */
   state: 'idle' | 'available' | 'downloading' | 'ready';
   version: string | null;
 }
@@ -68,7 +68,7 @@ export interface SpeechChunk {
   error?: string;
 }
 
-/** A voice built into DANNA. `ready` is false when its files are not in this copy of the app. */
+/** A voice built into Danna. `ready` is false when its files are not in this copy of the app. */
 export interface BuiltinVoice {
   id: string;
   name: string;
@@ -214,6 +214,12 @@ export interface DannaBridge {
   };
   onNavigate: (callback: (path: string) => void) => () => void;
   openExternal: (url: string) => Promise<void>;
+  auth: {
+    /** Opens the Google sign-in page in the browser. Only the project's own sign-in page is accepted. */
+    openSignIn: (url: string) => Promise<void>;
+    /** Calls back with the address the browser returns to, after a Google sign-in that this app started. */
+    onCallback: (callback: (address: string) => void) => () => void;
+  };
 }
 
 declare global {

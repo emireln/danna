@@ -73,7 +73,7 @@ Checked with Node probes and with the opt-in live test (`tests/live-smoke.test.m
 
 - The first talk on each device shows what is sent: the voice goes to Google for Gemini Live, and the words go to the learner's provider for the typed engine. The notice is stored per device.
 - The Gemini key is used only in the main process. Errors are cleaned before they reach the window.
-- A talk ends when the learner ends it, and also when danna is hidden, so the microphone never listens out of sight. Live audio is billed by the provider per second.
+- A talk ends when the learner ends it, and also when Danna is hidden, so the microphone never listens out of sight. Live audio is billed by the provider per second.
 - The transcript is saved only when the learner chooses to save it at the end.
 
 ## Testing

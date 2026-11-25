@@ -1,4 +1,4 @@
-// Tells the person once when a newer DANNA is available, and once when it is ready to restart into. The update itself is
+// Tells the person once when a newer Danna is available, and once when it is ready to restart into. The update itself is
 // offered in Settings: nothing downloads or restarts without a click.
 import { useEffect, useRef } from 'react';
 import { useT } from '../lib/i18n/react';
@@ -17,9 +17,9 @@ export function UpdateNotice() {
     if (told.current === key) return;
     told.current = key;
     if (status.state === 'available') {
-      notify(t('DANNA {version} is available. Download it in Settings.', { version: status.version }), 'ok');
+      notify(t('Danna {version} is available. Download it in Settings.', { version: status.version }), 'ok');
     } else {
-      notify(t('DANNA {version} is ready. Restart to update when you are ready.', { version: status.version }), 'ok');
+      notify(t('Danna {version} is ready. Restart to update when you are ready.', { version: status.version }), 'ok');
     }
   }, [status, notify, t]);
 

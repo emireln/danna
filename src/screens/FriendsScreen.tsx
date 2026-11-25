@@ -135,7 +135,7 @@ export function FriendsScreen() {
             ) : undefined
           }
         >
-          {t('Friends, shared results and shared sets work with an online account. You are using DANNA offline on this device.')}
+          {t('Friends, shared results and shared sets work with an online account. You are using Danna offline on this device.')}
         </Empty>
       </div>
     );

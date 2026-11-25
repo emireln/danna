@@ -864,7 +864,7 @@ export function CoachScreen() {
             </button>
           </Notice>
         ) : (
-          <Notice tone="info">{t('The coach runs in the DANNA desktop app, where your AI key is kept on this device.')}</Notice>
+          <Notice tone="info">{t('The coach runs in the Danna desktop app, where your AI key is kept on this device.')}</Notice>
         ))}
 
       <div className="coach__scroll" ref={listRef} onScroll={onScroll} aria-live="polite">

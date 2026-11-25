@@ -64,7 +64,7 @@ const url = gh([
   '--target',
   head,
   '--title',
-  `DANNA ${version}`,
+  `Danna ${version}`,
   '--notes',
   `${notes}\n\nWindows installer: danna-setup-${version}-x64.exe`,
 ]);

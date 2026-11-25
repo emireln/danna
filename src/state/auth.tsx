@@ -5,8 +5,12 @@ import type { BackendMode, DataBackend } from '../lib/data/backend';
 import { copyProgress } from '../lib/migrate';
 import { bridge, errorText } from '../lib/bridge';
 import { deriveVault, exportVault, fromBase64, importVault, newSalt, toBase64, VAULT_STORAGE_KEY } from '../lib/vault';
+import { GOOGLE_RETURN_URL, readSignInCallback } from '../lib/googleSignIn';
 
 type Status = 'loading' | 'out' | 'in';
+
+// What the sign-in screen says when a Google sign-in comes back without a session.
+const GOOGLE_FAILED = 'Google sign-in did not finish. Try again.';
 
 interface AuthApi {
   status: Status;
@@ -20,6 +24,11 @@ interface AuthApi {
   /** Opens the vault with the account password, so this device can save and read the AI keys. Throws if it cannot. */
   unlockAccountKeys: (password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  /** Opens the Google sign-in page in the browser. The session comes back to the app later. */
+  signInWithGoogle: () => Promise<void>;
+  /** Why a Google sign-in did not finish, or null. */
+  googleError: string | null;
+  dismissGoogleError: () => void;
   signUp: (email: string, password: string, username: string) => Promise<{ confirmEmail: boolean }>;
   /** Sends the link that lets the person choose a new password. Throws if the request fails. */
   requestPasswordReset: (email: string) => Promise<void>;
@@ -38,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [vault, setVault] = useState<CryptoKey | null>(null);
   const [vaultError, setVaultError] = useState<string | null>(null);
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   const enter = useCallback((next: BackendMode, who: string | null) => {
     setBackend(backendFor(next));
@@ -145,6 +155,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [enter, leave, loadStoredVault]);
 
+  // The browser comes back with the sign-in that this app started. The session is taken in, or the screen is told why not.
+  useEffect(() => {
+    if (!bridge) return undefined;
+    return bridge.auth.onCallback((address) => {
+      const result = readSignInCallback(address);
+      if (!result) return;
+      const sb = getSupabase();
+      if (result.kind === 'error' || !sb) {
+        setGoogleError(GOOGLE_FAILED);
+        return;
+      }
+      void sb.auth
+        .setSession({ access_token: result.accessToken, refresh_token: result.refreshToken })
+        .then(({ data, error }) => {
+          if (error || !data.session) {
+            setGoogleError(GOOGLE_FAILED);
+            return;
+          }
+          setGoogleError(null);
+          storeMode('supabase');
+          enter('supabase', data.session.user.email ?? null);
+          void loadStoredVault();
+        });
+    });
+  }, [enter, loadStoredVault]);
+
+  // Opens the Google sign-in page in the browser. The return is taken by the effect above.
+  const signInWithGoogle = useCallback(async () => {
+    const sb = requireSupabase();
+    const { data, error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: GOOGLE_RETURN_URL, skipBrowserRedirect: true },
+    });
+    if (error) throw error;
+    if (!data.url || !bridge) throw new Error('Google sign-in needs the desktop app.');
+    setGoogleError(null);
+    await bridge.auth.openSignIn(data.url);
+  }, []);
+
+  const dismissGoogleError = useCallback(() => setGoogleError(null), []);
+
   const signIn = useCallback(
     async (address: string, password: string) => {
       const sb = requireSupabase();
@@ -175,7 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [enter, openVault],
   );
 
-  // The link goes to the site address set for the project (the DANNA website), so the app needs no address of its own.
+  // The link goes to the site address set for the project (the Danna website), so the app needs no address of its own.
   const requestPasswordReset = useCallback(async (address: string) => {
     const sb = requireSupabase();
     const { error } = await sb.auth.resetPasswordForEmail(address.trim());
@@ -231,13 +282,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       vaultError,
       unlockAccountKeys,
       signIn,
+      signInWithGoogle,
+      googleError,
+      dismissGoogleError,
       signUp,
       requestPasswordReset,
       useOffline,
       moveToDevice,
       signOut,
     }),
-    [status, mode, backend, email, vault, vaultError, unlockAccountKeys, signIn, signUp, requestPasswordReset, useOffline, moveToDevice, signOut],
+    [
+      status,
+      mode,
+      backend,
+      email,
+      vault,
+      vaultError,
+      unlockAccountKeys,
+      signIn,
+      signInWithGoogle,
+      googleError,
+      dismissGoogleError,
+      signUp,
+      requestPasswordReset,
+      useOffline,
+      moveToDevice,
+      signOut,
+    ],
   );
 
   return <AuthContext.Provider value={api}>{children}</AuthContext.Provider>;

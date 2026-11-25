@@ -1,4 +1,4 @@
-// Fetches the built-in voice (Kokoro-82M, Apache-2.0) into resources/tts/kokoro, so danna can read aloud with no
+// Fetches the built-in voice (Kokoro-82M, Apache-2.0) into resources/tts/kokoro, so Danna can read aloud with no
 // internet. The files come from the Hugging Face repository onnx-community/Kokoro-82M-v1.0-ONNX. Each file is checked
 // against its SHA-256 before it is kept, and a file that is already there and correct is not downloaded again.
 // The installer build runs this first (npm run dist). Run it by hand with: npm run tts:fetch
@@ -34,7 +34,7 @@ const FILES = [
   ...Object.entries(VOICE_HASHES).map(([id, sha256]) => ({ from: `voices/${id}.bin`, to: `voices/${id}.bin`, sha256 })),
 ];
 
-const NOTICE = `Built-in voice of danna
+const NOTICE = `Built-in voice of Danna
 =======================
 
 The speech model is Kokoro-82M by hexgrad (https://huggingface.co/hexgrad/Kokoro-82M), licensed under Apache-2.0.

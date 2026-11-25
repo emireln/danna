@@ -1,4 +1,4 @@
-# danna 2.0.0: look and feel
+# Danna 2.0.0: look and feel
 
 Two looks share one app. The look changes the colours, shapes, buttons, cards, depth and motion. It never changes the layout rules, the words, or what a control does.
 
@@ -30,7 +30,7 @@ We looked at four reference apps: Talkpal, Duolingo, Fluency and FluentU. This i
 7. **Subtitle-style reading.** In the reader (F9), large, high-contrast text, with the tapped word highlighted.
 8. **Light by default.** A dark variant is a later option, not part of 2.0.
 
-**What we never copy:** logos, mascots, photos of people, the exact brand colours, a condensed display face, or a copied layout. danna uses its own palette (section 3), Nunito, and avatars or initials for people.
+**What we never copy:** logos, mascots, photos of people, the exact brand colours, a condensed display face, or a copied layout. Danna uses its own palette (section 3), Nunito, and avatars or initials for people.
 
 ## 3. Tokens (Playful)
 

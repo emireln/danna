@@ -53,7 +53,7 @@ test('only Enter outside a button, a link, a text box or a list starts the next 
   assert.equal(keyboard.enterPressesPrimary('INPUT', true), false, 'Shift with Enter does not start the next step');
 });
 
-test('sign-in returns to the page the person asked for, inside danna only', () => {
+test('sign-in returns to the page the person asked for, inside Danna only', () => {
   assert.equal(navigation.returnPath('/library'), '/library');
   assert.equal(navigation.returnPath('/study/reading?tab=2'), '/study/reading?tab=2');
   assert.equal(navigation.returnPath('/report/abc#top'), '/report/abc#top');

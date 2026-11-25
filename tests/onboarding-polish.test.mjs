@@ -1,4 +1,4 @@
-// The loading screen and the sign-in page show the danna wordmark instead of the old logo. The last setup step takes
+// The loading screen and the sign-in page show the Danna wordmark instead of the old logo. The last setup step takes
 // a pasted AI key in the same field Settings uses. A chosen option keeps its tick and its colour in both looks.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,7 +23,7 @@ after(async () => {
   await server?.close();
 });
 
-test('the loading screen and the sign-in page show the danna wordmark, not the old logo', () => {
+test('the loading screen and the sign-in page show the Danna wordmark, not the old logo', () => {
   for (const file of ['Splash.tsx', 'AuthScreen.tsx']) {
     const source = read('src', 'screens', file);
     assert.doesNotMatch(source, /BrandMark/, `${file} does not draw the logo`);

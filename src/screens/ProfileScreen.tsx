@@ -511,7 +511,7 @@ export function ProfileScreen() {
             </>
           }
         >
-          <Field label={t('Display name')} hint={t('Shown to friends. Your username stays the same.')}>
+          <Field label={t('Display name')}>
             <input className="input" value={nameDraft} maxLength={40} onChange={(event) => setNameDraft(event.target.value)} />
           </Field>
         </Sheet>

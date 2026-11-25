@@ -1,8 +1,8 @@
 {
   "name": "danna",
-  "productName": "DANNA",
-  "version": "2.4.3",
-  "description": "DANNA: an English learning desktop app, from A1 to C1, with an optional TOEFL warm-up, AI tutoring, roadmaps and friends.",
+  "productName": "Danna",
+  "version": "2.4.4",
+  "description": "Danna: an English learning desktop app, from A1 to C1, with an optional TOEFL warm-up, AI tutoring, roadmaps and friends.",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
@@ -73,8 +73,16 @@
         "releaseType": "release"
       }
     ],
-    "productName": "DANNA",
-    "copyright": "Copyright (c) DANNA",
+    "productName": "Danna",
+    "copyright": "Copyright (c) Danna",
+    "protocols": [
+      {
+        "name": "Danna",
+        "schemes": [
+          "danna"
+        ]
+      }
+    ],
     "electronFuses": {
       "runAsNode": false,
       "enableCookieEncryption": true,
@@ -114,8 +122,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "DANNA",
-      "uninstallDisplayName": "DANNA",
+      "shortcutName": "Danna",
+      "uninstallDisplayName": "Danna",
       "installerSidebar": "build/installerSidebar.bmp",
       "uninstallerSidebar": "build/uninstallerSidebar.bmp"
     },

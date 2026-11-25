@@ -1,10 +1,10 @@
-# danna 2.0.0: plan
+# Danna 2.0.0: plan
 
 Status: in progress. The live checklist is in section 11. This file is the source of truth for scope, decisions and acceptance criteria. Update it when a decision changes.
 
 ## 1. Goal
 
-danna becomes the most complete English-learning app on the desktop. It keeps its structured roadmap, lessons and AI coach, and adds the strongest ideas from six apps (section 2). Users choose one of two looks in Settings:
+Danna becomes the most complete English-learning app on the desktop. It keeps its structured roadmap, lessons and AI coach, and adds the strongest ideas from six apps (section 2). Users choose one of two looks in Settings:
 
 - **Classic**: the current professional look. It stays as it is.
 - **Playful**: a new look with chunky 3D buttons, bright colours and gamification (daily goal, quests, league, achievements).
@@ -17,7 +17,7 @@ Release: **2.0.0**, labelled **Beta** in the title bar. The version is set to 2.
 
 Sources were searched on 2026-11-20. The results were search snippets and public descriptions, not hands-on use, so feature claims are approximate. Pricing and plan names were left out on purpose.
 
-| Reference | What we take | Where it lives in danna 2.0 |
+| Reference | What we take | Where it lives in Danna 2.0 |
 | --- | --- | --- |
 | Anki ([Anki manual, deck options](https://docs.ankiweb.net/deck-options.html); [Anki on Wikipedia](https://en.wikipedia.org/wiki/Anki_(software))) | Decks of cards, spaced repetition, four grades (Again, Hard, Good, Easy) that set the next interval | Decks and study sessions (F7) |
 | Grammarly ([tone suggestions](https://support.grammarly.com/hc/en-us/articles/10674801783309-How-do-Grammarly-s-tone-suggestions-work); [tone detector design](https://builtin.com/articles/grammarly-tone-detector-design)) | Suggestions with a category, a reason and a rewrite; a tone label; sorted by impact | Writing check (F8) |
@@ -47,7 +47,7 @@ What we deliberately do not copy: brand names, logos, mascots, exact colour pale
 **F2. Playful design system.** Tokens, 3D buttons, cards, navigation and motion, as specified in [DESIGN.md](DESIGN.md). Every screen must look right in both looks at 960 by 540 and at 1280 by 720.
 - Accept: the contrast test passes for every text pair; no screen loses a control in either look.
 
-**F3. Beta badge in the title bar.** A small square tag reading "Beta" (uppercase, 4 px radius, not a pill) sits beside the "danna" wordmark, in both looks.
+**F3. Beta badge in the title bar.** A small square tag reading "Beta" (uppercase, 4 px radius, not a pill) sits beside the "Danna" wordmark, in both looks.
 
 **F4. Today: daily goal and quests.**
 - A daily goal ring shows minutes practised today against `profile.daily_minutes`. Minutes come from the attempts of today (`duration_s`).

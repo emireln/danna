@@ -1,5 +1,5 @@
 // Dropdowns and calendars drawn in the app's own style. The browser's native popups cannot be
-// styled, so every choice list and date in DANNA uses these instead.
+// styled, so every choice list and date in Danna uses these instead.
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { Check, CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';

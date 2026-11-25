@@ -1,4 +1,4 @@
-// Updates: danna checks GitHub releases, tells the person when a newer version is there, downloads it when they ask,
+// Updates: Danna checks GitHub releases, tells the person when a newer version is there, downloads it when they ask,
 // tells the interface when it is ready, and restarts into it only when the person asks. The real electron-updater is
 // replaced by a stand-in that emits the same events.
 import { test } from 'node:test';
@@ -74,7 +74,7 @@ test('downloading starts when the person asks, and the version is ready when it 
   assert.deepEqual(sent.at(-1), { channel: 'update:status', payload: { state: 'ready', version: '0.5.1' } });
 });
 
-test('restarting waits until a version is ready, then installs it and opens danna again', () => {
+test('restarting waits until a version is ready, then installs it and opens Danna again', () => {
   const updater = fakeUpdater();
   const updates = createUpdates({ app: { isPackaged: true }, updater, send: () => {} });
   updates.install();

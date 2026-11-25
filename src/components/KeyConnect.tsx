@@ -49,7 +49,7 @@ export function KeyConnect({ autoFocus = false, onConnected }: { autoFocus?: boo
   const [error, setError] = useState<string | null>(null);
   const [connected, setConnected] = useState<string | null>(null);
 
-  if (!ai.desktop) return <Notice tone="info">{t('Keys can be added in the DANNA desktop app.')}</Notice>;
+  if (!ai.desktop) return <Notice tone="info">{t('Keys can be added in the Danna desktop app.')}</Notice>;
 
   const candidates = candidatesFor(keyDraft.trim());
   const detected = candidates.length > 0;

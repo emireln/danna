@@ -372,7 +372,7 @@ test('a key that is missing, or a microphone that is refused, ends the talk with
 
   const second = build();
   second.mic.open = async () => {
-    throw bridgeModule.userError('danna needs the microphone. Allow it for danna in the Windows settings, then try again.');
+    throw bridgeModule.userError('Danna needs the microphone. Allow it for Danna in the Windows settings, then try again.');
   };
   const conv = conversation.createLiveConversation({
     bridge: second.bridge,
@@ -382,7 +382,7 @@ test('a key that is missing, or a microphone that is refused, ends the talk with
   conv.attachVoice(second.voice);
   await conv.start(geminiOptions);
   assert.equal(conv.snapshot().ended, true);
-  assert.match(conv.snapshot().error, /danna needs the microphone/);
+  assert.match(conv.snapshot().error, /Danna needs the microphone/);
   assert.ok(second.bridge.calls.some((call) => call[0] === 'live.stop'), 'the session is closed when the microphone fails');
 });
 
@@ -392,7 +392,7 @@ test('without the desktop app a talk does not start and says so', async () => {
   conv.attachVoice(fakeVoice());
   await conv.start(geminiOptions);
   assert.equal(conv.snapshot().ended, true);
-  assert.equal(conv.snapshot().error, 'Talk live works in the DANNA desktop app.');
+  assert.equal(conv.snapshot().error, 'Talk live works in the Danna desktop app.');
 });
 
 test('a talk cannot start until the coach is drawn, and the coach leaving ends the talk', async () => {

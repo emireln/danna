@@ -1,4 +1,4 @@
-// DANNA desktop shell: custom window frame, tray, offline data, AI keys and secure IPC.
+// Danna desktop shell: custom window frame, tray, offline data, AI keys and secure IPC.
 const { app, BrowserWindow, ipcMain, shell, safeStorage, session, protocol, net, Tray, Menu, nativeImage, utilityProcess } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -17,6 +17,7 @@ const { createUpdates } = require('./updater.cjs');
 const kokoro = require('./kokoro.cjs');
 const { createSpeechHost } = require('./speech-host.cjs');
 const { createWindowsVoices } = require('./winvoices.cjs');
+const { isGoogleSignInUrl, findAuthCallback } = require('./authLink.cjs');
 const { createSpeechService } = require('./speech-service.cjs');
 
 // The built-in voice ships with the app (resources/tts/kokoro). In development it is read from the same folder in the project.
@@ -25,7 +26,7 @@ const kokoroEngine = kokoro.createSpeechEngine({ modelDir: kokoroDir });
 // The voice runs in a utility process of its own, so loading a voice or making its sound never stalls this process.
 const voiceHost = createSpeechHost({
   available: (voice) => kokoroEngine.available(voice),
-  fork: () => utilityProcess.fork(path.join(__dirname, 'speech-worker.cjs'), [kokoroDir], { serviceName: 'DANNA voice', stdio: 'ignore' }),
+  fork: () => utilityProcess.fork(path.join(__dirname, 'speech-worker.cjs'), [kokoroDir], { serviceName: 'Danna voice', stdio: 'ignore' }),
 });
 const speechService = createSpeechService({
   kokoro: voiceHost,
@@ -52,7 +53,7 @@ const updates = createUpdates({
   app,
   updater: autoUpdater,
   send: (channel, payload) => send(channel, payload),
-  log: (message) => console.error('DANNA updates:', message),
+  log: (message) => console.error('Danna updates:', message),
 });
 
 // Must run before the app is ready. The interface is served from this origin.
@@ -61,7 +62,10 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: t
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => showWindow());
+  app.on('second-instance', (event, argv) => {
+    showWindow();
+    takeSignInCallback(argv);
+  });
   app.on('before-quit', () => {
     quitting = true;
   });
@@ -72,7 +76,10 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     app.setAppUserModelId('app.danna.desktop');
     protocol.handle('app', serveApp);
-    // Only the microphone (speaking practice) and notifications (reminders), and only for DANNA's own pages.
+    // Lets Windows open danna:// links, which the Google sign-in comes back with. The installer registers them too.
+    if (process.defaultApp) app.setAsDefaultProtocolClient(AUTH_SCHEME, process.execPath, [path.resolve(process.argv[1])]);
+    else app.setAsDefaultProtocolClient(AUTH_SCHEME);
+    // Only the microphone (speaking practice) and notifications (reminders), and only for Danna's own pages.
     const allowedPermissions = new Set(['media', 'notifications']);
     session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
       const url = webContents ? webContents.getURL() : '';
@@ -111,6 +118,19 @@ function openExternal(url) {
   if (/^https:\/\//i.test(url)) shell.openExternal(url);
 }
 
+// Google sign-in. The browser comes back to danna://auth-callback, which Windows hands to this app. Only a sign-in that
+// this app started is taken, and only within a short time.
+const AUTH_SCHEME = 'danna';
+const SIGN_IN_WINDOW_MS = 20 * 60 * 1000;
+let googleSignInStartedAt = 0;
+
+function takeSignInCallback(argv) {
+  const address = findAuthCallback(argv, AUTH_SCHEME);
+  if (!address || Date.now() - googleSignInStartedAt > SIGN_IN_WINDOW_MS) return;
+  googleSignInStartedAt = 0;
+  send('auth:callback', address);
+}
+
 function send(channel, payload) {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
 }
@@ -125,7 +145,7 @@ function createWindow() {
     // No system title bar: the interface draws its own, with window controls.
     frame: false,
     thickFrame: true,
-    title: 'DANNA',
+    title: 'Danna',
     backgroundColor: '#ffffff',
     autoHideMenuBar: true,
     icon: fs.existsSync(ICON) ? ICON : undefined,
@@ -148,7 +168,7 @@ function createWindow() {
     mainWindow.hide();
     if (!trayHintShown && tray && typeof tray.displayBalloon === 'function') {
       trayHintShown = true;
-      tray.displayBalloon({ title: 'DANNA', content: shellText(shellLang()).hint });
+      tray.displayBalloon({ title: 'Danna', content: shellText(shellLang()).hint });
     }
   });
   mainWindow.on('closed', () => {
@@ -166,7 +186,7 @@ function createWindow() {
   });
 
   mainWindow.loadURL(DEV_URL ?? `${APP_ORIGIN}/index.html`).catch((error) => {
-    console.error('DANNA could not load its interface:', error);
+    console.error('Danna could not load its interface:', error);
   });
 }
 
@@ -217,7 +237,7 @@ function buildTrayMenu() {
 function createTray() {
   if (tray || !fs.existsSync(TRAY_ICON)) return;
   tray = new Tray(nativeImage.createFromPath(TRAY_ICON));
-  tray.setToolTip('DANNA');
+  tray.setToolTip('Danna');
   tray.setContextMenu(buildTrayMenu());
   tray.on('click', () => {
     if (mainWindow && mainWindow.isVisible() && mainWindow.isFocused()) mainWindow.hide();
@@ -517,6 +537,12 @@ function registerIpc() {
   handle('window:show', () => showWindow());
   handle('window:state', () => ({ maximized: Boolean(mainWindow && mainWindow.isMaximized()) }));
 
+  // Google sign-in: only the project's own Google sign-in page opens, and only for a sign-in this app started.
+  handle('auth:open-sign-in', ({ url }) => {
+    if (!isGoogleSignInUrl(url)) throw userError('That sign-in link cannot be opened.');
+    googleSignInStartedAt = Date.now();
+    return shell.openExternal(url);
+  });
   handle('shell:open', ({ url }) => {
     if (typeof url !== 'string' || !/^https:\/\/\S+$/i.test(url)) throw userError('That link cannot be opened.');
     return shell.openExternal(url);

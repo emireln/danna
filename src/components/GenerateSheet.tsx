@@ -78,7 +78,7 @@ export function GenerateSheet({ title, defaultSkill, defaultLevel, onClose }: Ge
         </>
       }
     >
-      <Field label={t('Topic (optional)')} hint={t('For example: climate policy, university housing, job interviews.')}>
+      <Field label={t('Topic (optional)')}>
         <input
           className="input"
           value={topic}

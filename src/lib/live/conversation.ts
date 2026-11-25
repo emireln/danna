@@ -484,7 +484,7 @@ export function createLiveConversation(deps: LiveDependencies): LiveConversation
     }
     const api = deps.bridge;
     if (!api) {
-      fail(current, t('Talk live works in the DANNA desktop app.'));
+      fail(current, t('Talk live works in the Danna desktop app.'));
       return;
     }
     if (options.engine === 'gemini') await startGemini(current, api, options);

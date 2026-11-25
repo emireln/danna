@@ -75,6 +75,10 @@ contextBridge.exposeInMainWorld(
       install: () => call('update:install'),
       onStatus: (callback) => listen('update:status', callback),
     }),
+    auth: Object.freeze({
+      openSignIn: (url) => call('auth:open-sign-in', { url }),
+      onCallback: (callback) => listen('auth:callback', callback),
+    }),
     onNavigate: (callback) => listen('app:navigate', callback),
     openExternal: (url) => call('shell:open', { url }),
   }),

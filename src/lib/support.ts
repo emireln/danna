@@ -1,4 +1,4 @@
-// The support page: a coffee for the developer. It opens in the browser, outside DANNA.
+// The support page: a coffee for the developer. It opens in the browser, outside Danna.
 import { bridge } from './bridge';
 
 export const SUPPORT_URL = 'https://buymeacoffee.com/emireln';

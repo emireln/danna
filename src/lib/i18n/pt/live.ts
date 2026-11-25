@@ -8,8 +8,8 @@ export const LIVE_PT: Record<string, string> = {
   'Gemini Live, with your key': 'Gemini Live, com a sua chave',
   'Your AI key writes, the app voice reads': 'Sua chave de IA escreve, a voz do app lê',
   'No AI key yet': 'Ainda não há chave de IA',
-  'Talk live works in the DANNA desktop app. Here you can see the coach, but not talk to it.':
-    'A conversa ao vivo funciona no app de desktop do DANNA. Aqui você vê o coach, mas não conversa com ele.',
+  'Talk live works in the Danna desktop app. Here you can see the coach, but not talk to it.':
+    'A conversa ao vivo funciona no app de desktop do Danna. Aqui você vê o coach, mas não conversa com ele.',
   'Add an AI key in Settings to talk with your coach.': 'Adicione uma chave de IA em Configurações para conversar com seu coach.',
   'Open Settings': 'Abrir Configurações',
   'Your coach': 'Seu coach',
@@ -52,7 +52,7 @@ export const LIVE_PT: Record<string, string> = {
   'The connection was lost. Start the talk again to carry on.': 'A conexão caiu. Comece a conversa de novo para continuar.',
   'Could not reach Google. Check your internet connection.': 'Não foi possível acessar o Google. Verifique sua conexão com a internet.',
   'The live conversation stopped. Try again.': 'A conversa ao vivo parou. Tente de novo.',
-  'Talk live works in the DANNA desktop app.': 'A conversa ao vivo funciona no app de desktop do DANNA.',
+  'Talk live works in the Danna desktop app.': 'A conversa ao vivo funciona no app de desktop do Danna.',
   'The connection is being renewed. The talk goes on.': 'A conexão está sendo renovada. A conversa continua.',
   'The connection dropped. Reconnecting…': 'A conexão caiu. Reconectando…',
   'Google did not accept the Gemini key. Check that it is still active.':
@@ -65,8 +65,8 @@ export const LIVE_PT: Record<string, string> = {
   'The conversation was interrupted. Try again.': 'A conversa foi interrompida. Tente de novo.',
   'The coach could not start. Try again.': 'O coach não pôde começar. Tente de novo.',
   'The microphone is not available on this device.': 'O microfone não está disponível neste aparelho.',
-  'DANNA needs the microphone. Allow it for DANNA in the Windows settings, then try again.':
-    'O DANNA precisa do microfone. Permita o acesso nas configurações do Windows e tente de novo.',
+  'Danna needs the microphone. Allow it for Danna in the Windows settings, then try again.':
+    'O Danna precisa do microfone. Permita o acesso nas configurações do Windows e tente de novo.',
   'No microphone was found. Connect one, then try again.': 'Nenhum microfone foi encontrado. Conecte um e tente de novo.',
   'The microphone could not start. Try again.': 'O microfone não pôde iniciar. Tente de novo.',
   '{name}, your coach': '{name}, seu coach',

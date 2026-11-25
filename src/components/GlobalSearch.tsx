@@ -125,7 +125,7 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="palette" role="dialog" aria-modal="true" aria-label={t('Search DANNA')}>
+      <div className="palette" role="dialog" aria-modal="true" aria-label={t('Search Danna')}>
         <SearchField
           value={query}
           onChange={(value) => {
@@ -134,13 +134,10 @@ export function GlobalSearch({ onClose }: { onClose: () => void }) {
           }}
           onKeyDown={onKey}
           placeholder={t('Search lessons, tests, chats, files and pages')}
-          label={t('Search DANNA')}
+          label={t('Search Danna')}
           autoFocus
         />
         <div className="palette__body">
-          {!trimmed && (
-            <p className="palette__hint muted small">{t('Type a word. The search looks through every lesson, test, chat, file and page.')}</p>
-          )}
           {trimmed && flat.length === 0 && <p className="palette__hint muted">{t('Nothing matches “{query}”.', { query: trimmed })}</p>}
           {flat.length > 0 && (
             <ul className="palette__list" role="listbox" aria-label={t('Results')}>

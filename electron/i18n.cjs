@@ -1,18 +1,18 @@
 // The words the desktop shell shows outside the window: the tray menu and its notice.
 const TEXT = {
   en: {
-    open: 'Open DANNA',
+    open: 'Open Danna',
     learn: 'Continue learning',
     review: 'Quick review',
-    quit: 'Quit DANNA',
-    hint: 'DANNA is still running. Click the tray icon to open it again.',
+    quit: 'Quit Danna',
+    hint: 'Danna is still running. Click the tray icon to open it again.',
   },
   pt: {
-    open: 'Abrir o DANNA',
+    open: 'Abrir o Danna',
     learn: 'Continuar estudando',
     review: 'Revisão rápida',
-    quit: 'Sair do DANNA',
-    hint: 'O DANNA continua aberto. Clique no ícone da bandeja para abri-lo de novo.',
+    quit: 'Sair do Danna',
+    hint: 'O Danna continua aberto. Clique no ícone da bandeja para abri-lo de novo.',
   },
 };
 

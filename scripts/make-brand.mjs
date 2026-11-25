@@ -10,7 +10,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(root, 'package.json'));
 const sharp = require('sharp');
 
-// The banner's accent: danna's violet. botdanna uses its coral, #d52b50.
+// The banner's accent: Danna's violet. Botdanna uses its coral, #d52b50.
 const ACCENT = '#5236d1';
 const LOGO = join(root, 'brand', 'logo.png');
 const TRAY = join(root, 'brand', 'tray-icon.png');

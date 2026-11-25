@@ -1,4 +1,4 @@
-// Sends the reminders the learner has switched on. It runs while DANNA is open, and it only sends a reminder while DANNA
+// Sends the reminders the learner has switched on. It runs while Danna is open, and it only sends a reminder while Danna
 // is in the background (minimised, hidden in the tray, or behind another window), because then a message can help.
 import { useEffect } from 'react';
 import { useAppData } from '../state/appData';
@@ -24,7 +24,7 @@ function canNotify(): boolean {
 function show(reminder: Reminder): void {
   try {
     const note = new Notification(reminder.title, { body: reminder.body, tag: `danna-${reminder.id}`, silent: true });
-    // Clicking the message brings DANNA forward on the page it is about, even from the tray.
+    // Clicking the message brings Danna forward on the page it is about, even from the tray.
     note.onclick = () => {
       void bridge?.window?.show?.();
       window.focus();
@@ -49,7 +49,7 @@ export function ReminderSync() {
       if (busy || !canNotify()) return;
       const prefs = readReminderPrefs();
       if (!prefs.enabled) return;
-      // While DANNA is on screen and in use, the screen already says what matters. A reminder is for when it is not.
+      // While Danna is on screen and in use, the screen already says what matters. A reminder is for when it is not.
       if (document.visibilityState === 'visible' && document.hasFocus()) return;
       busy = true;
       try {
@@ -86,7 +86,7 @@ export function ReminderSync() {
 
     const timer = window.setInterval(() => void check(), CHECK_EVERY_MS);
     let hiddenTimer: number | undefined;
-    // Leaving DANNA is the moment a reminder can help most, so the check runs soon after the window is hidden.
+    // Leaving Danna is the moment a reminder can help most, so the check runs soon after the window is hidden.
     const onVisibility = () => {
       if (document.visibilityState !== 'hidden') return;
       window.clearTimeout(hiddenTimer);

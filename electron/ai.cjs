@@ -373,7 +373,7 @@ const REQUESTS = {
     if (stream) body.stream = true;
     return {
       url: 'https://openrouter.ai/api/v1/chat/completions',
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'DANNA' },
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'X-Title': 'Danna' },
       body,
     };
   },

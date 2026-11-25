@@ -23,7 +23,7 @@ import { initLang } from './lib/i18n';
 
 initLang();
 const root = document.getElementById('root');
-if (!root) throw new Error('DANNA could not start: the page is missing its root element.');
+if (!root) throw new Error('Danna could not start: the page is missing its root element.');
 
 createRoot(root).render(
   <StrictMode>

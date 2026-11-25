@@ -29,6 +29,7 @@ function electronStub() {
       on() {},
       whenReady: () => Promise.resolve(),
       setAppUserModelId() {},
+      setAsDefaultProtocolClient() {},
       getPath: () => folder,
       getVersion: () => '0.4.5',
       getLocale: () => 'pt-BR',
@@ -103,7 +104,7 @@ function electronStub() {
 
 const APP_PAGE = 'app://danna/index.html';
 
-// Calls a channel the way the interface does: from a danna page unless another address is given.
+// Calls a channel the way the interface does: from a Danna page unless another address is given.
 function invoke(channel, payload, url = APP_PAGE) {
   const handler = handlers.get(channel);
   assert.ok(handler, `the channel ${channel} is registered`);
@@ -143,7 +144,7 @@ test('every channel the interface calls is handled by the desktop process', () =
   for (const channel of new Set(used)) assert.ok(handlers.has(channel), `${channel} has a handler`);
 });
 
-test('only danna pages can call the desktop process', async () => {
+test('only Danna pages can call the desktop process', async () => {
   for (const url of ['https://evil.example/', 'file:///C:/Users/someone/page.html', 'app://other/index.html']) {
     await assert.rejects(invoke('local:call', { method: 'getProfile', args: [] }, url), /untrusted page/, url);
   }
@@ -151,7 +152,7 @@ test('only danna pages can call the desktop process', async () => {
   await assert.rejects(invoke('keys:state', undefined, 'file:///C:/x.html'), /untrusted page/);
 });
 
-test('the live talk takes calls and microphone frames only from danna pages', async () => {
+test('the live talk takes calls and microphone frames only from Danna pages', async () => {
   const options = { instructions: 'Be kind.', voice: 'Kore', turnMode: 'auto' };
   await assert.rejects(invoke('live:start', options, 'https://evil.example/'), /untrusted page/);
   await assert.rejects(invoke('live:text', { text: 'hi' }, 'https://evil.example/'), /untrusted page/);
@@ -159,12 +160,12 @@ test('the live talk takes calls and microphone frames only from danna pages', as
   const frame = listeners.get('live:audio');
   assert.ok(frame, 'the microphone frames are listened to');
   assert.doesNotThrow(() => frame({ senderFrame: { url: 'https://evil.example/' } }, new ArrayBuffer(8)));
-  // From a danna page the call reaches the talk, which asks for the Gemini key when there is none.
+  // From a Danna page the call reaches the talk, which asks for the Gemini key when there is none.
   assert.equal(await refusal(invoke('live:start', options)), 'Add a Gemini key in Settings to talk live.');
   assert.equal(await refusal(invoke('live:stop', undefined)), null);
 });
 
-test('danna pages can read the app information', async () => {
+test('Danna pages can read the app information', async () => {
   const info = await invoke('app:info');
   assert.equal(info.version, '0.4.5');
   assert.equal(info.packaged, false);
@@ -253,7 +254,7 @@ test('the app language is saved as English or Portuguese, or follows the system'
   assert.equal((await invoke('settings:set', { language: null })).language, null);
 });
 
-test('the sign-in session keeps only danna keys, and small values', async () => {
+test('the sign-in session keeps only Danna keys, and small values', async () => {
   assert.equal(await refusal(invoke('session:set', { key: 'other', value: 'x' })), 'Unknown session value.');
   assert.equal(await refusal(invoke('session:set', { key: 'danna.auth', value: 'x'.repeat(70000) })), 'That sign-in data is too large to keep.');
   assert.equal(await invoke('session:set', { key: 'danna.auth', value: 'token-1' }), true);

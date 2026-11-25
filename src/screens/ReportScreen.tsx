@@ -49,7 +49,7 @@ function saveImage(attempt: AttemptRow, estimate: number | null, t: Translate) {
   const font = "'Inter Variable', Inter, 'Segoe UI', sans-serif";
   ctx.fillStyle = '#ffffff';
   ctx.font = `600 34px ${font}`;
-  ctx.fillText(estimate !== null ? t('DANNA · TOEFL estimate') : t('DANNA · level report'), 72, 110);
+  ctx.fillText(estimate !== null ? t('Danna · TOEFL estimate') : t('Danna · level report'), 72, 110);
   ctx.font = `750 190px ${font}`;
   ctx.fillText(String(estimate ?? attempt.score_pct), 72, 340);
   ctx.font = `600 40px ${font}`;

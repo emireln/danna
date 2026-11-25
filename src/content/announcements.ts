@@ -18,9 +18,9 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-2314',
     kind: 'release_note',
-    title: 'DANNA 2.3.14',
+    title: 'Danna 2.3.14',
     body: [
-      '- Forgot your password? The sign-in screen has a link that emails you a reset link. The link opens the DANNA website, where you choose a new password.',
+      '- Forgot your password? The sign-in screen has a link that emails you a reset link. The link opens the Danna website, where you choose a new password.',
     ].join('\n'),
     version: '2.3.14',
     image_url: null,
@@ -33,7 +33,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-2312',
     kind: 'release_note',
-    title: 'DANNA 2.3.12',
+    title: 'Danna 2.3.12',
     body: [
       '- Talk live is switched off for now while it is reworked. The coach card is hidden, and the rest of the coach works as before.',
     ].join('\n'),
@@ -48,7 +48,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-2311',
     kind: 'release_note',
-    title: 'DANNA 2.3.11',
+    title: 'Danna 2.3.11',
     body: [
       '- A new logo: a white mark on a transparent background, in the app and on the platform logos.',
     ].join('\n'),
@@ -63,7 +63,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-2310',
     kind: 'release_note',
-    title: 'DANNA 2.3.10',
+    title: 'Danna 2.3.10',
     body: [
       '- Talk live: the coach is drawn in 3D with TalkingHead. Its mouth follows the words of each reply, and you can ask it to raise a hand, give a thumbs up, say OK or shrug.',
       '- Ana is the only coach. Leo and Mia have been removed.',
@@ -79,7 +79,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-238',
     kind: 'release_note',
-    title: 'DANNA 2.3.8',
+    title: 'Danna 2.3.8',
     body: [
       '- Speaking with a Gemini key: the microphone works when Gemini is your only AI key. Gemini writes down what you say, for the coach and for speaking practice.',
       '- Fixes: the coach’s multiple-choice sets show as cards again, and the Account rows in Settings have room between them.',
@@ -95,11 +95,11 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-230',
     kind: 'release_note',
-    title: 'DANNA 2.3.0',
+    title: 'Danna 2.3.0',
     body: [
       '- Talk live: a real-time voice conversation with your coach. With a Gemini key, the coach answers in its own voice while you speak. With any other AI key, the coach writes the replies and the app’s voice reads them aloud.',
       '- Realistic coaches: Ana, Leo and Mia are realistic 3D people, shown from the head up. Their mouths follow the voice, and they blink and look at you while they talk.',
-      '- Privacy: DANNA asks for your consent once on each device. A talk ends when DANNA is hidden, and it is kept in your coach chats only when you save it.',
+      '- Privacy: Danna asks for your consent once on each device. A talk ends when Danna is hidden, and it is kept in your coach chats only when you save it.',
     ].join('\n'),
     version: '2.3.0',
     image_url: null,
@@ -112,10 +112,10 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-220',
     kind: 'release_note',
-    title: 'DANNA 2.2.0',
+    title: 'Danna 2.2.0',
     body: [
-      '- Built-in voices: DANNA reads with seven voices made on your computer: Heart, Bella, Nicole, Sarah, Michael, Emma and George. They work offline, with no key and no internet.',
-      '- Voices on this PC: DANNA finds the voices installed on your computer, the natural Windows voices too, and lists them in Settings. Listen to each one before you choose it.',
+      '- Built-in voices: Danna reads with seven voices made on your computer: Heart, Bella, Nicole, Sarah, Michael, Emma and George. They work offline, with no key and no internet.',
+      '- Voices on this PC: Danna finds the voices installed on your computer, the natural Windows voices too, and lists them in Settings. Listen to each one before you choose it.',
       '- Automatic: a cloud voice when you have an AI key, otherwise the built-in voice. The robotic Windows voice is no longer used to read aloud.',
       '- Faster start: a reading plays its first words while the rest is still being made.',
       '- The V2 BETA badge is gone from the title bar and from the website.',
@@ -133,9 +133,9 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-210',
     kind: 'release_note',
-    title: 'DANNA 2.1.0',
+    title: 'Danna 2.1.0',
     body: [
-      '- Reminders: switch them on in Settings. DANNA can remind you about your streak, today’s goal, cards due for review, an exam that is close, or a longer break. They arrive only while DANNA is in the background, from the time you choose, and at most one a day.',
+      '- Reminders: switch them on in Settings. Danna can remind you about your streak, today’s goal, cards due for review, an exam that is close, or a longer break. They arrive only while Danna is in the background, from the time you choose, and at most one a day.',
       '- Sounds: a right and a wrong answer, a finished lesson, a coach reply and a reminder each have a short, soft tone. Switch each one off in Settings, set the volume, or listen to it first.',
       '- Smoother sections: a section fades in without a blank moment, and going back to one shows what it showed before. The roadmap nodes fade in instead of jumping in one by one.',
       '- Buttons: every button has the same soft hover and press. The roadmap nodes no longer flicker when the pointer moves over them.',
@@ -154,7 +154,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-200',
     kind: 'release_note',
-    title: 'DANNA 2.0.0',
+    title: 'Danna 2.0.0',
     body: [
       '- Two looks: Classic, the one you know, and Playful, with chunky 3D buttons, bright colours and a friendlier feel. Choose one in Settings. The choice is saved to your account, or to this device without one.',
       '- Decks and flashcards: make decks, add cards or import a list, and study with spaced repetition. Again, Hard, Good and Easy set the next interval, and each button shows its interval first.',
@@ -176,7 +176,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-143',
     kind: 'release_note',
-    title: 'DANNA 1.4.3',
+    title: 'Danna 1.4.3',
     body: [
       '- My report: the same score report as the level check, with your advice, skill profile, skills to improve and study plan',
       '- Today: the level report sits beside your exam card, and its arrow is gone. The X still removes it from Today for good',
@@ -192,7 +192,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-142',
     kind: 'release_note',
-    title: 'DANNA 1.4.2',
+    title: 'Danna 1.4.2',
     body: ['- Today: the Roadmap button takes the place of Your next step'].join('\n'),
     version: '1.4.2',
     image_url: null,
@@ -205,7 +205,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-141',
     kind: 'release_note',
-    title: 'DANNA 1.4.1',
+    title: 'Danna 1.4.1',
     body: ['- Profile: no blue line round your picture, in the profile and the title bar'].join('\n'),
     version: '1.4.1',
     image_url: null,
@@ -218,14 +218,14 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-140',
     kind: 'release_note',
-    title: 'DANNA 1.4.0',
+    title: 'Danna 1.4.0',
     body: [
-      '- Feedback: one message an hour. If you try again sooner, DANNA tells you how long to wait',
+      '- Feedback: one message an hour. If you try again sooner, Danna tells you how long to wait',
       '- Today: a finished learning setup leaves the screen, and the level report can be removed from Today for good',
       '- My report in the profile: your strengths, your weaknesses and your progress across the app. Save it as an image, with your name on it',
       '- Share: a search bar finds your friends, results and sets, and the friends you shared with most recently come first. Share with a friend names that friend, with no Send to list',
       '- The Buy me a coffee button is yellow, with dark text',
-      '- Updates: DANNA tells you when a newer version is ready. Click the update button in the title bar to download it, then click Restart to update',
+      '- Updates: Danna tells you when a newer version is ready. Click the update button in the title bar to download it, then click Restart to update',
     ].join('\n'),
     version: '1.4.0',
     image_url: null,
@@ -238,7 +238,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-130',
     kind: 'release_note',
-    title: 'DANNA 1.3.0',
+    title: 'Danna 1.3.0',
     body: [
       '- Word-order lessons: drag the words into the right order, or tap them. A wrong order stays open, so you can move the words and check again',
       '- Links from Instagram, TikTok, X, Facebook, Threads, Reddit, Pinterest, Twitch, Dailymotion, Wikipedia, Medium, Quora and Deezer are recognised, with their logos',
@@ -260,7 +260,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-120',
     kind: 'release_note',
-    title: 'DANNA 1.2.0',
+    title: 'Danna 1.2.0',
     body: [
       '- Replies stream in as the coach writes them. Stop one with its button or Esc, write it again, edit your last question, or continue a reply that ran out of room',
       '- Nine modes on the start screen of the coach, such as Conversation practice, Fix my writing, Speaking practice, Exam practice and Vocabulary builder. A chat keeps the mode it started in',
@@ -281,7 +281,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-110',
     kind: 'release_note',
-    title: 'DANNA 1.1.0',
+    title: 'Danna 1.1.0',
     body: [
       '- Pictures and banners show the new one at once, even when the old one was shown a moment ago',
       '- The send button of the coach stays blue when the message box is empty',
@@ -299,7 +299,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-100',
     kind: 'release_note',
-    title: 'DANNA 1.0.0',
+    title: 'Danna 1.0.0',
     body: [
       '- Listening voices have a volume control in Settings, from silent to full',
       '- Your exam has its own page: its name, date and target score, the days left, and a test for each skill',
@@ -319,12 +319,12 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-090',
     kind: 'release_note',
-    title: 'DANNA 0.9.0',
+    title: 'Danna 0.9.0',
     body: [
       '- The progress bar on the roadmap sits beside the level badge, in the space that was empty',
       '- Self study sections and pages open smoothly: no stutter, and every page starts at its top',
       '- Buy me a coffee: find it at the bottom of the profile menu, and under About in Settings',
-      '- Rate DANNA from 1 to 5 stars, with an optional comment, in Settings. Online accounts send it to the developer',
+      '- Rate Danna from 1 to 5 stars, with an optional comment, in Settings. Online accounts send it to the developer',
     ].join('\n'),
     version: '0.9.0',
     image_url: null,
@@ -337,7 +337,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-080',
     kind: 'release_note',
-    title: 'DANNA 0.8.0',
+    title: 'Danna 0.8.0',
     body: [
       '- Your AI keys are saved to your account, sealed with your password. Add a key once, and every device you sign in to can use it',
       '- Chats and files open a page at a time, so hundreds of them stay quick and fit their screen',
@@ -357,7 +357,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-070',
     kind: 'release_note',
-    title: 'DANNA 0.7.0',
+    title: 'Danna 0.7.0',
     body: [
       '- Search the whole app from the title bar, or with Ctrl+K: lessons, tests, chats, files, results and pages',
       '- Listening passages are read in a natural voice from your OpenAI or Google Gemini key. Choose the voice in Settings',
@@ -384,7 +384,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-060',
     kind: 'release_note',
-    title: 'DANNA 0.6.0',
+    title: 'Danna 0.6.0',
     body: [
       '- Coach chats: each conversation keeps its own history. Rename, archive or delete any chat',
       '- A new chat gets a short name, of four or five words, from your first question',
@@ -394,7 +394,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
       '- More reading, listening, writing and speaking practice in every unit, on both tracks',
       '- New mock tests: reading with listening, and writing with speaking, for each level and the TOEFL track',
       '- Practice sets you make with AI stay saved, on this device or in your account',
-      '- The DANNA logo sits beside its name on the first screen',
+      '- The Danna logo sits beside its name on the first screen',
     ].join('\n'),
     version: '0.6.0',
     image_url: null,
@@ -407,13 +407,13 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-050',
     kind: 'release_note',
-    title: 'DANNA 0.5.0',
+    title: 'Danna 0.5.0',
     body: [
       '- Portuguese (PT-BR) for the whole app. Choose the language in Settings',
       '- Your day streak shows beside your picture, with a flame that grows at 10 and 50 days',
       '- A report a friend shares opens as their report, with their name on it',
       '- Profile pictures of your friends show up as soon as you are friends',
-      '- DANNA checks for new versions and installs them in the background',
+      '- Danna checks for new versions and installs them in the background',
       '- The In use label in AI keys sits beside the key name',
     ].join('\n'),
     version: '0.5.0',
@@ -427,7 +427,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-040',
     kind: 'release_note',
-    title: 'DANNA 0.4.0',
+    title: 'Danna 0.4.0',
     body: [
       '- More than 70 lessons from A1 to C1: grammar, vocabulary, reading, listening, speaking and writing',
       '- A level test for each level, and a level check to find your starting point',
@@ -448,7 +448,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-030',
     kind: 'release_note',
-    title: 'DANNA 0.3.0',
+    title: 'Danna 0.3.0',
     body: [
       '- My library: keep PDF, TXT and Markdown files, and read them in the app',
       '- Ask the coach about the files you choose',
@@ -467,7 +467,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-020',
     kind: 'release_note',
-    title: 'DANNA 0.2.0',
+    title: 'Danna 0.2.0',
     body: [
       '- Keep everything on this device, or sign in to sync across devices',
       '- A new window bar and a tray icon, so practice stays one click away',
@@ -485,7 +485,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
   {
     id: 'local-release-010',
     kind: 'release_note',
-    title: 'DANNA 0.1.0',
+    title: 'Danna 0.1.0',
     body: [
       '- A roadmap with six units, unit checks and stars',
       '- A diagnostic with an estimated TOEFL score and a skill report',

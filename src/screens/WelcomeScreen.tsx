@@ -122,9 +122,9 @@ export function WelcomeScreen() {
               >
                 <div>
                   <p className="eyebrow">{t('Your progress')}</p>
-                  <h1 className="welcome__title mt-2">{t('How would you like to use danna?')}</h1>
+                  <h1 className="welcome__title mt-2">{t('How would you like to use Danna?')}</h1>
                 </div>
-                <div className="mode-grid" role="radiogroup" aria-label={t('How you use DANNA')}>
+                <div className="mode-grid" role="radiogroup" aria-label={t('How you use Danna')}>
                   <button role="radio" aria-checked={choice === 'device'} className="mode-card" onClick={() => setChoice('device')}>
                     <span className="mode-card__icon">
                       <Laptop aria-hidden="true" />

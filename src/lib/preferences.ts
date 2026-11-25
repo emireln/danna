@@ -16,14 +16,14 @@ export const REMINDER_IDS = ['streak', 'goal', 'review', 'exam', 'comeback'] as 
 export type ReminderId = (typeof REMINDER_IDS)[number];
 
 export interface ReminderPrefs {
-  /** The master switch: when it is off, DANNA sends no notifications. */
+  /** The master switch: when it is off, Danna sends no notifications. */
   enabled: boolean;
   /** The time reminders may start, as HH:MM on this device's clock. */
   time: string;
   types: Record<ReminderId, boolean>;
 }
 
-/** What has been reminded, so that DANNA sends at most one reminder a day, and not the same kind again too soon. */
+/** What has been reminded, so that Danna sends at most one reminder a day, and not the same kind again too soon. */
 export interface ReminderHistory {
   lastDay: string | null;
   lastByKind: Partial<Record<ReminderId, string>>;

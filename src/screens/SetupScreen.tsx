@@ -100,7 +100,7 @@ export function SetupScreen() {
   const next = () => {
     setError(null);
     if (step === 1) {
-      if (!shownName.trim()) return setError(t('Add the name you want DANNA to use.'));
+      if (!shownName.trim()) return setError(t('Add the name you want Danna to use.'));
       if (mode === 'supabase' && !/^[a-z0-9_]{3,20}$/.test(shownUsername)) {
         return setError(t('Usernames use 3 to 20 lowercase letters, numbers or underscores.'));
       }
@@ -192,11 +192,11 @@ export function SetupScreen() {
                 <>
                   <StepHead
                     eyebrow={t('Learning setup')}
-                    title={t('What should DANNA call you?')}
+                    title={t('What should Danna call you?')}
                     text={
                       mode === 'supabase'
                         ? t('Your username is how friends find you. You can change these later in your profile.')
-                        : t('This is how DANNA greets you. You can change it later in your profile.')
+                        : t('This is how Danna greets you. You can change it later in your profile.')
                     }
                   />
                   <Field label={t('Name')}>
@@ -248,7 +248,7 @@ export function SetupScreen() {
                           </button>
                         ))}
                       </div>
-                      <Field label={t('Exam date (optional)')} hint={t('Shown on your exam page, with the days left.')}>
+                      <Field label={t('Exam date (optional)')}>
                         <DateField label={t('Exam date')} value={shownDate} onChange={setExamDate} min={todayIso()} />
                       </Field>
                     </>

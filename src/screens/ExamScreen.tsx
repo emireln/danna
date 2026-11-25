@@ -116,7 +116,7 @@ export function ExamScreen() {
         </div>
 
         <SectionTitle title={t('Exam details')} />
-        <Field label={t('Exam name')} hint={t('For example TOEFL iBT, IELTS, or a school exam.')}>
+        <Field label={t('Exam name')}>
           <input
             className="input"
             value={name}
@@ -125,7 +125,7 @@ export function ExamScreen() {
             onChange={(event) => setName(event.target.value)}
           />
         </Field>
-        <Field label={t('Exam date')} hint={t('Leave it empty to hide the countdown.')}>
+        <Field label={t('Exam date')}>
           <DateField label={t('Exam date')} value={date} onChange={setDate} min={todayIso()} />
         </Field>
         {toefl && (

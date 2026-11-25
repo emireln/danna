@@ -1,4 +1,4 @@
-// Where a person goes after signing in. The page they asked for comes back, but only a page inside DANNA:
+// Where a person goes after signing in. The page they asked for comes back, but only a page inside Danna:
 // never the sign-in pages themselves, and never another site.
 
 const SIGN_IN_PAGES = new Set(['/auth', '/welcome']);

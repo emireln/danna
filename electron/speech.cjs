@@ -14,7 +14,7 @@ const SPEECH_VOICES = Object.freeze({
 const DEFAULT_VOICE = Object.freeze({ openai: 'coral', gemini: 'Kore' });
 
 /**
- * The voices built into DANNA. Their files are bundled by scripts/fetch-tts-model.mjs, which lists the same ids.
+ * The voices built into Danna. Their files are bundled by scripts/fetch-tts-model.mjs, which lists the same ids.
  * The first letter of an id says the accent: a is American, b is British.
  */
 const BUILTIN_VOICES = Object.freeze([

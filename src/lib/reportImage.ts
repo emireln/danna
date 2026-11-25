@@ -82,7 +82,7 @@ export async function drawReportPicture(picture: ReportPicture): Promise<Blob> {
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#ffffff';
   ctx.font = font(700, 50);
-  ctx.fillText('DANNA', 70, 110);
+  ctx.fillText('Danna', 70, 110);
   ctx.globalAlpha = 0.85;
   ctx.font = font(600, 26);
   ctx.fillText(picture.eyebrow.toUpperCase(), 70, 190);

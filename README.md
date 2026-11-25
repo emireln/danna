@@ -1,11 +1,11 @@
-# DANNA
+# Danna
 
-**Learn English one lesson at a time.** DANNA is an English learning app for Windows. It takes you from A1 to C1, with an optional TOEFL warm-up, and it lives in its own window with a tray icon, so practice is always one click away.
+**Learn English one lesson at a time.** Danna is an English learning app for Windows. It takes you from A1 to C1, with an optional TOEFL warm-up, and it lives in its own window with a tray icon, so practice is always one click away.
 
 **New in 2.0.0 (Beta):** two looks, decks with spaced repetition, a writing check, tap to define in your library, role-play scenes in the coach, a weekly league and achievements. See [what's new](#whats-new-in-200).
 
 <p align="center">
-  <img src="docs/gifs/tour.gif" alt="A quick tour of DANNA: Today, the roadmap, self study, the coach and the profile" width="720">
+  <img src="docs/gifs/tour.gif" alt="A quick tour of Danna: Today, the roadmap, self study, the coach and the profile" width="720">
 </p>
 
 ## Take a look
@@ -87,14 +87,14 @@ Your picture works in both modes. Pictures are shrunk automatically, so they loa
 - **My library.** Keep your PDF, TXT and Markdown files and read them in the app. You can edit the text files too. Tap a word in a text or Markdown file to see its meaning and the sentence it came from, and save it to your "Saved words" deck. Save useful links from YouTube, Coursera, Khan Academy and more, and sort them into categories. The tutor can answer questions about the files you choose, and it only uses those files.
 - **Friends** (online only). Find people by their username, send requests, see a ranking, share results and sets, and open a friend's profile.
 - **Profile.** A banner (optional), your picture, your day streak and your report, which you can save as an image. Your streak turns red above 200 days, blue above 500, and purple from 1000.
-- **Support and feedback.** Buy me a coffee from the profile menu or from Settings. In Settings you can also rate DANNA from 1 to 5 stars and leave a comment. This works with an online account, and you can send one message an hour.
+- **Support and feedback.** Buy me a coffee from the profile menu or from Settings. In Settings you can also rate Danna from 1 to 5 stars and leave a comment. This works with an online account, and you can send one message an hour.
 - **What's new and updates.** Release notes and banners. New versions are offered in the app, and you decide when to download and restart.
 - **Search.** Press the search button in the title bar, or Ctrl+K, to find lessons, tests, chats, files, links and pages.
 - **AI, with your own key.** Use OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. The newest model is picked for you, and you can change it in Settings. Listening passages can be read aloud in a natural voice with an OpenAI or Gemini key. The text is sent to the provider you connected.
 
 ## What's new in 2.0.0
 
-DANNA 2.0.0 is a Beta release. The same notes are in the app, on the What's new page.
+Danna 2.0.0 is a Beta release. The same notes are in the app, on the What's new page.
 
 - **Two looks.** Classic, and Playful with chunky 3D buttons, quests and bright colours. Choose one in Settings.
 - **Decks and flashcards.** Make decks, add cards or import a list, and study with spaced repetition.

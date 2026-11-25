@@ -1,7 +1,7 @@
 // The voices of listening practice and read-aloud, in the order the learner sees them. The ids match electron/speech.cjs
 // (a test keeps them equal). The names of the voices are not translated; the words around them are.
 
-/** The voices built into DANNA. Their ids are the names of the model's voices. */
+/** The voices built into Danna. Their ids are the names of the model's voices. */
 export const BUILTIN_VOICES: readonly { id: string; name: string; accent: 'us' | 'uk'; gender: 'female' | 'male' }[] = [
   { id: 'af_heart', name: 'Heart', accent: 'us', gender: 'female' },
   { id: 'af_bella', name: 'Bella', accent: 'us', gender: 'female' },

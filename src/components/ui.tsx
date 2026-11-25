@@ -39,13 +39,13 @@ export function ShowMore({ hidden, pageSize = PAGE_SIZE, onClick }: { hidden: nu
   );
 }
 
-// The DANNA logo. The WebP file is generated from brand/logo.png by `npm run icons`.
+// The Danna logo. The WebP file is generated from brand/logo.png by `npm run icons`.
 export function BrandMark({ size = 26 }: { size?: number }) {
   return <img className="brand-mark" src={logoUrl} width={size} height={size} alt="" draggable={false} decoding="async" />;
 }
 
 export function Wordmark({ className = '' }: { className?: string }) {
-  return <span className={`wordmark ${className}`}>DANNA</span>;
+  return <span className={`wordmark ${className}`}>Danna</span>;
 }
 
 export function initials(name: string): string {

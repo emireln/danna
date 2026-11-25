@@ -494,7 +494,7 @@ test('announcements: signed-in people read published rows only, and cannot write
   await db.query("insert into public.announcements (kind, title, body, published) values ('banner', 'Draft banner', 'Not yet', false)");
   const visible = await as(db, ALICE, 'select title from public.announcements');
   assert.equal(visible.rows.some((row) => row.title === 'Draft banner'), false);
-  assert.equal(visible.rows.some((row) => row.title === 'danna 0.2.0'), true);
+  assert.equal(visible.rows.some((row) => row.title === 'Danna 0.2.0'), true);
 
   const write = await refused(as(db, ALICE, "insert into public.announcements (kind, title) values ('news', 'Mine')"));
   assert.equal(write.code, PERMISSION_DENIED);
