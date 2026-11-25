@@ -29,7 +29,7 @@ export const ALERTS_PT: Record<string, string> = {
   'Keep my streak': 'Manter minha sequência',
   'A short lesson keeps the flame going.': 'Uma lição curta mantém a chama acesa.',
   'Review reminders': 'Lembretes de revisão',
-  'Cards that are due, so they stick.': 'Cartões que chegaram a hora, para não esquecer.',
+  'Cards that are due, so they stick.': 'Cartões que já pedem revisão, para você não esquecer.',
   'The days before your exam date.': 'Os dias antes da data da sua prova.',
   'Come back': 'Voltar a estudar',
   'When you have not practised for a few days.': 'Quando você fica alguns dias sem estudar.',
@@ -37,7 +37,7 @@ export const ALERTS_PT: Record<string, string> = {
   'Send a test': 'Enviar um teste',
   'Reminders are on': 'Os lembretes estão ativos',
   'This is how a reminder looks. You can change them any time in Settings.':
-    'Assim é um lembrete. Você pode mudar isso quando quiser nas configurações.',
+    'Assim aparece um lembrete. Você pode mudar isso quando quiser em Configurações.',
   // Settings: sounds
   'Sounds': 'Sons',
   'Sounds in Danna': 'Sons do Danna',

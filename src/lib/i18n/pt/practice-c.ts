@@ -11,7 +11,7 @@ export const PRACTICE_PT_C: Record<string, string> = {
   'Natural, fluent delivery': 'Fala natural e fluente',
 
   // C1, unit 1
-  'Formal and informal voices': 'Vozes formal e informal',
+  'Formal and informal voices': 'Registros formais e informais',
   'Read an essay about register and answer four questions.': 'Leia um ensaio sobre o registro da linguagem e responda a quatro perguntas.',
   'What is the main point of the passage?': 'Qual é a ideia principal do texto?',
   'Why is the message to the colleague more measured?': 'Por que a mensagem para o colega é mais comedida?',
@@ -114,7 +114,7 @@ export const PRACTICE_PT_C: Record<string, string> = {
   'Describe a place where you learned something important. Give specific details and explain why it mattered to you.':
     'Descreva um lugar onde você aprendeu algo importante. Dê detalhes específicos e explique por que isso foi importante para você.',
   'Some people prefer to study alone, while others prefer groups. Which do you prefer, and why?':
-    'Algumas pessoas preferem estudar sozinhas, e outras preferem grupos. Qual você prefere, e por quê?',
+    'Algumas pessoas preferem estudar sozinhas, e outras preferem estudar em grupo. Qual você prefere, e por quê?',
 
   // TOEFL warm-up, unit 2
   'A notice about library hours': 'Um aviso sobre o horário da biblioteca',

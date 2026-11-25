@@ -12,7 +12,9 @@ import { RELEASE_NOTES_PT } from './release-notes';
 import { VOICES_PT } from './voices';
 import { LIVE_PT } from './live';
 
+// The talk's words come first, so the skill names that share a key with them (Listening, Speaking) keep their app value.
 export const PT: Record<string, string> = {
+  ...LIVE_PT,
   ...CONTENT_PT,
   ...PRACTICE_PT_A,
   ...PRACTICE_PT_B,
@@ -24,5 +26,4 @@ export const PT: Record<string, string> = {
   ...ALERTS_PT,
   ...RELEASE_NOTES_PT,
   ...VOICES_PT,
-  ...LIVE_PT,
 };

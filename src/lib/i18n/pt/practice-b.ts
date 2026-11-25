@@ -49,13 +49,13 @@ export const PRACTICE_PT_B: Record<string, string> = {
   'What does the speaker’s friend suggest?': 'O que o amigo da pessoa que fala sugere?',
   'What will the speaker do if it rains?': 'O que a pessoa que fala vai fazer se chover?',
   'Imagine a different life': 'Imagine uma vida diferente',
-  'Two tasks with if clauses.': 'Duas tarefas com orações com if.',
+  'Two tasks with if clauses.': 'Duas tarefas com orações condicionais.',
   'Write about what you would do if you won a lot of money. Use the second conditional: If I won..., I would...':
     'Escreva sobre o que você faria se ganhasse muito dinheiro. Use o second conditional: If I won..., I would...',
   'Write advice for a friend who wants to change jobs. Use if clauses with the first and second conditional.':
     'Escreva conselhos para um amigo que quer mudar de emprego. Use orações com if no first e no second conditional.',
   'What if?': 'E se?',
-  'Two short speaking tasks with if clauses.': 'Duas tarefas curtas de fala com orações com if.',
+  'Two short speaking tasks with if clauses.': 'Duas tarefas curtas de fala com orações condicionais.',
   'Tell a partner what would happen if school started at ten o’clock. Use the second conditional.':
     'Conte a um colega o que aconteceria se a escola começasse às dez horas. Use o second conditional.',
   'Describe what you will do if it rains this weekend. Use the first conditional.':

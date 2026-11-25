@@ -15,7 +15,7 @@ export const MESSAGES_PT: Record<string, string> = {
   'Your session has expired. Sign in again to continue.': 'Sua sessão expirou. Entre de novo para continuar.',
   'That username is taken. Try another one.': 'Este nome de usuário já está em uso. Tente outro.',
   'You already have a request or friendship with this person.': 'Você já tem um pedido ou uma amizade com esta pessoa.',
-  'This is available with an online account.': 'Isto está disponível com uma conta online.',
+  'This is available with an online account.': 'Isso está disponível com uma conta online.',
 
   // Pictures and files
   'That picture type cannot be saved. Try another one.': 'Este formato de foto não pode ser salvo. Tente outra.',
@@ -56,7 +56,7 @@ export const MESSAGES_PT: Record<string, string> = {
   'Write a message first.': 'Escreva uma mensagem primeiro.',
   'We could not save your key on this device.': 'Não foi possível salvar sua chave neste dispositivo.',
   'That sign-in data is too large to keep.': 'Estes dados de acesso são grandes demais para ser salvos.',
-  'The reply ran out of room before it was written. Try a shorter question.': 'A resposta ficou sem espaço antes de ser escrita. Tente uma pergunta mais curta.',
+  'The reply ran out of room before it was written. Try a shorter question.': 'A resposta atingiu o limite antes de terminar. Tente uma pergunta mais curta.',
   'The assistant did not reply this time. Please try again.': 'O assistente não respondeu desta vez. Tente de novo.',
 
   // Review
@@ -64,12 +64,12 @@ export const MESSAGES_PT: Record<string, string> = {
   'Put the words of this sentence in the right order.': 'Coloque as palavras desta frase na ordem certa.',
 
   // Coach chats and files
-  'This chat could not be found.': 'Este chat não foi encontrado.',
-  'You have reached the limit for chats. Delete some chats and try again.': 'Você atingiu o limite de chats. Exclua alguns chats e tente de novo.',
+  'This chat could not be found.': 'Esta conversa não foi encontrada.',
+  'You have reached the limit for chats. Delete some chats and try again.': 'Você atingiu o limite de conversas. Exclua algumas conversas e tente de novo.',
   'Only pictures, PDF, TXT and Markdown files can be sent.': 'Só é possível enviar imagens e arquivos PDF, TXT e Markdown.',
   'This file is larger than 20 MB.': 'Este arquivo tem mais de 20 MB.',
   'This picture could not be read. Try another one.': 'Não foi possível ler esta imagem. Tente outra.',
-  'This PDF has no readable text yet. A scanned PDF needs its text first.': 'Este PDF ainda não tem texto legível. Um PDF escaneado precisa de texto antes.',
+  'This PDF has no readable text yet. A scanned PDF needs its text first.': 'Este PDF ainda não tem texto legível. PDFs escaneados precisam passar pelo reconhecimento de texto antes.',
   'This file has no text in it.': 'Este arquivo não tem texto.',
   'That banner is too large. Choose a smaller picture.': 'Este banner é grande demais. Escolha uma imagem menor.',
   'That banner could not be saved. Try another picture.': 'Este banner não pôde ser salvo. Tente outra imagem.',

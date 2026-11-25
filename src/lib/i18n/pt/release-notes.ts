@@ -12,11 +12,11 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
   'Forgot your password? The sign-in screen has a link that emails you a reset link. The link opens the Danna website, where you choose a new password.':
     'Esqueceu a senha? A tela de entrada tem um link que envia por e-mail um link de redefinição. O link abre o site do Danna, onde você escolhe uma nova senha.',
   'Talk live is switched off for now while it is reworked. The coach card is hidden, and the rest of the coach works as before.':
-    'O talk live está desligado por enquanto, enquanto passa por uma reformulação. O cartão do coach fica oculto, e o resto do coach funciona como antes.',
+    'A conversa ao vivo está desligada por enquanto, para ser reformulada. O cartão do coach fica oculto, e o resto do coach funciona como antes.',
   'A new logo: a white mark on a transparent background, in the app and on the platform logos.':
     'Um novo logo: uma marca branca sobre fundo transparente, no app e nos logos das plataformas.',
   'Talk live: the coach is drawn in 3D with TalkingHead. Its mouth follows the words of each reply, and you can ask it to raise a hand, give a thumbs up, say OK or shrug.':
-    'Talk live: o coach é desenhado em 3D com o TalkingHead. A boca acompanha as palavras de cada resposta, e você pode pedir que ele levante a mão, dê um joinha, diga OK ou encolha os ombros.',
+    'Conversa ao vivo: o coach é feito em 3D com o TalkingHead. A boca acompanha as palavras de cada resposta, e você pode pedir que ele levante a mão, dê um joinha, diga OK ou encolha os ombros.',
   'Ana is the only coach. Leo and Mia have been removed.': 'Ana é o único coach. Leo e Mia foram removidos.',
   'Reminders: switch them on in Settings. Danna can remind you about your streak, today’s goal, cards due for review, an exam that is close, or a longer break. They arrive only while Danna is in the background, from the time you choose, and at most one a day.':
     'Lembretes: ative-os nas Configurações. O Danna pode lembrar você da sua sequência, da meta de hoje, dos cartões para revisar, de uma prova que está perto ou de uma pausa longa. Eles chegam só enquanto o Danna está em segundo plano, no horário que você escolher, e no máximo um por dia.',
@@ -25,7 +25,7 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
   'Smoother sections: a section fades in without a blank moment, and going back to one shows what it showed before. The roadmap nodes fade in instead of jumping in one by one.':
     'Seções mais suaves: uma seção aparece com um leve desvanecer, sem um momento em branco, e voltar a uma seção mostra o que ela mostrava antes. Os nós da trilha surgem aos poucos, em vez de saltar um a um.',
   'Buttons: every button has the same soft hover and press. The roadmap nodes no longer flicker when the pointer moves over them.':
-    'Botões: todos os botões têm o mesmo destaque suave ao passar o cursor e o mesmo toque. Os nós da trilha não piscam mais quando o cursor passa por eles.',
+    'Botões: todos os botões têm o mesmo destaque suave ao passar o cursor e o mesmo efeito ao clicar. Os nós da trilha não piscam mais quando o cursor passa por eles.',
   'A new accent colour: purple, in both looks, on the buttons and tabs, the progress bars, the focus rings and the installer’s side banner.':
     'Uma nova cor de destaque: roxo, nos dois visuais, nos botões e abas, nas barras de progresso, nos contornos de foco e na lateral do instalador.',
   'A new app icon: the window, the taskbar, the installer and the tray now show it.':
@@ -45,7 +45,7 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
   'Sheets: each sheet opens between the title bar and the bottom tabs, so neither covers it on a small window.':
     'Painéis: cada painel abre entre a barra de título e as abas de baixo, então nenhuma delas cobre o painel em uma janela pequena.',
   'Fixes: the send arrow of the coach shows in both looks, the streak takes the place of the XP badge in the title bar, the review says “In 10 min” for a question due soon, and a word saved to review says when it comes back.':
-    'Correções: a seta de enviar do coach aparece nos dois visuais, a sequência ocupa o lugar do chip de XP na barra de título, a revisão mostra “Em 10 min” para uma pergunta que vence logo, e uma palavra salva na revisão diz quando volta.',
+    'Correções: a seta de enviar do coach aparece nos dois visuais, a sequência ocupa o lugar do selo de XP na barra de título, a revisão mostra “Em 10 min” para uma pergunta que vence logo, e uma palavra salva na revisão diz quando volta.',
   'Talk live: a real-time voice conversation with your coach. With a Gemini key, the coach answers in its own voice while you speak. With any other AI key, the coach writes the replies and the app’s voice reads them aloud.':
     'Conversa ao vivo: uma conversa por voz em tempo real com o seu coach. Com uma chave do Gemini, o coach responde com a própria voz enquanto você fala. Com qualquer outra chave de IA, o coach escreve as respostas e a voz do app as lê em voz alta.',
   'Realistic coaches: Ana, Leo and Mia are realistic 3D people, shown from the head up. Their mouths follow the voice, and they blink and look at you while they talk.':

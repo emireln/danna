@@ -23,17 +23,17 @@ export const VOICES_PT: Record<string, string> = {
   'The built-in voices are in the desktop app. Here the browser’s own voice reads.':
     'As vozes integradas estão no app para computador. Aqui, lê a voz do próprio navegador.',
   'The voice could not be used. Using the browser voice for now.':
-    'Não foi possível usar a voz. Por enquanto, usando a voz do navegador.',
+    'Não foi possível usar a voz. Por enquanto, usamos a voz do navegador.',
   'Add the key for this voice in Settings. Using the built-in voice for now.':
-    'Adicione a chave desta voz em Configurações. Por enquanto, usando a voz integrada.',
+    'Adicione a chave desta voz em Configurações. Por enquanto, usamos a voz integrada.',
   'That voice is not installed on this PC any more. Using the built-in voice for now.':
-    'Esta voz não está mais instalada neste PC. Por enquanto, usando a voz integrada.',
+    'Esta voz não está mais instalada neste PC. Por enquanto, usamos a voz integrada.',
   'The voice of your AI key could not be used. Using the built-in voice for now.':
-    'A voz da sua chave de IA não pôde ser usada. Por enquanto, usando a voz integrada.',
+    'A voz da sua chave de IA não pôde ser usada. Por enquanto, usamos a voz integrada.',
   'The voice on this PC could not be used. Using the built-in voice for now.':
-    'A voz deste PC não pôde ser usada. Por enquanto, usando a voz integrada.',
+    'A voz deste PC não pôde ser usada. Por enquanto, usamos a voz integrada.',
   'The built-in voice is not installed.': 'A voz integrada não está instalada.',
-  'The voice could not speak. Try again.': 'A voz não pôde ler. Tente de novo.',
+  'The voice could not speak. Try again.': 'Não foi possível ler em voz alta. Tente de novo.',
   'That reading could not be started. Try again.': 'Não foi possível começar a leitura. Tente de novo.',
   'There is nothing to read aloud.': 'Não há nada para ler em voz alta.',
   'That reading is already running.': 'Essa leitura já está em andamento.',

@@ -228,7 +228,7 @@ export const APP_PT: Record<string, string> = {
   '{count} stars': '{count} estrelas',
   'Choose a rating to send.': 'Escolha uma nota para enviar.',
   'Thank you. Your feedback was sent.': 'Obrigado. Sua opinião foi enviada.',
-  'You can send one feedback an hour. You can send another in {time}.': 'Você pode enviar um feedback por hora. Você pode enviar outro em {time}.',
+  'You can send one feedback an hour. You can send another in {time}.': 'Você pode enviar uma opinião por hora. Você pode enviar outra em {time}.',
   '{count} minute': '{count} minuto',
   '{count} minutes': '{count} minutos',
   'Remove it from Today for good': 'Tirar do Hoje para sempre',
@@ -277,7 +277,7 @@ export const APP_PT: Record<string, string> = {
   'Enter a valid email address.': 'Digite um e-mail válido.',
   'Use at least 8 characters for your password.': 'Use pelo menos 8 caracteres na senha.',
   'Choose a username with 3 to 20 lowercase letters, numbers or underscores.':
-    'Escolha um nome de usuário com de 3 a 20 letras minúsculas, números ou sublinhados.',
+    'Escolha um nome de usuário com 3 a 20 letras minúsculas, números ou sublinhados.',
   'Check your inbox to confirm your email, then sign in.': 'Confira a sua caixa de entrada para confirmar o e-mail e depois entre na conta.',
   'Welcome back': 'Bem-vindo de volta',
   'Create your account': 'Crie a sua conta',
@@ -408,7 +408,7 @@ export const APP_PT: Record<string, string> = {
   'Your level is {level}': 'Seu nível é {level}',
   'Level check': 'Teste de nível',
   'Beta': 'Beta',
-  'Find your level and the skills to work on, in about 15 minutes.': 'Descubra seu nível e as habilidades para trabalhar, em cerca de 15 minutos.',
+  'Find your level and the skills to work on, in about 15 minutes.': 'Descubra seu nível e as habilidades para melhorar, em cerca de 15 minutos.',
   'Continue learning': 'Continuar estudando',
   'Unit {number} · {title}': 'Unidade {number} · {title}',
   'Unit check: {title}': 'Teste da unidade: {title}',
@@ -478,7 +478,7 @@ export const APP_PT: Record<string, string> = {
   'Add your AI key to start chatting with your coach.': 'Adicione sua chave de IA para começar a conversar com o seu coach.',
   'Open settings': 'Abrir configurações',
   'The coach runs in the Danna desktop app, where your AI key is kept on this device.':
-    'O coach funciona no app de desktop do Danna, onde a sua chave de IA fica salva neste dispositivo.',
+    'O coach funciona no app de computador do Danna, onde a sua chave de IA fica salva neste dispositivo.',
   'Ask anything about English. Try one of these to start.': 'Pergunte qualquer coisa sobre inglês. Experimente uma destas sugestões para começar.',
   'Explain my weakest skill and what to do this week': 'Explique minha habilidade mais fraca e o que fazer nesta semana',
   'Quiz me on present perfect vs past simple': 'Me faça um quiz sobre present perfect x past simple',
@@ -509,7 +509,7 @@ export const APP_PT: Record<string, string> = {
     'Opcional. Leitura acadêmica, palestras e tarefas de fala e escrita no estilo da prova.',
   'Academic reading, lectures, and speaking and writing tasks in the style of the test.':
     'Leitura acadêmica, palestras e tarefas de fala e escrita no estilo da prova.',
-  'Self study views': 'Visões do estudo livre',
+  'Self study views': 'Modos de exibição do estudo livre',
   'Study by section': 'Estudar por seção',
   'Mock tests': 'Simulados',
   'Find main ideas and make inferences': 'Encontre as ideias principais e faça inferências',
@@ -559,7 +559,7 @@ export const APP_PT: Record<string, string> = {
   '{low}–{high} of 120': '{low}–{high} de 120',
   '{percent}% accuracy': '{percent}% de acerto',
   '% accuracy': '% de acerto',
-  'Your advice': 'Sua análise',
+  'Your advice': 'Conselhos para você',
   'Connect an AI key in Settings for a longer, personal explanation from your coach.':
     'Conecte uma chave de IA em Configurações para receber do seu coach uma explicação mais longa e personalizada.',
   'Your skill profile': 'Seu perfil de habilidades',
@@ -608,7 +608,7 @@ export const APP_PT: Record<string, string> = {
   // Friends
   'Request sent': 'Pedido enviado',
   'Wants to connect': 'Quer se conectar',
-  'Study together': 'Estudem juntos',
+  'Study together': 'Estudar juntos',
   'Friends need an online account': 'Amigos precisam de uma conta online',
   'Create an account': 'Criar uma conta',
   'Friends, shared results and shared sets work with an online account. You are using Danna offline on this device.':
@@ -720,7 +720,7 @@ export const APP_PT: Record<string, string> = {
   'Paste a link, for example a YouTube or TikTok video': 'Cole um link, por exemplo de um vídeo do YouTube ou do TikTok',
   'Web link': 'Link da internet',
   'Title (optional)': 'Título (opcional)',
-  'What is it about?': 'Sobre o que é?',
+  'What is it about?': 'Do que se trata?',
   'Category': 'Categoria',
   'New category': 'Nova categoria',
   'Save link': 'Salvar link',
@@ -728,7 +728,7 @@ export const APP_PT: Record<string, string> = {
   'Paste a link above. The platform and its logo are detected from the address.':
     'Cole um link acima. A plataforma e o logo são identificados pelo endereço.',
   'Files are kept in the desktop app or in an online account. Links work everywhere.':
-    'Os arquivos ficam no app de desktop ou em uma conta online. Os links funcionam em qualquer lugar.',
+    'Os arquivos ficam no app de computador ou em uma conta online. Os links funcionam em qualquer lugar.',
   'Private to you': 'Só para você',
   'Files': 'Arquivos',
   'Ask the coach': 'Pergunte ao coach',
@@ -746,7 +746,7 @@ export const APP_PT: Record<string, string> = {
   'AI assistant': 'Assistente de IA',
   'Bring your own key from OpenAI, Anthropic, Google Gemini, OpenRouter or DeepSeek. It unlocks generated sets and coach feedback. The key stays on this device.':
     'Use a sua própria chave da OpenAI, Anthropic, Google Gemini, OpenRouter ou DeepSeek. Ela libera os conjuntos gerados e o feedback do coach. A chave fica neste dispositivo.',
-  'Keys can be added in the Danna desktop app.': 'As chaves podem ser adicionadas no app de desktop do Danna.',
+  'Keys can be added in the Danna desktop app.': 'As chaves podem ser adicionadas no app de computador do Danna.',
   'Your key': 'Sua chave',
   'Paste your key here': 'Cole sua chave aqui',
   'Hide key': 'Ocultar chave',
@@ -763,7 +763,7 @@ export const APP_PT: Record<string, string> = {
   'Remove {label} key': 'Remover a chave de {label}',
   'Choose a model': 'Escolha um modelo',
   'Newest': 'Mais recente',
-  '{label} is connected. The newest model is selected.': '{label} está conectada. O modelo mais recente foi selecionado.',
+  '{label} is connected. The newest model is selected.': '{label} foi conectado. O modelo mais recente foi selecionado.',
   'Model updated.': 'Modelo atualizado.',
   '{provider} key removed.': 'Chave de {provider} removida.',
   'Window': 'Janela',
@@ -845,7 +845,7 @@ export const APP_PT: Record<string, string> = {
   '{words} / {minWords} words': '{words} / {minWords} palavras',
   'Write a response first.': 'Escreva uma resposta primeiro.',
   'Connect an AI key in Settings to get feedback on your writing.': 'Conecte uma chave de IA em Configurações para receber feedback sobre a sua escrita.',
-  'Recording is not available on this device. Rate your answer yourself.': 'A gravação não está disponível neste dispositivo. Avalie a sua resposta você mesmo.',
+  'Recording is not available on this device. Rate your answer yourself.': 'A gravação não está disponível neste dispositivo. Avalie sua resposta por conta própria.',
   'The microphone is not available right now. You can rate your answer yourself.':
     'O microfone não está disponível agora. Você pode avaliar a sua resposta.',
   'Limit {seconds} seconds': 'Limite de {seconds} segundos',
@@ -861,7 +861,7 @@ export const APP_PT: Record<string, string> = {
     'Adicione uma chave da OpenAI ou do Gemini em Configurações para transcrever a fala. Você ainda pode se avaliar.',
   'Get feedback': 'Receber feedback',
   'Get AI feedback': 'Receber feedback da IA',
-  'Rate it myself': 'Avaliar eu mesmo',
+  'Rate it myself': 'Avaliar por conta própria',
   'Your score out of 5': 'Sua nota de 0 a 5',
   'Your rating': 'Sua avaliação',
   'Strengths': 'Pontos fortes',
@@ -872,9 +872,9 @@ export const APP_PT: Record<string, string> = {
   // Library coach and file viewer
   'Add a file in the Files tab first.': 'Adicione um arquivo na aba Arquivos primeiro.',
   'These files have no readable text yet. A scanned PDF needs its text first.':
-    'Estes arquivos ainda não têm texto legível. Um PDF escaneado precisa primeiro do texto.',
+    'Estes arquivos ainda não têm texto legível. PDFs escaneados precisam passar pelo reconhecimento de texto antes.',
   'The coach runs in the Danna desktop app, where your AI key is kept.':
-    'O coach funciona no app de desktop do Danna, onde a sua chave de IA fica guardada.',
+    'O coach funciona no app de computador do Danna, onde a sua chave de IA fica guardada.',
   'Add an AI key to use the coach.': 'Adicione uma chave de IA para usar o coach.',
   'Ask a question about your files. Answers come only from them, and each one names its source.':
     'Pergunte sobre os seus arquivos. As respostas vêm só deles, e cada uma indica a fonte.',
@@ -884,7 +884,7 @@ export const APP_PT: Record<string, string> = {
   'Send question': 'Enviar pergunta',
   'This file is not available on this device yet.': 'Este arquivo ainda não está disponível neste dispositivo.',
   'This PDF could not be shown. The coach can still read its text.': 'Não foi possível mostrar este PDF. O coach ainda consegue ler o texto dele.',
-  'Reads': 'Consulta',
+  'Reads': 'Leituras',
   'All {count} file': 'Todos os {count} arquivo',
   'All {count} files': 'Todos os {count} arquivos',
   'Choose files': 'Escolher arquivos',
@@ -930,7 +930,7 @@ export const APP_PT: Record<string, string> = {
   'Give me ten food words, with a sentence for each': 'Me dê dez palavras sobre comida, com uma frase para cada uma',
   'Explain the difference between since and for, with examples': 'Explique a diferença entre since e for, com exemplos',
   'Help me describe my home with there is and there are': 'Me ajude a descrever a minha casa com there is e there are',
-  'Give me one listening tip I can practise for ten minutes a day': 'Me dê uma dica de listening que eu possa praticar por dez minutos por dia',
+  'Give me one listening tip I can practise for ten minutes a day': 'Me dê uma dica de compreensão auditiva para praticar por dez minutos por dia',
   'Explain when to use a and an, with examples': 'Explique quando usar a e an, com exemplos',
   'Write a short dialogue in a restaurant, then quiz me on its words': 'Escreva um diálogo curto em um restaurante e depois me faça um quiz sobre as palavras dele',
   'What are the most common mistakes Portuguese speakers make in English?': 'Quais são os erros mais comuns que falantes de português cometem em inglês?',
@@ -1031,27 +1031,27 @@ export const APP_PT: Record<string, string> = {
 
   // Coach chats, files and mentions
   'Yesterday': 'Ontem',
-  'Chat name': 'Nome do chat',
+  'Chat name': 'Nome da conversa',
   'Save': 'Salvar',
-  'Name this chat': 'Dê um nome a este chat',
-  'Untitled chat': 'Chat sem nome',
-  'Rename chat': 'Renomear chat',
-  'Restore chat': 'Restaurar chat',
-  'Archive chat': 'Arquivar chat',
-  'Delete chat': 'Excluir chat',
-  'Chat history': 'Histórico de chats',
-  'New chat': 'Novo chat',
-  'Search chats': 'Buscar chats',
-  'No chat matches your search.': 'Nenhum chat corresponde à sua busca.',
-  'No chats yet.': 'Nenhum chat ainda.',
+  'Name this chat': 'Dê um nome a esta conversa',
+  'Untitled chat': 'Conversa sem nome',
+  'Rename chat': 'Renomear conversa',
+  'Restore chat': 'Restaurar conversa',
+  'Archive chat': 'Arquivar conversa',
+  'Delete chat': 'Excluir conversa',
+  'Chat history': 'Histórico de conversas',
+  'New chat': 'Nova conversa',
+  'Search chats': 'Buscar conversas',
+  'No chat matches your search.': 'Nenhuma conversa corresponde à sua busca.',
+  'No chats yet.': 'Nenhuma conversa ainda.',
   'Your conversations with the coach are kept here.': 'Suas conversas com o coach ficam guardadas aqui.',
-  'Chats': 'Chats',
+  'Chats': 'Conversas',
   'Archived': 'Arquivados',
-  'Delete this chat?': 'Excluir este chat?',
-  'The chat and its messages are deleted. This cannot be undone.': 'O chat e as mensagens dele são excluídos. Isso não pode ser desfeito.',
-  'Chat archived.': 'Chat arquivado.',
-  'Chat restored.': 'Chat restaurado.',
-  'Chat deleted.': 'Chat excluído.',
+  'Delete this chat?': 'Excluir esta conversa?',
+  'The chat and its messages are deleted. This cannot be undone.': 'A conversa e as mensagens dela são excluídas. Isso não pode ser desfeito.',
+  'Chat archived.': 'Conversa arquivada.',
+  'Chat restored.': 'Conversa restaurada.',
+  'Chat deleted.': 'Conversa excluída.',
   'History': 'Histórico',
   'Mention library files': 'Mencionar arquivos da biblioteca',
   'Mention a library file': 'Mencionar um arquivo da biblioteca',
@@ -1071,17 +1071,17 @@ export const APP_PT: Record<string, string> = {
 
   // The 0.6.0 release note (What’s new)
   'Coach chats: each conversation keeps its own history. Rename, archive or delete any chat':
-    'Chats com o coach: cada conversa guarda o seu histórico. Renomeie, arquive ou exclua qualquer chat',
+    'Conversas com o coach: cada uma guarda o seu histórico. Renomeie, arquive ou exclua qualquer conversa',
   'A new chat gets a short name, of four or five words, from your first question':
-    'Um novo chat recebe um nome curto, de quatro ou cinco palavras, a partir da sua primeira pergunta',
+    'Uma nova conversa recebe um nome curto, de quatro ou cinco palavras, a partir da sua primeira pergunta',
   'Send up to 10 files to the coach at once: pictures, PDF, TXT and Markdown':
     'Envie até 10 arquivos para o coach de uma vez: imagens, PDF, TXT e Markdown',
-  'Mention files from My library in a chat, and pick them by name': 'Mencione arquivos de Minha biblioteca em um chat e escolha-os pelo nome',
-  'Search your chat history and your library': 'Busque no seu histórico de chats e na sua biblioteca',
+  'Mention files from My library in a chat, and pick them by name': 'Mencione arquivos de Minha biblioteca em uma conversa e escolha-os pelo nome',
+  'Search your chat history and your library': 'Busque no seu histórico de conversas e na sua biblioteca',
   'More reading, listening, writing and speaking practice in every unit, on both tracks':
-    'Mais prática de leitura, listening, escrita e fala em todas as unidades, nas duas trilhas',
+    'Mais prática de leitura, compreensão auditiva, escrita e fala em todas as unidades, nas duas trilhas',
   'New mock tests: reading with listening, and writing with speaking, for each level and the TOEFL track':
-    'Novos simulados: leitura com listening, e escrita com fala, para cada nível e para a trilha TOEFL',
+    'Novos simulados: leitura com compreensão auditiva, e escrita com fala, para cada nível e para a trilha TOEFL',
   'Practice sets you make with AI stay saved, on this device or in your account':
     'Os conjuntos de prática que você cria com a IA ficam salvos, neste aparelho ou na sua conta',
   'The Danna logo sits beside its name on the first screen': 'O logo do Danna fica ao lado do nome na primeira tela',
@@ -1090,16 +1090,16 @@ export const APP_PT: Record<string, string> = {
   'Search': 'Buscar',
   'Clear search': 'Limpar busca',
   'Search Danna': 'Buscar no Danna',
-  'Search lessons, tests, chats, files and pages': 'Buscar aulas, testes, chats, arquivos e telas',
+  'Search lessons, tests, chats, files and pages': 'Buscar aulas, testes, conversas, arquivos e telas',
   'Type a word. The search looks through every lesson, test, chat, file and page.':
-    'Digite uma palavra. A busca procura em todas as aulas, testes, chats, arquivos e telas.',
+    'Digite uma palavra. A busca procura em todas as aulas, testes, conversas, arquivos e telas.',
   'Nothing matches “{query}”.': 'Nada corresponde a “{query}”.',
   'Results': 'Resultados',
   'Enter opens · arrow keys move · Esc closes': 'Enter abre · as setas movem · Esc fecha',
   'Screens': 'Telas',
   'Tests': 'Testes',
   'Units': 'Unidades',
-  'Coach chats': 'Chats do coach',
+  'Coach chats': 'Conversas com o coach',
   'Listening voice': 'Voz para escutar',
   'Play a sample': 'Ouvir um exemplo',
   'Stop the sample': 'Parar o exemplo',
@@ -1145,27 +1145,27 @@ export const APP_PT: Record<string, string> = {
   'The Listening, Writing and Speaking cards in Self study have new colours':
     'Os cartões de Compreensão auditiva, Escrita e Fala, em Estudo livre, têm cores novas',
   'Search the whole app from the title bar, or with Ctrl+K: lessons, tests, chats, files, results and pages':
-    'Busque em todo o app pela barra de título, ou com Ctrl+K: aulas, testes, chats, arquivos, resultados e telas',
+    'Busque em todo o app pela barra de título, ou com Ctrl+K: aulas, testes, conversas, arquivos, resultados e telas',
   'Listening passages are read in a natural voice from your OpenAI or Google Gemini key. Choose the voice in Settings':
     'Os textos de escuta são lidos com uma voz natural da sua chave da OpenAI ou do Google Gemini. Escolha a voz em Configurações',
   'Check for updates from Settings. The notifications button is gone from the title bar':
     'Verifique atualizações em Configurações. O botão de notificações saiu da barra de título',
   'The coach offers other starter questions each time you start a chat, and its files take one line':
-    'O coach oferece outras perguntas para começar a cada novo chat, e os arquivos que ele lê ocupam uma linha',
+    'O coach oferece outras perguntas para começar a cada nova conversa, e os arquivos que ele lê ocupam uma linha',
   'Google Gemini keys in the new AQ. format are recognised': 'As chaves do Google Gemini no formato novo, com AQ., são reconhecidas',
   'Search boxes have a clear button that matches the rest of the app': 'Os campos de busca têm um botão de limpar que combina com o resto do app',
 
   // The 1.2.0 release note (What's new)
   'Replies stream in as the coach writes them. Stop one with its button or Esc, write it again, edit your last question, or continue a reply that ran out of room':
-    'As respostas aparecem aos poucos, enquanto o coach escreve. Pare uma resposta com o botão ou com Esc, escreva de novo, edite a sua última pergunta ou continue uma resposta que ficou sem espaço',
+    'As respostas aparecem aos poucos, enquanto o coach escreve. Pare uma resposta com o botão ou com Esc, escreva de novo, edite a sua última pergunta ou continue uma resposta que atingiu o limite',
   'Nine modes on the start screen of the coach, such as Conversation practice, Fix my writing, Speaking practice, Exam practice and Vocabulary builder. A chat keeps the mode it started in':
-    'Nove modos na tela inicial do coach, como Prática de conversação, Corrigir minha escrita, Prática de fala, Treino para a prova e Ampliar vocabulário. Um chat mantém o modo em que começou',
+    'Nove modos na tela inicial do coach, como Prática de conversação, Corrigir minha escrita, Prática de fala, Treino para a prova e Ampliar vocabulário. Uma conversa mantém o modo em que começou',
   'The coach knows your level, goal, exam date, skill scores and recent mistakes. No name or account details are sent':
     'O coach conhece seu nível, sua meta, a data da prova, suas notas por habilidade e seus erros recentes. Nenhum nome nem dado da conta é enviado',
   'Cards in the replies: feedback on your text with scores, corrections and a model version of it, vocabulary cards that save to your review, and buttons that open practice in the app':
     'Cartões nas respostas: feedback sobre o seu texto, com notas, correções e uma versão modelo dele, cartões de vocabulário que vão para a sua revisão e botões que abrem a prática no app',
   'Speak to the coach with the microphone (needs an OpenAI key). Read replies aloud, and save a chat as a Markdown file':
-    'Fale com o coach pelo microfone (precisa de uma chave da OpenAI). Leia as respostas em voz alta e salve um chat como arquivo Markdown',
+    'Fale com o coach pelo microfone (precisa de uma chave da OpenAI). Leia as respostas em voz alta e salve uma conversa como arquivo Markdown',
   'A wider coach for laptops: a slimmer header, larger text and a bigger message box':
     'Um coach mais largo para notebooks: cabeçalho mais fino, texto maior e caixa de mensagem maior',
   'Longer coach replies, up to 24,000 characters, so the feedback on a long text fits in one reply':
@@ -1193,9 +1193,9 @@ export const APP_PT: Record<string, string> = {
   'Your AI keys are saved to your account, sealed with your password. Add a key once, and every device you sign in to can use it':
     'Suas chaves de IA são salvas na sua conta, protegidas com a sua senha. Adicione uma chave uma vez, e todo aparelho em que você entrar pode usá-la',
   'Chats and files open a page at a time, so hundreds of them stay quick and fit their screen':
-    'Chats e arquivos abrem uma página por vez, então centenas deles continuam rápidos e cabem na tela',
+    'Conversas e arquivos abrem uma página por vez, então centenas deles continuam rápidos e cabem na tela',
   'The topic badges in Self study take the colour of their card': 'As etiquetas de tema em Estudo livre assumem a cor do seu cartão',
-  'The stars of each lesson on the roadmap sit beside it, clear of the path': 'As estrelas de cada aula no roteiro ficam ao lado dela, fora do caminho',
+  'The stars of each lesson on the roadmap sit beside it, clear of the path': 'As estrelas de cada aula na trilha ficam ao lado dela, fora do caminho',
   'The Close button is gone from the picture and banner windows. The X closes them': 'O botão Fechar saiu das janelas de foto e de banner. O X fecha as janelas',
   'The picture and banner buttons have room between them': 'Os botões de foto e de banner têm espaço entre eles',
 
@@ -1225,7 +1225,7 @@ export const APP_PT: Record<string, string> = {
     'Perfil: sem linha azul em volta da sua foto, no perfil e na barra de título',
   'Today: the Roadmap button takes the place of Your next step': 'Hoje: o botão Trilha ocupa o lugar de Seu próximo passo',
   'My report: the same score report as the level check, with your advice, skill profile, skills to improve and study plan':
-    'Meu relatório: o mesmo relatório de pontuação do teste de nível, com sua análise, seu perfil de habilidades, as habilidades para melhorar e seu plano de estudo',
+    'Meu relatório: o mesmo relatório de pontuação do teste de nível, com seus conselhos, seu perfil de habilidades, as habilidades para melhorar e seu plano de estudo',
   'Today: the level report sits beside your exam card, and its arrow is gone. The X still removes it from Today for good':
     'Hoje: o relatório de nível fica ao lado do cartão da sua prova, e a seta sumiu. O X ainda o tira do Hoje para sempre',
 
@@ -1248,7 +1248,7 @@ export const APP_PT: Record<string, string> = {
   'Links from Instagram, TikTok, X, Facebook, Threads, Reddit, Pinterest, Twitch, Dailymotion, Wikipedia, Medium, Quora and Deezer are recognised, with their logos':
     'Links do Instagram, TikTok, X, Facebook, Threads, Reddit, Pinterest, Twitch, Dailymotion, Wikipedia, Medium, Quora e Deezer são reconhecidos, com os seus logos',
   'The coach names a new chat from your own first question, in your language. Chats keep the names they have':
-    'O coach dá nome a um novo chat com a sua primeira pergunta, na sua língua. Os chats mantêm os nomes que já têm',
+    'O coach dá nome a uma nova conversa com a sua primeira pergunta, na sua língua. As conversas mantêm os nomes que já têm',
   'Coach messages can be selected and copied with the mouse or Ctrl+C. The Copy button works even when the clipboard refuses':
     'As mensagens do coach podem ser selecionadas e copiadas com o mouse ou com Ctrl+C. O botão Copiar funciona mesmo quando a área de transferência recusa',
   'Read aloud in the coach has the same look as Copy': 'Ler em voz alta no coach tem o mesmo visual de Copiar',
@@ -1383,16 +1383,16 @@ export const APP_PT: Record<string, string> = {
   'Talk live': 'Conversa ao vivo',
   'A real-time voice talk with a 3D coach that answers as you speak.': 'Uma conversa por voz em tempo real com um coach 3D que responde enquanto você fala.',
   'Talk with your coach by voice. Short turns, and gentle feedback you can hear.': 'Converse com seu coach por voz. Falas curtas e um retorno gentil que você pode ouvir.',
-  "Let's practise speaking. Ask me one question to start.": 'Vamos praticar a fala. Faça-me uma pergunta para começar.',
+  "Let's practise speaking. Ask me one question to start.": 'Vamos praticar a fala. Me faça uma pergunta para começar.',
   'Exam practice': 'Treino para a prova',
   'Tasks in the style of your exam, scored against its criteria.': 'Tarefas no estilo da sua prova, com nota pelos critérios dela.',
   'Give me one exam-style task now, and wait for my answer.': 'Me dê agora uma tarefa no estilo da prova e espere minha resposta.',
   'Grammar lesson': 'Aula de gramática',
   'One rule at a time, with examples and a short exercise.': 'Uma regra de cada vez, com exemplos e um exercício curto.',
-  'Teach me one grammar point I need most, then give me a short exercise.': 'Ensine-me o ponto de gramática de que mais preciso, e depois me dê um exercício curto.',
+  'Teach me one grammar point I need most, then give me a short exercise.': 'Me ensine o ponto de gramática de que mais preciso, e depois me dê um exercício curto.',
   'Vocabulary builder': 'Ampliar vocabulário',
   'New words for your level, with examples you can save to review.': 'Palavras novas para o seu nível, com exemplos que você pode salvar para revisar.',
-  'Teach me five useful words for my level, with examples.': 'Ensine-me cinco palavras úteis para o meu nível, com exemplos.',
+  'Teach me five useful words for my level, with examples.': 'Me ensine cinco palavras úteis para o meu nível, com exemplos.',
   'Read and discuss': 'Ler e discutir',
   'Share a text from your library or paste one, then talk about it.': 'Envie um texto da sua biblioteca ou cole um, e depois converse sobre ele.',
   'Practise my mistakes': 'Praticar meus erros',
@@ -1456,14 +1456,14 @@ export const APP_PT: Record<string, string> = {
   'Green': 'Verde',
   'Blue': 'Azul',
   'Violet': 'Violeta',
-  'Sun': 'Sol',
+  'Sun': 'Amarelo',
   'Red': 'Vermelho',
   'Slate': 'Ardósia',
   'New card': 'Novo cartão',
   'Front of the card': 'Frente do cartão',
   'Back of the card': 'Verso do cartão',
   'Add {count} cards': 'Adicionar {count} cartões',
-  'One card per line: the front, a semicolon or a tab, then the back.': 'Um cartão por linha: a frente, um ponto e vírgula ou um tab, e depois o verso.',
+  'One card per line: the front, a semicolon or a tab, then the back.': 'Um cartão por linha: a frente, um ponto e vírgula ou uma tabulação, e depois o verso.',
   'Cards': 'Cartões',
   'Example: dog; cachorro': 'Exemplo: dog; cachorro',
   '{count} lines are not cards and will be left out.': '{count} linhas não são cartões e serão deixadas de fora.',
@@ -1480,7 +1480,7 @@ export const APP_PT: Record<string, string> = {
   'Cards come back when they are due. Come back later, or add cards to the deck.':
     'Os cartões voltam quando vencem. Volte mais tarde ou adicione cartões ao baralho.',
   '{done} of {total}': '{done} de {total}',
-  'How well did you know it?': 'Quão bem você sabia?',
+  'How well did you know it?': 'Quanto você lembrou?',
   'Again': 'De novo',
   'Hard': 'Difícil',
   'Good': 'Bom',
@@ -1511,7 +1511,7 @@ export const APP_PT: Record<string, string> = {
   'Write a few sentences, then check them. Take the fixes you agree with.': 'Escreva algumas frases e depois revise. Aceite as correções com as quais concordar.',
   'Connect an AI key for a full check: the reasons, a tone and a score written by a model. Without one, the basics are checked on this device.':
     'Conecte uma chave de IA para uma revisão completa: os motivos, um tom e uma nota escritos por um modelo. Sem ela, o básico é revisado neste dispositivo.',
-  'Open Settings': 'Abrir configurações',
+  'Open Settings': 'Abrir Configurações',
   'Your text': 'Seu texto',
   'Write a few sentences in English.': 'Escreva algumas frases em inglês.',
   '{count} of {max} words': '{count} de {max} palavras',

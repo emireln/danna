@@ -102,7 +102,7 @@ export const PRACTICE_PT_A: Record<string, string> = {
     'Descreva a sua casa ou o seu quarto. Diga onde estão as coisas, por exemplo: The desk is next to the window.',
   'Write what you can do well and what you cannot do yet. Use can and cannot.':
     'Escreva o que você consegue fazer bem e o que ainda não consegue. Use can e cannot.',
-  'Ask for directions': 'Peça informações de caminho',
+  'Ask for directions': 'Pergunte o caminho',
   'Ask a partner where the nearest bus stop or station is. Then answer a question about the way to your home.':
     'Pergunte a um colega onde fica o ponto de ônibus ou a estação mais próxima. Depois responda a uma pergunta sobre o caminho até a sua casa.',
   'Tell a partner three things you can do well and one thing you cannot do yet.':
@@ -198,7 +198,7 @@ export const PRACTICE_PT_A: Record<string, string> = {
   'Listen to a short interview and answer four questions.': 'Ouça uma entrevista curta e responda a quatro perguntas.',
   'What was the last job?': 'Qual foi o último emprego?',
   'How long did the speaker work there?': 'Por quanto tempo a pessoa que fala trabalhou lá?',
-  'What did the speaker have to be, even when it was busy?': 'O que a pessoa que fala tinha que ser, mesmo quando estava cheio?',
+  'What did the speaker have to be, even when it was busy?': 'O que a pessoa que fala precisava ser, mesmo quando estava movimentado?',
   'Why does the speaker want this job?': 'Por que a pessoa que fala quer este emprego?',
   'Write about work': 'Escreva sobre trabalho',
   'Two tasks about jobs and messages at work.': 'Duas tarefas sobre empregos e mensagens no trabalho.',
