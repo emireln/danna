@@ -1,4 +1,4 @@
-// The reminders (notifications) and the sounds, in Portuguese: the messages danna sends, and the Settings that choose them.
+// The reminders (notifications) and the sounds, in Portuguese: the messages DANNA sends, and the Settings that choose them.
 export const ALERTS_PT: Record<string, string> = {
   // Reminders: the messages
   'Your exam is today': 'Sua prova é hoje',
@@ -19,11 +19,11 @@ export const ALERTS_PT: Record<string, string> = {
     'Você ficou fora por {count} dias. Uma lição curta basta para recomeçar.',
   // Settings: notifications
   'Notifications': 'Notificações',
-  'Reminders from danna': 'Lembretes do danna',
-  'A short message when danna is in the background and a reminder helps: a streak to keep, a goal to reach, cards to review.':
-    'Uma mensagem curta quando o danna está em segundo plano e um lembrete ajuda: uma sequência para manter, uma meta para bater, cartões para revisar.',
-  'Notifications are blocked for danna. Allow them in your system settings, then turn them on here.':
-    'As notificações do danna estão bloqueadas. Permita-as nas configurações do sistema e ative-as aqui.',
+  'Reminders from DANNA': 'Lembretes do DANNA',
+  'A short message when DANNA is in the background and a reminder helps: a streak to keep, a goal to reach, cards to review.':
+    'Uma mensagem curta quando o DANNA está em segundo plano e um lembrete ajuda: uma sequência para manter, uma meta para bater, cartões para revisar.',
+  'Notifications are blocked for DANNA. Allow them in your system settings, then turn them on here.':
+    'As notificações do DANNA estão bloqueadas. Permita-as nas configurações do sistema e ative-as aqui.',
   'Remind me from': 'Me lembrar a partir das',
   'Reminders start at this time, and none arrives after 10 pm.': 'Os lembretes começam nesse horário, e nenhum chega depois das 22h.',
   'Keep my streak': 'Manter minha sequência',
@@ -40,7 +40,7 @@ export const ALERTS_PT: Record<string, string> = {
     'Assim é um lembrete. Você pode mudar isso quando quiser nas configurações.',
   // Settings: sounds
   'Sounds': 'Sons',
-  'Sounds in danna': 'Sons do danna',
+  'Sounds in DANNA': 'Sons do DANNA',
   'Short, friendly sounds for your answers, the coach and finished lessons.':
     'Sons curtos e agradáveis para as suas respostas, o coach e as lições concluídas.',
   'Play {sound}': 'Ouvir {sound}',

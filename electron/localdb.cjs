@@ -1,4 +1,4 @@
-// Offline data for danna. One SQLite file in the app's data folder; nothing is sent anywhere.
+// Offline data for DANNA. One SQLite file in the app's data folder; nothing is sent anywhere.
 const { app } = require('electron');
 const { DatabaseSync } = require('node:sqlite');
 const { randomUUID } = require('node:crypto');

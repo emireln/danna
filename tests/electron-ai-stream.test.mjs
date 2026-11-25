@@ -102,7 +102,7 @@ test('an OpenRouter reply streams the same way, with the title of the app', asyn
       const reply = await ai.streamComplete('openrouter', 'sk-or-v1-test', 'some-model', { messages: [{ role: 'user', content: 'Hi' }] });
       assert.equal(reply.text, 'Fine.');
       assert.equal(calls[0].url, 'https://openrouter.ai/api/v1/chat/completions');
-      assert.equal(calls[0].headers['X-Title'], 'danna');
+      assert.equal(calls[0].headers['X-Title'], 'DANNA');
     },
   );
 });

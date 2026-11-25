@@ -69,7 +69,7 @@ export function SettingsScreen() {
   };
   const sendTestReminder = () => {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
-      notify(t('Notifications are blocked for danna. Allow them in your system settings, then turn them on here.'), 'error');
+      notify(t('Notifications are blocked for DANNA. Allow them in your system settings, then turn them on here.'), 'error');
       return;
     }
     void new Notification(t('Reminders are on'), {
@@ -217,12 +217,12 @@ export function SettingsScreen() {
     setChecking(true);
     try {
       const result = await bridge.update.check();
-      if (result.state === 'unavailable') notify(t('Updates are checked in the installed danna app.'));
+      if (result.state === 'unavailable') notify(t('Updates are checked in the installed DANNA app.'));
       else if (result.state === 'failed') notify(t('Could not check for updates. Try again later.'), 'error');
-      else if (result.state === 'idle') notify(t('danna is up to date.'), 'ok');
-      else if (result.state === 'available') notify(t('danna {version} is available. Download it when you like.', { version: result.version ?? '' }), 'ok');
-      else if (result.state === 'ready') notify(t('danna {version} is ready. It installs when you close danna.', { version: result.version ?? '' }), 'ok');
-      else notify(t('Downloading danna {version} in the background.', { version: result.version ?? '' }), 'ok');
+      else if (result.state === 'idle') notify(t('DANNA is up to date.'), 'ok');
+      else if (result.state === 'available') notify(t('DANNA {version} is available. Download it when you like.', { version: result.version ?? '' }), 'ok');
+      else if (result.state === 'ready') notify(t('DANNA {version} is ready. It installs when you close DANNA.', { version: result.version ?? '' }), 'ok');
+      else notify(t('Downloading DANNA {version} in the background.', { version: result.version ?? '' }), 'ok');
     } catch (error) {
       notify(t(errorText(error)), 'error');
     } finally {
@@ -354,7 +354,7 @@ export function SettingsScreen() {
       await moveToDevice(keepCopy);
       setSwitchOpen(false);
       await refresh();
-      notify(t('You are now using danna on this device.'), 'ok');
+      notify(t('You are now using DANNA on this device.'), 'ok');
     } catch (caught) {
       notify(t(errorText(caught)), 'error');
     } finally {
@@ -378,8 +378,8 @@ export function SettingsScreen() {
       <p className="muted">{t('Your look is saved to your account. Without an account it is kept on this device.')}</p>
       <LookPicker value={look} disabled={savingLook} onChange={(next) => void chooseLook(next)} />
 
-      <SectionTitle title={t('How you use danna')} />
-      <div className="mode-grid" role="radiogroup" aria-label={t('How you use danna')}>
+      <SectionTitle title={t('How you use DANNA')} />
+      <div className="mode-grid" role="radiogroup" aria-label={t('How you use DANNA')}>
         <button
           role="radio"
           aria-checked={mode === 'local'}
@@ -417,15 +417,15 @@ export function SettingsScreen() {
       <div className="stack">
         <div className="settings-row">
           <div className="settings-row__body">
-            <div className="settings-row__title">{t('Reminders from danna')}</div>
+            <div className="settings-row__title">{t('Reminders from DANNA')}</div>
             <div className="settings-row__text">
-              {t('A short message when danna is in the background and a reminder helps: a streak to keep, a goal to reach, cards to review.')}
+              {t('A short message when DANNA is in the background and a reminder helps: a streak to keep, a goal to reach, cards to review.')}
             </div>
           </div>
           <button
             role="switch"
             aria-checked={reminders.enabled}
-            aria-label={t('Reminders from danna')}
+            aria-label={t('Reminders from DANNA')}
             className="switch"
             disabled={permission === 'unsupported'}
             onClick={() => void toggleReminders()}
@@ -436,7 +436,7 @@ export function SettingsScreen() {
 
         {reminders.enabled && permission !== 'granted' && permission !== 'unsupported' && (
           <Notice tone="info">
-            {t('Notifications are blocked for danna. Allow them in your system settings, then turn them on here.')}
+            {t('Notifications are blocked for DANNA. Allow them in your system settings, then turn them on here.')}
           </Notice>
         )}
 
@@ -490,13 +490,13 @@ export function SettingsScreen() {
       <div className="stack">
         <div className="settings-row">
           <div className="settings-row__body">
-            <div className="settings-row__title">{t('Sounds in danna')}</div>
+            <div className="settings-row__title">{t('Sounds in DANNA')}</div>
             <div className="settings-row__text">{t('Short, friendly sounds for your answers, the coach and finished lessons.')}</div>
           </div>
           <button
             role="switch"
             aria-checked={sounds.enabled}
-            aria-label={t('Sounds in danna')}
+            aria-label={t('Sounds in DANNA')}
             className="switch"
             onClick={() => changeSounds({ ...sounds, enabled: !sounds.enabled })}
           >
@@ -690,13 +690,13 @@ export function SettingsScreen() {
           <SectionTitle title={t('Window')} />
           <div className="settings-row">
             <div className="settings-row__body">
-              <div className="settings-row__title">{t('Keep danna in the tray')}</div>
+              <div className="settings-row__title">{t('Keep DANNA in the tray')}</div>
               <div className="settings-row__text">{t('Closing the window keeps practice running. Open it again from the tray icon.')}</div>
             </div>
             <button
               role="switch"
               aria-checked={settings.closeToTray}
-              aria-label={t('Keep danna in the tray when the window closes')}
+              aria-label={t('Keep DANNA in the tray when the window closes')}
               className="switch"
               onClick={toggleTray}
             >
@@ -746,16 +746,16 @@ export function SettingsScreen() {
       <div className="stack">
         <div className="settings-row">
           <div className="settings-row__body">
-            <div className="settings-row__title">danna {version}</div>
+            <div className="settings-row__title">DANNA {version}</div>
             <div className="settings-row__text">{t('Scores are practice estimates, not official results.')}</div>
             {update.state === 'downloading' && update.version && (
-              <div className="settings-row__text">{t('Downloading danna {version} in the background.', { version: update.version })}</div>
+              <div className="settings-row__text">{t('Downloading DANNA {version} in the background.', { version: update.version })}</div>
             )}
             {update.state === 'available' && update.version && (
-              <div className="settings-row__text">{t('danna {version} is available. Download it when you like.', { version: update.version })}</div>
+              <div className="settings-row__text">{t('DANNA {version} is available. Download it when you like.', { version: update.version })}</div>
             )}
             {update.state === 'ready' && update.version && (
-              <div className="settings-row__text">{t('danna {version} is ready. It installs when you close danna.', { version: update.version })}</div>
+              <div className="settings-row__text">{t('DANNA {version} is ready. It installs when you close DANNA.', { version: update.version })}</div>
             )}
           </div>
           {update.state === 'available' && (
@@ -781,7 +781,7 @@ export function SettingsScreen() {
         <div className="settings-row">
           <div className="settings-row__body">
             <div className="settings-row__title">{t('Guided tour')}</div>
-            <div className="settings-row__text">{t('Show the main buttons of danna again.')}</div>
+            <div className="settings-row__text">{t('Show the main buttons of DANNA again.')}</div>
           </div>
           <button className="btn btn--ghost btn--sm" onClick={() => navigate('/', { state: { tour: true } })}>
             {t('Take the tour')}
@@ -794,7 +794,7 @@ export function SettingsScreen() {
         <div className="settings-row__body">
           <div className="settings-row__title">{t('Buy me a coffee')}</div>
           <div className="settings-row__text">
-            {t('If danna helps you learn, you can support its work with a coffee. It opens in your browser.')}
+            {t('If DANNA helps you learn, you can support its work with a coffee. It opens in your browser.')}
           </div>
         </div>
         <button className="btn btn--coffee btn--sm" onClick={openSupport}>
@@ -806,7 +806,7 @@ export function SettingsScreen() {
       {mode === 'supabase' ? (
         <div className="feedback-box">
           <p className="settings-row__text">
-            {t('Rate danna from 1 to 5 stars and leave a comment if you like. It goes to the developer.')}
+            {t('Rate DANNA from 1 to 5 stars and leave a comment if you like. It goes to the developer.')}
           </p>
           <div className="rate-stars" role="group" aria-label={t('Rating')}>
             {[1, 2, 3, 4, 5].map((value) => {
@@ -832,7 +832,7 @@ export function SettingsScreen() {
             maxLength={1000}
             value={comment}
             onChange={(event) => setComment(event.target.value)}
-            placeholder={t('What would make danna better? (optional)')}
+            placeholder={t('What would make DANNA better? (optional)')}
             aria-label={t('Your comment')}
           />
           {feedbackError && <Notice tone="error">{t(feedbackError)}</Notice>}
@@ -896,7 +896,7 @@ export function SettingsScreen() {
 
       {switchOpen && (
         <Sheet
-          title={t('Use danna on this device?')}
+          title={t('Use DANNA on this device?')}
           onClose={() => setSwitchOpen(false)}
           footer={
             <>

@@ -11,7 +11,7 @@ const BANNER = join(root, 'brand', 'banner.png');
 const WIDTH = 164;
 const HEIGHT = 314;
 // A BMP has no transparency, so any see-through part of the banner is filled with the app's purple.
-const BACKGROUND = '#5337d2';
+const BACKGROUND = '#5236d1';
 
 /** A 24-bit uncompressed BMP from top-down RGB pixels (the format the installer expects). */
 function bmp24(width, height, rgb) {

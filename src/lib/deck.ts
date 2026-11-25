@@ -1,6 +1,6 @@
 import type { CardRow } from './types';
 
-// Flashcards (2.0.0): reading a list of cards that the learner pastes in, and the names of the decks that danna makes.
+// Flashcards (2.0.0): reading a list of cards that the learner pastes in, and the names of the decks that DANNA makes.
 // A line is "front; back" or "front<TAB>back". Lines without both sides are skipped, and at most 500 cards are read.
 
 export const IMPORT_CARD_LIMIT = 500;

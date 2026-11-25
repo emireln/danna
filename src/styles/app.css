@@ -1,4 +1,4 @@
-/* danna design system. Light, calm and dense enough to scan: white canvas, one blue
+/* DANNA design system. Light, calm and dense enough to scan: white canvas, one blue
    accent, navy ink, hairline borders, 8 to 12px radii, and one deep-blue hero. */
 
 @layer reset, tokens, base, layout, components, screens;
@@ -23,8 +23,10 @@
     --primary-50: #f0edfc;
     --primary-100: #e1dbf8;
 
-    --hero-a: #1b1150;
+    --hero-a: #3a2693;
     --hero-b: #5236d1;
+    /* The deepest purple of the profile banners: a little stronger than the accent. Playful sets its own. */
+    --accent-deep: #3a2693;
 
     --teal: #13b5a4;
     --amber: #f5b400;
@@ -56,8 +58,8 @@
 
     /* The window frame: the accent around the white panel, deepest at the top, with a soft glow. The gutter is a little
        narrower than the hub's, so the page has more room. */
-    --frame-a: #1b1150;
-    --frame-b: #2a1c8c;
+    --frame-a: #3a2693;
+    --frame-b: #4730b8;
     --frame-c: #5236d1;
     --frame-glow: rgba(138, 109, 255, 0.45);
     --frame-gutter: 10px;
@@ -3030,7 +3032,7 @@
     height: 24px;
     padding: 0 9px;
     border-radius: 6px;
-    background: linear-gradient(120deg, #5337d2 0%, #6b3fd6 100%);
+    background: linear-gradient(120deg, var(--primary) 0%, #6b3fd6 100%);
     color: #ffffff;
     font-size: 11px;
     font-weight: 800;

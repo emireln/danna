@@ -175,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [enter, openVault],
   );
 
-  // The link goes to the site address set for the project (the danna website), so the app needs no address of its own.
+  // The link goes to the site address set for the project (the DANNA website), so the app needs no address of its own.
   const requestPasswordReset = useCallback(async (address: string) => {
     const sb = requireSupabase();
     const { error } = await sb.auth.resetPasswordForEmail(address.trim());

@@ -22,7 +22,7 @@ const WIDTH = 1080;
 const HEIGHT = 1400;
 const INK = '#0f1b33';
 const MUTED = '#5b677d';
-const PRIMARY = '#5337d2';
+const PRIMARY = '#5236d1';
 const TRACK = '#e8edf6';
 
 function font(weight: number, size: number): string {
@@ -75,14 +75,14 @@ export async function drawReportPicture(picture: ReportPicture): Promise<Blob> {
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
   const head = ctx.createLinearGradient(0, 0, WIDTH, 420);
   head.addColorStop(0, PRIMARY);
-  head.addColorStop(1, '#1c3bb0');
+  head.addColorStop(1, '#3a2693');
   ctx.fillStyle = head;
   ctx.fillRect(0, 0, WIDTH, 420);
 
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#ffffff';
   ctx.font = font(700, 50);
-  ctx.fillText('danna', 70, 110);
+  ctx.fillText('DANNA', 70, 110);
   ctx.globalAlpha = 0.85;
   ctx.font = font(600, 26);
   ctx.fillText(picture.eyebrow.toUpperCase(), 70, 190);

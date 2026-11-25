@@ -1268,11 +1268,11 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background-color: #1d3580;
+    background-color: var(--accent-deep);
     background-image:
       radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.22), transparent 36%),
       radial-gradient(circle at 6% 110%, rgba(255, 255, 255, 0.14), transparent 44%),
-      linear-gradient(135deg, #1d1466 0%, #5337d2 100%);
+      linear-gradient(135deg, var(--accent-deep) 0%, var(--primary) 100%);
     background-size: cover;
     background-position: center;
   }
@@ -1500,7 +1500,7 @@
     aspect-ratio: 10 / 3;
     overflow: hidden;
     border-radius: 13px;
-    background: linear-gradient(135deg, #1d1466 0%, #5337d2 100%) center / cover no-repeat;
+    background: linear-gradient(135deg, var(--accent-deep) 0%, var(--primary) 100%) center / cover no-repeat;
     color: #fff;
     font-weight: 650;
   }
@@ -1521,13 +1521,13 @@
   .friend-profile__banner {
     height: 132px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #1d1466 0%, #5337d2 100%) center / cover no-repeat;
+    background: linear-gradient(135deg, var(--accent-deep) 0%, var(--primary) 100%) center / cover no-repeat;
   }
 
   .friend-profile__banner--plain {
     background-image:
       radial-gradient(circle at 85% 20%, rgba(255, 255, 255, 0.25), transparent 40%),
-      linear-gradient(135deg, #1d1466 0%, #5337d2 100%);
+      linear-gradient(135deg, var(--accent-deep) 0%, var(--primary) 100%);
   }
 
   .friend-profile__head {

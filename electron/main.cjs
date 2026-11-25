@@ -1,4 +1,4 @@
-// danna desktop shell: custom window frame, tray, offline data, AI keys and secure IPC.
+// DANNA desktop shell: custom window frame, tray, offline data, AI keys and secure IPC.
 const { app, BrowserWindow, ipcMain, shell, safeStorage, session, protocol, net, Tray, Menu, nativeImage, utilityProcess } = require('electron');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -25,7 +25,7 @@ const kokoroEngine = kokoro.createSpeechEngine({ modelDir: kokoroDir });
 // The voice runs in a utility process of its own, so loading a voice or making its sound never stalls this process.
 const voiceHost = createSpeechHost({
   available: (voice) => kokoroEngine.available(voice),
-  fork: () => utilityProcess.fork(path.join(__dirname, 'speech-worker.cjs'), [kokoroDir], { serviceName: 'danna voice', stdio: 'ignore' }),
+  fork: () => utilityProcess.fork(path.join(__dirname, 'speech-worker.cjs'), [kokoroDir], { serviceName: 'DANNA voice', stdio: 'ignore' }),
 });
 const speechService = createSpeechService({
   kokoro: voiceHost,
@@ -52,7 +52,7 @@ const updates = createUpdates({
   app,
   updater: autoUpdater,
   send: (channel, payload) => send(channel, payload),
-  log: (message) => console.error('danna updates:', message),
+  log: (message) => console.error('DANNA updates:', message),
 });
 
 // Must run before the app is ready. The interface is served from this origin.
@@ -72,7 +72,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     app.setAppUserModelId('app.danna.desktop');
     protocol.handle('app', serveApp);
-    // Only the microphone (speaking practice) and notifications (reminders), and only for danna's own pages.
+    // Only the microphone (speaking practice) and notifications (reminders), and only for DANNA's own pages.
     const allowedPermissions = new Set(['media', 'notifications']);
     session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
       const url = webContents ? webContents.getURL() : '';
@@ -125,7 +125,7 @@ function createWindow() {
     // No system title bar: the interface draws its own, with window controls.
     frame: false,
     thickFrame: true,
-    title: 'danna',
+    title: 'DANNA',
     backgroundColor: '#ffffff',
     autoHideMenuBar: true,
     icon: fs.existsSync(ICON) ? ICON : undefined,
@@ -148,7 +148,7 @@ function createWindow() {
     mainWindow.hide();
     if (!trayHintShown && tray && typeof tray.displayBalloon === 'function') {
       trayHintShown = true;
-      tray.displayBalloon({ title: 'danna', content: shellText(shellLang()).hint });
+      tray.displayBalloon({ title: 'DANNA', content: shellText(shellLang()).hint });
     }
   });
   mainWindow.on('closed', () => {
@@ -166,7 +166,7 @@ function createWindow() {
   });
 
   mainWindow.loadURL(DEV_URL ?? `${APP_ORIGIN}/index.html`).catch((error) => {
-    console.error('danna could not load its interface:', error);
+    console.error('DANNA could not load its interface:', error);
   });
 }
 
@@ -217,7 +217,7 @@ function buildTrayMenu() {
 function createTray() {
   if (tray || !fs.existsSync(TRAY_ICON)) return;
   tray = new Tray(nativeImage.createFromPath(TRAY_ICON));
-  tray.setToolTip('danna');
+  tray.setToolTip('DANNA');
   tray.setContextMenu(buildTrayMenu());
   tray.on('click', () => {
     if (mainWindow && mainWindow.isVisible() && mainWindow.isFocused()) mainWindow.hide();

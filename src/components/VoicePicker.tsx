@@ -1,4 +1,4 @@
-// The voices a learner can listen with, in four groups: automatic, the voices built into danna, the voices installed on
+// The voices a learner can listen with, in four groups: automatic, the voices built into DANNA, the voices installed on
 // this PC (the natural ones first), and the cloud voices of the keys the learner added. Each voice can be heard before
 // it is chosen, and a voice that is not available is shown, with the reason.
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -119,7 +119,7 @@ export function VoicePicker({ value, onChoose }: VoicePickerProps) {
           const ready = builtinReady(voice.id);
           const accent = voice.accent === 'uk' ? t('UK English') : t('US English');
           const meta = [accent, genderOf(voice.gender)].filter(Boolean).join(' · ');
-          return row(`builtin:${voice.id}`, voice.name, ready ? meta : t('Not in this copy of danna'), { disabled: !ready });
+          return row(`builtin:${voice.id}`, voice.name, ready ? meta : t('Not in this copy of DANNA'), { disabled: !ready });
         })}
       </div>
 

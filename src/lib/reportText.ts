@@ -12,7 +12,7 @@ export const TIPS: Record<Skill, string> = {
   language: 'Rebuild the sentences you missed from memory the next day. Repeat the ones that still feel slow.',
 };
 
-export const PLAN_COLORS = ['#5337d2', '#14b8a6', '#f5b400', '#a4adbf'];
+export const PLAN_COLORS = ['#5236d1', '#14b8a6', '#f5b400', '#a4adbf'];
 
 /** The advice for a score: it names the strongest and the weakest skill, and gives a tip for the weakest one. */
 export function adviceFor(skills: SkillMap, percent: number, level: string, estimate: number | null, t: Translate) {

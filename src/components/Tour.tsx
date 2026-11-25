@@ -167,7 +167,7 @@ export function GuidedTour() {
             {t('Take a quick tour?')}
           </h2>
           <p className="tour-offer__text">
-            {t('See the main buttons of danna in less than a minute. You can skip it and take the tour later from Settings.')}
+            {t('See the main buttons of DANNA in less than a minute. You can skip it and take the tour later from Settings.')}
           </p>
           <div className="tour-offer__actions">
             <button type="button" className="btn btn--ghost" onClick={close}>

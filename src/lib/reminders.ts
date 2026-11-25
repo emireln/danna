@@ -1,4 +1,4 @@
-// The reminders danna can send. Each one is decided from what the learner has done, so a message only comes when it
+// The reminders DANNA can send. Each one is decided from what the learner has done, so a message only comes when it
 // helps: a streak about to break, today's goal not yet reached, cards waiting to be reviewed, an exam close by, or a
 // longer break. At most one reminder is sent a day, and the same kind is not repeated too soon.
 import { t, tn } from './i18n';

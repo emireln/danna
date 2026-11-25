@@ -27,7 +27,7 @@ test('the welcome asks for the language first, before the introduction', () => {
 test('the setup asks for the look before the name, and saves it to the profile', () => {
   assert.match(setup, /const STEPS = \['Look', 'Name', /, 'the look is the first step');
   const look = setup.indexOf('<LookPicker');
-  const name = setup.indexOf("t('What should danna call you?')");
+  const name = setup.indexOf("t('What should DANNA call you?')");
   assert.ok(look > 0 && name > look, 'the look picker comes before the name');
   assert.match(setup, /patchProfile\(\{ ui_style: next \}\)/, 'the look is saved to the profile');
 });

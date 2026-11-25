@@ -46,7 +46,7 @@ export interface WindowState {
 }
 
 export interface UpdateStatus {
-  /** idle: nothing newer; available: a newer version can be downloaded; downloading: it is on its way; ready: it installs when danna restarts or closes. */
+  /** idle: nothing newer; available: a newer version can be downloaded; downloading: it is on its way; ready: it installs when DANNA restarts or closes. */
   state: 'idle' | 'available' | 'downloading' | 'ready';
   version: string | null;
 }
@@ -68,7 +68,7 @@ export interface SpeechChunk {
   error?: string;
 }
 
-/** A voice built into danna. `ready` is false when its files are not in this copy of the app. */
+/** A voice built into DANNA. `ready` is false when its files are not in this copy of the app. */
 export interface BuiltinVoice {
   id: string;
   name: string;

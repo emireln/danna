@@ -392,7 +392,7 @@ test('without the desktop app a talk does not start and says so', async () => {
   conv.attachVoice(fakeVoice());
   await conv.start(geminiOptions);
   assert.equal(conv.snapshot().ended, true);
-  assert.equal(conv.snapshot().error, 'Talk live works in the danna desktop app.');
+  assert.equal(conv.snapshot().error, 'Talk live works in the DANNA desktop app.');
 });
 
 test('a talk cannot start until the coach is drawn, and the coach leaving ends the talk', async () => {

@@ -1,5 +1,5 @@
 // Deeper grammar practice for A2 to C1. Each lesson has eight items, and each answer has a short explanation.
-// Every sentence here was written for danna: the topics are the usual grammar points, and the examples are new.
+// Every sentence here was written for DANNA: the topics are the usual grammar points, and the examples are new.
 import type { UnitDef } from '../roadmap';
 import { gap, lesson, mc, order, pick, unit } from '../authoring';
 

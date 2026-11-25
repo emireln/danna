@@ -1,8 +1,8 @@
 // The release notes in Portuguese (2.1.0 to 2.3.14): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
-  'Forgot your password? The sign-in screen has a link that emails you a reset link. The link opens the danna website, where you choose a new password.':
-    'Esqueceu a senha? A tela de entrada tem um link que envia por e-mail um link de redefinição. O link abre o site do danna, onde você escolhe uma nova senha.',
+  'Forgot your password? The sign-in screen has a link that emails you a reset link. The link opens the DANNA website, where you choose a new password.':
+    'Esqueceu a senha? A tela de entrada tem um link que envia por e-mail um link de redefinição. O link abre o site do DANNA, onde você escolhe uma nova senha.',
   'Talk live is switched off for now while it is reworked. The coach card is hidden, and the rest of the coach works as before.':
     'O talk live está desligado por enquanto, enquanto passa por uma reformulação. O cartão do coach fica oculto, e o resto do coach funciona como antes.',
   'A new logo: a white mark on a transparent background, in the app and on the platform logos.':
@@ -10,8 +10,8 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
   'Talk live: the coach is drawn in 3D with TalkingHead. Its mouth follows the words of each reply, and you can ask it to raise a hand, give a thumbs up, say OK or shrug.':
     'Talk live: o coach é desenhado em 3D com o TalkingHead. A boca acompanha as palavras de cada resposta, e você pode pedir que ele levante a mão, dê um joinha, diga OK ou encolha os ombros.',
   'Ana is the only coach. Leo and Mia have been removed.': 'Ana é o único coach. Leo e Mia foram removidos.',
-  'Reminders: switch them on in Settings. danna can remind you about your streak, today’s goal, cards due for review, an exam that is close, or a longer break. They arrive only while danna is in the background, from the time you choose, and at most one a day.':
-    'Lembretes: ative-os nas Configurações. O danna pode lembrar você da sua sequência, da meta de hoje, dos cartões para revisar, de uma prova que está perto ou de uma pausa longa. Eles chegam só enquanto o danna está em segundo plano, no horário que você escolher, e no máximo um por dia.',
+  'Reminders: switch them on in Settings. DANNA can remind you about your streak, today’s goal, cards due for review, an exam that is close, or a longer break. They arrive only while DANNA is in the background, from the time you choose, and at most one a day.':
+    'Lembretes: ative-os nas Configurações. O DANNA pode lembrar você da sua sequência, da meta de hoje, dos cartões para revisar, de uma prova que está perto ou de uma pausa longa. Eles chegam só enquanto o DANNA está em segundo plano, no horário que você escolher, e no máximo um por dia.',
   'Sounds: a right and a wrong answer, a finished lesson, a coach reply and a reminder each have a short, soft tone. Switch each one off in Settings, set the volume, or listen to it first.':
     'Sons: uma resposta certa, uma errada, uma lição concluída, a resposta do coach e um lembrete têm cada um um tom curto e suave. Desligue cada um nas Configurações, ajuste o volume ou ouça antes.',
   'Smoother sections: a section fades in without a blank moment, and going back to one shows what it showed before. The roadmap nodes fade in instead of jumping in one by one.':
@@ -24,10 +24,10 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
     'Um novo ícone do app: a janela, a barra de tarefas, o instalador e a bandeja agora mostram o novo ícone.',
   'Fixes: the badges on the Self study cards no longer cover the progress bars, the eye in the key field is centred, the About rows have room between them, and the picture side of the banners blends into the colour.':
     'Correções: as etiquetas dos cartões de Estudo livre não cobrem mais as barras de progresso, o olho do campo da chave fica centralizado, as linhas de Sobre têm espaço entre elas, e o lado da imagem dos banners se funde com a cor.',
-  'Built-in voices: danna reads with seven voices made on your computer: Heart, Bella, Nicole, Sarah, Michael, Emma and George. They work offline, with no key and no internet.':
-    'Vozes integradas: o danna lê com sete vozes feitas no seu computador: Heart, Bella, Nicole, Sarah, Michael, Emma e George. Elas funcionam offline, sem chave e sem internet.',
-  'Voices on this PC: danna finds the voices installed on your computer, the natural Windows voices too, and lists them in Settings. Listen to each one before you choose it.':
-    'Vozes deste PC: o danna encontra as vozes instaladas no seu computador, inclusive as vozes naturais do Windows, e as lista em Configurações. Ouça cada uma antes de escolher.',
+  'Built-in voices: DANNA reads with seven voices made on your computer: Heart, Bella, Nicole, Sarah, Michael, Emma and George. They work offline, with no key and no internet.':
+    'Vozes integradas: o DANNA lê com sete vozes feitas no seu computador: Heart, Bella, Nicole, Sarah, Michael, Emma e George. Elas funcionam offline, sem chave e sem internet.',
+  'Voices on this PC: DANNA finds the voices installed on your computer, the natural Windows voices too, and lists them in Settings. Listen to each one before you choose it.':
+    'Vozes deste PC: o DANNA encontra as vozes instaladas no seu computador, inclusive as vozes naturais do Windows, e as lista em Configurações. Ouça cada uma antes de escolher.',
   'Automatic: a cloud voice when you have an AI key, otherwise the built-in voice. The robotic Windows voice is no longer used to read aloud.':
     'Automática: uma voz da nuvem quando você tem uma chave de IA; caso contrário, a voz integrada. A voz robótica do Windows não é mais usada para ler em voz alta.',
   'Faster start: a reading plays its first words while the rest is still being made.':
@@ -42,8 +42,8 @@ export const RELEASE_NOTES_PT: Record<string, string> = {
     'Conversa ao vivo: uma conversa por voz em tempo real com o seu coach. Com uma chave do Gemini, o coach responde com a própria voz enquanto você fala. Com qualquer outra chave de IA, o coach escreve as respostas e a voz do app as lê em voz alta.',
   'Realistic coaches: Ana, Leo and Mia are realistic 3D people, shown from the head up. Their mouths follow the voice, and they blink and look at you while they talk.':
     'Coaches realistas: Ana, Leo e Mia são pessoas em 3D com aparência real, mostradas da cabeça para cima. A boca acompanha a voz, e eles piscam e olham para você enquanto falam.',
-  'Privacy: danna asks for your consent once on each device. A talk ends when danna is hidden, and it is kept in your coach chats only when you save it.':
-    'Privacidade: o danna pede o seu consentimento uma vez em cada aparelho. Uma conversa termina quando o danna fica oculto, e só fica nas suas conversas com o coach quando você a salva.',
+  'Privacy: DANNA asks for your consent once on each device. A talk ends when DANNA is hidden, and it is kept in your coach chats only when you save it.':
+    'Privacidade: o DANNA pede o seu consentimento uma vez em cada aparelho. Uma conversa termina quando o DANNA fica oculto, e só fica nas suas conversas com o coach quando você a salva.',
   'Speaking with a Gemini key: the microphone works when Gemini is your only AI key. Gemini writes down what you say, for the coach and for speaking practice.':
     'Falar com uma chave do Gemini: o microfone funciona quando o Gemini é a sua única chave de IA. O Gemini transcreve o que você fala, para o coach e para a prática de fala.',
   'Fixes: the coach’s multiple-choice sets show as cards again, and the Account rows in Settings have room between them.':
