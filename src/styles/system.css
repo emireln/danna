@@ -1167,9 +1167,10 @@
     align-items: start;
   }
 
+  /* Pinned at the page's top padding (36px, see .page in app.css), so the menu stays where it is while the page scrolls */
   .settings-nav {
     position: sticky;
-    top: 0;
+    top: 36px;
     display: grid;
     gap: 4px;
   }
