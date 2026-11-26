@@ -1,6 +1,19 @@
 // The release notes in Portuguese (2.1.0 to 2.6.0): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
+  'Settings has a sidebar. Each section has its own page: General, Account, Sounds, AI and voice, and About and help.':
+    'As Configurações têm uma barra lateral. Cada seção tem a sua própria página: Geral, Conta, Sons, IA e voz, e Sobre e ajuda.',
+  'The title bar has a button that opens the Danna hub in your browser.':
+    'A barra de título tem um botão que abre o hub do Danna no seu navegador.',
+  'A pop-up over the page dims the whole page, the bottom tabs included, and the purple frame stays bright.':
+    'Uma janela sobre a página escurece a página inteira, inclusive as abas de baixo, e a moldura roxa continua clara.',
+  'Section titles, card titles and sheet titles use the display face of the website.':
+    'Os títulos das seções, dos cartões e das janelas usam a fonte de títulos do site.',
+  'A lesson finished with three stars shows fireworks.': 'Uma lição concluída com três estrelas mostra fogos de artifício.',
+  'Fields have no square outline when you click in them. The keyboard focus on the bottom tabs is a pill inside the tab.':
+    'Os campos não têm contorno quadrado ao clicar neles. O foco do teclado nas abas de baixo é uma pílula dentro da aba.',
+  'The progress bar has room at each side, so it is not glued to the edges.':
+    'A barra de progresso tem espaço nas laterais, e não encosta nas bordas.',
   'The Classic look has the pill design: the cards, buttons, tabs and tags have the same rounded corners as the Playful look.':
     'O visual Clássico tem o desenho de pílula: cartões, botões, abas e etiquetas têm os mesmos cantos arredondados do visual Divertido.',
   'The field of the coach has no square outline when you click in it. The rounded box around it shows that the field has focus.':
