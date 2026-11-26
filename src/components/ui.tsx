@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -155,7 +156,8 @@ export function Sheet({
     }
   };
 
-  return (
+  // The sheet is drawn in the body, so its dim lies over the whole panel, the bottom tabs included.
+  const scrim = (
     <motion.div
       className="scrim"
       initial={{ opacity: 0 }}
@@ -187,6 +189,9 @@ export function Sheet({
       </motion.div>
     </motion.div>
   );
+
+  // Where there is no page (a server render, a test), the sheet stays where it is written.
+  return typeof document === 'undefined' ? scrim : createPortal(scrim, document.body);
 }
 
 /** A short confirmation before something is removed or cleared. The confirm button is red, the cancel button is quiet. */
