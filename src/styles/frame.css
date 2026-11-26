@@ -65,12 +65,9 @@
     box-shadow: 0 0 0 2px var(--frame-b);
   }
 
-  .titlebar .avatar-btn {
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85);
-  }
-
+  .titlebar .avatar-btn,
   .titlebar .avatar-btn:hover {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4);
+    box-shadow: none;
   }
 
   .titlebar a,

@@ -19,7 +19,7 @@ import { useAI } from '../state/ai';
 import { errorText } from '../lib/bridge';
 import { useT } from '../lib/i18n/react';
 import { tn } from '../lib/i18n';
-import { LEVEL_CHECK_ICON, SECTION_ICON } from '../lib/art';
+import { LEVEL_CHECK_ICON } from '../lib/art';
 import { levelTestId } from '../content';
 import { keepAnswer, lastAnswer } from '../lib/cache';
 
@@ -111,13 +111,12 @@ export function TodayScreen() {
   const skillTasks = (skill: Skill) =>
     nodes.filter((node) => !node.item.checkpoint && node.item.lesson.skill === skill && node.state !== 'done').length;
 
-  const tiles: Array<{ key: string; label: string; count: number; color: string; image?: string; icon?: 'lang' | 'review'; to: string }> = [
+  const tiles: Array<{ key: string; label: string; count: number; color: string; icon?: 'lang' | 'review'; to: string }> = [
     ...(['reading', 'listening', 'speaking', 'writing'] as const).map((skill) => ({
       key: skill,
       label: t(SKILL_LABEL[skill]),
       count: skillTasks(skill),
       color: TILE_COLORS[skill],
-      image: SECTION_ICON[skill],
       to: `/study/${skill}`,
     })),
     {
@@ -291,7 +290,6 @@ export function TodayScreen() {
                 )}
                 <span>{tile.label}</span>
                 <span className="tile__count">{tile.count}</span>
-                {tile.image && <img className="tile__art" src={tile.image} alt="" aria-hidden="true" />}
               </button>
             );
           })}

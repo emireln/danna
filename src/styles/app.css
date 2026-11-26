@@ -1438,14 +1438,6 @@
     font-weight: 700;
   }
 
-  /* The 3D picture of a skill tile sits on the right, after the count */
-  .tile__art {
-    flex: none;
-    width: 44px;
-    height: 44px;
-    object-fit: contain;
-  }
-
   .tile__count {
     margin-left: auto;
     font-size: 15px;
