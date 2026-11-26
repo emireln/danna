@@ -7,10 +7,11 @@ compatibility_date = "2026-01-01"
 [vars]
 SUPABASE_URL = "https://coveufyhdqvqawhtnwap.supabase.co"
 SUPABASE_PUBLISHABLE_KEY = "sb_publishable_k-6GAdD998AIijbSxJ-Ofg_41SswhB8"
-# The apps and the hub. Only these origins may call the gateway.
-ALLOWED_ORIGINS = "app://danna,app://botdanna,https://hub.danna.run,https://danna.run"
+# The apps and the hub. Only these origins may call the gateway. The last one is the desktop app in development
+# (npm run dev); remove it when you no longer test in development.
+ALLOWED_ORIGINS = "app://danna,app://botdanna,https://hub.danna.run,https://danna.run,http://localhost:5173"
 # New files go to R2 once Supabase Storage holds this many bytes (400 MB).
-STORAGE_THRESHOLD_BYTES = "1048576"
+STORAGE_THRESHOLD_BYTES = "419430400"
 
 [[r2_buckets]]
 binding = "FILES"

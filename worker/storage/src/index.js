@@ -174,24 +174,30 @@ async function verifySignIn(request, env) {
 async function storageInUse(env) {
   if (Date.now() - usage.checkedAt < USAGE_TTL_MS) return usage.bytes;
   const secret = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) throw new Error('the secret key is not set');
+  if (!secret) throw new Error('no secret key is set (SUPABASE_SECRET_KEY)');
   const response = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/storage_used_bytes`, {
     method: 'POST',
     headers: { apikey: secret, 'content-type': 'application/json' },
     body: '{}',
   });
-  const bytes = response.ok ? Number(await response.json()) : NaN;
-  if (!Number.isFinite(bytes) || bytes < 0) throw new Error('storage usage unavailable');
+  if (!response.ok) throw new Error(`the storage total was refused with status ${response.status}`);
+  const bytes = Number(await response.json());
+  if (!Number.isFinite(bytes) || bytes < 0) throw new Error('the storage total is not a number');
   usage = { checkedAt: Date.now(), bytes };
   return bytes;
 }
 
 // New files go to R2 once Supabase Storage holds the threshold or more. If the amount cannot be read, Supabase is used.
+// Each decision is logged, without any key, so a missing secret or a refused key shows in the Worker's logs.
 async function usesR2(env) {
   const threshold = Number(env.STORAGE_THRESHOLD_BYTES) || DEFAULT_THRESHOLD_BYTES;
   try {
-    return (await storageInUse(env)) >= threshold;
-  } catch {
+    const bytes = await storageInUse(env);
+    const toR2 = bytes >= threshold;
+    console.log(JSON.stringify({ event: 'storage-decision', bytes, threshold, backend: toR2 ? 'r2' : 'supabase' }));
+    return toR2;
+  } catch (error) {
+    console.log(JSON.stringify({ event: 'storage-decision', error: String(error.message), backend: 'supabase' }));
     return false;
   }
 }
