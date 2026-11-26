@@ -31,6 +31,7 @@ const migration0020Sql = await readFile(join(here, '..', 'migrations', '0020_v2_
 const migration0021Sql = await readFile(join(here, '..', 'migrations', '0021_v2_league.sql'), 'utf8');
 const migration0022Sql = await readFile(join(here, '..', 'migrations', '0022_v2_decks.sql'), 'utf8');
 const migration0023Sql = await readFile(join(here, '..', 'migrations', '0023_release_2_0_0.sql'), 'utf8');
+const migration0028Sql = await readFile(join(here, '..', 'migrations', '0028_security_hardening.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -954,4 +955,19 @@ test('migration 0009 runs on a current database, and again, without changing the
   await db.exec(migration0009Sql);
   assert.equal((await db.query('select count(*)::int as n from public.feedback where user_id = $1', [ALICE])).rows[0].n, 50);
   assert.equal((await refused(as(db, ALICE, 'select id from public.feedback'))).code, PERMISSION_DENIED);
+});
+
+test('migration 0028 runs on a current database, and again, with the picture and AI key rules in force', async () => {
+  await db.exec(migration0028Sql);
+  await db.exec(migration0028Sql);
+  await as(db, ALICE, 'update public.profiles set avatar_path = $1, avatar_updated_at = now() where id = $2', [`${ALICE}/avatar.webp`, ALICE]);
+  const own = await as(db, ALICE, 'select public.can_read_avatar($1) as ok', [`${ALICE}/avatar.webp`]);
+  assert.equal(own.rows[0].ok, true, 'the owner reads her own picture file');
+  const someoneElses = await as(db, ALICE, 'select public.can_read_avatar($1) as ok', [`${BOB}/avatar.webp`]);
+  assert.equal(someoneElses.rows[0].ok, false, 'a picture file of another person is not read through her profile');
+  const rights = await db.query(
+    "select has_table_privilege('anon', 'public.ai_keys', 'select') as reads, has_table_privilege('anon', 'public.ai_keys', 'insert') as writes",
+  );
+  assert.deepEqual(rights.rows[0], { reads: false, writes: false }, 'the anonymous role has no rights on AI keys');
+  assert.equal((await refused(as(db, null, 'select user_id from public.ai_keys'))).code, PERMISSION_DENIED, 'a signed-out caller cannot read AI keys');
 });
