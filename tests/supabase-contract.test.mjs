@@ -9,6 +9,10 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// A local .env.local may set the storage gateway address (VITE_STORAGE_WORKER_URL). These tests check the direct
+// Supabase path, so the gateway is switched off for this file. tests/storage-gateway.test.mjs covers the gateway.
+process.env.VITE_STORAGE_WORKER_URL = '';
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
 const schema = readFileSync(join(root, 'supabase', 'schema.sql'), 'utf8');

@@ -16,6 +16,22 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     created_at: '2026-11-01T09:00:00Z',
   },
   {
+    id: 'local-release-2900',
+    kind: 'release_note',
+    title: 'Danna 2.9.0',
+    body: [
+      '- Profile pictures, banners and library files are saved by a new storage service, which can hold more files as your library grows.',
+      '- Files you saved before stay where they are, and they open as before.',
+    ].join('\n'),
+    version: '2.9.0',
+    image_url: null,
+    cta_label: null,
+    cta_url: null,
+    accent: 'blue',
+    priority: 0,
+    created_at: '2026-11-26T15:00:00Z',
+  },
+  {
     id: 'local-release-2800',
     kind: 'release_note',
     title: 'Danna 2.8.0',
