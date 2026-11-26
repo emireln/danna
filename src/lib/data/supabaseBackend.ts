@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { makeStorageGateway, STORAGE_GATEWAY_URL } from './storageGateway';
 import type {
   AnnouncementRow,
   AttemptKind,
@@ -72,7 +73,52 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
   // A picture is fetched through a signed link made for this request, and the request skips the browser's
   // cache. A plain download can be answered from the cache for an hour, so a new picture at the same path
   // would show the old one. The bucket's policy still decides who may read the file.
+  // The storage gateway, when the app is built with its address. Without it, files go to Supabase Storage as before.
+  const gateway = STORAGE_GATEWAY_URL ? makeStorageGateway(STORAGE_GATEWAY_URL) : null;
+
+  // The sign-in that the gateway checks with every request.
+  async function accessToken(): Promise<string> {
+    const { data } = await sb.auth.getSession();
+    const token = data.session?.access_token;
+    if (!token) throw userError('Your session has expired. Sign in again to continue.');
+    return token;
+  }
+
+  // Saves a file, through the gateway when it is set or in Supabase Storage. A failure throws its message.
+  async function saveFile(bucket: string, path: string, blob: Blob, contentType: string): Promise<void> {
+    if (gateway) {
+      await gateway.upload(bucket, path, blob, contentType, await accessToken());
+      return;
+    }
+    const { error } = await sb.storage.from(bucket).upload(path, blob, { upsert: true, contentType, cacheControl: '3600' });
+    if (error) throw new Error(error.message);
+  }
+
+  // Removes a file. A failure is not reported, as before: the row is what the app shows.
+  async function dropFile(bucket: string, path: string): Promise<void> {
+    if (gateway) {
+      try {
+        await gateway.remove(bucket, path, await accessToken());
+      } catch {
+        // Not reported, as before.
+      }
+      return;
+    }
+    await sb.storage.from(bucket).remove([path]);
+  }
+
+  // Downloads a file through the gateway. Null when it cannot be read.
+  async function downloadFile(bucket: string, path: string): Promise<Blob | null> {
+    if (!gateway) return null;
+    try {
+      return await gateway.download(bucket, path, await accessToken());
+    } catch {
+      return null;
+    }
+  }
+
   async function downloadPrivate(bucket: string, path: string): Promise<Blob | null> {
+    if (gateway) return downloadFile(bucket, path);
     const { data, error } = await sb.storage.from(bucket).createSignedUrl(path, 300);
     if (error || !data) return null;
     const response = await fetch(data.signedUrl, { cache: 'no-store' });
@@ -121,10 +167,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       const path = `${id}/avatar.webp`;
       if (picture) {
         // Upload first, then point the profile at it, so the profile never refers to a missing file.
-        const { error } = await sb.storage
-          .from('avatars')
-          .upload(path, picture, { upsert: true, contentType: 'image/webp', cacheControl: '3600' });
-        if (error) throw new Error(error.message);
+        await saveFile('avatars', path, picture, 'image/webp');
         return unwrap(
           await sb
             .from('profiles')
@@ -134,7 +177,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
             .single(),
         ) as ProfileRow;
       }
-      await sb.storage.from('avatars').remove([path]);
+      await dropFile('avatars', path);
       return unwrap(
         await sb.from('profiles').update({ avatar_path: null, avatar_updated_at: null }).eq('id', id).select('*').single(),
       ) as ProfileRow;
@@ -157,10 +200,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       const path = `${id}/banner.webp`;
       if (picture) {
         // Upload first, then point the profile at it, so the profile never refers to a missing file.
-        const { error } = await sb.storage
-          .from('profile-banners')
-          .upload(path, picture, { upsert: true, contentType: 'image/webp', cacheControl: '3600' });
-        if (error) throw new Error(error.message);
+        await saveFile('profile-banners', path, picture, 'image/webp');
         return unwrap(
           await sb
             .from('profiles')
@@ -170,7 +210,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
             .single(),
         ) as ProfileRow;
       }
-      await sb.storage.from('profile-banners').remove([path]);
+      await dropFile('profile-banners', path);
       return unwrap(
         await sb.from('profiles').update({ banner_path: null, banner_updated_at: null }).eq('id', id).select('*').single(),
       ) as ProfileRow;
@@ -416,6 +456,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
         storage_path: string;
       } | null;
       if (!row) return null;
+      if (gateway) return downloadFile(LIBRARY_BUCKET, row.storage_path);
       const { data, error } = await sb.storage.from(LIBRARY_BUCKET).download(row.storage_path);
       return error || !data ? null : data;
     },
@@ -433,10 +474,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       const kind: LibraryKind = input.kind;
       // The file goes in the owner's folder first; the row points at it and is checked against that folder.
       const path = `${userId}/${id}.${kind}`;
-      const { error: uploadError } = await sb.storage
-        .from(LIBRARY_BUCKET)
-        .upload(path, input.blob, { upsert: true, contentType: KIND_MIME[kind] });
-      if (uploadError) throw new Error(uploadError.message);
+      await saveFile(LIBRARY_BUCKET, path, input.blob, KIND_MIME[kind]);
 
       const result = await sb
         .from('library_files')
@@ -455,7 +493,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
         .select(FILE_COLUMNS)
         .single();
       if (result.error) {
-        await sb.storage.from(LIBRARY_BUCKET).remove([path]);
+        await dropFile(LIBRARY_BUCKET, path);
         throw new Error(result.error.message);
       }
       return result.data as LibraryFileRow;
@@ -466,7 +504,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
         storage_path: string;
       } | null;
       unwrap(await sb.from('library_files').delete().eq('id', fileId));
-      if (row) await sb.storage.from(LIBRARY_BUCKET).remove([row.storage_path]);
+      if (row) await dropFile(LIBRARY_BUCKET, row.storage_path);
     },
 
     async updateLibraryFile(fileId: string, input: LibraryFileUpdate) {
@@ -478,10 +516,7 @@ export function createSupabaseBackend(sb: SupabaseClient): DataBackend {
       if (row.kind === 'pdf') throw new Error('A PDF keeps its pages, so its text is saved as a new file.');
       if (input.blob.size === 0) throw new Error('The text is empty. Write something before you save.');
       // The bytes are replaced in the owner's folder, then the row is updated to match them.
-      const { error: uploadError } = await sb.storage
-        .from(LIBRARY_BUCKET)
-        .upload(row.storage_path, input.blob, { upsert: true, contentType: KIND_MIME[row.kind] });
-      if (uploadError) throw new Error(uploadError.message);
+      await saveFile(LIBRARY_BUCKET, row.storage_path, input.blob, KIND_MIME[row.kind]);
       const result = await sb
         .from('library_files')
         .update({

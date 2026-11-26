@@ -1,0 +1,13 @@
+{
+  "name": "danna-storage",
+  "private": true,
+  "type": "module",
+  "description": "The storage gateway for Danna and Botdanna: Supabase Storage first, Cloudflare R2 once it is nearly full.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

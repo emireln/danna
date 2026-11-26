@@ -2095,3 +2095,18 @@ revoke all on public.ai_keys from anon;
 -- 4. The chat trigger function: a fixed search path, and no direct calls. It runs only as a trigger.
 alter function public.touch_tutor_chat() set search_path = '';
 revoke all on function public.touch_tutor_chat() from public, anon, authenticated;
+
+-- danna migration 0029: the storage in use, for the storage gateway (the same SQL as supabase/migrations/0029_storage_usage.sql).
+create or replace function public.storage_used_bytes()
+returns bigint
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(sum((o.metadata ->> 'size')::bigint), 0)
+  from storage.objects o;
+$$;
+
+revoke all on function public.storage_used_bytes() from public, anon, authenticated;
+grant execute on function public.storage_used_bytes() to service_role;

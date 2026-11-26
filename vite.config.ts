@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 // Writes a Content-Security-Policy into index.html. Development needs inline
 // scripts for React Fast Refresh; production allows only the bundled scripts.
-function securityPolicy(options: { dev: boolean; supabaseUrl: string }): Plugin {
+function securityPolicy(options: { dev: boolean; supabaseUrl: string; storageUrl: string }): Plugin {
   // The app may contact only its own project address. No wildcard hosts.
   // blob: is read by the 3D loader for the textures of the coach models; the app creates those blob addresses itself.
   const connect = ["'self'", 'blob:'];
@@ -15,6 +15,14 @@ function securityPolicy(options: { dev: boolean; supabaseUrl: string }): Plugin 
       images.push(origin); // banner images come from the project's storage
     } catch {
       // An invalid URL is reported by the app at runtime; the policy keeps the defaults.
+    }
+  }
+  // The storage gateway (src/lib/data/storageGateway.ts): files and pictures are fetched from it.
+  if (options.storageUrl) {
+    try {
+      connect.push(new URL(options.storageUrl).origin);
+    } catch {
+      // An invalid address is reported by the app at runtime; the policy keeps the defaults.
     }
   }
   if (options.dev) connect.push('http://localhost:5173', 'ws://localhost:5173');
@@ -49,7 +57,11 @@ export default defineConfig(({ command, mode }) => {
     base: './',
     plugins: [
       react(),
-      securityPolicy({ dev: command === 'serve', supabaseUrl: env.VITE_SUPABASE_URL ?? '' }),
+      securityPolicy({
+        dev: command === 'serve',
+        supabaseUrl: env.VITE_SUPABASE_URL ?? '',
+        storageUrl: env.VITE_STORAGE_WORKER_URL ?? '',
+      }),
     ],
     server: { port: 5173, strictPort: true },
     // Electron loads the bundle from disk, so one script file is fine; no network cost.

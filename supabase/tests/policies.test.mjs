@@ -32,6 +32,7 @@ const migration0021Sql = await readFile(join(here, '..', 'migrations', '0021_v2_
 const migration0022Sql = await readFile(join(here, '..', 'migrations', '0022_v2_decks.sql'), 'utf8');
 const migration0023Sql = await readFile(join(here, '..', 'migrations', '0023_release_2_0_0.sql'), 'utf8');
 const migration0028Sql = await readFile(join(here, '..', 'migrations', '0028_security_hardening.sql'), 'utf8');
+const migration0029Sql = await readFile(join(here, '..', 'migrations', '0029_storage_usage.sql'), 'utf8');
 
 const ALICE = '11111111-1111-4111-8111-111111111111';
 const BOB = '22222222-2222-4222-8222-222222222222';
@@ -66,6 +67,7 @@ const SUPABASE_BASE = `
     bucket_id text not null references storage.buckets (id),
     name text not null,
     owner uuid,
+    metadata jsonb not null default '{}'::jsonb,
     created_at timestamptz not null default now(),
     unique (bucket_id, name)
   );
@@ -74,9 +76,10 @@ const SUPABASE_BASE = `
   do $$ begin
     if not exists (select 1 from pg_roles where rolname = 'anon') then create role anon nologin; end if;
     if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
+    if not exists (select 1 from pg_roles where rolname = 'service_role') then create role service_role nologin; end if;
   end $$;
 
-  grant usage on schema public, auth, storage to anon, authenticated;
+  grant usage on schema public, auth, storage to anon, authenticated, service_role;
   grant execute on function auth.uid() to anon, authenticated;
   grant select, insert, update, delete on storage.objects to authenticated;
   grant select on storage.buckets to anon, authenticated;
@@ -970,4 +973,39 @@ test('migration 0028 runs on a current database, and again, with the picture and
   );
   assert.deepEqual(rights.rows[0], { reads: false, writes: false }, 'the anonymous role has no rights on AI keys');
   assert.equal((await refused(as(db, null, 'select user_id from public.ai_keys'))).code, PERMISSION_DENIED, 'a signed-out caller cannot read AI keys');
+});
+
+// Runs one statement as a database role, and goes back to the usual role afterwards.
+async function asRole(role, sql) {
+  await db.exec(`set role ${role}`);
+  try {
+    return await db.query(sql);
+  } finally {
+    await db.exec('reset role');
+  }
+}
+
+test('migration 0029 runs on a current database, and again: the storage in use is counted for the service role only', async () => {
+  await db.exec(migration0029Sql);
+  await db.exec(migration0029Sql);
+  await db.query("insert into storage.objects (bucket_id, name, owner, metadata) values ('avatars', $1, $2, $3)", [
+    `${BOB}/avatar.webp`,
+    BOB,
+    JSON.stringify({ size: 1200 }),
+  ]);
+  const expected = (
+    await db.query("select coalesce(sum((metadata ->> 'size')::bigint), 0)::bigint as total from storage.objects")
+  ).rows[0].total;
+  const counted = await asRole('service_role', 'select public.storage_used_bytes() as total');
+  assert.equal(String(counted.rows[0].total), String(expected), 'the service role counts every stored file');
+  assert.equal(
+    (await refused(asRole('authenticated', 'select public.storage_used_bytes()'))).code,
+    PERMISSION_DENIED,
+    'a signed-in person cannot count the storage',
+  );
+  assert.equal(
+    (await refused(asRole('anon', 'select public.storage_used_bytes()'))).code,
+    PERMISSION_DENIED,
+    'a signed-out caller cannot count the storage',
+  );
 });
