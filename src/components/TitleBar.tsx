@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeftRight, BookOpen, Coffee, LogOut, Search, Settings, User, Users } from 'lucide-react';
+import { ArrowLeftRight, BookOpen, Coffee, Globe, LogOut, Search, Settings, User, Users } from 'lucide-react';
 import { Avatar } from './ui';
 import { StreakFire } from './StreakFire';
 import { GlobalSearch } from './GlobalSearch';
@@ -13,6 +13,9 @@ import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { activeStreak } from '../lib/progress';
+
+// The hub: the account page on the web. The title bar opens it in the browser, not in the app.
+const HUB_URL = 'https://hub.danna.run/';
 
 function useWindowControls() {
   const [maximized, setMaximized] = useState(false);
@@ -72,6 +75,11 @@ export function TitleBar() {
     navigate(path);
   };
 
+  const openHub = () => {
+    if (bridge) void bridge.openExternal(HUB_URL);
+    else window.open(HUB_URL, '_blank', 'noopener,noreferrer');
+  };
+
   // Ctrl+K opens the search of the whole app, from any screen where the title bar has its actions.
   useEffect(() => {
     if (!showActions) return undefined;
@@ -110,6 +118,9 @@ export function TitleBar() {
           <Link to="/library" className="btn btn--icon icon-wrap" aria-label={t('My library')} data-tour="library">
             <BookOpen />
           </Link>
+          <button className="btn btn--icon" onClick={openHub} aria-label={t('Open the hub')} title={t('Open the hub')}>
+            <Globe />
+          </button>
           <StreakFire days={streak} />
 
           <div className="menu-anchor" ref={anchor}>
@@ -143,10 +154,10 @@ export function TitleBar() {
                   <button className="menu__item" role="menuitem" onClick={() => go('/library')}>
                     <BookOpen /> {t('My library')}
                   </button>
-                  <button className="menu__item" role="menuitem" onClick={() => go('/settings')}>
+                  <button className="menu__item" role="menuitem" onClick={() => go('/settings/general')}>
                     <Settings /> {t('Settings')}
                   </button>
-                  <button className="menu__item" role="menuitem" onClick={() => go('/settings')}>
+                  <button className="menu__item" role="menuitem" onClick={() => go('/settings/account')}>
                     <ArrowLeftRight /> {mode === 'supabase' ? t('Use on this device') : t('Use an online account')}
                   </button>
                   {mode === 'supabase' && (
