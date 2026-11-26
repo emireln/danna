@@ -11,7 +11,7 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     image_url: null,
     cta_label: 'Start the level check',
     cta_url: '/play/diagnostic',
-    accent: 'blue',
+    accent: 'amber',
     priority: 10,
     created_at: '2026-11-01T09:00:00Z',
   },

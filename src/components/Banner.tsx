@@ -45,6 +45,8 @@ export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
 
   const current = items[Math.min(index, items.length - 1)];
   if (!current) return null;
+  // The amber banner has no drawing: its fade carries the look. A picture, when it has one, still shows.
+  const drawn = current.accent !== 'amber';
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -71,7 +73,7 @@ export function BannerCarousel({ items }: { items: AnnouncementRow[] }) {
           )}
         </div>
         <div className="banner__media">
-          {current.image_url ? <img src={current.image_url} alt="" /> : <BannerArt />}
+          {current.image_url ? <img src={current.image_url} alt="" /> : drawn && <BannerArt />}
         </div>
         {items.length > 1 && (
           <div className="dots" aria-hidden="true">
