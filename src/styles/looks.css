@@ -147,6 +147,15 @@
     height: 100%;
   }
 
+  /* The 3D goal picture sits on the right of the card, after the text */
+  .daily-goal__art {
+    flex: none;
+    width: 96px;
+    height: 96px;
+    margin-left: auto;
+    object-fit: contain;
+  }
+
   .daily-goal__ring {
     flex: none;
     width: 84px;

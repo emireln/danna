@@ -1,5 +1,6 @@
 // The daily goal: a ring that fills as the learner practises today, and what is still to do.
 import { useT } from '../lib/i18n/react';
+import { GOAL_ICON } from '../lib/art';
 
 const RADIUS = 34;
 const LENGTH = 2 * Math.PI * RADIUS;
@@ -34,6 +35,7 @@ export function DailyGoal({ minutes, goal, percent, done }: { minutes: number; g
           {done ? t('Goal reached. Nice!') : t('{minutes} of {goal} minutes today', { minutes: shown, goal })}
         </span>
       </div>
+      <img className="daily-goal__art" src={GOAL_ICON} alt="" aria-hidden="true" />
     </div>
   );
 }

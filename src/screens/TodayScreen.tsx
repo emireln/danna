@@ -17,8 +17,9 @@ import { bandFor, toeflRange } from '../lib/scoring';
 import { SKILL_LABEL, type AttemptRow, type LessonProgressRow, type ReviewRow, type Skill } from '../lib/types';
 import { useAI } from '../state/ai';
 import { errorText } from '../lib/bridge';
-import { useLanguage, useT } from '../lib/i18n/react';
-import { tn, type Lang } from '../lib/i18n';
+import { useT } from '../lib/i18n/react';
+import { tn } from '../lib/i18n';
+import { LEVEL_CHECK_ICON, SECTION_ICON } from '../lib/art';
 import { levelTestId } from '../content';
 import { keepAnswer, lastAnswer } from '../lib/cache';
 
@@ -38,16 +39,9 @@ const TILE_COLORS: Record<Skill, string> = {
   language: '#0e7c6b',
 };
 
-// The letter on each skill tile: the first letter of the skill's name in the language the app is shown in.
-const SKILL_LETTER: Record<Lang, Partial<Record<Skill, string>>> = {
-  en: { reading: 'R', listening: 'L', speaking: 'S', writing: 'W' },
-  pt: { reading: 'L', listening: 'C', speaking: 'F', writing: 'E' },
-};
-
 export function TodayScreen() {
   const navigate = useNavigate();
   const t = useT();
-  const { lang } = useLanguage();
   const { backend } = useAuth();
   const { profile, banners } = useAppData();
   const { ready: aiReady } = useAI();
@@ -117,13 +111,13 @@ export function TodayScreen() {
   const skillTasks = (skill: Skill) =>
     nodes.filter((node) => !node.item.checkpoint && node.item.lesson.skill === skill && node.state !== 'done').length;
 
-  const tiles: Array<{ key: string; label: string; count: number; color: string; letter?: string; icon?: 'lang' | 'review'; to: string }> = [
-    ...(['reading', 'listening', 'speaking', 'writing'] as Skill[]).map((skill) => ({
+  const tiles: Array<{ key: string; label: string; count: number; color: string; image?: string; icon?: 'lang' | 'review'; to: string }> = [
+    ...(['reading', 'listening', 'speaking', 'writing'] as const).map((skill) => ({
       key: skill,
       label: t(SKILL_LABEL[skill]),
       count: skillTasks(skill),
       color: TILE_COLORS[skill],
-      letter: SKILL_LETTER[lang][skill],
+      image: SECTION_ICON[skill],
       to: `/study/${skill}`,
     })),
     {
@@ -216,7 +210,7 @@ export function TodayScreen() {
             )}
             {!diagnostic && (
               <FeatureCard
-                icon={<ScanSearch />}
+                art={LEVEL_CHECK_ICON}
                 title={t('Level check')}
                 badge={<Badge tone="beta">{t('Beta')}</Badge>}
                 meta={t('Find your level and the skills to work on, in about 15 minutes.')}
@@ -290,11 +284,14 @@ export function TodayScreen() {
                 onClick={() => navigate(tile.to)}
                 aria-label={t('{label}, {count} to do', { label: tile.label, count: tile.count })}
               >
-                <span className="tile__letter" style={{ background: tile.color }}>
-                  {Icon ? <Icon size={16} aria-hidden="true" /> : tile.letter}
-                </span>
+                {Icon && (
+                  <span className="tile__letter" style={{ background: tile.color }}>
+                    <Icon size={16} aria-hidden="true" />
+                  </span>
+                )}
                 <span>{tile.label}</span>
                 <span className="tile__count">{tile.count}</span>
+                {tile.image && <img className="tile__art" src={tile.image} alt="" aria-hidden="true" />}
               </button>
             );
           })}

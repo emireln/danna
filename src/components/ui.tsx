@@ -441,6 +441,7 @@ export function Tabs<T extends string>({
 /** A card for one thing: an icon, a title with an optional badge, a line of detail, and an arrow when it opens. */
 export function FeatureCard({
   icon,
+  art,
   title,
   badge,
   meta,
@@ -449,7 +450,9 @@ export function FeatureCard({
   arrow = true,
   onClick,
 }: {
-  icon: ReactNode;
+  icon?: ReactNode;
+  /** A 3D picture on the right of the card, in place of its small icon. */
+  art?: string;
   title: ReactNode;
   badge?: ReactNode;
   meta?: ReactNode;
@@ -461,9 +464,11 @@ export function FeatureCard({
 }) {
   const content = (
     <>
-      <span className="feature-card__icon" aria-hidden="true">
-        {icon}
-      </span>
+      {icon && (
+        <span className="feature-card__icon" aria-hidden="true">
+          {icon}
+        </span>
+      )}
       <span className="feature-card__body">
         <span className="feature-card__title">
           {title}
@@ -471,6 +476,7 @@ export function FeatureCard({
         </span>
         {meta && <span className="feature-card__meta">{meta}</span>}
       </span>
+      {art && <img className="feature-card__art" src={art} alt="" aria-hidden="true" />}
       {action ?? (onClick && arrow ? <ChevronRight className="feature-card__arrow" aria-hidden="true" /> : null)}
     </>
   );

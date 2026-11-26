@@ -6,7 +6,7 @@ import { BackLink, Empty, FeatureCard, Notice, PageHeader, ProgressBar, SectionT
 import { Layers, PenLine } from 'lucide-react';
 import { TOEFL_TEST_ID, levelSkillTests, levelTest, lessonsForSkill, toeflLessons, toeflSkillTests, toeflTest, wordsTest } from '../content';
 import { LEVELS } from '../lib/types';
-import { SECTION_ART, SECTION_BASE } from '../lib/art';
+import { SECTION_BASE, SECTION_ICON } from '../lib/art';
 import { errorText } from '../lib/bridge';
 import { keepAnswer, lastAnswer } from '../lib/cache';
 import { tn } from '../lib/i18n';
@@ -162,23 +162,25 @@ export function StudyScreen() {
                       onClick={() => navigate(`/study/${skill}`)}
                       aria-label={t('{label}, {completed} of {total} complete', { label, completed, total: lessonCount })}
                     >
-                      <span aria-hidden="true" className="section-card__art" style={{ backgroundImage: SECTION_ART[skill] }} />
-                      <span className="section-card__title">{label}</span>
-                      <span className="section-card__stats">
-                        {t('{lessons} · {questions} · {completed} completed', {
-                          lessons: lessonCount,
-                          questions: tn('{count} question', '{count} questions', questions, { count: questions }),
-                          completed,
-                        })}
-                      </span>
-                      <span className="section-card__pills">
-                        {pills.map((pill) => (
-                          <span key={pill} className="pill-light">
-                            {pill}
-                          </span>
-                        ))}
-                      </span>
-                      <ProgressBar value={completed} max={Math.max(1, lessons.length)} onBlue label={t('{label} progress', { label })} />
+                      <div className="section-card__body">
+                        <span className="section-card__title">{label}</span>
+                        <span className="section-card__stats">
+                          {t('{lessons} · {questions} · {completed} completed', {
+                            lessons: lessonCount,
+                            questions: tn('{count} question', '{count} questions', questions, { count: questions }),
+                            completed,
+                          })}
+                        </span>
+                        <span className="section-card__pills">
+                          {pills.map((pill) => (
+                            <span key={pill} className="pill-light">
+                              {pill}
+                            </span>
+                          ))}
+                        </span>
+                        <ProgressBar value={completed} max={Math.max(1, lessons.length)} onBlue label={t('{label} progress', { label })} />
+                      </div>
+                      <img className="section-card__icon" src={SECTION_ICON[skill]} alt="" aria-hidden="true" />
                     </button>
                   );
                 })}

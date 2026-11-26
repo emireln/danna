@@ -1438,6 +1438,14 @@
     font-weight: 700;
   }
 
+  /* The 3D picture of a skill tile sits on the right, after the count */
+  .tile__art {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+  }
+
   .tile__count {
     margin-left: auto;
     font-size: 15px;
@@ -1907,7 +1915,9 @@
     position: relative;
     isolation: isolate;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 18px;
     min-height: 196px;
     padding: 22px 22px 22px;
     border-radius: var(--radius-lg);
@@ -1923,6 +1933,23 @@
   .section-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lift);
+  }
+
+  /* The text of a section card sits on the left, and its 3D picture on the right */
+  .section-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .section-card__icon {
+    flex: none;
+    align-self: center;
+    width: 128px;
+    height: 128px;
+    object-fit: contain;
+    pointer-events: none;
   }
 
   .section-card__kicker {

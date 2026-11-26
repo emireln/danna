@@ -342,6 +342,14 @@
     outline-offset: 2px;
   }
 
+  /* A card with a 3D picture shows it on the right, in place of the small icon */
+  .feature-card__art {
+    flex: none;
+    width: 76px;
+    height: 76px;
+    object-fit: contain;
+  }
+
   .feature-card__icon {
     display: grid;
     place-items: center;
@@ -1019,22 +1027,6 @@
   .mb-2 { margin-bottom: var(--space-2); }
   .mb-3 { margin-bottom: var(--space-3); }
   .mb-4 { margin-bottom: var(--space-4); }
-
-  /* ---------- Section cards on self study: the artwork sits behind the text ---------- */
-  .section-card__art {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.95;
-    transition: transform 0.6s var(--ease);
-  }
-
-  .section-card:hover .section-card__art {
-    transform: scale(1.03);
-  }
 
   /* ---------- Lesson stars: filled ones are amber, empty ones stay quiet ---------- */
   .set-row__stars {
