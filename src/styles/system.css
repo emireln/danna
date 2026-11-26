@@ -1537,6 +1537,11 @@
     color: rgba(255, 255, 255, 0.86);
   }
 
+  /* Inside the score report's green banner the labels are white, not faded (see .report-hero in app.css) */
+  .report-hero .profile-hero__label {
+    color: #fff;
+  }
+
   @media (max-width: 760px) {
     .profile-hero__stats {
       grid-template-columns: repeat(2, minmax(0, 1fr));

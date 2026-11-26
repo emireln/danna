@@ -27,6 +27,9 @@
     --hero-b: #5236d1;
     /* The deepest purple of the profile banners: a little stronger than the accent. Playful sets its own. */
     --accent-deep: #3a2693;
+    /* The score report's banner: a deep green, with white text at 4.5 to 1 or better, the stat cards included */
+    --report-a: #0b5a2a;
+    --report-b: #0e6e3a;
 
     --teal: #13b5a4;
     --amber: #f5b400;
@@ -2489,12 +2492,16 @@
   }
 
   /* ---------- Report ---------- */
+  /* The score report's banner: a green gradient, with the corners of a card and a little space at each side. The text is
+     white, and so are the stat cards and the small text inside it, so everything reads at 4.5 to 1 on the green. */
   .report-hero {
     position: relative;
+    margin: 0 var(--space-4);
+    border-radius: var(--radius-lg);
     color: #fff;
     text-align: center;
     padding: 24px 24px 26px;
-    background: linear-gradient(180deg, #1f4fd0 0%, #3a74f4 100%);
+    background: linear-gradient(115deg, var(--report-a) 0%, var(--report-b) 100%);
     overflow: hidden;
   }
 
@@ -2515,7 +2522,7 @@
     padding: 4px 12px;
     border-radius: var(--radius-pill);
     background: rgba(255, 255, 255, 0.88);
-    color: var(--primary-700);
+    color: var(--report-a);
     font-size: 12.5px;
     font-weight: 650;
   }
@@ -2546,13 +2553,11 @@
   .gauge__of {
     font-size: 16px;
     font-weight: 600;
-    opacity: 0.85;
   }
 
   .gauge__range {
     margin-top: 2px;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.72);
   }
 
   .advice {

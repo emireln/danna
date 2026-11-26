@@ -54,6 +54,8 @@ const PAIRS = [
   ['#ffffff', '--red'],
   ['#ffffff', '--hero-a'],
   ['#ffffff', '--hero-b'],
+  ['#ffffff', '--report-a'],
+  ['#ffffff', '--report-b'],
   ['--mint', '--hero-a'],
   ['--sun-ink', '--sun'],
   ['--ink', '--sun'],

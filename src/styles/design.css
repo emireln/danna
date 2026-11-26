@@ -29,8 +29,8 @@
   box-shadow: none;
 }
 
-/* The blue banner and the report header take the same deep violet, and banners are cards with the 24px radius */
-:root:not([data-look='playful']) :is(.banner--blue, .report-hero) {
+/* The blue banner takes the deep violet. The report header keeps its own green (.report-hero in app.css). Banners are cards with the 24px radius */
+:root:not([data-look='playful']) .banner--blue {
   background: linear-gradient(115deg, var(--hero-a) 0%, var(--hero-b) 100%);
 }
 

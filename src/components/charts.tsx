@@ -32,7 +32,7 @@ export function Gauge({ value, max, range }: { value: number; max: number; range
         <motion.path
           d={arc}
           fill="none"
-          stroke="#0b2c7d"
+          stroke="currentColor"
           strokeWidth={16}
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
