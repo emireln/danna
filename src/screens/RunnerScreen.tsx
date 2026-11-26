@@ -5,6 +5,7 @@ import { ArrowRight, Check, Star, X } from 'lucide-react';
 import { QuestionView, type ItemState } from '../components/Question';
 import { CountUp } from '../components/charts';
 import { ConfirmSheet, Notice, ProgressBar, Spinner, formatClock } from '../components/ui';
+import { Fireworks } from '../components/Fireworks';
 import { bundledTest, diagnosticTest } from '../content';
 import { errorText } from '../lib/bridge';
 import { playSound } from '../lib/sound';
@@ -724,6 +725,7 @@ function Completion({ summary, onExit }: { summary: Summary; onExit: () => void 
           </div>
         </motion.div>
       </div>
+      {isLesson && summary.stars >= 3 && <Fireworks />}
       <div />
     </div>
   );

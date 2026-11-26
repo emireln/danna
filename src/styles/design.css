@@ -53,8 +53,28 @@
   transform: none;
 }
 
-/* Focus: a 3px ring that follows the shape of whatever has focus */
+/* Focus: a 3px ring that follows the shape of whatever has focus, for keyboard users */
 :root:not([data-look='playful']) :focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 3px;
+}
+
+/* A text field has no ring of its own: it shows its focus with its accent border and soft halo (.input, .blank,
+   .composer and .exercise__text), so a click or a Tab into a field draws no square around it. The live talk field
+   keeps its own ring. */
+:root:not([data-look='playful']) :is(input:not([type]), input[type='text' i], input[type='search' i], input[type='email' i], input[type='password' i], input[type='url' i], input[type='tel' i], input[type='number' i], input[type='time' i], input[type='date' i], textarea):not(.live__input):focus-visible {
+  outline: 0;
+}
+
+/* The bottom tabs: the keyboard ring is a pill inside the tab, not a square around the whole cell */
+:root:not([data-look='playful']) .nav__item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -6px;
+  border-radius: var(--radius-pill);
+}
+
+/* The titles of cards and sheets use the display face, as the website's headings do */
+:root:not([data-look='playful']) :is(.league__title, .achievements__title, .sheet__head h3) {
+  font-family: var(--display);
+  letter-spacing: -0.02em;
 }
