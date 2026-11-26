@@ -1,5 +1,7 @@
 // The weekly league on the profile: your tier and your week's XP. With an online account it ranks you and your
-// friends; without one, the bars show your own last seven days, and a note says why friends are not shown.
+// friends, and each member shows the gem of their own tier. Without one, the bars show your own last seven days, and a
+// note says why friends are not shown.
+import { LEAGUE_GEM } from '../lib/art';
 import { useT } from '../lib/i18n/react';
 import { dailyXp, LEAGUE_DAYS, placeOf, ranked, tierOf, type TierId } from '../lib/league';
 import type { AttemptRow, LeagueRow } from '../lib/types';
@@ -61,41 +63,54 @@ export function LeagueCard({
         <span className={`league__tier league__tier--${tier.id}`}>{tierName(t, tier.id)}</span>
       </div>
 
-      <p className="league__week">{t('Your week: {xp} XP', { xp: weekXp })}</p>
-
-      <div className="league__next">
-        <span
-          className="league__bar"
-          role="progressbar"
-          aria-label={tier.next ? t('{xp} XP to {tier}', { xp: tier.toNext ?? 0, tier: tierName(t, tier.next) }) : t('Top of the league')}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={tier.progress}
-        >
-          <span style={{ width: `${tier.progress}%` }} />
-        </span>
-        <span className="league__hint">
-          {tier.next && tier.toNext !== null ? t('{xp} XP to {tier}', { xp: tier.toNext, tier: tierName(t, tier.next) }) : t('Top of the league')}
-        </span>
+      <div className="league__summary">
+        <img className="league__gem" src={LEAGUE_GEM[tier.id]} alt="" aria-hidden="true" />
+        <div className="league__status">
+          <p className="league__week">{t('Your week: {xp} XP', { xp: weekXp })}</p>
+          <div className="league__next">
+            <span
+              className="league__bar"
+              role="progressbar"
+              aria-label={tier.next ? t('{xp} XP to {tier}', { xp: tier.toNext ?? 0, tier: tierName(t, tier.next) }) : t('Top of the league')}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={tier.progress}
+            >
+              <span style={{ width: `${tier.progress}%` }} />
+            </span>
+            <span className="league__hint">
+              {tier.next && tier.toNext !== null ? t('{xp} XP to {tier}', { xp: tier.toNext, tier: tierName(t, tier.next) }) : t('Top of the league')}
+            </span>
+          </div>
+        </div>
       </div>
 
       {online ? (
         <>
           {place && <p className="league__place">{t('You are #{place} of {total} this week', { place: place.place, total: place.total })}</p>}
           <ol className="league__list">
-            {ranked(rows).map((row, index) => (
-              <li key={row.user_id} className={row.user_id === userId ? 'league__row league__row--me' : 'league__row'}>
-                <span className="league__position">{index + 1}</span>
-                <span className="league__who" aria-hidden="true">
-                  <PersonAvatar person={{ ...row, id: row.user_id }} size="sm" />
-                </span>
-                <span className="league__name">
-                  {row.display_name || row.username}
-                  {row.user_id === userId ? ` · ${t('You')}` : ''}
-                </span>
-                <span className="league__xp">{row.week_xp} XP</span>
-              </li>
-            ))}
+            {ranked(rows).map((row, index) => {
+              const rowTier = tierOf(row.week_xp).id;
+              return (
+                <li key={row.user_id} className={row.user_id === userId ? 'league__row league__row--me' : 'league__row'}>
+                  <span className="league__position">{index + 1}</span>
+                  <span className="league__who" aria-hidden="true">
+                    <PersonAvatar person={{ ...row, id: row.user_id }} size="sm" />
+                  </span>
+                  <span className="league__member">
+                    <span className="league__name">
+                      {row.display_name || row.username}
+                      {row.user_id === userId ? ` · ${t('You')}` : ''}
+                    </span>
+                    <span className="league__member-tier">
+                      <img className="league__member-gem" src={LEAGUE_GEM[rowTier]} alt="" aria-hidden="true" />
+                      {tierName(t, rowTier)}
+                    </span>
+                  </span>
+                  <span className="league__xp">{row.week_xp} XP</span>
+                </li>
+              );
+            })}
           </ol>
         </>
       ) : (

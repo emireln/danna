@@ -20,14 +20,6 @@ import { useAuth } from '../state/auth';
 // The four skills that get a section card. Language has its own card in the row above.
 const CARD_SKILLS = ['reading', 'listening', 'writing', 'speaking'] as const;
 
-const SECTION_COPY: Record<Skill, { kicker: string; pills: string[] }> = {
-  reading: { kicker: 'Find main ideas and make inferences', pills: ['Academic passages', 'Timed questions'] },
-  listening: { kicker: 'Catch details in lectures and conversations', pills: ['Audio prompts', 'Unlimited replays'] },
-  speaking: { kicker: 'Speak clearly and organize your answer', pills: ['Recording', 'Transcript feedback'] },
-  writing: { kicker: 'Build a thesis and argue it well', pills: ['Word-count goals', 'Rubric scoring'] },
-  language: { kicker: 'Word order, tenses and vocabulary', pills: ['Instant explanations', 'Spaced review'] },
-};
-
 interface SelfStudyData {
   progress: LessonProgressRow[];
   tests: TestRow[];
@@ -150,8 +142,6 @@ export function StudyScreen() {
                   const completed = lessons.filter((lesson) => (map.get(lesson.id)?.stars ?? 0) >= 1).length;
                   const questions = lessons.reduce((sum, lesson) => sum + lesson.questions.length, 0);
                   const label = t(SKILL_LABEL[skill]);
-                  const extra = skill === 'writing' || skill === 'speaking' ? [aiReady ? t('AI feedback') : t('Self-rating')] : [];
-                  const pills = [...SECTION_COPY[skill].pills.map((pill) => t(pill)), ...extra];
                   const lessonCount = tn('{count} lesson', '{count} lessons', lessons.length, { count: lessons.length });
                   return (
                     <button
@@ -170,13 +160,6 @@ export function StudyScreen() {
                             questions: tn('{count} question', '{count} questions', questions, { count: questions }),
                             completed,
                           })}
-                        </span>
-                        <span className="section-card__pills">
-                          {pills.map((pill) => (
-                            <span key={pill} className="pill-light">
-                              {pill}
-                            </span>
-                          ))}
                         </span>
                         <ProgressBar value={completed} max={Math.max(1, lessons.length)} onBlue label={t('{label} progress', { label })} />
                       </div>

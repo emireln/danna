@@ -74,7 +74,7 @@
 }
 
 /* The titles of cards and sheets use the display face, as the website's headings do */
-:root:not([data-look='playful']) :is(.league__title, .achievements__title, .sheet__head h3) {
+:root:not([data-look='playful']) :is(.league__title, .achievements__title, .sheet__head h3, .section-card__title) {
   font-family: var(--display);
   letter-spacing: -0.02em;
 }

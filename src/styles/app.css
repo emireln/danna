@@ -1959,9 +1959,10 @@
 
   .section-card__title {
     margin-top: 6px;
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 700;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
     color: #fff;
   }
 
@@ -1971,31 +1972,7 @@
     color: rgba(255, 255, 255, 0.92);
   }
 
-  .section-card__pills {
-    margin-top: 14px;
-    margin-bottom: 18px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  /* A topic badge takes the colour of its card: a darker shade of whatever colour the card is. */
-  .pill-light {
-    display: inline-flex;
-    align-items: center;
-    height: 24px;
-    padding: 0 9px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #ffffff;
-    white-space: nowrap;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: var(--radius-pill);
-  }
-
-  /* The bar is part of the card's flow, under the badges, so a badge that wraps onto a second line pushes the bar down
-     instead of sitting on top of it. Extra height (the card's minimum) goes above the bar, so the bars line up. */
+  /* The bar sits at the foot of the card. Any extra height (the card's minimum) goes above it, so the four bars line up. */
   .section-card .progress {
     margin-top: auto;
     background: rgba(255, 255, 255, 0.18);
@@ -2003,6 +1980,18 @@
 
   .section-card .progress__bar {
     background: rgba(255, 255, 255, 0.85);
+  }
+
+  /* On a phone the card is one column, so the picture gives the title room to fit on one line */
+  @media (max-width: 640px) {
+    .section-card__title {
+      font-size: 26px;
+    }
+
+    .section-card__icon {
+      width: 96px;
+      height: 96px;
+    }
   }
 
   .set-list {

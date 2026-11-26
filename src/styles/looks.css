@@ -437,6 +437,26 @@
     gap: 6px;
   }
 
+  /* The league's picture: the gem of the caller's tier, beside the week's XP and the way to the next tier. */
+  .league__summary {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+  }
+
+  .league__gem {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+  }
+
+  .league__status {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+
   .league__bar {
     display: block;
     height: 10px;
@@ -513,6 +533,29 @@
   .league__xp {
     font-size: 13px;
     font-weight: 800;
+  }
+
+  /* A member's row: the name, and under it the gem and the name of the member's tier. */
+  .league__member {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .league__member-tier {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .league__member-gem {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
   }
 
   .league__days {

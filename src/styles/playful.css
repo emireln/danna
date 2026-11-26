@@ -1081,11 +1081,11 @@
   }
 
   :root[data-look='playful'] .section-grid > :nth-child(4) {
-    --edge: #0c4a22;
+    --edge: #2e5229;
   }
 
   :root[data-look='playful'] .section-card__title {
-    font-size: 30px;
+    font-size: 34px;
     font-weight: 900;
     letter-spacing: -0.02em;
   }
@@ -1093,16 +1093,6 @@
   :root[data-look='playful'] .section-card__kicker,
   :root[data-look='playful'] .section-card__stats {
     font-weight: 700;
-  }
-
-  :root[data-look='playful'] .section-card .pill-light {
-    height: 28px;
-    padding: 0 11px;
-    border: 2px solid rgba(255, 255, 255, 0.6);
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.16);
-    font-size: 13px;
-    font-weight: 800;
   }
 
   :root[data-look='playful'] .section-card .progress {
