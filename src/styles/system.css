@@ -1167,10 +1167,83 @@
     height: 15px;
   }
 
+  /* ---------- Settings: a sidebar of pages, and one page for each section ---------- */
+  .settings {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  .settings-nav {
+    position: sticky;
+    top: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .settings-nav__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: var(--radius);
+    color: var(--ink-2);
+    font-size: 14.5px;
+    font-weight: 600;
+    transition:
+      background-color 0.15s var(--ease),
+      color 0.15s var(--ease);
+  }
+
+  .settings-nav__item svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+  }
+
+  .settings-nav__item:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+
+  .settings-nav__item.is-active {
+    background: var(--primary-50);
+    color: var(--primary);
+  }
+
+  .settings-page {
+    min-width: 0;
+  }
+
+  /* On a narrow window the pages become a row of tabs above the page */
+  @media (max-width: 760px) {
+    .settings {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+
+    .settings-nav {
+      position: static;
+      display: flex;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .settings-nav__item {
+      flex: 0 0 auto;
+    }
+  }
+
   /* ---------- The search of the whole app: a panel under the title bar, with the results in groups ---------- */
   .palette-scrim {
     position: fixed;
-    inset: 0;
+    top: var(--titlebar-h, 40px);
+    right: var(--frame-gutter, 6px);
+    bottom: var(--frame-gutter, 6px);
+    left: var(--frame-gutter, 6px);
+    border-radius: var(--frame-radius, 18px);
     z-index: 70;
     display: grid;
     justify-items: center;

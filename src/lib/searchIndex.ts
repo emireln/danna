@@ -20,11 +20,11 @@ const PAGES: ReadonlyArray<{ title: string; route: string; keywords: string }> =
   { title: "What's new", route: '/whats-new', keywords: 'release notes novidades updates versão' },
 ];
 
-const SETTINGS: ReadonlyArray<{ title: string; keywords: string }> = [
-  { title: 'App language', keywords: 'idioma language english portuguese português' },
-  { title: 'AI assistant', keywords: 'key chave openai anthropic gemini openrouter deepseek ia' },
-  { title: 'Listening voice', keywords: 'voice voz natural speech tts audio som built-in offline windows narrator kokoro' },
-  { title: 'Check for updates', keywords: 'update atualização version versão new release nova' },
+const SETTINGS: ReadonlyArray<{ title: string; keywords: string; route: string }> = [
+  { title: 'App language', keywords: 'idioma language english portuguese português', route: '/settings/general' },
+  { title: 'AI assistant', keywords: 'key chave openai anthropic gemini openrouter deepseek ia', route: '/settings/ai' },
+  { title: 'Listening voice', keywords: 'voice voz natural speech tts audio som built-in offline windows narrator kokoro', route: '/settings/ai' },
+  { title: 'Check for updates', keywords: 'update atualização version versão new release nova', route: '/settings/about' },
 ];
 
 let bundled: SearchEntry[] | null = null;
@@ -67,7 +67,7 @@ export function bundledEntries(): SearchEntry[] {
       title: setting.title,
       detail: 'Settings',
       bundled: true,
-      route: '/settings',
+      route: setting.route,
       keywords: setting.keywords,
     });
   }

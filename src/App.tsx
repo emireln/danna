@@ -157,7 +157,8 @@ function AppRoutes() {
         <Route path="decks/:id" element={<DeckScreen />} />
         <Route path="decks/:id/study" element={<StudyDeckScreen />} />
         <Route path="write" element={<WriteScreen />} />
-        <Route path="settings" element={<SettingsScreen />} />
+        <Route path="settings" element={<Navigate to="/settings/general" replace />} />
+        <Route path="settings/:section" element={<SettingsScreen />} />
         <Route path="whats-new" element={<WhatsNewScreen />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

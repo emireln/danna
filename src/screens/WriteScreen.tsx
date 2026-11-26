@@ -167,7 +167,7 @@ export function WriteScreen() {
         {!aiOn && (
           <Notice tone="info">
             {t('Connect an AI key for a full check: the reasons, a tone and a score written by a model. Without one, the basics are checked on this device.')}{' '}
-            <button className="btn btn--text" onClick={() => navigate('/settings')}>
+            <button className="btn btn--text" onClick={() => navigate('/settings/ai')}>
               {t('Open Settings')}
             </button>
           </Notice>

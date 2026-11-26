@@ -858,7 +858,7 @@ export function CoachScreen() {
         (desktop ? (
           <Notice tone="info">
             {t('Add your AI key to start chatting with your coach.')}{' '}
-            <button type="button" className="btn btn--text" onClick={() => navigate('/settings')}>
+            <button type="button" className="btn btn--text" onClick={() => navigate('/settings/ai')}>
               {t('Open settings')}
             </button>
           </Notice>

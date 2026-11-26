@@ -151,7 +151,7 @@ export function WordCard({ hit, onClose }: { hit: WordHit; onClose: () => void }
           ) : (
             <p className="word-card__hint">
               {t('Connect an AI key to see the meaning here. Without one, type the meaning and save it.')}{' '}
-              <button className="btn btn--text btn--sm" onClick={() => navigate('/settings')}>
+              <button className="btn btn--text btn--sm" onClick={() => navigate('/settings/ai')}>
                 {t('Open Settings')}
               </button>
             </p>

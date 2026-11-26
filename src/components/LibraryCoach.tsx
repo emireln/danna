@@ -120,7 +120,7 @@ export function LibraryCoach({ files, selected, onToggle }: { files: LibraryFile
       {bridge && !ai.ready && (
         <Notice tone="info">
           {t('Add an AI key to use the coach.')}{' '}
-          <button className="btn btn--text" onClick={() => navigate('/settings')}>
+          <button className="btn btn--text" onClick={() => navigate('/settings/ai')}>
             {t('Open settings')}
           </button>
         </Notice>

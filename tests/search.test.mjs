@@ -67,7 +67,7 @@ test('the bundled index has no repeated ids, and it opens the lessons and the te
   assert.equal(new Set(all).size, all.length, 'every id is unique');
   assert.ok(entries.some((item) => item.route === '/play/test/mock-a1'), 'the A1 level test opens');
   assert.ok(entries.some((item) => item.kind === 'lesson' && item.route.startsWith('/play/lesson/')), 'lessons open');
-  assert.ok(entries.some((item) => item.route === '/settings' && item.title === 'Listening voice'), 'the voice setting is found');
+  assert.ok(entries.some((item) => item.route === '/settings/ai' && item.title === 'Listening voice'), 'the voice setting is found');
 });
 
 test('the learner’s own places are found without a backend, as an empty list', async () => {

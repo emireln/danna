@@ -253,7 +253,7 @@ export function LiveScreen() {
       {bridge && ai.loaded && !engine && (
         <Notice tone="info">
           {t('Add an AI key in Settings to talk with your coach.')}{' '}
-          <button type="button" className="btn btn--text" onClick={() => navigate('/settings')}>
+          <button type="button" className="btn btn--text" onClick={() => navigate('/settings/ai')}>
             {t('Open Settings')}
           </button>
         </Notice>
