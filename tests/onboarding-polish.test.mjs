@@ -23,12 +23,13 @@ after(async () => {
   await server?.close();
 });
 
-test('the loading screen and the sign-in page show the Danna wordmark, not the old logo', () => {
-  for (const file of ['Splash.tsx', 'AuthScreen.tsx']) {
-    const source = read('src', 'screens', file);
-    assert.doesNotMatch(source, /BrandMark/, `${file} does not draw the logo`);
-    assert.match(source, /<Wordmark/, `${file} shows the wordmark`);
-  }
+test('the sign-in page shows the Danna wordmark, and the loading screen shows only a spinner', () => {
+  const auth = read('src', 'screens', 'AuthScreen.tsx');
+  assert.doesNotMatch(auth, /BrandMark/, 'AuthScreen.tsx does not draw the logo');
+  assert.match(auth, /<Wordmark/, 'AuthScreen.tsx shows the wordmark');
+  const splash = read('src', 'screens', 'Splash.tsx');
+  assert.doesNotMatch(splash, /BrandMark|<Wordmark/, 'Splash.tsx writes no name and draws no logo');
+  assert.match(splash, /spinner/, 'Splash.tsx shows a spinner');
 });
 
 test('the last setup step takes a pasted AI key, and Settings uses the same field', () => {
