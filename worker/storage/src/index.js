@@ -169,16 +169,15 @@ async function verifySignIn(request, env) {
   }
 }
 
-// The storage in use, as Supabase counts it. Read with the service-role key, which stays in the Worker's secrets.
+// The storage in use, as Supabase counts it. The secret key (SUPABASE_SECRET_KEY, or the older SUPABASE_SERVICE_ROLE_KEY
+// name) is sent in the apikey header only: a secret key is not a person's sign-in, so it has no Authorization header.
 async function storageInUse(env) {
   if (Date.now() - usage.checkedAt < USAGE_TTL_MS) return usage.bytes;
+  const secret = env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error('the secret key is not set');
   const response = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/storage_used_bytes`, {
     method: 'POST',
-    headers: {
-      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
-      authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-      'content-type': 'application/json',
-    },
+    headers: { apikey: secret, 'content-type': 'application/json' },
     body: '{}',
   });
   const bytes = response.ok ? Number(await response.json()) : NaN;

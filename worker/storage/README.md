@@ -16,13 +16,14 @@ checks the person's Supabase sign-in and applies the same rules as the storage p
    ```
 
    `wrangler login` opens your browser. Approve it there.
-3. **The service-role key.** In Supabase: Project Settings → API → `service_role` key. Then, in the terminal:
+3. **The secret key.** In Supabase, open the API keys page and copy your secret key (it starts with `sb_secret_`). Then, in the terminal:
 
    ```powershell
-   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+   npx wrangler secret put SUPABASE_SECRET_KEY
    ```
 
-   Paste the key at the prompt. It is stored in Cloudflare and never goes into the repository or the apps.
+   Paste the key at the prompt. It is stored in Cloudflare and never goes into the repository or the apps. Older setups
+   used the name `SUPABASE_SERVICE_ROLE_KEY`; the Worker still accepts that name if `SUPABASE_SECRET_KEY` is not set.
 4. **The database.** In Supabase, run `supabase/migrations/0029_storage_usage.sql` (after 0027 and 0028).
 5. **Deploy.**
 

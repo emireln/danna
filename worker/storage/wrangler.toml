@@ -3,14 +3,14 @@ name = "danna-storage"
 main = "src/index.js"
 compatibility_date = "2026-01-01"
 
-# Public values only. The service-role key is a secret, set with: npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+# Public values only. The secret key is a secret, set with: npx wrangler secret put SUPABASE_SECRET_KEY
 [vars]
 SUPABASE_URL = "https://coveufyhdqvqawhtnwap.supabase.co"
 SUPABASE_PUBLISHABLE_KEY = "sb_publishable_k-6GAdD998AIijbSxJ-Ofg_41SswhB8"
 # The apps and the hub. Only these origins may call the gateway.
 ALLOWED_ORIGINS = "app://danna,app://botdanna,https://hub.danna.run,https://danna.run"
 # New files go to R2 once Supabase Storage holds this many bytes (400 MB).
-STORAGE_THRESHOLD_BYTES = "419430400"
+STORAGE_THRESHOLD_BYTES = "1048576"
 
 [[r2_buckets]]
 binding = "FILES"

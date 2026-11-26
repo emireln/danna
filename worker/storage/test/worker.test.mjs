@@ -96,7 +96,7 @@ async function gateway(state, bucket = new FakeR2()) {
     FILES: bucket,
     SUPABASE_URL: SUPABASE,
     SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
-    SUPABASE_SERVICE_ROLE_KEY: 'service-role-test',
+    SUPABASE_SECRET_KEY: 'secret-key-test',
     ALLOWED_ORIGINS: `${APP},https://hub.danna.run`,
     STORAGE_THRESHOLD_BYTES: String(LIMIT),
   };
@@ -167,7 +167,8 @@ test('once Supabase Storage is nearly full, a new picture goes to R2 and its Sup
   const removal = state.calls.find((call) => call.method === 'DELETE' && call.url === `${SUPABASE}/storage/v1/object/avatars`);
   assert.deepEqual(JSON.parse(removal.body), { prefixes: [`${ALICE}/avatar.webp`] });
   const usageCall = state.calls.find((call) => call.url.endsWith('/rpc/storage_used_bytes'));
-  assert.equal(usageCall.headers.apikey, 'service-role-test', 'the amount in use is read with the service-role key');
+  assert.equal(usageCall.headers.apikey, 'secret-key-test', 'the amount in use is read with the secret key');
+  assert.equal(usageCall.headers.authorization, undefined, 'the secret key is sent in the apikey header only');
 });
 
 test('nobody writes into another person folder, or under another file name', async () => {
