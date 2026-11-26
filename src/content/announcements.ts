@@ -16,6 +16,23 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     created_at: '2026-11-01T09:00:00Z',
   },
   {
+    id: 'local-release-2800',
+    kind: 'release_note',
+    title: 'Danna 2.8.0',
+    body: [
+      '- Each league tier has its own gem.',
+      '- The Self study cards have no badges.',
+      '- The goal, skill and level-check cards show 3D pictures.',
+    ].join('\n'),
+    version: '2.8.0',
+    image_url: null,
+    cta_label: null,
+    cta_url: null,
+    accent: 'blue',
+    priority: 0,
+    created_at: '2026-11-26T12:00:00Z',
+  },
+  {
     id: 'local-release-2700',
     kind: 'release_note',
     title: 'Danna 2.7.0',

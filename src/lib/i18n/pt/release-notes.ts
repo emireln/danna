@@ -1,6 +1,10 @@
-// The release notes in Portuguese (2.1.0 to 2.6.0): each key is a bullet of the What's new page, in the same words as
+// The release notes in Portuguese (2.1.0 to 2.8.0): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
+  'Each league tier has its own gem.': 'Cada nível da liga tem a sua própria gema.',
+  'The Self study cards have no badges.': 'Os cartões de Estudo livre não têm selos.',
+  'The goal, skill and level-check cards show 3D pictures.':
+    'Os cartões de Objetivo, Habilidades e Teste de nível mostram imagens 3D.',
   'Settings has a sidebar. Each section has its own page: General, Account, Sounds, AI and voice, and About and help.':
     'As Configurações têm uma barra lateral. Cada seção tem a sua própria página: Geral, Conta, Sons, IA e voz, e Sobre e ajuda.',
   'The title bar has a button that opens the Danna hub in your browser.':
