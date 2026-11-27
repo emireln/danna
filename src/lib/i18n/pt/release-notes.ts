@@ -1,6 +1,8 @@
 // The release notes in Portuguese (2.1.0 to 2.9.0): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
+  'Google sign-in keeps waiting when Danna restarts, and says so when a return cannot be used.':
+    'O login com o Google continua aguardando quando o Danna reinicia, e avisa quando uma volta não pode ser usada.',
   'Frontend adjustments and bug fixes.': 'Ajustes no visual e correções de bugs.',
   'A pop-up offers a new version, with buttons to download it and restart to update.':
     'Um aviso oferece a nova versão, com botões para baixar e reiniciar para atualizar.',
