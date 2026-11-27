@@ -26,7 +26,7 @@ import { useT } from '../lib/i18n/react';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { narrate, type Narration } from '../lib/speech';
 import { backendFor, onlineAvailable } from '../lib/session';
-import { useUpdateStatus } from '../lib/update';
+import { UPDATE_CHECKED, useUpdateStatus } from '../lib/update';
 import { useAI } from '../state/ai';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -231,9 +231,8 @@ export function SettingsScreen() {
       if (result.state === 'unavailable') notify(t('Updates are checked in the installed Danna app.'));
       else if (result.state === 'failed') notify(t('Could not check for updates. Try again later.'), 'error');
       else if (result.state === 'idle') notify(t('Danna is up to date.'), 'ok');
-      else if (result.state === 'available') notify(t('Danna {version} is available. Download it when you like.', { version: result.version ?? '' }), 'ok');
-      else if (result.state === 'ready') notify(t('Danna {version} is ready. It installs when you close Danna.', { version: result.version ?? '' }), 'ok');
-      else notify(t('Downloading Danna {version} in the background.', { version: result.version ?? '' }), 'ok');
+      // A newer version is shown by the pop-up, so the check adds no second message. The pop-up comes back if it was hidden.
+      else window.dispatchEvent(new Event(UPDATE_CHECKED));
     } catch (error) {
       notify(t(errorText(error)), 'error');
     } finally {
