@@ -1499,11 +1499,11 @@
 
   .banner--amber {
     background: linear-gradient(120deg, var(--amber) 0%, var(--sun) 100%);
-    color: var(--ink);
+    color: #fff;
   }
 
   .banner--amber .banner__text {
-    color: var(--ink);
+    color: #fff;
   }
 
   .banner--ink {
