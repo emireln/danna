@@ -38,7 +38,7 @@ function electronStub() {
     },
     BrowserWindow: class {
       constructor() {
-        this.webContents = { setWindowOpenHandler() {}, on() {}, send() {} };
+        this.webContents = { setWindowOpenHandler() {}, on() {}, once() {}, send() {} };
       }
       once() {}
       on() {}
