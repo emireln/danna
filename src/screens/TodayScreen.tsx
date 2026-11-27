@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Languages, Map as MapIcon, RotateCw, ScanSearch, X } from 'lucide-react';
+import { BookOpen, Headphones, Languages, Map as MapIcon, Mic, PenLine, RotateCw, ScanSearch, X, type LucideIcon } from 'lucide-react';
 import { BannerCarousel } from '../components/Banner';
 import { DailyGoal } from '../components/DailyGoal';
 import { QuestList } from '../components/QuestList';
@@ -37,6 +37,15 @@ const TILE_COLORS: Record<Skill, string> = {
   speaking: '#2f6bff',
   writing: '#2a4fb8',
   language: '#0e7c6b',
+};
+
+// The icon in each card's circle. Every card has one, the skill cards and the two others alike.
+const SKILL_TILE_ICON: Record<Skill, LucideIcon> = {
+  reading: BookOpen,
+  listening: Headphones,
+  speaking: Mic,
+  writing: PenLine,
+  language: Languages,
 };
 
 export function TodayScreen() {
@@ -111,12 +120,13 @@ export function TodayScreen() {
   const skillTasks = (skill: Skill) =>
     nodes.filter((node) => !node.item.checkpoint && node.item.lesson.skill === skill && node.state !== 'done').length;
 
-  const tiles: Array<{ key: string; label: string; count: number; color: string; icon?: 'lang' | 'review'; to: string }> = [
+  const tiles: Array<{ key: string; label: string; count: number; color: string; icon: LucideIcon; to: string }> = [
     ...(['reading', 'listening', 'speaking', 'writing'] as const).map((skill) => ({
       key: skill,
       label: t(SKILL_LABEL[skill]),
       count: skillTasks(skill),
       color: TILE_COLORS[skill],
+      icon: SKILL_TILE_ICON[skill],
       to: `/study/${skill}`,
     })),
     {
@@ -124,10 +134,10 @@ export function TodayScreen() {
       label: t('Language'),
       count: skillTasks('language'),
       color: TILE_COLORS.language,
-      icon: 'lang',
+      icon: SKILL_TILE_ICON.language,
       to: '/study/language',
     },
-    { key: 'review', label: t('Daily review'), count: dueNow, color: '#4b5a7a', icon: 'review', to: '/review' },
+    { key: 'review', label: t('Daily review'), count: dueNow, color: '#4b5a7a', icon: RotateCw, to: '/review' },
   ];
 
   return (
@@ -275,7 +285,7 @@ export function TodayScreen() {
 
         <div className="tiles">
           {tiles.map((tile) => {
-            const Icon = tile.icon === 'lang' ? Languages : tile.icon === 'review' ? RotateCw : null;
+            const Icon = tile.icon;
             return (
               <button
                 key={tile.key}
@@ -283,11 +293,9 @@ export function TodayScreen() {
                 onClick={() => navigate(tile.to)}
                 aria-label={t('{label}, {count} to do', { label: tile.label, count: tile.count })}
               >
-                {Icon && (
-                  <span className="tile__letter" style={{ background: tile.color }}>
-                    <Icon size={16} aria-hidden="true" />
-                  </span>
-                )}
+                <span className="tile__letter" style={{ background: tile.color }}>
+                  <Icon size={16} aria-hidden="true" />
+                </span>
                 <span>{tile.label}</span>
                 <span className="tile__count">{tile.count}</span>
               </button>
