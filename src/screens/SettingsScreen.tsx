@@ -811,7 +811,6 @@ export function SettingsScreen() {
                 <div className="settings-row">
                   <div className="settings-row__body">
                     <div className="settings-row__title">Danna {version}</div>
-                    <div className="settings-row__text">{t('Scores are practice estimates, not official results.')}</div>
                     {update.state === 'downloading' && update.version && (
                       <div className="settings-row__text">{t('Downloading Danna {version} in the background.', { version: update.version })}</div>
                     )}
