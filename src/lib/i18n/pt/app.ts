@@ -16,6 +16,8 @@ export const APP_PT: Record<string, string> = {
   'AI': 'IA',
   'You': 'Você',
   'Learner': 'Aluno',
+  'Practice set': 'Conjunto de prática',
+  'Generated practice set': 'Conjunto de prática gerado',
   'Danna home': 'Início do Danna',
   'Friends, {count} waiting': 'Amigos, {count} aguardando',
   'Friends': 'Amigos',
