@@ -1,5 +1,5 @@
-// The update controls. The title bar has no download or update button: the whole update flow (the download, the restart
-// and the check) is in Settings, and the one-time notice about a new version points there.
+// The update controls. The title bar has no download or update button. The check is in Settings, and the pop-up about a
+// new version offers the download and the restart.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
@@ -25,8 +25,11 @@ test('Settings keeps the whole update flow: the check, the download and the rest
   assert.match(settings, /bridge\?\.update\.install\(\)/);
 });
 
-test('the notice about a new version points to Settings, not to the title bar', () => {
+test('the pop-up about a new version offers the download and the restart, not the title bar', () => {
   const notice = read('src', 'components', 'UpdateNotice.tsx');
   assert.doesNotMatch(notice, /title bar/i);
-  assert.match(notice, /Download it in Settings\./);
+  assert.match(notice, /t\('Download update'\)/);
+  assert.match(notice, /t\('Restart to update'\)/);
+  assert.match(notice, /bridge\?\.update\.download\(\)/);
+  assert.match(notice, /bridge\?\.update\.install\(\)/);
 });

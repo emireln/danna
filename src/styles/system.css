@@ -1229,6 +1229,44 @@
     }
   }
 
+  /* ---------- The update pop-up: a card at the bottom right, above the tabs. It stays until the person chooses. ---------- */
+  .update-pop {
+    position: fixed;
+    right: calc(var(--frame-gutter, 6px) + 16px);
+    bottom: calc(var(--nav-h, 64px) + var(--frame-gutter, 6px) + 16px);
+    z-index: 60;
+    width: min(340px, calc(100vw - 32px));
+    display: grid;
+    gap: 10px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--canvas);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .update-pop__title {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .update-pop__text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  .update-pop__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
   /* ---------- The search of the whole app: a panel under the title bar, with the results in groups ---------- */
   .palette-scrim {
     position: fixed;
