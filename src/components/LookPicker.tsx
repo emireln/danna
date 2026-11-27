@@ -30,6 +30,7 @@ export function LookPicker({ value, disabled, onChange }: { value: LookId; disab
               <span className="look-card__button" />
             </span>
             <span className="look-card__title">{title}</span>
+            {look === 'playful' && <span className="look-card__badge">{t('Discontinued, it might have bugs')}</span>}
             <span className="look-card__text">{text}</span>
             <span className="look-card__tick">{selected && <Check aria-hidden="true" />}</span>
           </button>

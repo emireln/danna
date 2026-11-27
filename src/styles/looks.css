@@ -109,6 +109,18 @@
     line-height: 1.4;
   }
 
+  /* A look that is no longer developed says so: a small amber badge under its name, in ink text */
+  .look-card__badge {
+    justify-self: start;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--amber);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
   .look-card__tick {
     position: absolute;
     top: 12px;
