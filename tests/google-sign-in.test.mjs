@@ -2,11 +2,15 @@
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
-const { isGoogleSignInUrl, findAuthCallback } = require('../electron/authLink.cjs');
+const authLink = require('../electron/authLink.cjs');
+const { isGoogleSignInUrl, findAuthCallback } = authLink;
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 let server;
@@ -65,4 +69,27 @@ test('an address with neither a session nor an error is not read', () => {
   assert.equal(signIn.readSignInCallback('danna://auth-callback#access_token=only-one'), null, 'a session needs both tokens');
   assert.equal(signIn.readSignInCallback('not a web address'), null);
   assert.equal(signIn.GOOGLE_RETURN_URL, 'https://hub.danna.run/app-danna');
+});
+
+test('a sign-in that started within the hour can still be taken, and an older one cannot', () => {
+  const started = 1_000_000;
+  assert.equal(authLink.signInIsPending(started, started + 60_000), true);
+  assert.equal(authLink.signInIsPending(started, started + authLink.SIGN_IN_WINDOW_MS), true, 'the last moment of the hour');
+  assert.equal(authLink.signInIsPending(started, started + authLink.SIGN_IN_WINDOW_MS + 1), false, 'a sign-in that came too late');
+  assert.equal(authLink.signInIsPending(0, started), false, 'no sign-in was started');
+  assert.equal(authLink.signInIsPending(started, started - 1), false, 'a clock that went back');
+});
+
+test('the start of a sign-in is kept on disk, so a restart of Danna still takes the return', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'danna-sign-in-'));
+  const file = join(dir, 'google-sign-in.json');
+  try {
+    assert.equal(authLink.readSignInStart(file), 0, 'nothing is kept yet');
+    authLink.writeSignInStart(file, 42_000);
+    assert.equal(authLink.readSignInStart(file), 42_000, 'a new run reads the start again');
+    authLink.clearSignInStart(file);
+    assert.equal(authLink.readSignInStart(file), 0, 'the start is cleared once the sign-in is taken');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

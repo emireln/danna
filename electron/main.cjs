@@ -17,7 +17,7 @@ const { createUpdates } = require('./updater.cjs');
 const kokoro = require('./kokoro.cjs');
 const { createSpeechHost } = require('./speech-host.cjs');
 const { createWindowsVoices } = require('./winvoices.cjs');
-const { isGoogleSignInUrl, findAuthCallback } = require('./authLink.cjs');
+const { isGoogleSignInUrl, findAuthCallback, signInIsPending, readSignInStart, writeSignInStart, clearSignInStart } = require('./authLink.cjs');
 const { createSpeechService } = require('./speech-service.cjs');
 
 // The built-in voice ships with the app (resources/tts/kokoro). In development it is read from the same folder in the project.
@@ -64,7 +64,7 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', (event, argv) => {
     showWindow();
-    takeSignInCallback(argv);
+    takeSignInCallback(argv, 'second instance');
   });
   app.on('before-quit', () => {
     quitting = true;
@@ -91,6 +91,8 @@ if (!app.requestSingleInstanceLock()) {
     registerIpc();
     createTray();
     createWindow();
+    // A link that started Danna carries the return: it is taken once the interface has loaded.
+    mainWindow.webContents.once('did-finish-load', () => setTimeout(() => takeSignInCallback(process.argv, 'start'), 2000));
     updates.start();
   });
 }
@@ -119,15 +121,34 @@ function openExternal(url) {
 }
 
 // Google sign-in. The browser comes back to danna://auth-callback, which Windows hands to this app. Only a sign-in that
-// this app started is taken, and only within a short time.
+// this app started is taken. The start is kept on disk, so a restart of Danna does not lose it, and a short log records
+// what happened, without any token.
 const AUTH_SCHEME = 'danna';
-const SIGN_IN_WINDOW_MS = 20 * 60 * 1000;
 let googleSignInStartedAt = 0;
+const signInFile = () => path.join(app.getPath('userData'), 'google-sign-in.json');
+const signInLogFile = () => path.join(app.getPath('userData'), 'google-sign-in.log');
 
-function takeSignInCallback(argv) {
+function signInLog(message) {
+  try {
+    fs.appendFileSync(signInLogFile(), `${new Date().toISOString()} ${message}\n`);
+  } catch {
+    // The log is only there to find a problem.
+  }
+}
+
+// Takes the return address when it belongs to a sign-in this app started, and tells the interface when it does not.
+function takeSignInCallback(argv, source) {
   const address = findAuthCallback(argv, AUTH_SCHEME);
-  if (!address || Date.now() - googleSignInStartedAt > SIGN_IN_WINDOW_MS) return;
+  if (!address) return;
+  const startedAt = Math.max(googleSignInStartedAt, readSignInStart(signInFile()));
+  if (!signInIsPending(startedAt, Date.now())) {
+    signInLog(`${source}: a return came back, but no sign-in was started in the last hour`);
+    send('auth:rejected', null);
+    return;
+  }
   googleSignInStartedAt = 0;
+  clearSignInStart(signInFile());
+  signInLog(`${source}: the return was taken`);
   send('auth:callback', address);
 }
 
@@ -541,6 +562,8 @@ function registerIpc() {
   handle('auth:open-sign-in', ({ url }) => {
     if (!isGoogleSignInUrl(url)) throw userError('That sign-in link cannot be opened.');
     googleSignInStartedAt = Date.now();
+    writeSignInStart(signInFile(), googleSignInStartedAt);
+    signInLog('the sign-in page was opened');
     return shell.openExternal(url);
   });
   handle('shell:open', ({ url }) => {
