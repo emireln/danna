@@ -16,6 +16,22 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     created_at: '2026-11-01T09:00:00Z',
   },
   {
+    id: 'local-release-2917',
+    kind: 'release_note',
+    title: 'Danna 2.9.17',
+    body: [
+      '- Frontend adjustments and bug fixes.',
+      '- A pop-up offers a new version, with buttons to download it and restart to update.',
+    ].join('\n'),
+    version: '2.9.17',
+    image_url: null,
+    cta_label: null,
+    cta_url: null,
+    accent: 'blue',
+    priority: 0,
+    created_at: '2026-11-27T15:00:00Z',
+  },
+  {
     id: 'local-release-2911',
     kind: 'release_note',
     title: 'Danna 2.9.11',

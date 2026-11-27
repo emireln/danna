@@ -2,6 +2,8 @@
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
   'Frontend adjustments and bug fixes.': 'Ajustes no visual e correções de bugs.',
+  'A pop-up offers a new version, with buttons to download it and restart to update.':
+    'Um aviso oferece a nova versão, com botões para baixar e reiniciar para atualizar.',
   'Profile pictures, banners and library files are saved by a new storage service, which can hold more files as your library grows.':
     'Fotos de perfil, banners e arquivos da biblioteca são salvos por um novo serviço de armazenamento, que comporta mais arquivos conforme a sua biblioteca cresce.',
   'Files you saved before stay where they are, and they open as before.':
