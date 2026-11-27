@@ -5,6 +5,7 @@ import { AuthBrand } from '../components/AuthBrand';
 import { GoogleMark } from '../components/GoogleMark';
 import { Field, Notice, Sheet, Spinner, Wordmark } from '../components/ui';
 import { errorText } from '../lib/bridge';
+import { GOOGLE_SIGN_IN_ENABLED } from '../lib/features';
 import { copyProgress, hasLocalProgress } from '../lib/migrate';
 import { backendFor, onlineAvailable } from '../lib/session';
 import { returnPath } from '../lib/navigation';
@@ -164,7 +165,7 @@ export function AuthScreen() {
             </>
           ) : (
             <>
-              {mode !== 'forgot' && (
+              {GOOGLE_SIGN_IN_ENABLED && mode !== 'forgot' && (
                 <>
                   <button className="btn btn--ghost btn--block btn--google" type="button" disabled={busy} onClick={() => void startGoogle()}>
                     <span className="btn__mark">
@@ -247,7 +248,7 @@ export function AuthScreen() {
 
                 {error && <Notice tone="error">{error}</Notice>}
                 {info && <Notice tone="info">{info}</Notice>}
-                {googleError && <Notice tone="error">{t(googleError)}</Notice>}
+                {GOOGLE_SIGN_IN_ENABLED && googleError && <Notice tone="error">{t(googleError)}</Notice>}
 
                 <button className="btn btn--primary btn--block" type="submit" disabled={busy}>
                   {busy ? <Spinner /> : mode === 'forgot' ? t('Send reset link') : mode === 'signin' ? t('Sign in') : t('Create account')}
