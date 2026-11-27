@@ -1172,32 +1172,29 @@
     background: radial-gradient(circle at 50% 42%, var(--canvas) 0%, var(--canvas-2) 55%, var(--surface-2) 100%);
   }
 
-  /* A picture is placed by AuthBrand.tsx, then drifts a little: slow and smooth, and never far enough to reach another one */
+  /* The brand panel: the app's own 3D picture, fixed in the middle of the panel and large. It does not move; it only fades in. */
   .auth-brand__art {
     position: absolute;
-    left: 0;
-    top: 0;
+    top: 50%;
+    left: 50%;
     display: block;
-    max-width: none;
-    height: auto;
-    opacity: 0;
+    height: 84%;
+    width: auto;
+    max-width: 92%;
+    object-fit: contain;
+    transform: translate(-50%, -50%);
     pointer-events: none;
     user-select: none;
-    transition: opacity 1.8s var(--ease);
-    animation: auth-art-drift var(--drift-time, 8s) ease-in-out var(--drift-delay, 0s) infinite alternate;
+    animation: auth-art-in 0.8s var(--ease) both;
   }
 
-  .auth-brand__art.is-in {
-    opacity: 1;
-  }
-
-  @keyframes auth-art-drift {
+  @keyframes auth-art-in {
     from {
-      transform: translate3d(0, 0, 0);
+      opacity: 0;
     }
 
     to {
-      transform: translate3d(var(--dx, 0px), var(--dy, 0px), 0);
+      opacity: 1;
     }
   }
 

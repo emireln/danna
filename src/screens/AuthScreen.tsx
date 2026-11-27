@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
-import { AuthBrand, type ArtName } from '../components/AuthBrand';
+import { AuthBrand } from '../components/AuthBrand';
 import { GoogleMark } from '../components/GoogleMark';
 import { Field, Notice, Sheet, Spinner, Wordmark } from '../components/ui';
 import { errorText } from '../lib/bridge';
@@ -21,10 +21,6 @@ interface AuthRouteState {
 }
 
 type Form = 'signin' | 'signup' | 'forgot';
-
-/** The pictures of the brand panel: the two apps, and on the reset form the recovery picture as well. */
-const SIGN_IN_ART: ArtName[] = ['danna', 'botdanna'];
-const RESET_ART: ArtName[] = ['danna', 'botdanna', 'recovery'];
 
 export function AuthScreen() {
   const navigate = useNavigate();
@@ -144,7 +140,7 @@ export function AuthScreen() {
 
   return (
     <div className="auth-page">
-      <AuthBrand art={mode === 'forgot' ? RESET_ART : SIGN_IN_ART} />
+      <AuthBrand />
 
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-card__inner">
