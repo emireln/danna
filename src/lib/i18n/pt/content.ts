@@ -928,7 +928,7 @@ export const CONTENT_PT: Record<string, string> = {
   'A diplomatic reply': 'Uma resposta diplomática',
   'Listen to a careful reply to a proposal and answer four questions.': 'Ouça uma resposta cuidadosa a uma proposta e responda a quatro perguntas.',
   'What is the speaker’s attitude to the proposal?': 'Qual é a atitude de quem fala em relação à proposta?',
-  'What does the speaker doubt?': 'O que quem fala duvida?',
+  'What does the speaker doubt?': 'Do que o falante duvida?',
   'Why does the speaker prefer caution?': 'Por que quem fala prefere a cautela?',
   'Phrasal verbs: practice': 'Phrasal verbs: prática',
   'Learn the verb and particle that carry the meaning.': 'Aprenda o verbo e a partícula que carregam o sentido.',
