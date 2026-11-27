@@ -219,6 +219,8 @@ export interface DannaBridge {
     openSignIn: (url: string) => Promise<void>;
     /** Calls back with the address the browser returns to, after a Google sign-in that this app started. */
     onCallback: (callback: (address: string) => void) => () => void;
+    /** Calls back when a return came back that this app did not start, or that came too late. */
+    onRejected: (callback: () => void) => () => void;
   };
 }
 

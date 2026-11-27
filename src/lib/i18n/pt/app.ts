@@ -301,6 +301,7 @@ export const APP_PT: Record<string, string> = {
   'New here?': 'Novo aqui?',
   'Already have an account?': 'Já tem uma conta?',
   'Google sign-in did not finish. Try again.': 'O login com o Google não foi concluído. Tente de novo.',
+  'The sign-in did not start in this Danna. Choose Continue with Google again.': 'O login não começou neste Danna. Escolha Continuar com o Google de novo.',
   'Account': 'Conta',
   'Sign in': 'Entrar',
   'Create account': 'Criar conta',

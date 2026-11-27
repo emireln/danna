@@ -11,6 +11,8 @@ type Status = 'loading' | 'out' | 'in';
 
 // What the sign-in screen says when a Google sign-in comes back without a session.
 const GOOGLE_FAILED = 'Google sign-in did not finish. Try again.';
+// What it says when the browser comes back to a sign-in that this Danna did not start, or that came too late.
+const GOOGLE_NOT_STARTED = 'The sign-in did not start in this Danna. Choose Continue with Google again.';
 
 interface AuthApi {
   status: Status;
@@ -158,11 +160,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // The browser comes back with the sign-in that this app started. The session is taken in, or the screen is told why not.
   useEffect(() => {
     if (!bridge) return undefined;
-    return bridge.auth.onCallback((address) => {
+    // A return that this app did not start, or that came too late, is said on the sign-in screen as well.
+    const stopRejected = bridge.auth.onRejected(() => setGoogleError(GOOGLE_NOT_STARTED));
+    const stopCallback = bridge.auth.onCallback((address) => {
       const result = readSignInCallback(address);
-      if (!result) return;
       const sb = getSupabase();
-      if (result.kind === 'error' || !sb) {
+      if (!result || result.kind === 'error' || !sb) {
         setGoogleError(GOOGLE_FAILED);
         return;
       }
@@ -179,6 +182,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           void loadStoredVault();
         });
     });
+    return () => {
+      stopRejected();
+      stopCallback();
+    };
   }, [enter, loadStoredVault]);
 
   // Opens the Google sign-in page in the browser. The return is taken by the effect above.

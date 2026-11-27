@@ -78,6 +78,7 @@ contextBridge.exposeInMainWorld(
     auth: Object.freeze({
       openSignIn: (url) => call('auth:open-sign-in', { url }),
       onCallback: (callback) => listen('auth:callback', callback),
+      onRejected: (callback) => listen('auth:rejected', callback),
     }),
     onNavigate: (callback) => listen('app:navigate', callback),
     openExternal: (url) => call('shell:open', { url }),
