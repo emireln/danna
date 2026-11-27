@@ -133,6 +133,17 @@
     fill: #fde68a;
   }
 
+  /* In the title bar the streak sits on the purple frame: a translucent pill with white text, like the title bar's buttons.
+     Each tier keeps its flame colour. Playful draws its own streak block (playful.css). */
+  .titlebar .streak,
+  .titlebar .streak--ruby,
+  .titlebar .streak--sapphire,
+  .titlebar .streak--amethyst {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  }
+
   /* Up to 200 days: the orange flame, breathing slowly. */
   .streak--ember .streak__flame {
     animation: streak-breathe 2.2s ease-in-out infinite;
