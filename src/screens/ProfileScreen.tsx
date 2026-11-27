@@ -18,6 +18,7 @@ import { LEAGUE_DAYS } from '../lib/league';
 import { SAVED_WORDS_NAMES } from '../lib/deck';
 import { achievementsOf, statsOf } from '../lib/achievements';
 import { lookOf } from '../lib/look';
+import { shownName } from '../lib/names';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { useToast } from '../state/toast';
@@ -125,7 +126,7 @@ export function ProfileScreen() {
     );
   }
 
-  const name = profile.display_name || profile.username;
+  const name = shownName(profile.display_name || profile.username, t);
   const level = levelInfo(profile.xp);
   const diagnostics = checks?.rows ?? [];
   const best = diagnostics.reduce((max, attempt) => Math.max(max, attempt.predicted ?? 0), 0);

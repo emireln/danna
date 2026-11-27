@@ -7,6 +7,7 @@ import { errorText } from '../lib/bridge';
 import { tn } from '../lib/i18n';
 import { useT } from '../lib/i18n/react';
 import { activeStreak, formatLongDate, levelInfo } from '../lib/progress';
+import { shownName } from '../lib/names';
 import { overallReport, type SkillLine } from '../lib/overallReport';
 import { PLAN_COLORS, TIPS, adviceFor } from '../lib/reportText';
 import { studyPlan } from '../lib/scoring';
@@ -63,7 +64,7 @@ export function ProfileReportScreen() {
     );
   }
 
-  const name = profile.display_name || profile.username;
+  const name = shownName(profile.display_name || profile.username, t);
   const streak = activeStreak(profile);
   const minutes = report.practiceMinutes;
   const notPractised = t('Not practised yet');

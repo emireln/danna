@@ -13,6 +13,7 @@ import { useT } from '../lib/i18n/react';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
 import { activeStreak } from '../lib/progress';
+import { shownName } from '../lib/names';
 
 // The hub: the account page on the web. The title bar opens it in the browser, not in the app.
 const HUB_URL = 'https://hub.danna.run/';
@@ -67,7 +68,8 @@ export function TitleBar() {
   }, [menuOpen]);
 
   const showActions = status === 'in' && !location.pathname.startsWith('/play') && location.pathname !== '/setup';
-  const name = profile?.display_name || profile?.username || t('You');
+  const own = profile?.display_name || profile?.username;
+  const name = own ? shownName(own, t) : t('You');
   const friendBadge = incomingRequests + unseenShares;
   const streak = profile ? activeStreak(profile) : 0;
   const go = (path: string) => {

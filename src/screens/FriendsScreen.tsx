@@ -8,6 +8,7 @@ import { Avatar, ConfirmSheet, Empty, PageHeader, SectionTitle, Skeleton, Tabs }
 import { errorText } from '../lib/bridge';
 import { useT, type Translate } from '../lib/i18n/react';
 import { timeAgo } from '../lib/progress';
+import { shownName } from '../lib/names';
 import { onlineAvailable } from '../lib/session';
 import { useAuth } from '../state/auth';
 import { useAppData } from '../state/appData';
@@ -102,10 +103,10 @@ export function FriendsScreen() {
       }),
     );
     if (profile) {
-      rows.push({ id: profile.id, name: profile.display_name || profile.username, xp: profile.xp, streak: profile.streak, me: true, friend: null });
+      rows.push({ id: profile.id, name: shownName(profile.display_name || profile.username, t), xp: profile.xp, streak: profile.streak, me: true, friend: null });
     }
     return rows.sort((a, b) => b.xp - a.xp);
-  }, [accepted, profile]);
+  }, [accepted, profile, t]);
 
   const run = async (action: () => Promise<void>, success?: string) => {
     try {

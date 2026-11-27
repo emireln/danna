@@ -1,7 +1,7 @@
 {
   "name": "danna",
   "productName": "Danna",
-  "version": "2.9.9",
+  "version": "2.9.10",
   "description": "Danna: an English learning desktop app, from A1 to C1, with an optional TOEFL warm-up, AI tutoring, roadmaps and friends.",
   "private": true,
   "type": "module",
