@@ -16,14 +16,14 @@ export const LOCAL_ANNOUNCEMENTS: AnnouncementRow[] = [
     created_at: '2026-11-01T09:00:00Z',
   },
   {
-    id: 'local-release-2922',
+    id: 'local-release-2924',
     kind: 'release_note',
-    title: 'Danna 2.9.22',
+    title: 'Danna 2.9.24',
     body: [
       '- Google sign-in keeps waiting when Danna restarts, and says so when a return cannot be used.',
       '- Frontend adjustments and bug fixes.',
     ].join('\n'),
-    version: '2.9.22',
+    version: '2.9.24',
     image_url: null,
     cta_label: null,
     cta_url: null,
