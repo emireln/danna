@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { BannerCarousel } from '../components/Banner';
 import { Empty, PageHeader } from '../components/ui';
 import { useT, type Translate } from '../lib/i18n/react';
 import { formatLongDate } from '../lib/progress';
@@ -54,7 +53,7 @@ function ReleaseArticle({ release, t, highlight }: { release: AnnouncementRow; t
 
 export function WhatsNewScreen() {
   const t = useT();
-  const { banners, releases, markReleaseSeen } = useAppData();
+  const { releases, markReleaseSeen } = useAppData();
 
   useEffect(() => {
     markReleaseSeen();
@@ -67,12 +66,6 @@ export function WhatsNewScreen() {
   return (
     <div className="page">
       <PageHeader title={t("What's new")} />
-
-      {banners.length > 0 && (
-        <div className="mb-4">
-          <BannerCarousel items={banners} />
-        </div>
-      )}
 
       {releases.length === 0 ? (
         <Empty title={t('No release notes yet')}>{t('New features and fixes will appear here.')}</Empty>

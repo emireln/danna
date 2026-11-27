@@ -1,6 +1,7 @@
 // The release notes in Portuguese (2.1.0 to 2.9.0): each key is a bullet of the What's new page, in the same words as
 // src/content/announcements.ts, without the leading dash.
 export const RELEASE_NOTES_PT: Record<string, string> = {
+  'Frontend adjustments and bug fixes.': 'Ajustes no visual e correções de bugs.',
   'Profile pictures, banners and library files are saved by a new storage service, which can hold more files as your library grows.':
     'Fotos de perfil, banners e arquivos da biblioteca são salvos por um novo serviço de armazenamento, que comporta mais arquivos conforme a sua biblioteca cresce.',
   'Files you saved before stay where they are, and they open as before.':
